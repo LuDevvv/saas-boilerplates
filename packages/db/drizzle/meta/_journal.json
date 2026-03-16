@@ -1,0 +1,27 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1772294618906,
+      "tag": "0000_flashy_albert_cleary",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1772296691620,
+      "tag": "0001_mushy_mister_sinister",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1773538899167,
+      "tag": "0002_common_otto_octavius",
+      "breakpoints": true
+    }
+  ]
+}

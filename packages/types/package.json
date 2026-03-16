@@ -1,0 +1,16 @@
+{
+  "name": "@workspace/types",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./queues": "./src/queues.ts"
+  },
+  "devDependencies": {
+    "@workspace/config": "workspace:*",
+    "typescript": "^5.4.3"
+  },
+  "dependencies": {
+    "zod": "^3.22.4"
+  }
+}

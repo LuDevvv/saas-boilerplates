@@ -1,0 +1,9 @@
+{
+  "extends": "@workspace/config/base.json",
+  "compilerOptions": {
+    "types": ["@cloudflare/workers-types", "vitest"],
+    "jsx": "react-jsx"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

@@ -1,0 +1,85 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="404 — Page Not Found">
+    <div
+        class="min-h-screen flex flex-col items-center justify-center bg-background px-6 text-center"
+    >
+        <!-- Animated 404 Glyph -->
+        <div class="relative mb-8">
+            <span
+                class="text-[10rem] md:text-[14rem] font-black leading-none tracking-tighter bg-gradient-to-br from-primary via-primary/60 to-muted-foreground/20 bg-clip-text text-transparent select-none animate-pulse"
+                style="animation-duration: 4s;"
+            >
+                404
+            </span>
+            <div
+                class="absolute inset-0 blur-3xl opacity-20 bg-primary rounded-full pointer-events-none"
+            >
+            </div>
+        </div>
+
+        <h1 class="text-2xl md:text-3xl font-bold text-foreground mb-3">
+            Page not found
+        </h1>
+        <p
+            class="text-muted-foreground max-w-md mb-8 text-base leading-relaxed"
+        >
+            The page you're looking for doesn't exist or has been moved. Let's
+            get you back on track.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+            <a
+                href="/dashboard"
+                class="inline-flex items-center justify-center px-6 py-3 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shadow-lg shadow-primary/25"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-4 h-4 mr-2"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <rect width="7" height="9" x="3" y="3" rx="1"></rect>
+                    <rect width="7" height="5" x="14" y="3" rx="1"></rect>
+                    <rect width="7" height="9" x="14" y="12" rx="1"></rect>
+                    <rect width="7" height="5" x="3" y="16" rx="1"></rect>
+                </svg>
+                Go to Dashboard
+            </a>
+            <a
+                href="/"
+                class="inline-flex items-center justify-center px-6 py-3 text-sm font-medium rounded-lg border border-border text-foreground hover:bg-accent transition-colors"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="w-4 h-4 mr-2"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <path d="m12 19-7-7 7-7"></path>
+                    <path d="M19 12H5"></path>
+                </svg>
+                Back to Home
+            </a>
+        </div>
+
+        <!-- Decorative grid pattern -->
+        <div class="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+            <div
+                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] opacity-[0.03]"
+                style="background-image: radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px); background-size: 24px 24px;"
+            >
+            </div>
+        </div>
+    </div>
+</Layout>

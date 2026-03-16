@@ -1,0 +1,15 @@
+{
+  "extends": "@workspace/config/base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "strictNullChecks": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@workspace/api": ["../api/src/app.ts"],
+      "@workspace/ui": ["../../packages/ui/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*", "astro.config.mjs"]
+}

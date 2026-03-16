@@ -1,0 +1,12 @@
+name = "jobs-worker"
+main = "src/index.ts"
+compatibility_date = "2026-02-27"
+
+[vars]
+ENVIRONMENT = "production"
+
+[[queues.consumers]]
+queue = "email-jobs-queue"
+max_batch_size = 10
+max_batch_timeout = 30
+dead_letter_queue = "email-jobs-dlq"

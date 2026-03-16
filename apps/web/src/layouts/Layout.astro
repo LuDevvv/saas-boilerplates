@@ -1,0 +1,85 @@
+---
+import "../styles/globals.css";
+import { getLangFromUrl } from "../i18n/utils";
+import { LanguageProvider } from "../context/LanguageContext";
+import { PostHogProvider } from "../providers/PostHogProvider";
+
+interface Props {
+    title: string;
+    description?: string;
+}
+
+const { title, description = "EdgeStack: High-performance edge infrastructure for modern digital assets." } =
+    Astro.props;
+const lang = getLangFromUrl(Astro.url);
+---
+
+<!doctype html>
+<html lang={lang} class="scroll-smooth">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="generator" content={Astro.generator} />
+
+        <!-- Premium Typography -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Mona+Sans:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+
+        <!-- SEO & i18n meta -->
+        <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+        <title>{title} | EdgeStack</title>
+        <meta name="description" content={description} />
+
+        <!-- OpenGraph -->
+        <meta property="og:title" content={`${title} | EdgeStack`} />
+        <meta property="og:description" content={description} />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={Astro.url} />
+        <meta
+            property="og:image"
+            content={new URL("/og-image.jpg", Astro.site)}
+        />
+
+        <!-- Twitter -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${title} | EdgeStack`} />
+        <meta name="twitter:description" content={description} />
+        <meta
+            name="twitter:image"
+            content={new URL("/og-image.jpg", Astro.site)}
+        />
+
+        <link
+            rel="alternate"
+            hreflang="en"
+            href={new URL(Astro.url.pathname.replace(/^\/es/, ""), Astro.site)}
+        />
+        <link
+            rel="alternate"
+            hreflang="es"
+            href={new URL(
+                `/es${Astro.url.pathname.replace(/^\/es/, "")}`,
+                Astro.site,
+            )}
+        />
+        <link
+            rel="alternate"
+            hreflang="x-default"
+            href={new URL(Astro.url.pathname.replace(/^\/es/, ""), Astro.site)}
+        />
+
+        <slot name="head" />
+    </head>
+
+    <body
+        class="min-h-screen bg-background antialiased text-foreground"
+    >
+        <PostHogProvider client:load>
+            <LanguageProvider initialLang={lang} client:load>
+                <slot />
+            </LanguageProvider>
+        </PostHogProvider>
+    </body>
+</html>

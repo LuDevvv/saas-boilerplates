@@ -1,0 +1,98 @@
+---
+import { type CollectionEntry } from "astro:content";
+import Layout from "./Layout.astro";
+
+interface Props {
+    post: CollectionEntry<"blog">;
+    lang: string;
+}
+
+const { post, lang } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, author } =
+    post.data;
+
+const formattedDate = pubDate.toLocaleDateString(
+    lang === "es" ? "es-ES" : "en-US",
+    {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    },
+);
+
+const backText = lang === "es" ? "Volver al Blog" : "Back to Blog";
+const blogPath = lang === "es" ? "/es/blog" : "/blog";
+---
+
+<Layout title={title} description={description}>
+    <article class="max-w-3xl mx-auto px-6 py-12">
+        <nav class="mb-8">
+            <a
+                href={blogPath}
+                class="text-primary hover:underline text-sm font-medium flex items-center gap-2"
+            >
+                <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                >
+                    <path d="m15 18-6-6 6-6"></path>
+                </svg>
+                {backText}
+            </a>
+        </nav>
+
+        {
+            heroImage && (
+                <img
+                    src={heroImage}
+                    alt={title}
+                    class="w-full h-72 object-cover rounded-xl shadow-lg mb-10 border border-muted"
+                />
+            )
+        }
+
+        <header class="mb-10 text-center sm:text-left">
+            <div
+                class="flex items-center justify-center sm:justify-start gap-4 text-muted-foreground text-sm mb-4"
+            >
+                <time datetime={pubDate.toISOString()}>{formattedDate}</time>
+                <span class="w-1 h-1 rounded-full bg-muted-foreground/30"
+                ></span>
+                <span>{author}</span>
+            </div>
+            <h1
+                class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 leading-tight"
+            >
+                {title}
+            </h1>
+            <p class="text-xl text-muted-foreground leading-relaxed">
+                {description}
+            </p>
+        </header>
+
+        <hr class="border-muted mb-10" />
+
+        <div
+            class="prose prose-lg dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-primary prose-img:rounded-xl"
+        >
+            <slot />
+        </div>
+
+        {
+            updatedDate && (
+                <div class="mt-12 pt-8 border-t border-muted text-sm text-muted-foreground italic">
+                    Last updated on{" "}
+                    {updatedDate.toLocaleDateString(
+                        lang === "es" ? "es-ES" : "en-US",
+                    )}
+                </div>
+            )
+        }
+    </article>
+</Layout>

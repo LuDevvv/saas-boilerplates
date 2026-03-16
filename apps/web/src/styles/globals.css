@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 20% 96%; /* #F3F4F6 */
+    --foreground: 240 10% 4%;
+
+    --sidebar-background: 210 20% 96%; /* #F3F4F6 */
+    --content-background: 0 0% 100%; /* #FFFFFF */
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 4%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 4%;
+
+    --primary: 240 6% 10%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 6% 10%;
+
+    --muted: 0 0% 98%;
+    --muted-foreground: 240 4% 46%;
+
+    --accent: 240 5% 96%;
+    --accent-foreground: 240 6% 10%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 6% 93%;
+    --input: 240 6% 93%;
+    --ring: 240 6% 30%;
+    --radius: 0.75rem;
+
+    /* Semantic Brand Colors (L.A. Labs) */
+    --brand-primary: 215 100% 50%;
+    --brand-secondary: 179 80% 44%;
+  }
+
+  .dark {
+    --background: 0 0% 3.5%; /* #090909 */
+    --foreground: 0 0% 98%;
+    --sidebar-background: 0 0% 3.5%; /* #090909 */
+    --content-background: 240 5% 6.5%; /* #101011 */
+
+    --card: 240 5% 6.5%; /* #101011 */
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.5%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 6% 10%;
+
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 240 4% 16%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 4% 16%;
+    --input: 240 4% 16%;
+    --ring: 0 0% 84%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased transition-colors duration-300 ease-in-out;
+    font-family: "Mona Sans", system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  .dashboard-card {
+    @apply bg-card rounded-2xl border border-secondary shadow-sm transition-all duration-300 hover:shadow-md hover:border-border/50;
+  }
+
+  .container-inset {
+    @apply flex-1 my-3 mr-3 p-4 rounded-xl border border-border/5 bg-[hsl(var(--content-background))] shadow-[0_2px_12px_rgba(0,0,0,0.02)] transition-all duration-700 overflow-y-auto;
+  }
+
+  .glass-effect {
+    @apply bg-background border border-border;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 h-9 text-sm font-bold rounded-xl transition-all duration-300 outline-none;
+  }
+ 
+  .sidebar-link-active {
+    @apply text-foreground;
+  }
+ 
+  .sidebar-link-inactive {
+    @apply text-muted-foreground/60 hover:text-foreground;
+  }
+ 
+  .sidebar-group-label {
+    @apply px-4 mb-3 text-[10px] font-black tracking-[0.15em] text-muted-foreground/40 uppercase;
+  }
+}
+
+/* Sidebar State Utility - Prevents Flash */
+html.sidebar-collapsed #main-sidebar {
+  width: 5rem !important; /* 80px */
+}
+html.sidebar-collapsed .sidebar-collapse-hide {
+  display: none !important;
+}
+html.sidebar-collapsed .sidebar-collapse-show {
+  display: flex !important;
+}
+
+@layer utilities {
+  .text-premium-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-br from-[#1A1D1F] via-[#1A1D1F] to-[#5347CE];
+  }
+
+  .animate-premium-in {
+    @apply animate-in fade-in slide-in-from-bottom-8 duration-1000 ease-out fill-mode-forwards;
+  }
+}

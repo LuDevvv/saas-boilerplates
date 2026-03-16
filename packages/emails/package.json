@@ -1,0 +1,26 @@
+{
+  "name": "@workspace/emails",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./templates": "./src/index.ts"
+  },
+  "dependencies": {
+    "@react-email/body": "^0.2.1",
+    "@react-email/button": "^0.2.1",
+    "@react-email/container": "^0.0.16",
+    "@react-email/head": "^0.0.13",
+    "@react-email/html": "^0.0.12",
+    "@react-email/preview": "^0.0.14",
+    "@react-email/section": "^0.0.17",
+    "@react-email/tailwind": "0.0.14",
+    "@react-email/text": "^0.1.6",
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.73",
+    "@workspace/config": "workspace:*",
+    "typescript": "^5.4.3"
+  }
+}

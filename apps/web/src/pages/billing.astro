@@ -1,0 +1,7 @@
+---
+/**
+ * Redirect shim for Polar.sh.
+ * Handles cases where the provider redirects to the root /billing instead of dashboard.
+ */
+return Astro.redirect("/dashboard/billing");
+---

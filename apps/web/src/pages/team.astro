@@ -1,0 +1,8 @@
+---
+import AppLayout from "../layouts/AppLayout.astro";
+import { TeamManager } from "../components/dashboard/TeamManager";
+---
+
+<AppLayout title="Team">
+    <TeamManager client:load />
+</AppLayout>
