@@ -2,7 +2,7 @@ import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema/index";
 
-export type Database = ReturnType<typeof createDbClient>;
+export type { Database } from "./db";
 
 export * from "drizzle-orm";
 

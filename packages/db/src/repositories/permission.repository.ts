@@ -65,6 +65,6 @@ export const PermissionRepository = {
         ),
       );
 
-    return result.map((r) => r.permissionId);
+    return result.map((r: any) => r.permissionId);
   },
 };
