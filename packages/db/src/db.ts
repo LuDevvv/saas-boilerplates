@@ -14,7 +14,10 @@ export function createDbClient(connectionString: string) {
   return drizzle(sql, { schema });
 }
 
+import type { NeonHttpDatabase } from "drizzle-orm/neon-http";
+
 /**
- * Type representing the Drizzle database client with schema support.
+ * Type representing the Drizzle database client or a transaction context.
+ * Used across repositories to support both direct and transactional operations.
  */
-export type Database = ReturnType<typeof createDbClient>;
+export type Database = NeonHttpDatabase<typeof schema> | any; // Using any for now to handle complex Drizzle internal generics

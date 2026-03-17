@@ -68,7 +68,7 @@ export const MetricsRepository = {
       teamMembers: membersResult[0]?.count ?? 0,
       totalTasks: tasksResult[0]?.count ?? 0,
       subscriptionStatus: subResult[0]?.status ?? null,
-      usage: usageResult.map((u) => ({
+      usage: usageResult.map((u: any) => ({
         metricName: u.metricName,
         currentUsage: u.currentUsage,
         quotaLimit: u.quotaLimit,

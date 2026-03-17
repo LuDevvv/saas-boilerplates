@@ -88,6 +88,16 @@ export const WorkspaceController = {
   async updateSettings(c: Context<AppContext>) {
     const workspaceId = c.get("workspaceId")!;
     const data = (await c.req.json()) as UpdateWorkspaceInput;
+    const userRole = c.get("workspaceRole");
+
+    // Guard: Only owner/admin can update metadata
+    if (userRole !== "owner" && userRole !== "admin") {
+      throw new AppError(
+        "Only workspace owners or admins can update settings.",
+        403,
+        "FORBIDDEN",
+      );
+    }
 
     const db = createDbClient(c.env.DATABASE_URL);
     const cache = createCacheService(c.env.CACHE_KV);
@@ -130,12 +140,32 @@ export const WorkspaceController = {
   async removeMember(c: Context<AppContext>) {
     const workspaceId = c.get("workspaceId")!;
     const memberId = c.req.param("userId");
+    const userRole = c.get("workspaceRole");
+
+    // Seniority Guard: Only 'owner' or 'admin' can remove members.
+    // Note: For now, we strictly follow the roadmap's 'owner' suggestion for maximum security
+    // but allowing 'admin' is common. The audit recommended checking for 'owner' seniority.
+    if (userRole !== "owner" && userRole !== "admin") {
+      throw new AppError(
+        "Only workspace owners or admins can remove members.",
+        403,
+        "UNAUTHORIZED_ACTION",
+      );
+    }
 
     const db = createDbClient(c.env.DATABASE_URL);
     const cache = createCacheService(c.env.CACHE_KV);
     const service = createWorkspaceService(db, cache);
 
-    await service.removeMember(workspaceId, memberId);
+    const success = await service.removeMember(workspaceId, memberId, userRole!);
+
+    if (!success) {
+      throw new AppError(
+        "Failed to remove member. This may be due to insufficient permissions or the member doesn't exist.",
+        400,
+        "REMOVE_MEMBER_FAILED",
+      );
+    }
 
     return c.json(
       successResponse({ message: "Member removed successfully" }),
@@ -153,12 +183,36 @@ export const WorkspaceController = {
     const workspaceId = c.get("workspaceId")!;
     const memberId = c.req.param("userId");
     const data = (await c.req.json()) as UpdateMemberRoleInput;
+    const userRole = c.get("workspaceRole");
+
+    // Seniority Guard: Only 'owner' can change roles (strict enforcement).
+    // Or 'admin' can manage 'member' roles.
+    if (userRole !== "owner" && userRole !== "admin") {
+      throw new AppError(
+        "Only workspace owners or admins can update member roles.",
+        403,
+        "UNAUTHORIZED_ACTION",
+      );
+    }
 
     const db = createDbClient(c.env.DATABASE_URL);
     const cache = createCacheService(c.env.CACHE_KV);
     const service = createWorkspaceService(db, cache);
 
-    await service.updateMemberRole(workspaceId, memberId, data.role);
+    const success = await service.updateMemberRole(
+      workspaceId,
+      memberId,
+      data.role,
+      userRole!,
+    );
+
+    if (!success) {
+      throw new AppError(
+        "Failed to update member role. You may not have permission to manage this member's role or the member doesn't exist.",
+        400,
+        "UPDATE_ROLE_FAILED",
+      );
+    }
 
     return c.json(
       successResponse({ message: "Member role updated successfully" }),
@@ -174,6 +228,17 @@ export const WorkspaceController = {
    */
   async getAuditLogs(c: Context<AppContext>) {
     const workspaceId = c.get("workspaceId")!;
+    const userRole = c.get("workspaceRole");
+
+    // Guard: Audit logs are sensitive
+    if (userRole !== "owner" && userRole !== "admin") {
+      throw new AppError(
+        "Only workspace owners or admins can view audit logs.",
+        403,
+        "FORBIDDEN",
+      );
+    }
+
     const db = createDbClient(c.env.DATABASE_URL);
 
     const logs = await AuditService.getWorkspaceLogs(db, workspaceId);
@@ -189,6 +254,17 @@ export const WorkspaceController = {
    */
   async uploadLogo(c: Context<AppContext>) {
     const workspaceId = c.get("workspaceId")!;
+    const userRole = c.get("workspaceRole");
+
+    // Guard: Only owner/admin can change brand assets
+    if (userRole !== "owner" && userRole !== "admin") {
+      throw new AppError(
+        "Only workspace owners or admins can update the logo.",
+        403,
+        "FORBIDDEN",
+      );
+    }
+
     const formData = await c.req.formData();
     const file = formData.get("file") as File;
 

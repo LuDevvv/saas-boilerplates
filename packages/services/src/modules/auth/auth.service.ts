@@ -36,12 +36,15 @@ export const createAuthService = (
   /**
    * Internal helper to create a session and return a refresh token.
    */
-  const createSession = async (userId: string): Promise<string> => {
+  const createSession = async (
+    userId: string,
+    client: Database = db,
+  ): Promise<string> => {
     const id = generateRandomString(32);
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30); // 30 days
 
-    await SessionRepository.create(db, {
+    await SessionRepository.create(client, {
       id,
       userId,
       expiresAt,
@@ -66,23 +69,28 @@ export const createAuthService = (
 
       const passwordHash = await hashPassword(data.password);
 
-      const user = await UserRepository.create(db, {
-        email: data.email,
-        name: data.name,
-        passwordHash,
-        emailVerified: false,
-      });
+      const { user, refreshToken, token } = await db.transaction(
+        async (tx: Database) => {
+        const user = await UserRepository.create(tx, {
+          email: data.email,
+          name: data.name,
+          passwordHash,
+          emailVerified: false,
+        });
 
-      // Access Token (1 hour)
-      const token = await jwt.signToken({
-        sub: user.id,
-        email: user.email,
-        role: user.role,
-        exp: Math.floor(Date.now() / 1000) + 60 * 60,
-      });
+        // Access Token (1 hour) - Signed outside if static, but usually sub depends on user.id
+        const token = await jwt.signToken({
+          sub: user.id,
+          email: user.email,
+          role: user.role,
+          exp: Math.floor(Date.now() / 1000) + 60 * 60,
+        });
 
-      // Refresh Token (30 days)
-      const refreshToken = await createSession(user.id);
+        // Refresh Token (30 days) - Created inside transaction
+        const refreshToken = await createSession(user.id, tx);
+
+        return { user, refreshToken, token };
+      });
 
       await queue.enqueueWelcomeEmail({
         email: user.email,
@@ -164,90 +172,92 @@ export const createAuthService = (
       profile: InternalProfile,
       authenticatedUserId?: string,
     ): Promise<AuthSuccessData> => {
-      let targetUser = null;
+      return await db.transaction(async (tx: Database) => {
+        let targetUser = null;
 
-      if (authenticatedUserId) {
-        targetUser = await UserRepository.findById(db, authenticatedUserId);
-        if (!targetUser) {
-          throw new AppError("Authenticated user not found.", 404, "NOT_FOUND");
+        if (authenticatedUserId) {
+          targetUser = await UserRepository.findById(tx, authenticatedUserId);
+          if (!targetUser) {
+            throw new AppError("Authenticated user not found.", 404, "NOT_FOUND");
+          }
+        } else {
+          let user = await UserRepository.findByEmail(tx, profile.email);
+          if (!user) {
+            user = await UserRepository.create(tx, {
+              email: profile.email,
+              name: profile.name,
+              avatarUrl: profile.avatarUrl,
+              passwordHash: null,
+              emailVerified: true,
+            });
+          } else if (!user.avatarUrl && profile.avatarUrl) {
+            await UserRepository.update(tx, user.id, {
+              avatarUrl: profile.avatarUrl,
+            });
+          }
+          targetUser = user;
         }
-      } else {
-        let user = await UserRepository.findByEmail(db, profile.email);
-        if (!user) {
-          user = await UserRepository.create(db, {
-            email: profile.email,
-            name: profile.name,
-            avatarUrl: profile.avatarUrl,
-            passwordHash: null,
-            emailVerified: true,
+
+        const existingAccounts = await tx
+          .select()
+          .from(accounts)
+          .where(
+            and(
+              eq(accounts.provider, provider),
+              eq(accounts.providerAccountId, profile.id),
+            ),
+          )
+          .limit(1);
+
+        const existingAccount = existingAccounts[0];
+
+        if (existingAccount) {
+          if (existingAccount.userId !== targetUser.id) {
+            throw new AppError(
+              "This social account is already linked to another user.",
+              400,
+              "ACCOUNT_LINKED_ELSEWHERE",
+            );
+          }
+        } else {
+          await tx.insert(accounts).values({
+            userId: targetUser.id,
+            provider,
+            providerAccountId: profile.id,
           });
-        } else if (!user.avatarUrl && profile.avatarUrl) {
-          await UserRepository.update(db, user.id, {
-            avatarUrl: profile.avatarUrl,
+        }
+
+        if (targetUser.twoFactorEnabled) {
+          const token = await jwt.signToken({
+            sub: targetUser.id,
+            pending2fa: true,
+            exp: Math.floor(Date.now() / 1000) + 60 * 15,
           });
+          return { token, pending2fa: true };
         }
-        targetUser = user;
-      }
 
-      const existingAccounts = await db
-        .select()
-        .from(accounts)
-        .where(
-          and(
-            eq(accounts.provider, provider),
-            eq(accounts.providerAccountId, profile.id),
-          ),
-        )
-        .limit(1);
-
-      const existingAccount = existingAccounts[0];
-
-      if (existingAccount) {
-        if (existingAccount.userId !== targetUser.id) {
-          throw new AppError(
-            "This social account is already linked to another user.",
-            400,
-            "ACCOUNT_LINKED_ELSEWHERE",
-          );
-        }
-      } else {
-        await db.insert(accounts).values({
-          userId: targetUser.id,
-          provider,
-          providerAccountId: profile.id,
-        });
-      }
-
-      if (targetUser.twoFactorEnabled) {
+        // Access Token (1 hour)
         const token = await jwt.signToken({
           sub: targetUser.id,
-          pending2fa: true,
-          exp: Math.floor(Date.now() / 1000) + 60 * 15,
-        });
-        return { token, pending2fa: true };
-      }
-
-      // Access Token (1 hour)
-      const token = await jwt.signToken({
-        sub: targetUser.id,
-        email: targetUser.email,
-        role: targetUser.role,
-        exp: Math.floor(Date.now() / 1000) + 60 * 60,
-      });
-
-      // Refresh Token (30 days)
-      const refreshToken = await createSession(targetUser.id);
-
-      return {
-        token,
-        refreshToken,
-        user: {
-          id: targetUser.id,
           email: targetUser.email,
-          name: targetUser.name ?? "User",
           role: targetUser.role,
-        },
-      };
+          exp: Math.floor(Date.now() / 1000) + 60 * 60,
+        });
+
+        // Refresh Token (30 days)
+        const refreshToken = await createSession(targetUser.id, tx);
+
+        return {
+          token,
+          refreshToken,
+          user: {
+            id: targetUser.id,
+            email: targetUser.email,
+            name: targetUser.name ?? "User",
+            role: targetUser.role,
+          },
+        };
+      });
     },
 
     /**
@@ -271,19 +281,26 @@ export const createAuthService = (
         throw new AppError("User not found.", 404, "NOT_FOUND");
       }
 
-      // Invalidate old session (Rotation)
-      await SessionRepository.delete(db, oldRefreshToken);
+      // Rotate session atomically
+      const { token, refreshToken } = await db.transaction(
+        async (tx: Database) => {
+          // Invalidate old session (Rotation)
+          await SessionRepository.delete(tx, oldRefreshToken);
 
-      // New Access Token
-      const token = await jwt.signToken({
-        sub: user.id,
-        email: user.email,
-        role: user.role,
-        exp: Math.floor(Date.now() / 1000) + 60 * 60,
-      });
+          // New Access Token
+          const token = await jwt.signToken({
+            sub: user.id,
+            email: user.email,
+            role: user.role,
+            exp: Math.floor(Date.now() / 1000) + 60 * 60,
+          });
 
-      // New Refresh Token
-      const refreshToken = await createSession(user.id);
+          // New Refresh Token
+          const refreshToken = await createSession(user.id, tx);
+
+          return { token, refreshToken };
+        },
+      );
 
       return { token, refreshToken };
     },
@@ -334,35 +351,42 @@ export const createAuthService = (
         );
       }
 
-      let isValid = false;
-      if (token) {
-        isValid = tfa.verifyToken(user.twoFactorSecret, token);
-      } else if (recoveryCode) {
-        const codes = user.twoFactorRecoveryCodes || [];
-        if (codes.includes(recoveryCode)) {
-          isValid = true;
-          const newCodes = codes.filter((c) => c !== recoveryCode);
-          await UserRepository.update(db, userId, {
-            twoFactorRecoveryCodes: newCodes,
+      const { sessionToken, refreshToken } = await db.transaction(
+        async (tx: Database) => {
+          let isValid = false;
+          if (token) {
+            isValid = tfa.verifyToken(user.twoFactorSecret!, token);
+          } else if (recoveryCode) {
+            const codes = user.twoFactorRecoveryCodes || [];
+            if (codes.includes(recoveryCode)) {
+              isValid = true;
+              const newCodes = codes.filter((c) => c !== recoveryCode);
+              await UserRepository.update(tx, userId, {
+                twoFactorRecoveryCodes: newCodes,
+              });
+            }
+          }
+
+          if (!isValid) {
+            throw new AppError(
+              "Invalid 2FA code or recovery code",
+              401,
+              "INVALID_CODE",
+            );
+          }
+
+          const sessionToken = await jwt.signToken({
+            sub: user.id,
+            email: user.email,
+            role: user.role,
+            exp: Math.floor(Date.now() / 1000) + 60 * 60,
           });
-        }
-      }
 
-      if (!isValid)
-        throw new AppError(
-          "Invalid 2FA code or recovery code",
-          401,
-          "INVALID_CODE",
-        );
+          const refreshToken = await createSession(user.id, tx);
 
-      const sessionToken = await jwt.signToken({
-        sub: user.id,
-        email: user.email,
-        role: user.role,
-        exp: Math.floor(Date.now() / 1000) + 60 * 60,
-      });
-
-      const refreshToken = await createSession(user.id);
+          return { sessionToken, refreshToken };
+        },
+      );
 
       return {
         token: sessionToken,
@@ -412,22 +436,26 @@ export const createAuthService = (
       token: string,
       newPassword: string,
     ): Promise<void> => {
-      const consumedToken = await TokenRepository.validateAndConsume(
-        db,
-        token,
-        "password_reset",
-      );
-      if (!consumedToken) {
-        throw new AppError(
-          "Invalid or expired reset token.",
-          400,
-          "INVALID_TOKEN",
-        );
-      }
-
       const passwordHash = await hashPassword(newPassword);
-      await UserRepository.update(db, consumedToken.userId, {
-        passwordHash,
+
+      await db.transaction(async (tx: Database) => {
+        const consumedToken = await TokenRepository.validateAndConsume(
+          tx,
+          token,
+          "password_reset",
+        );
+
+        if (!consumedToken) {
+          throw new AppError(
+            "Invalid or expired reset token.",
+            400,
+            "INVALID_TOKEN",
+          );
+        }
+
+        await UserRepository.update(tx, consumedToken.userId, {
+          passwordHash,
+        });
       });
     },
 
@@ -441,7 +469,9 @@ export const createAuthService = (
         .where(eq(accounts.userId, userId));
 
       const hasPassword = Boolean(user.passwordHash);
-      const otherAccounts = userAccounts.filter((a) => a.provider !== provider);
+      const otherAccounts = userAccounts.filter(
+        (a: any) => a.provider !== provider,
+      );
 
       if (!hasPassword && otherAccounts.length === 0) {
         throw new AppError(

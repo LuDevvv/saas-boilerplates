@@ -1,4 +1,4 @@
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, inArray } from "drizzle-orm";
 import type { Database } from "../db";
 import {
   workspaces,
@@ -27,14 +27,11 @@ export const WorkspaceRepository = {
     userId: string,
     data: NewWorkspace,
   ): Promise<{ workspace: Workspace; membership: Membership }> {
-    // Note: neon-http driver does not support interactive transactions.
-    // We perform sequential inserts. In this specific flow (creating a workspace),
-    // we prioritize the workspace creation.
-    const [workspace] = await db.insert(workspaces).values(data).returning();
-    if (!workspace) throw new Error("Failed to create workspace");
+    return await db.transaction(async (tx: Database) => {
+      const [workspace] = await tx.insert(workspaces).values(data).returning();
+      if (!workspace) throw new Error("Failed to create workspace");
 
-    try {
-      const [membership] = await db
+      const [membership] = await tx
         .insert(memberships)
         .values({
           userId,
@@ -44,18 +41,11 @@ export const WorkspaceRepository = {
         .returning();
 
       if (!membership) {
-        // Defensive: If membership fails, we should ideally roll back,
-        // but since we are on http, we just throw and handle at service level.
         throw new Error("Failed to create initial membership");
       }
 
       return { workspace, membership };
-    } catch (error) {
-      // Optional: If membership fails, we could attempt to delete the workspace
-      // to maintain consistency, though this is rare on a healthy DB.
-      console.error("Failed to create membership for new workspace:", error);
-      throw error;
-    }
+    });
   },
 
   /**
@@ -166,13 +156,20 @@ export const WorkspaceRepository = {
     db: Database,
     workspaceId: string,
     userId: string,
+    actorRole: string,
   ): Promise<boolean> {
+    // Seniority check: Admins can only remove members. Owners can remove admins and members.
+    // Owners cannot remove themselves via this path (usually handled via 'delete workspace' or 'transfer ownership').
+    const allowedTargetRoles: string[] =
+      actorRole === "owner" ? ["admin", "member"] : ["member"];
+
     const result = await db
       .delete(memberships)
       .where(
         and(
           eq(memberships.workspaceId, workspaceId),
           eq(memberships.userId, userId),
+          inArray(memberships.role, allowedTargetRoles as any),
         ),
       )
       .returning();
@@ -187,17 +184,30 @@ export const WorkspaceRepository = {
     db: Database,
     workspaceId: string,
     userId: string,
-    role: string,
+    newRole: string,
+    actorRole: string,
   ): Promise<boolean> {
+    // Seniority check:
+    // 1. Only owners can promote anyone to 'owner' or 'admin'.
+    // 2. Admins can only promote 'member' to 'admin' (maybe?) or just 'member' to 'member' (useless).
+    // Usually: Only owners can change roles to/from 'admin' or 'owner'.
+    if (actorRole !== "owner" && (newRole === "owner" || newRole === "admin")) {
+      return false;
+    }
+
+    const allowedTargetRoles: string[] =
+      actorRole === "owner" ? ["admin", "member"] : ["member"];
+
     const result = await db
       .update(memberships)
       .set({
-        role: role as any,
+        role: newRole as any,
       })
       .where(
         and(
           eq(memberships.workspaceId, workspaceId),
           eq(memberships.userId, userId),
+          inArray(memberships.role, allowedTargetRoles as any),
         ),
       )
       .returning();

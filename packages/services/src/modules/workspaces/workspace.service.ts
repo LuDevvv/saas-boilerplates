@@ -84,11 +84,16 @@ export const createWorkspaceService = (db: Database, cache?: ICacheService) => {
     /**
      * Removes a member from the workspace and invalidates their related caches.
      */
-    removeMember: async (workspaceId: string, userId: string) => {
+    removeMember: async (
+      workspaceId: string,
+      userId: string,
+      actorRole: string,
+    ) => {
       const success = await WorkspaceRepository.removeMember(
         db,
         workspaceId,
         userId,
+        actorRole,
       );
 
       if (success && cache) {
@@ -108,12 +113,14 @@ export const createWorkspaceService = (db: Database, cache?: ICacheService) => {
       workspaceId: string,
       userId: string,
       role: string,
+      actorRole: string,
     ) => {
       const success = await WorkspaceRepository.updateMemberRole(
         db,
         workspaceId,
         userId,
         role,
+        actorRole,
       );
 
       if (success && cache) {

@@ -35,26 +35,28 @@ export const TokenRepository = {
     token: string,
     type: string,
   ): Promise<VerificationToken | null> {
-    const result = await db
-      .select()
-      .from(verificationTokens)
-      .where(
-        and(
-          eq(verificationTokens.token, token),
-          eq(verificationTokens.type, type),
-          gt(verificationTokens.expiresAt, new Date()),
-        ),
-      )
-      .limit(1);
+    return await db.transaction(async (tx: Database) => {
+      const result = await tx
+        .select()
+        .from(verificationTokens)
+        .where(
+          and(
+            eq(verificationTokens.token, token),
+            eq(verificationTokens.type, type),
+            gt(verificationTokens.expiresAt, new Date()),
+          ),
+        )
+        .limit(1);
 
-    const foundToken = result[0];
-    if (!foundToken) return null;
+      const foundToken = result[0];
+      if (!foundToken) return null;
 
-    // Atomic consumption: delete after finding
-    await db
-      .delete(verificationTokens)
-      .where(eq(verificationTokens.id, foundToken.id));
+      // Atomic consumption: delete after finding
+      await tx
+        .delete(verificationTokens)
+        .where(eq(verificationTokens.id, foundToken.id));
 
-    return foundToken;
+      return foundToken;
+    });
   },
 };
