@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@node-stack/*": ["./packages/*/src/index.ts", "./packages/*/src"],
+      "@node-stack/types": ["./packages/types/src/index.ts"],
+      "@node-stack/db": ["./packages/db/src/index.ts"],
+      "@node-stack/utils": ["./packages/utils/src/index.ts"],
+      "@node-stack/validators": ["./packages/validators/src/index.ts"],
+      "@node-stack/cache": ["./packages/cache/src/index.ts"],
+      "@node-stack/ai-adapter": ["./packages/ai-adapter/src/index.ts"],
+      "@node-stack/billing-adapter": ["./packages/billing-adapter/src/index.ts"]
+    },
+    "ignoreDeprecations": "5.0",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "types": ["node"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "composite": true
+  },
+  "include": [
+    "apps/**/*.ts",
+    "packages/**/*.ts",
+    "eslint.config.mjs"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage"
+  ]
+}

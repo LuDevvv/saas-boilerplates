@@ -1,0 +1,43 @@
+{
+  "name": "node-stack",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "build": "turbo run build",
+    "clean": "turbo run clean && find packages/ apps/ -name '*.tsbuildinfo' -delete 2>/dev/null; find packages/ apps/ -path '*/src/*' \\( -name '*.js' -o -name '*.js.map' -o -name '*.d.ts' -o -name '*.d.ts.map' \\) -delete 2>/dev/null; echo 'Clean complete'",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "lint:fix": "eslint . --fix",
+    "test": "turbo run test",
+    "test:cov": "turbo run test:cov",
+    "test:e2e": "pnpm --filter @node-stack/api test:e2e",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write \"**/*.ts\"",
+    "format:check": "prettier --check \"**/*.ts\"",
+    "db:seed": "pnpm --filter @node-stack/db db:seed",
+    "test:integration": "pnpm --filter @node-stack/api test:integration",
+    "prepare": "cd .. && husky node-stack/.husky"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "@typescript-eslint/eslint-plugin": "^8.57.2",
+    "@typescript-eslint/parser": "^8.57.2",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.1",
+    "turbo": "latest"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --max-warnings 0 --fix",
+      "prettier --write"
+    ]
+  },
+  "dependencies": {
+    "@types/pg": "^8.20.0",
+    "drizzle-orm": "^0.45.1"
+  }
+}

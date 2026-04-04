@@ -1,0 +1,25 @@
+{
+  "name": "edge-stack",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "dev:all": "turbo run dev --filter=@workspace/api --filter=@workspace/jobs-worker --filter=@workspace/media-worker",
+    "deploy:all": "turbo run deploy --filter=@workspace/api --filter=@workspace/jobs-worker --filter=@workspace/media-worker",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "test:edge": "turbo run test:edge",
+    "test:logic": "turbo run test:logic",
+    "check:bundle": "tsx scripts/check-bundle-size.ts",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
+    "gen:module": "tsx scripts/generate-module.ts"
+  },
+  "devDependencies": {
+    "prettier": "latest",
+    "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.21.0",
+    "turbo": "latest"
+  },
+  "packageManager": "pnpm@8.15.0"
+}

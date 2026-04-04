@@ -1,0 +1,41 @@
+{
+  "name": "@node-stack/db",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts --max-warnings 0",
+    "build": "tsc -b --clean && tsc -b",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "node --env-file=../../.env node_modules/tsx/dist/cli.mjs src/seed.ts",
+    "test:integration": "jest --config jest.integration.config.ts"
+  },
+  "dependencies": {
+    "@nestjs/common": "latest",
+    "@nestjs/config": "^4.0.3",
+    "@nestjs/core": "^11.1.17",
+    "@types/pg": "^8.20.0",
+    "bcrypt": "^6.0.0",
+    "drizzle-orm": "latest",
+    "pg": "latest",
+    "postgres": "latest"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^10.4.0",
+    "@testcontainers/postgresql": "^11.13.0",
+    "@types/bcrypt": "^6.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.5.0",
+    "drizzle-kit": "latest",
+    "jest": "^30.3.0",
+    "testcontainers": "^11.13.0",
+    "ts-jest": "^29.4.6",
+    "tsx": "^4.21.0",
+    "typescript": "5.7.3"
+  }
+}

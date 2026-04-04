@@ -1,0 +1,129 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { Navbar } from "../components/landing/Navbar";
+import { Hero } from "../components/landing/Hero";
+import { FeaturesGrid } from "../components/landing/FeaturesGrid";
+import { PricingPreview } from "../components/landing/PricingPreview";
+import { Footer } from "../components/landing/Footer";
+import { Command, Activity, Zap, Shield, Globe, Cpu, Database, Layers } from "lucide-react";
+---
+
+<Layout title="Edge Stack - Develop at the Edge">
+  <Navbar client:load />
+  
+  <main class="selection:bg-[hsl(var(--brand-primary))/30]">
+    <Hero client:load />
+    
+    {/* Tech Stack Horizontal Scroll/Display */}
+    <div id="stack" class="py-20 bg-[#F8F9FB] border-y border-[#F1F3F6] overflow-hidden relative">
+      <div class="absolute top-0 left-0 w-32 h-full bg-gradient-to-r from-[#F8F9FB] to-transparent z-10" />
+      <div class="absolute top-0 right-0 w-32 h-full bg-gradient-to-l from-[#F8F9FB] to-transparent z-10" />
+      
+      <div class="container mx-auto px-6 relative">
+        <div class="flex flex-col items-center mb-12">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="h-[1px] w-8 bg-[#E1E5EB]" />
+                <p class="text-[10px] font-black uppercase tracking-[0.4em] text-[#C1C7D0] italic">The Industrial Core</p>
+                <div class="h-[1px] w-8 bg-[#E1E5EB]" />
+            </div>
+            <h2 class="text-2xl font-black text-[#1A1D1F] tracking-tighter italic">Powered by Global High-Integrity Infrastructure</h2>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center gap-x-16 gap-y-12 opacity-40 hover:opacity-100 transition-opacity duration-700 grayscale hover:grayscale-0">
+            <div class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:bg-[#F38020] group-hover:text-white transition-all">
+                    <Zap className="w-5 h-5" />
+                </div>
+                <span class="text-sm font-black italic tracking-tighter text-[#1A1D1F]">CLOUDFLARE</span>
+            </div>
+            <div class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:bg-[#00E599] group-hover:text-white transition-all">
+                    <Database className="w-5 h-5" />
+                </div>
+                <span class="text-sm font-black italic tracking-tighter text-[#1A1D1F]">NEON DB</span>
+            </div>
+            <div class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:bg-[#FF5D01] group-hover:text-white transition-all">
+                    <Layers className="w-5 h-5" />
+                </div>
+                <span class="text-sm font-black italic tracking-tighter text-[#1A1D1F]">ASTRO JS</span>
+            </div>
+            <div class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:bg-[#E36002] group-hover:text-white transition-all">
+                    <Cpu className="w-5 h-5" />
+                </div>
+                <span class="text-sm font-black italic tracking-tighter text-[#1A1D1F]">HONO API</span>
+            </div>
+            <div class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:bg-[#61DAFB] group-hover:text-white transition-all">
+                    <Activity className="w-5 h-5" />
+                </div>
+                <span class="text-sm font-black italic tracking-tighter text-[#1A1D1F]">REACT FW</span>
+            </div>
+            <div class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center group-hover:bg-[#C5F74F] group-hover:text-black transition-all">
+                    <Command className="w-5 h-5" />
+                </div>
+                <span class="text-sm font-black italic tracking-tighter text-[#1A1D1F]">DRIZZLE ORM</span>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <FeaturesGrid client:load />
+    
+    <PricingPreview client:load />
+
+    {/* Final CTA Section */}
+    <section class="py-32 bg-[#1A1D1F] text-white relative overflow-hidden">
+      <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(22,200,199,0.1),_transparent_50%)] pointer-events-none" />
+      <div class="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      
+      <div class="container mx-auto px-6 text-center relative z-10 space-y-12">
+        <div class="space-y-4">
+            <h2 class="text-5xl md:text-7xl font-black tracking-tighter italic leading-[0.9]">READY TO SHIP<br/><span class="text-premium-gradient">AT THE EDGE?</span></h2>
+            <p class="text-xl text-[#8E95A2] font-semibold max-w-xl mx-auto italic">
+                Deploy your first edge-native SaaS in under 5 minutes. No infrastructure management, just high-integrity code.
+            </p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
+          <a href="/register" class="group relative">
+            <div class="absolute -inset-1 bg-gradient-to-r from-[hsl(var(--brand-primary))] to-[hsl(var(--brand-blue))] rounded-2xl blur opacity-25 group-hover:opacity-60 transition duration-500" />
+            <button class="relative h-16 px-12 rounded-2xl bg-white text-[#1A1D1F] font-black text-xs uppercase tracking-[0.2em] italic hover:scale-105 transition-all duration-500 shadow-2xl">
+              Initialize Project Phase
+            </button>
+          </a>
+          <a href="https://github.com/LuDevvv/startup-edge-stack" target="_blank" class="group">
+            <button class="h-16 px-12 rounded-2xl border border-white/10 bg-white/5 text-white font-black text-xs uppercase tracking-[0.2em] italic group-hover:bg-white/10 group-hover:border-white/20 transition-all duration-500">
+               Access Documentation
+            </button>
+          </a>
+        </div>
+        
+        <div class="flex items-center justify-center gap-8 pt-12 grayscale opacity-30">
+            <div class="flex items-center gap-2">
+                <Shield className="w-4 h-4" />
+                <span class="text-[9px] font-black uppercase tracking-[0.3em]">SECURE-PROTOCOL</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <Globe className="w-4 h-4" />
+                <span class="text-[9px] font-black uppercase tracking-[0.3em]">GLB-ENABLED</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <Activity className="w-4 h-4" />
+                <span class="text-[9px] font-black uppercase tracking-[0.3em]">V8-NATIVE</span>
+            </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer client:load />
+</Layout>
+
+<style>
+  html {
+    scroll-behavior: smooth;
+  }
+</style>

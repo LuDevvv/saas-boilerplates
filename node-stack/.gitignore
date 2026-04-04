@@ -1,0 +1,80 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+.yarn
+
+# Build & Test
+dist
+dist-tsc
+build
+out
+.next
+.astro
+.netlify
+.vercel
+.turbo
+coverage
+*.lcov
+.nyc_output
+*.tsbuildinfo
+
+# Ignore build artifacts from source folders
+# (Only ignore them in folders where they are generated, like packages/ and apps/)
+packages/**/*.js
+packages/**/*.js.map
+packages/**/*.d.ts
+packages/**/*.d.ts.map
+apps/**/*.js
+apps/**/*.js.map
+apps/**/*.d.ts
+apps/**/*.d.ts.map
+
+# Re-include config files if needed
+!**/jest.config.js
+!**/eslint.config.js
+!**/next.config.js
+!**/tailwind.config.js
+!**/postcss.config.js
+!**/vite.config.js
+!**/vitest.config.js
+!**/playwright.config.js
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Misc
+.DS_Store
+Thumbs.db
+*.pem
+meta.json
+.dev.vars
+.wrangler
+
+# Env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*
+!.env.example
+
+# IDE
+.vscode
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea
+*.swp
+*.swo
+
+# SDD
+openspec/

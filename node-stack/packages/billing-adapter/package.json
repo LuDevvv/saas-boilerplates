@@ -1,0 +1,16 @@
+{
+  "name": "@node-stack/billing-adapter",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts --max-warnings 0",
+    "build": "tsc -b --clean && tsc -b"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "latest"
+  }
+}

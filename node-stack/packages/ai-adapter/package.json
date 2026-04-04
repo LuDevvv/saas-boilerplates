@@ -1,0 +1,21 @@
+{
+  "name": "@node-stack/ai-adapter",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "lint": "eslint src --ext .ts --max-warnings 0"
+  },
+  "dependencies": {
+    "openai": "^4.104.0"
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^0.20.0",
+    "typescript": "*"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "*"
+  }
+}

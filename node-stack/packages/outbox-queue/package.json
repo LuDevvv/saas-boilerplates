@@ -1,0 +1,21 @@
+{
+  "name": "@node-stack/outbox-queue",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts --max-warnings 0",
+    "build": "tsc -b --clean && tsc -b"
+  },
+  "dependencies": {
+    "@nestjs/bullmq": "^11.0.0",
+    "@node-stack/db": "workspace:*",
+    "bullmq": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "latest"
+  }
+}

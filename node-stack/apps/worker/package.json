@@ -1,0 +1,36 @@
+{
+  "name": "@node-stack/worker",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/main.js",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts --max-warnings 0",
+    "build": "tsc -b",
+    "start": "cross-env DOTENV_CONFIG_PATH=../../.env node -r dotenv/config dist/main.js"
+  },
+  "dependencies": {
+    "@nestjs/bullmq": "^11.0.0",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "4.0.3",
+    "@nestjs/core": "^11.0.0",
+    "@node-stack/ai-adapter": "workspace:*",
+    "@node-stack/cache": "workspace:*",
+    "@node-stack/db": "workspace:*",
+    "@node-stack/services": "workspace:*",
+    "@node-stack/webhooks-utils": "workspace:*",
+    "bullmq": "latest",
+    "dotenv": "^16.0.0",
+    "ioredis": "^5.10.1",
+    "reflect-metadata": "^0.2.0",
+    "rxjs": "^7.8.0"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/schematics": "^11.0.0",
+    "@types/node": "^25.5.0",
+    "cross-env": "^10.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "latest"
+  }
+}

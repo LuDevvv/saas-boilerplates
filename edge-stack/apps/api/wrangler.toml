@@ -1,0 +1,45 @@
+name = "api"
+main = "src/index.ts"
+compatibility_date = "2026-02-27"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+PUBLIC_APP_URL = "http://localhost:4321"
+POSTHOG_HOST = "https://app.posthog.com"
+AXIOM_DATASET = "api-logs"
+R2_BUCKET_NAME = "startup-edge-storage"
+R2_ENDPOINT = "https://<your-account-id>.r2.cloudflarestorage.com"
+
+
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "startup-edge-storage"
+
+[[kv_namespaces]]
+binding = "USAGE_KV"
+id = "usage-metering-kv"
+
+[[kv_namespaces]]
+binding = "CACHE_KV"
+id = "app-cache-kv"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "rate-limit-kv"
+
+[[queues.producers]]
+binding = "EMAIL_QUEUE"
+queue = "email-jobs-queue"
+
+[[queues.producers]]
+binding = "JOBS_QUEUE"
+queue = "main-jobs-queue"
+
+[[queues.consumers]]
+queue = "main-jobs-queue"
+max_batch_size = 10
+max_batch_timeout = 5
+max_retries = 3
+
+[triggers]
+crons = ["* * * * *"] # Every minute
