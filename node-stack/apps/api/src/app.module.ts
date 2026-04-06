@@ -7,6 +7,7 @@ import Redis from 'ioredis';
 
 import { FeatureFlagsAdminController } from './admin/feature-flags.controller';
 import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/guards/jwt.guard';
 import { BillingModule } from './billing/billing.module';
 import { AuditInterceptor } from './common/interceptors/audit.interceptor';
 import { MetricsModule } from './metrics/metrics.module';
@@ -23,14 +24,16 @@ import { CacheInvalidationInterceptor } from './common/interceptors/cache-invali
 import { WorkspaceGuard } from './common/guards/workspace.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { PermissionsGuard } from './common/guards/permissions.guard';
-import { JwtAuthGuard } from './auth/guards/jwt.guard';
 import { CustomThrottlerGuard } from './common/guards/throttler.guard';
 
 import { CommonModule } from './common/common.module';
 import { DatabaseModule } from './common/database/database.module';
+import { RealtimeModule } from './realtime/realtime.module';
+import { CacheModule } from '@node-stack/cache';
 
 @Module({
   imports: [
+    CacheModule,
     CommonModule,
     DatabaseModule,
     ConfigModule.forRoot({
@@ -44,6 +47,7 @@ import { DatabaseModule } from './common/database/database.module';
     HealthModule,
     AiModule,
     MetricsModule,
+    RealtimeModule,
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -66,10 +70,11 @@ import { DatabaseModule } from './common/database/database.module';
     { provide: APP_INTERCEPTOR, useClass: CacheInvalidationInterceptor },
     FeatureFlagGuard,
     AdminGuard,
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: CustomThrottlerGuard },
     { provide: APP_GUARD, useClass: WorkspaceGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_GUARD, useClass: PermissionsGuard },
   ],
 })
-export class AppModule {}
+export class AppModule { }

@@ -67,6 +67,8 @@ export type Bindings = {
   /** Axiom logging configuration */
   AXIOM_TOKEN: string;
   AXIOM_DATASET: string;
+  /** Cloudflare AI binding for local GPU inference */
+  AI: any;
 };
 
 /**
@@ -108,6 +110,7 @@ export type Variables = {
     billing: import("@workspace/services").BillingService;
     analytics: import("../services/analytics.service").AnalyticsService;
     audit: import("../services/audit.service").AuditService;
+    ai: import("@workspace/services").WorkersAiService | null;
   };
 };
 

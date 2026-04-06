@@ -40,3 +40,7 @@ meta.json
 
 # SDD local fallback
 openspec/
+
+# Postman
+postman/
+*.postman_collection.json

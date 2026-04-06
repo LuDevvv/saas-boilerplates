@@ -26,6 +26,7 @@ import type { Response } from "express";
 
 import { AuthService, SessionListItem } from "./auth.service";
 import { CurrentUser } from "./decorators";
+import { Public } from "../common/decorators/public.decorator";
 import {
   RegisterDto,
   LoginDto,
@@ -47,6 +48,7 @@ export class AuthController {
   ) {}
 
   @Throttle({ short: { ttl: 3600000, limit: 10 } }) // register: 10/hour
+  @Public()
   @Post("register")
   @ApiOperation({
     summary: "Register a new user",
@@ -59,6 +61,7 @@ export class AuthController {
   }
 
   @Throttle({ short: { ttl: 60000, limit: 5 } }) // login: 5/min
+  @Public()
   @Post("login")
   @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard("local"))
@@ -75,6 +78,7 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
+  @Public()
   @Post("refresh")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -201,6 +205,7 @@ export class AuthController {
   }
 
   @Throttle({ short: { ttl: 60000, limit: 10 } }) // 2FA login: 10/min
+  @Public()
   @Post("login/2fa")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -215,6 +220,7 @@ export class AuthController {
   }
 
   // ── Google ────────────────────────────────────────────
+  @Public()
   @Get("google")
   @UseGuards(AuthGuard("google"))
   @SkipThrottle()
@@ -224,6 +230,7 @@ export class AuthController {
   })
   async googleAuth(): Promise<void> {}
 
+  @Public()
   @Get("google/callback")
   @UseGuards(AuthGuard("google"))
   @SkipThrottle()
@@ -240,6 +247,7 @@ export class AuthController {
   }
 
   // ── GitHub ────────────────────────────────────────────
+  @Public()
   @Get("github")
   @UseGuards(AuthGuard("github"))
   @SkipThrottle()
@@ -249,6 +257,7 @@ export class AuthController {
   })
   async githubAuth(): Promise<void> {}
 
+  @Public()
   @Get("github/callback")
   @UseGuards(AuthGuard("github"))
   @SkipThrottle()

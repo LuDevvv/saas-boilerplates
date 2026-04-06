@@ -1,0 +1,23 @@
+[
+  {
+    "id": "ak_1",
+    "name": "Production Key",
+    "keyPreview": "sk_live_abcd1234",
+    "lastUsedAt": "2026-04-03T18:30:00Z",
+    "createdAt": "2026-03-20T10:00:00Z"
+  },
+  {
+    "id": "ak_2",
+    "name": "Internal Analytics",
+    "keyPreview": "sk_live_xyz789",
+    "lastUsedAt": "2026-04-04T09:15:00Z",
+    "createdAt": "2026-03-25T14:20:00Z"
+  },
+  {
+    "id": "ak_3",
+    "name": "Testing Sandbox",
+    "keyPreview": "sk_test_temp555",
+    "lastUsedAt": null,
+    "createdAt": "2026-04-01T11:00:00Z"
+  }
+]

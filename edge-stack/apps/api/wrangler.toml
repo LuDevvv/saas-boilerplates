@@ -43,3 +43,34 @@ max_retries = 3
 
 [triggers]
 crons = ["* * * * *"] # Every minute
+
+[ai]
+binding = "AI"
+
+[env.production]
+name = "api-production"
+compatibility_date = "2026-02-27"
+# Production Bindings
+[[env.production.r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "startup-edge-storage-prod"
+
+[[env.production.kv_namespaces]]
+binding = "USAGE_KV"
+id = "usage-metering-kv-prod"
+
+[[env.production.kv_namespaces]]
+binding = "CACHE_KV"
+id = "app-cache-kv-prod"
+
+[[env.production.kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "rate-limit-kv-prod"
+
+[[env.production.queues.producers]]
+binding = "EMAIL_QUEUE"
+queue = "email-jobs-queue-prod"
+
+[[env.production.queues.producers]]
+binding = "JOBS_QUEUE"
+queue = "main-jobs-queue-prod"

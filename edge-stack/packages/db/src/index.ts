@@ -3,17 +3,9 @@ import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema/index";
 
 export type { Database } from "./db";
+export { createDbClient } from "./db";
 
 export * from "drizzle-orm";
-
-/**
- * Factory to create a Neon HTTP database client.
- * Optimized for Edge runtimes with no TCP overhead.
- */
-export const createDbClient = (url: string) => {
-  const client = neon(url);
-  return drizzle(client, { schema });
-};
 
 // --- Repository Exports ---
 export * from "./repositories/user.repository";

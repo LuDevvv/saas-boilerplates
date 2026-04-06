@@ -24,3 +24,6 @@ export * from "./modules/workspaces/invitation.service";
 export * from "./modules/billing/billing.service";
 export * from "./modules/billing/providers/polar.provider";
 export * from "./modules/billing/billing.types";
+
+// AI Module
+export * from "./modules/ai/workers-ai.service";

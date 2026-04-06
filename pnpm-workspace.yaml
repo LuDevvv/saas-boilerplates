@@ -1,0 +1,8 @@
+packages:
+  - "edge-stack"
+  - "edge-stack/apps/*"
+  - "edge-stack/packages/*"
+  - "node-stack"
+  - "node-stack/apps/*"
+  - "node-stack/packages/*"
+  - "dashboard"

@@ -1,15 +1,13 @@
+import './env';
 import { Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { eq } from 'drizzle-orm';
 import * as schema from './schema';
-import {
-  createUser, createWorkspace, createMembership, createSubscription
-} from './factories';
+import { createUserWithPassword, createWorkspace } from './factories';
 
 async function seed(): Promise<void> {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {
-    throw new Error('DATABASE_URL environment variable is not set');
+    throw new Error('DATABASE_URL environment variable is not set after trying to load .env files');
   }
 
   const pool = new Pool({
@@ -17,63 +15,57 @@ async function seed(): Promise<void> {
   });
   const db = drizzle(pool, { schema });
 
-  console.log('Seeding database...');
+  console.log('--- Starting Database Seeding ---');
 
-  // Admin user
-  const admin = await createUser(db as any, {
-    email: 'admin@example.com',
-    name: 'Admin User',
-    emailVerified: true,
-  });
-  console.log(`Created admin: ${admin.email}`);
-
-  // Regular users
-  const alice = await createUser(db as any, { email: 'alice@example.com', name: 'Alice' });
-  const bob = await createUser(db as any, { email: 'bob@example.com', name: 'Bob' });
-  const guest = await createUser(db as any, { email: 'guest@example.com', name: 'Guest' });
-
-  // Workspace with multiple members
-  let workspace: any;
   try {
-    workspace = await createWorkspace(db as any, admin.id, {
-      name: 'Acme Corp',
-      slug: 'acme-corp',
+    // 1. Create/Update Super User
+    const adminEmail = 'admin@ludevv.com';
+    const adminPassword = 'password123';
+    
+    console.log(`Creating/Updating super user: ${adminEmail}...`);
+    const { user: admin } = await createUserWithPassword(db as any, adminPassword, {
+      email: adminEmail,
+      name: 'Super Admin',
+      role: 'super_admin',
+      emailVerified: true,
     });
-  } catch (e) {
-    // If it exists, find it
-    workspace = await db.query.workspaces.findFirst({
-      where: eq(schema.workspaces.slug, 'acme-corp'),
+    console.log('✅ Super user created/updated.');
+
+    // 2. Create/Find Default Workspace
+    const workspaceName = 'Main Laboratory';
+    const workspaceSlug = 'main-laboratory';
+    
+    console.log(`Creating/Updating workspace: ${workspaceName}...`);
+    const workspace = await createWorkspace(db as any, admin.id, {
+      name: workspaceName,
+      slug: workspaceSlug,
     });
+    console.log('✅ Workspace created/updated.');
+
+    // 3. Link user to workspace with ADMIN role (Factory creates 'owner', so we update it)
+    console.log('Linking user to workspace with ADMIN role...');
+    await (db as any)
+      .insert(schema.memberships)
+      .values({ userId: admin.id, workspaceId: workspace.id, role: 'admin' })
+      .onConflictDoUpdate({
+        target: [schema.memberships.userId, schema.memberships.workspaceId],
+        set: { role: 'admin' }
+      });
+    console.log('✅ Membership created/updated.');
+
+    console.log('--- Seeding Complete ---');
+    console.log(`Credentials: ${adminEmail} / ${adminPassword}`);
+    console.log(`Workspace: ${workspaceName} (${workspaceSlug})`);
+
+  } catch (error) {
+    console.error('❌ Seeding failed:', error);
+    throw error;
+  } finally {
+    await pool.end();
   }
-
-  if (workspace) {
-    try { await createMembership(db as any, alice.id, workspace.id, 'admin'); } catch(e) {}
-    try { await createMembership(db as any, bob.id, workspace.id, 'member'); } catch(e) {}
-    try { await createMembership(db as any, guest.id, workspace.id, 'member'); } catch(e) {}
-  }
-
-  // Pro subscription
-  if (workspace) {
-    try { await createSubscription(db as any, workspace.id, 'pro'); } catch(e) {}
-  }
-
-  // Second workspace (free plan)
-  try {
-    const ws2 = await createWorkspace(db as any, alice.id, { name: 'Side Project' });
-    if (ws2) {
-      try { await createMembership(db as any, bob.id, ws2.id, 'member'); } catch(e) {}
-    }
-  } catch(e) {}
-
-  console.log('Seed complete.');
-  console.log(`  Users: admin, alice, bob, guest`);
-  console.log(`  Workspaces: Acme Corp (pro) and others.`);
-  console.log(`  Password for all users: Password123!`);
-
-  await pool.end();
 }
 
 seed().catch((err) => {
-  console.error('Seed failed:', err);
+  console.error('Fatal error during seed:', err);
   process.exit(1);
 });

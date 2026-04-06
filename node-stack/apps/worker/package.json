@@ -7,7 +7,10 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts --max-warnings 0",
     "build": "tsc -b",
-    "start": "cross-env DOTENV_CONFIG_PATH=../../.env node -r dotenv/config dist/main.js"
+    "dev": "nest start --watch",
+    "dev:local": "nest start --watch --exec \"node --env-file=../../.env\"",
+    "start": "node dist/main.js",
+    "start:local": "node --env-file=../../.env dist/main.js"
   },
   "dependencies": {
     "@nestjs/bullmq": "^11.0.0",

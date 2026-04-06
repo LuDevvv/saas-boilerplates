@@ -14,6 +14,7 @@ import { rateLimit } from "./common/middlewares/rateLimiter";
 import { corsMiddleware } from "./common/middlewares/cors";
 import { idempotencyGuard } from "./common/middlewares/idempotency";
 import { injectServices } from "./common/middlewares/injectServices";
+import { dbTelemetry } from "./common/middlewares/dbTelemetry";
 import { chaosMiddleware } from "./common/middlewares/chaos";
 
 import type { AppContext } from "./common/types/env";
@@ -32,6 +33,7 @@ app.use("*", axiomLogger());
 app.use("*", corsMiddleware());
 app.use("*", idempotencyGuard);
 app.use("*", injectServices());
+app.use("*", dbTelemetry());
 app.use("*", chaosMiddleware());
 
 // Conditional CSRF Middleware

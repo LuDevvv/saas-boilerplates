@@ -15,6 +15,7 @@
     "format": "prettier --write \"**/*.ts\"",
     "format:check": "prettier --check \"**/*.ts\"",
     "db:seed": "pnpm --filter @node-stack/db db:seed",
+    "test:prep": "docker compose up -d --force-recreate && pnpm --filter @node-stack/db db:push && pnpm --filter @node-stack/db db:seed",
     "test:integration": "pnpm --filter @node-stack/api test:integration",
     "prepare": "cd .. && husky node-stack/.husky"
   },
@@ -28,7 +29,8 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.1",
-    "turbo": "latest"
+    "turbo": "latest",
+    "typescript": "^5.9.3"
   },
   "lint-staged": {
     "*.ts": [

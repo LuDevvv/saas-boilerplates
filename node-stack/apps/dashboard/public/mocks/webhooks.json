@@ -1,0 +1,64 @@
+[
+  {
+    "id": "wh_1",
+    "url": "https://hooks.acme.com/production",
+    "status": "enabled",
+    "createdAt": "2026-03-20T10:00:00Z",
+    "events": ["workspace.created", "workspace.updated"],
+    "deliveries": [
+      {
+        "id": "d_1",
+        "statusCode": 200,
+        "timestamp": "2026-04-04T10:00:00Z",
+        "retryCount": 0
+      },
+      {
+        "id": "d_2",
+        "statusCode": 404,
+        "timestamp": "2026-04-04T09:30:00Z",
+        "retryCount": 1
+      },
+      {
+        "id": "d_3",
+        "statusCode": 200,
+        "timestamp": "2026-04-03T18:00:00Z",
+        "retryCount": 0
+      }
+    ]
+  },
+  {
+    "id": "wh_2",
+    "url": "https://legacy-app.internal/webhooks",
+    "status": "disabled",
+    "createdAt": "2026-03-25T14:20:00Z",
+    "events": ["*"],
+    "deliveries": [
+      {
+        "id": "d_10",
+        "statusCode": 500,
+        "timestamp": "2026-04-04T11:00:00Z",
+        "retryCount": 3
+      },
+      {
+        "id": "d_11",
+        "statusCode": 503,
+        "timestamp": "2026-04-04T10:50:00Z",
+        "retryCount": 2
+      },
+      {
+        "id": "d_12",
+        "statusCode": 500,
+        "timestamp": "2026-04-04T10:40:00Z",
+        "retryCount": 1
+      }
+    ]
+  },
+  {
+    "id": "wh_3",
+    "url": "https://api.marketing.co/hooks",
+    "status": "enabled",
+    "createdAt": "2026-04-01T11:00:00Z",
+    "events": ["user.joined"],
+    "deliveries": []
+  }
+]

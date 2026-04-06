@@ -2,7 +2,6 @@ import type { Context } from "hono";
 import type { AppContext } from "../../common/types/env";
 import { AppError } from "@workspace/types";
 import { successResponse } from "../../common/responses";
-import { AuditService } from "../../common/services/audit.service";
 import {
   createBillingService,
   createPolarProvider,
@@ -57,8 +56,9 @@ export const BillingController = {
     });
 
     // Background audit tracking
+    const { audit } = c.get("services");
     c.executionCtx.waitUntil(
-      AuditService.trackAction(c, {
+      audit.trackActionFromContext(c, {
         action: "billing.checkout_created",
         entityType: "checkout",
         metadata: { variantId: body.productId },

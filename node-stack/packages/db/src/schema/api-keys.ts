@@ -18,6 +18,8 @@ export const apiKeys = pgTable(
     name: varchar('name', { length: 255 }).notNull(),
     keyHash: varchar('key_hash', { length: 255 }).notNull(),
     keyPreview: varchar('key_preview', { length: 10 }).notNull(),
+    prefix: varchar('prefix', { length: 10 }).notNull(),
+    scopes: jsonb('scopes').$type<string[]>().default([]),
     userId: uuid('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),

@@ -3,12 +3,16 @@ import { Logger, OnModuleDestroy } from "@nestjs/common";
 import { db, schema, eq, sql, desc } from "@node-stack/db";
 import { generateWebhookSignature, formatWebhookHeader } from "@node-stack/webhooks-utils";
 import { Job, Queue } from "bullmq";
+import { CacheService } from "@node-stack/cache";
 
 @Processor("webhooks.delivery")
 export class WebhookProcessor extends WorkerHost implements OnModuleDestroy {
   private readonly logger = new Logger(WebhookProcessor.name);
 
-  constructor(@InjectQueue("webhooks.delivery") private jobQueue: Queue) {
+  constructor(
+    @InjectQueue("webhooks.delivery") private jobQueue: Queue,
+    private readonly cacheService: CacheService,
+  ) {
     super();
   }
 
@@ -100,6 +104,17 @@ export class WebhookProcessor extends WorkerHost implements OnModuleDestroy {
           workspaceId: endpoint.workspaceId,
         });
       }
+
+      // Emit real-time event for failed delivery
+      await this.cacheService.publish('internal_events', {
+        type: 'webhook.delivery.failed',
+        payload: {
+          workspaceId: endpoint.workspaceId,
+          webhookId: endpointId,
+          error: responseBody || 'Unknown error',
+          attempts: job.attemptsMade + 1,
+        }
+      });
 
       throw new Error(`Delivery failed with status ${statusCode}`);
     }

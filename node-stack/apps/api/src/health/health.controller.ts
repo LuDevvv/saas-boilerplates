@@ -14,12 +14,14 @@ import {
 
 import { HealthService, HealthStatus } from "./health.service";
 import { JwtAuthGuard } from "../auth/guards/jwt.guard";
+import { Public } from "../common/decorators/public.decorator";
 
 @ApiTags("health")
 @Controller("health")
 export class HealthController {
   constructor(private readonly healthService: HealthService) {}
 
+  @Public()
   @Get()
   @ApiOperation({ 
     summary: "Complete system health check",
@@ -31,6 +33,7 @@ export class HealthController {
     return this.healthService.check();
   }
 
+  @Public()
   @Get("live")
   @ApiOperation({ 
     summary: "Liveness probe",
@@ -41,6 +44,7 @@ export class HealthController {
     return { status: "ok" };
   }
 
+  @Public()
   @Get("ready")
   @ApiOperation({ 
     summary: "Readiness probe",

@@ -9,6 +9,7 @@ import {
   createWorkspaceService,
   createBillingService,
   create2faService,
+  createWorkersAiService,
 } from "@workspace/services";
 import { createJwtService } from "../services/jwt.service";
 import { createAnalyticsService } from "../services/analytics.service";
@@ -40,6 +41,7 @@ export const injectServices = (): MiddlewareHandler<AppContext> => {
     const workspaces = createWorkspaceService(db, cache);
     const billing = createBillingService(db, c.env.ENCRYPTION_KEY);
     const audit = createAuditService(queue);
+    const ai = c.env.AI ? createWorkersAiService(c.env.AI) : null;
 
     c.set("services", {
       db,
@@ -51,6 +53,7 @@ export const injectServices = (): MiddlewareHandler<AppContext> => {
       billing,
       analytics,
       audit,
+      ai,
     });
 
     await next();

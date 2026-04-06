@@ -2,8 +2,8 @@
   "name": "@node-stack/db",
   "version": "1.0.0",
   "private": true,
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts --max-warnings 0",
@@ -12,7 +12,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "node --env-file=../../.env node_modules/tsx/dist/cli.mjs src/seed.ts",
+    "db:seed": "tsx src/seed.ts",
     "test:integration": "jest --config jest.integration.config.ts"
   },
   "dependencies": {

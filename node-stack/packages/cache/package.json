@@ -9,9 +9,11 @@
     "lint": "eslint src --ext .ts --max-warnings 0",
     "build": "tsc -b --clean && tsc -b"
   },
+  "peerDependencies": {
+    "@nestjs/common": ">=11.0.0",
+    "@nestjs/core": ">=11.0.0"
+  },
   "dependencies": {
-    "@nestjs/common": "^11.1.17",
-    "@nestjs/core": "^11.1.17",
     "ioredis": "^5.10.1",
     "reflect-metadata": "^0.2.2"
   },

@@ -1,7 +1,6 @@
 import type { Context } from "hono";
 import { successResponse } from "../../common/responses";
 import { OAuthService } from "@workspace/services";
-import { AuditService } from "../../common/services/audit.service";
 import type { AppContext } from "../../common/types/env";
 
 /**
@@ -18,7 +17,7 @@ export const createAuthController = () => {
      */
     register: async (c: Context<AppContext>) => {
       const data = await c.req.json();
-      const { auth, analytics } = c.get("services");
+      const { auth, analytics, audit } = c.get("services");
 
       const result = await auth.register(data);
 
@@ -27,7 +26,7 @@ export const createAuthController = () => {
       );
 
       c.executionCtx.waitUntil(
-        AuditService.trackAction(c, {
+        audit.trackActionFromContext(c, {
           action: "user.register",
           entityType: "user",
           entityId: result.user!.id,
@@ -44,7 +43,7 @@ export const createAuthController = () => {
      */
     login: async (c: Context<AppContext>) => {
       const data = await c.req.json();
-      const { auth, analytics } = c.get("services");
+      const { auth, analytics, audit } = c.get("services");
 
       const result = await auth.login(data);
 
@@ -54,7 +53,7 @@ export const createAuthController = () => {
         );
 
         c.executionCtx.waitUntil(
-          AuditService.trackAction(c, {
+          audit.trackActionFromContext(c, {
             action: "user.login",
             entityType: "user",
             entityId: result.user.id,

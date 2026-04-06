@@ -87,6 +87,18 @@ export class AIProcessor extends WorkerHost implements OnModuleDestroy {
 
       await job.updateProgress(100);
       this.logger.log(`AI job ${job.id} complete in ${result.durationMs}ms`);
+
+      // Emit cross-process event for real-time notification
+      await this.cacheService.publish('internal_events', {
+        type: 'ai_job.completed',
+        payload: {
+          userId: data.userId,
+          workspaceId: data.workspaceId,
+          jobId: String(job.id),
+          result: jobResult,
+        }
+      });
+
       return jobResult;
     } catch (error: any) {
       if (error instanceof AIInsufficientQuotaError) {

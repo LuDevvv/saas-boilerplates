@@ -1,0 +1,54 @@
+{
+  "currentSubscription": {
+    "planId": "starter-monthly",
+    "name": "Starter",
+    "status": "active",
+    "price": 29,
+    "currency": "USD",
+    "interval": "month",
+    "nextBillingDate": "2026-05-04T12:00:00Z",
+    "cancelAtPeriodEnd": false
+  },
+  "availablePlans": [
+    {
+      "id": "free",
+      "name": "Free",
+      "price": 0,
+      "description": "Perfect for side projects and small experiments.",
+      "features": ["10 AI Jobs / month", "1GB Storage", "Community Support", "Basic Analytics"],
+      "buttonText": "Active",
+      "isCurrent": false
+    },
+    {
+      "id": "starter-monthly",
+      "name": "Starter",
+      "price": 29,
+      "description": "Best for growing startups and professional developers.",
+      "features": ["100 AI Jobs / month", "10GB Storage", "Priority Email Support", "Advanced Analytics", "Custom Domains"],
+      "buttonText": "Upgrade",
+      "isCurrent": true,
+      "badge": "Popular"
+    },
+    {
+      "id": "pro-monthly",
+      "name": "Pro",
+      "price": 99,
+      "description": "For high-scale applications and large teams.",
+      "features": ["Unlimited AI Jobs", "100GB Storage", "24/7 Phone Support", "White-label Dashboard", "Advanced Security (SSO)"],
+      "buttonText": "Upgrade",
+      "isCurrent": false
+    }
+  ],
+  "usageStats": {
+    "aiJobs": {
+      "used": 45,
+      "limit": 100,
+      "unit": "jobs"
+    },
+    "storage": {
+      "used": 7.5,
+      "limit": 10,
+      "unit": "GB"
+    }
+  }
+}

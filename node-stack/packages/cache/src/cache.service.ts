@@ -86,4 +86,18 @@ export class CacheService {
       await this.client.del(...toDelete);
     }
   }
+  async publish(channel: string, message: any): Promise<void> {
+    const data = typeof message === 'string' ? message : JSON.stringify(message);
+    await this.client.publish(channel, data);
+  }
+
+  async subscribe(channel: string, callback: (message: string) => void): Promise<void> {
+    const subClient = this.client.duplicate();
+    await subClient.subscribe(channel);
+    subClient.on('message', (ch, msg) => {
+      if (ch === channel) {
+        callback(msg);
+      }
+    });
+  }
 }

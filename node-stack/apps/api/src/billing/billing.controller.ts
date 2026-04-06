@@ -23,6 +23,7 @@ import { CreateCheckoutDto } from "./dto/create-checkout.dto";
 import { CurrentUser } from "../auth/decorators";
 import { FeatureFlag } from "../common/decorators/feature-flag.decorator";
 import { RequirePermissions } from "../common/decorators/permissions.decorator";
+import { Public } from "../common/decorators/public.decorator";
 import { Workspace } from "../common/decorators/workspace.decorator";
 import { FeatureFlagGuard } from "../common/guards/feature-flag.guard";
 import { IdempotencyGuard } from "../common/guards/idempotency.guard";
@@ -82,6 +83,7 @@ export class BillingController {
 
   // Public webhook — no auth, no guards
   @SkipThrottle()
+  @Public()
   @Post("webhook")
   @UseGuards() // Override global guards
   @ApiOperation({ 

@@ -1,17 +1,14 @@
-import { Injectable, Inject } from "@nestjs/common";
-import { schema, DB_TOKEN } from "@node-stack/db";
-import { type NodePgDatabase } from "drizzle-orm/node-postgres";
+import { Injectable, Inject } from '@nestjs/common';
+import { schema, DB_TOKEN, type Database } from '@node-stack/db';
 
 @Injectable()
 export class OutboxService {
-  constructor(
-    @Inject(DB_TOKEN) private readonly db: NodePgDatabase<typeof schema>,
-  ) {}
+  constructor(@Inject(DB_TOKEN) private readonly db: Database) {}
 
   async createEvent(
     eventType: string,
     payload: Record<string, unknown>,
-    tx?: NodePgDatabase<typeof schema>,
+    tx?: Database,
     workspaceId?: string,
   ) {
     const database = tx ?? this.db;
@@ -22,7 +19,7 @@ export class OutboxService {
     });
   }
 
-  async transaction<T>(callback: (tx: NodePgDatabase<typeof schema>) => Promise<T>): Promise<T> {
+  async transaction<T>(callback: (tx: any) => Promise<T>): Promise<T> {
     return this.db.transaction(callback);
   }
 }

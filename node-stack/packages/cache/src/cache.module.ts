@@ -1,4 +1,5 @@
 import { Module, Global } from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
 import { CacheService } from "./cache.service";
 import { RateLimiterService } from "./rate-limiter";
 import { RateLimitGuard } from "./rate-limit.guard";
@@ -8,12 +9,12 @@ import { RateLimitGuard } from "./rate-limit.guard";
   providers: [
     CacheService,
     RateLimiterService,
-    RateLimitGuard,
+    Reflector,
   ],
   exports: [
     CacheService,
     RateLimiterService,
-    RateLimitGuard,
+    Reflector,
   ],
 })
 export class CacheModule {}

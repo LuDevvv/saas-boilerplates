@@ -1,0 +1,20 @@
+[
+  {
+    "id": "w-001",
+    "name": "Acme Global",
+    "logo": "https://images.unsplash.com/photo-1614850523296-d8c1af93d400?auto=format&fit=crop&w=128&q=80",
+    "role": "Owner"
+  },
+  {
+    "id": "w-002",
+    "name": "Personal Lab",
+    "logo": "https://images.unsplash.com/photo-1599305090598-fe179d501227?auto=format&fit=crop&w=128&q=80",
+    "role": "Admin"
+  },
+  {
+    "id": "w-003",
+    "name": "Future Startup",
+    "logo": "https://images.unsplash.com/photo-1540331547168-8b63109225b7?auto=format&fit=crop&w=128&q=80",
+    "role": "Viewer"
+  }
+]

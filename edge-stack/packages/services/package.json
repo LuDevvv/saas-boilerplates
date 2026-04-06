@@ -21,6 +21,7 @@
     "otpauth": "^9.5.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240405.0",
     "@workspace/config": "workspace:*",
     "better-sqlite3": "^11.0.0",
     "drizzle-orm": "^0.30.0",

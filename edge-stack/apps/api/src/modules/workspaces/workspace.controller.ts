@@ -12,7 +12,6 @@ import { createDbClient } from "@workspace/db";
 import { createCacheService } from "../../common/services/cache.service";
 import { createAnalyticsService } from "../../common/services/analytics.service";
 import { createStorageService } from "../../common/services/storage.service";
-import { AuditService } from "../../common/services/audit.service";
 import type { AppContext } from "../../common/types/env";
 
 /**
@@ -240,8 +239,9 @@ export const WorkspaceController = {
     }
 
     const db = createDbClient(c.env.DATABASE_URL);
+    const { audit } = c.get("services");
 
-    const logs = await AuditService.getWorkspaceLogs(db, workspaceId);
+    const logs = await audit.getWorkspaceLogs(db, workspaceId);
 
     return c.json(successResponse(logs), 200);
   },

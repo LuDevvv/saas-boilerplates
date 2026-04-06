@@ -24,6 +24,15 @@ export class ApiKeyRepository extends BaseRepository<typeof apiKeys.apiKeys.$inf
     return key ?? null;
   }
 
+  async findByPrefix(prefix: string) {
+    const [key] = await this.db
+      .select()
+      .from(apiKeys.apiKeys)
+      .where(eq(apiKeys.apiKeys.prefix, prefix))
+      .limit(1);
+    return key ?? null;
+  }
+
   async findByWorkspace(workspaceId: string) {
     return this.db
       .select()

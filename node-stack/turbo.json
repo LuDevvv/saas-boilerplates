@@ -1,5 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalPassThroughEnv": ["DATABASE_URL", "REDIS_URL", "REDIS_HOST", "REDIS_PORT", "NODE_ENV", "JWT_SECRET", "SENTRY_DSN", "OTEL_EXPORTER_OTLP_ENDPOINT", "CORS_ORIGINS", "PORT", "MINIO_ENDPOINT", "MINIO_ROOT_USER", "MINIO_ROOT_PASSWORD", "OPENAI_API_KEY"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

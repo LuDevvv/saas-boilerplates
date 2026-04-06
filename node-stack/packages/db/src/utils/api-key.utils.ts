@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 
 /**
  * Stripe-style API Key generation.
@@ -23,4 +23,19 @@ export function hashKey(key: string): string {
  */
 export function getKeyPreview(key: string): string {
   return key.slice(0, 10);
+}
+
+/**
+ * Extract prefix from API key (first 10 characters)
+ */
+export function extractPrefix(key: string): string {
+  return key.slice(0, 10);
+}
+
+/**
+ * Constant-time comparison to prevent timing attacks
+ */
+export function verifyApiKey(rawKey: string, hashedKey: string): boolean {
+  const hash = hashKey(rawKey);
+  return hash === hashedKey;
 }

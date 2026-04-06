@@ -1,6 +1,5 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-
 import * as schema from './schema';
 
 export * from './schema';
@@ -66,6 +65,7 @@ export type Database = typeof db;
 export * from './repositories';
 export * from './repositories/api-key.repository';
 export * from './utils/api-key.utils';
+export { hashKey, getKeyPreview, generateApiKey } from './utils/api-key.utils';
 export { WorkspaceRepository } from './repositories/workspace.repository';
 export { UserRepository } from './repositories/user.repository';
 export { InvitationRepository } from './repositories/invitation.repository';
@@ -82,7 +82,25 @@ export async function withTransaction<T>(
   });
 }
 
-export { schema, eq, and, or, ne, gt, gte, lt, lte, like, ilike, inArray, isNull, isNotNull, sql, desc, asc };
+export {
+  schema,
+  eq,
+  and,
+  or,
+  ne,
+  gt,
+  gte,
+  lt,
+  lte,
+  like,
+  ilike,
+  inArray,
+  isNull,
+  isNotNull,
+  sql,
+  desc,
+  asc,
+};
 
 export const {
   users,

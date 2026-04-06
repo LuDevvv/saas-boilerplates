@@ -1,80 +1,116 @@
-import type { EmailJobPayload } from "@workspace/types";
+import type { EmailJobPayload, QueueMessage } from "@workspace/types";
 import { EmailJobPayloadSchema } from "@workspace/types";
+import { JobType } from "@workspace/types";
 import { renderEmail } from "./render";
 import { Resend } from "resend";
 import * as Sentry from "@sentry/cloudflare";
 
-/**
- * Cloudflare Worker environment bindings for the Jobs Worker.
- */
 interface Env {
   RESEND_API_KEY: string;
   SENTRY_DSN: string;
   SENTRY_ENVIRONMENT: string;
+  DATABASE_URL: string;
+  JOBS_QUEUE: any;
+  JWT_SECRET: string;
 }
 
-/**
- * Jobs Worker — Cloudflare Queue Consumer.
- * Handles heavy tasks: React-Email rendering + Resend delivery.
- * Isolated from the Core API to keep its bundle lean (< 400KB).
- */
 const worker = {
-  async queue(batch: MessageBatch<EmailJobPayload>, env: Env): Promise<void> {
+  async queue(batch: MessageBatch<QueueMessage>, env: Env): Promise<void> {
     const resend = new Resend(env.RESEND_API_KEY);
 
     for (const message of batch.messages) {
-      const parsed = EmailJobPayloadSchema.safeParse(message.body);
+      const jobType = message.body.type;
 
-      if (!parsed.success) {
-        console.error(
-          `[Jobs] Invalid payload for message ${message.id}:`,
-          parsed.error.flatten(),
-        );
-        Sentry.captureMessage(`Invalid email job payload: ${message.id}`, {
-          extra: { error: parsed.error.flatten() },
-          level: "error",
-        });
-        message.ack(); // Do not retry malformed payloads
+      if (jobType === JobType.PROCESS_OUTBOX) {
+        await this.handleOutboxProcessing(message, env);
         continue;
       }
 
-      const { to, subject, templateName, templateData, traceId } = parsed.data;
-      console.log(
-        `[Jobs] Processing email: ${templateName} to ${to} (Trace: ${traceId || "none"})`,
+      if (jobType === JobType.SEND_WELCOME_EMAIL || 
+          jobType === JobType.SEND_PASSWORD_RESET_EMAIL) {
+        await this.handleEmailJob(message, env, resend);
+        continue;
+      }
+
+      console.log(`[Jobs] Unknown job type: ${jobType}`);
+      message.ack();
+    }
+  },
+
+  async handleOutboxProcessing(message: any, env: Env): Promise<void> {
+    console.log("[Jobs] Processing outbox via queue dispatch");
+    
+    try {
+      const { createDbClient } = await import("@workspace/db");
+      const { createQueueService } = await import("../common/services/queue.service");
+      const { createAuthService, create2faService } = await import("@workspace/services");
+      const { createJwtService } = await import("../common/services/jwt.service");
+      
+      const db = createDbClient(env.DATABASE_URL);
+      const queue = createQueueService(env.JOBS_QUEUE);
+      const jwt = createJwtService(env.JWT_SECRET || "dev-secret");
+      const tfa = create2faService();
+      const auth = createAuthService(db, queue, jwt, tfa);
+
+      await auth.processOutbox();
+      message.ack();
+    } catch (error) {
+      console.error("[Jobs] Outbox processing failed:", error);
+      message.retry();
+    }
+  },
+
+  async handleEmailJob(message: any, env: Env, resend: any): Promise<void> {
+    const parsed = EmailJobPayloadSchema.safeParse(message.body.payload);
+
+    if (!parsed.success) {
+      console.error(
+        `[Jobs] Invalid payload for message ${message.id}:`,
+        parsed.error.flatten(),
       );
+      Sentry.captureMessage(`Invalid email job payload: ${message.id}`, {
+        extra: { error: parsed.error.flatten() },
+        level: "error",
+      });
+      message.ack();
+      return;
+    }
 
-      // Start a Sentry span manually if traceId is provided
-      try {
-        const html = renderEmail(templateName, templateData);
+    const { to, subject, templateName, templateData, traceId } = parsed.data;
+    console.log(
+      `[Jobs] Processing email: ${templateName} to ${to} (Trace: ${traceId || "none"})`,
+    );
 
-        const { error } = await resend.emails.send({
-          from: "L.A. Labs <noreply@resend.dev>",
-          to,
-          subject,
-          html,
-        });
+    try {
+      const html = renderEmail(templateName, templateData);
 
-        if (error) {
-          console.error(`[Jobs] Resend error for ${to}:`, error);
-          Sentry.captureException(error, {
-            tags: { templateName, recipient: to },
-          });
-          message.retry();
-          continue;
-        }
+      const { error } = await resend.emails.send({
+        from: "L.A. Labs <noreply@resend.dev>",
+        to,
+        subject,
+        html,
+      });
 
-        console.log(`[Jobs] Email sent to ${to} (template: ${templateName})`);
-        message.ack();
-      } catch (error) {
-        console.error(
-          `[Jobs] Failed to process email job ${message.id}:`,
-          error,
-        );
+      if (error) {
+        console.error(`[Jobs] Resend error for ${to}:`, error);
         Sentry.captureException(error, {
           tags: { templateName, recipient: to },
         });
         message.retry();
+        return;
       }
+
+      console.log(`[Jobs] Email sent to ${to} (template: ${templateName})`);
+      message.ack();
+    } catch (error) {
+      console.error(
+        `[Jobs] Failed to process email job ${message.id}:`,
+        error,
+      );
+      Sentry.captureException(error, {
+        tags: { templateName, recipient: to },
+      });
+      message.retry();
     }
   },
 };

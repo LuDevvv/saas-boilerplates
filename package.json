@@ -1,0 +1,25 @@
+{
+  "name": "saas-boilerplates",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "clean": "turbo run clean",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "pre-flight-check": "bash scripts/pre-flight-check.sh"
+  },
+  "devDependencies": {
+    "turbo": "latest",
+    "prettier": "latest",
+    "typescript": "^5.9.3",
+    "eslint": "latest",
+    "@sentry/cli": "latest"
+  }
+}

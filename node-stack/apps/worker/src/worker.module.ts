@@ -20,20 +20,16 @@ import { CacheModule } from "@node-stack/cache";
       isGlobal: true,
     }),
     CacheModule,
-    BullModule.registerQueue(
-      {
-        name: "outbox",
-        connection: {
-          host: process.env.REDIS_HOST || "localhost",
-          port: Number(process.env.REDIS_PORT) || 6379,
-        },
+    BullModule.forRoot({
+      connection: {
+        host: process.env.REDIS_HOST || "localhost",
+        port: Number(process.env.REDIS_PORT) || 6379,
       },
+    }),
+    BullModule.registerQueue(
+      { name: "outbox" },
       {
         name: "webhooks.delivery",
-        connection: {
-          host: process.env.REDIS_HOST || "localhost",
-          port: Number(process.env.REDIS_PORT) || 6379,
-        },
         defaultJobOptions: {
           removeOnComplete: true,
           attempts: 5,
@@ -42,7 +38,8 @@ import { CacheModule } from "@node-stack/cache";
             delay: 10000, // 10s
           },
         },
-      }
+      },
+      { name: "ai" }
     ),
   ],
   controllers: [],

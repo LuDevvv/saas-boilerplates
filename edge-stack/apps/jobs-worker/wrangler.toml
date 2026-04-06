@@ -7,8 +7,38 @@ ENVIRONMENT = "production"
 SENTRY_DSN = ""
 SENTRY_ENVIRONMENT = "production"
 
+[[kv_namespaces]]
+binding = "CACHE_KV"
+id = "app-cache-kv"
+
+[env.production]
+name = "jobs-worker-production"
+compatibility_date = "2026-02-27"
+
+[[env.production.kv_namespaces]]
+binding = "CACHE_KV"
+id = "app-cache-kv-prod"
+
+[[env.production.queues.consumers]]
+queue = "email-jobs-queue-prod"
+max_batch_size = 10
+max_batch_timeout = 30
+dead_letter_queue = "email-jobs-dlq-prod"
+
+[[env.production.queues.consumers]]
+queue = "main-jobs-queue-prod"
+max_batch_size = 10
+max_batch_timeout = 30
+dead_letter_queue = "main-jobs-dlq-prod"
+
 [[queues.consumers]]
 queue = "email-jobs-queue"
 max_batch_size = 10
 max_batch_timeout = 30
 dead_letter_queue = "email-jobs-dlq"
+
+[[queues.consumers]]
+queue = "main-jobs-queue"
+max_batch_size = 10
+max_batch_timeout = 30
+dead_letter_queue = "main-jobs-dlq"

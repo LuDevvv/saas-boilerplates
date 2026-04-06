@@ -63,6 +63,13 @@ export interface QueueService {
     metricName: string;
     currentUsage: number;
   }): Promise<void>;
+
+  /**
+   * Fast-track outbox processor.
+   * Triggers immediate queue dispatch for outbox events.
+   * Used for sub-second latency after transaction commits.
+   */
+  dispatchOutboxPing(): Promise<void>;
 }
 
 /**
@@ -121,6 +128,10 @@ export const createQueueService = (
 
     async enqueuePasswordResetEmail(data: { email: string; token: string }) {
       await enqueue(JobType.SEND_PASSWORD_RESET_EMAIL, data);
+    },
+
+    async dispatchOutboxPing() {
+      await enqueue(JobType.PROCESS_OUTBOX, { ping: true }, undefined);
     },
   };
 };
