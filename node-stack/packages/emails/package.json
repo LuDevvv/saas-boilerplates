@@ -1,5 +1,5 @@
 {
-  "name": "@node-stack/outbox-queue",
+  "name": "@node-stack/emails",
   "version": "1.0.0",
   "private": true,
   "main": "dist/index.js",
@@ -10,10 +10,7 @@
     "build": "tsc -b --clean && tsc -b"
   },
   "dependencies": {
-    "@nestjs/bullmq": "^11.0.0",
-    "@node-stack/db": "workspace:*",
-    "@node-stack/emails": "workspace:*",
-    "bullmq": "^2.0.0"
+    "@aws-sdk/client-ses": "^3.0.0"
   },
   "devDependencies": {
     "@types/node": "^25.5.0",

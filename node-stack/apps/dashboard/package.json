@@ -1,15 +1,14 @@
 {
   "type": "module",
   "name": "@node-stack/dashboard",
-  "version": "1.0.0",
-  "packageManager": "pnpm@9.0.0",
+  "version": "1.1.0",
   "scripts": {
-    "build": "node ../../node_modules/typescript/bin/tsc --noEmit && node ../../node_modules/vite/bin/vite.js build",
+    "build": "pnpm typecheck && vite build",
     "dev": "vite --host",
     "format": "prettier --check --ignore-path .gitignore --write .",
     "lint": "eslint --ignore-path .gitignore .",
     "preview": "vite preview --host",
-    "typecheck": "node ../../node_modules/typescript/bin/tsc --noEmit",
+    "typecheck": "tsc",
     "generate:icons": "node scripts/generate-pwa-icons.mjs",
     "setup:auth": "node scripts/setup-auth.mjs"
   },
@@ -26,17 +25,13 @@
     "@node-stack/api-client": "workspace:*",
     "@node-stack/types": "workspace:*",
     "@node-stack/validators": "workspace:*",
-    "@stripe/react-stripe-js": "^3.5.0",
-    "@stripe/stripe-js": "^6.1.0",
     "@tanstack/react-query": "^5.91.0",
     "@tanstack/react-query-devtools": "^5.91.3",
     "axios": "^1.7.9",
     "classnames": "^2.3.2",
     "clsx": "^2.1.1",
     "country-flag-icons": "^1.6.15",
-    "date-fns": "^4.1.0",
     "driver.js": "^1.4.0",
-    "framer-motion": "^12.38.0",
     "gsap": "^3.14.2",
     "html2canvas": "^1.4.1",
     "js-cookie": "^3.0.5",
@@ -53,24 +48,32 @@
     "react-phone-number-input": "^3.4.16",
     "react-qr-code": "^2.0.15",
     "sass": "^1.83.1",
-    "socket.io-client": "^4.8.3",
     "tailwind-merge": "^3.4.0",
-    "zod": "^3.24.1",
+    "zod": "^4.3.6",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.19",
     "@types/js-cookie": "^3.0.6",
-    "@types/node": "^25.5.0",
     "@types/react": "18.3.12",
     "@types/react-dom": "18.3.1",
     "@types/sortablejs": "^1.15.0",
+    "@typescript-eslint/eslint-plugin": "^5.46.0",
+    "@typescript-eslint/parser": "^5.46.0",
     "@vitejs/plugin-react-swc": "^3.7.2",
     "autoprefixer": "^10.4.13",
     "baseline-browser-mapping": "^2.9.19",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^8.29.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-jsx-a11y": "^6.6.1",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.31.11",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-tailwindcss": "^3.7.1",
     "postcss": "^8.5.2",
-    "prettier": "^3.8.1",
+    "prettier": "^2.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router": "^7.1.5",
@@ -81,5 +84,54 @@
     "vite-plugin-pwa": "^1.2.0",
     "vitest": "^0.25.6"
   },
-  "private": true
+  "private": true,
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "eslintConfig": {
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/strict",
+      "plugin:jsx-a11y/recommended",
+      "plugin:prettier/recommended",
+      "plugin:react/recommended",
+      "plugin:react-hooks/recommended",
+      "plugin:tailwindcss/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "ecmaFeatures": {
+        "jsx": true
+      },
+      "project": "./tsconfig.json"
+    },
+    "root": true,
+    "rules": {
+      "@typescript-eslint/consistent-type-imports": "error",
+      "react/react-in-jsx-scope": "off",
+      "react/no-unescaped-entities": "off",
+      "tailwindcss/classnames-order": [
+        "error",
+        {
+          "callees": [
+            "classnames"
+          ],
+          "config": "tailwind.config.cjs"
+        }
+      ],
+      "tailwindcss/no-custom-classname": [
+        "error",
+        {
+          "config": "tailwind.config.cjs"
+        }
+      ]
+    },
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    }
+  }
 }

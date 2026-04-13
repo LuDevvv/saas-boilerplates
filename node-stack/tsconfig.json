@@ -1,19 +1,26 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
-    "paths": {
-    },
+    "paths": {},
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "strict": true,
     "skipLibCheck": true,
     "noImplicitAny": false,
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "composite": true
   },
-  "include": ["apps/**/*.ts", "packages/**/*.ts", "eslint.config.mjs"],
-  "exclude": ["node_modules", "dist", "coverage"]
+  "include": [
+    "apps/**/*.ts",
+    "packages/**/*.ts",
+    "eslint.config.mjs"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage"
+  ]
 }
