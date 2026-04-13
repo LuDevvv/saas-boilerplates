@@ -7,7 +7,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts --max-warnings 0",
     "build": "tsc -b",
-    "dev": "nest start --watch",
+    "dev": "tsx watch src/main.ts",
     "dev:local": "nest start --watch --exec \"node --env-file=../../.env\"",
     "start": "node dist/main.js",
     "start:local": "node --env-file=../../.env dist/main.js"
@@ -34,6 +34,7 @@
     "@types/node": "^25.5.0",
     "cross-env": "^10.1.0",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "latest"
   }
 }

@@ -1,5 +1,5 @@
 import { Processor, WorkerHost, InjectQueue } from "@nestjs/bullmq";
-import { Logger, OnModuleDestroy } from "@nestjs/common";
+import { Logger, OnModuleDestroy, Inject } from "@nestjs/common";
 import { db, schema, eq } from "@node-stack/db";
 import { Job, Queue } from "bullmq";
 import { WebhookDispatcher } from "./webhook-dispatcher.service";
@@ -15,7 +15,7 @@ export class OutboxProcessor extends WorkerHost implements OnModuleDestroy {
 
   constructor(
     @InjectQueue("outbox") private jobQueue: Queue,
-    private readonly webhookDispatcher: WebhookDispatcher,
+    @Inject(WebhookDispatcher) private readonly webhookDispatcher: WebhookDispatcher,
   ) {
     super();
   }
@@ -76,7 +76,7 @@ export class OutboxProcessor extends WorkerHost implements OnModuleDestroy {
       );
 
       // Trigger Webhook Dispatcher
-      await this.webhookDispatcher.dispatch(
+      await this.webhookDispatcher?.dispatch(
         event.eventType,
         event.payload as Record<string, unknown>,
         event.workspaceId ?? undefined,
@@ -119,10 +119,23 @@ export class OutboxProcessor extends WorkerHost implements OnModuleDestroy {
     switch (eventType) {
       case "user.registered":
         return async (event: Record<string, unknown>) => {
-          // Placeholder: implement actual processing logic (e.g., send welcome email)
-          this.logger.debug(
-            `Handling event: ${String(event.eventType)} with payload: ${JSON.stringify(event.payload)}`,
-          );
+          const payload = event.payload as any;
+          this.logger.log(`[DEV: EMAIL MOCK] Welcome to the platform! Sent to: ${payload.email}`);
+        };
+      case "user.forgot_password":
+        return async (event: Record<string, unknown>) => {
+          const payload = event.payload as any;
+          this.logger.log(`\n==========================================\n[DEV: EMAIL MOCK] Password Reset\nTo: ${payload.email}\n[BODY]: You requested a password reset. Here is your secret token: ${payload.token}\n==========================================\n`);
+        };
+      case "user.email_verification":
+        return async (event: Record<string, unknown>) => {
+          const payload = event.payload as any;
+          this.logger.log(`\n==========================================\n[DEV: EMAIL MOCK] Email Verification\nTo: ${payload.email}\n[BODY]: Please verify your email. Here is your secret token: ${payload.token}\n==========================================\n`);
+        };
+      case "user.password_changed":
+        return async (event: Record<string, unknown>) => {
+          const payload = event.payload as any;
+          this.logger.log(`[DEV: EMAIL MOCK] Your password was successfully changed.`);
         };
       // Add more event types as needed
       default:

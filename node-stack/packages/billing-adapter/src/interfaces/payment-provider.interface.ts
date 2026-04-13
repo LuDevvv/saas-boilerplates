@@ -78,5 +78,5 @@ export interface PaymentProvider {
   cancelSubscription(subscriptionId: string): Promise<void>;
   getSubscription(subscriptionId: string): Promise<Subscription>;
   createCheckoutSession(data: CheckoutData): Promise<CheckoutUrl>;
-  handleWebhook(payload: unknown): Promise<WebhookEvent>;
+  handleWebhook(payload: any, signature?: string): Promise<WebhookEvent>;
 }

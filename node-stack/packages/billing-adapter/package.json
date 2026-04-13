@@ -4,6 +4,13 @@
   "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./dist/*": "./dist/*"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts --max-warnings 0",
@@ -12,5 +19,6 @@
   "devDependencies": {
     "@types/node": "^25.5.0",
     "typescript": "latest"
-  }
+  },
+  "dependencies": {}
 }

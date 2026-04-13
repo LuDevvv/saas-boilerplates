@@ -59,7 +59,7 @@ export class MockProvider implements PaymentProvider {
     };
   }
 
-  async handleWebhook(payload: unknown): Promise<WebhookEvent> {
+  async handleWebhook(payload: any, _signature?: string): Promise<WebhookEvent> {
     return {
       id: `mock_evt_${Math.random().toString(36).substring(2, 15)}`,
       type: "payment.succeeded",

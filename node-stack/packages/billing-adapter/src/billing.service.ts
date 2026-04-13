@@ -1,66 +1,76 @@
 import type { PaymentProvider } from "./interfaces/payment-provider.interface";
-import { LemonSqueezyProvider } from "./providers/lemon-squeezy.provider";
 import { MockProvider } from "./providers/mock.provider";
-import { PolarProvider } from "./providers/polar.provider";
-import { StripeProvider } from "./providers/stripe.provider";
 
-export type ProviderType = "stripe" | "polar" | "lemon-squeezy" | "mock";
+export type ProviderType = "polar" | "mock";
 
 export class BillingService {
-  private provider: PaymentProvider;
+  private provider!: PaymentProvider;
+  private initialized = false;
+  private initPromise: Promise<void>;
 
   constructor(providerType?: ProviderType) {
+    this.initPromise = this.initProvider(providerType);
+  }
+
+  private async initProvider(providerType?: ProviderType): Promise<void> {
     const type =
       providerType || (process.env.BILLING_PROVIDER as ProviderType) || "mock";
 
-    const apiKey =
-      process.env.STRIPE_API_KEY ||
-      process.env.POLAR_API_KEY ||
-      process.env.LEMON_SQUEEZY_API_KEY ||
-      "default-key";
-
     switch (type) {
-      case "stripe":
-        this.provider = new StripeProvider(apiKey);
+      case "polar": {
+        const { PolarProvider } = await import("./providers/polar.provider.js");
+        this.provider = new PolarProvider(
+          process.env.POLAR_ACCESS_TOKEN || "default-key",
+          process.env.POLAR_WEBHOOK_SECRET,
+        );
         break;
-      case "polar":
-        this.provider = new PolarProvider(apiKey);
-        break;
-      case "lemon-squeezy":
-        this.provider = new LemonSqueezyProvider(apiKey);
-        break;
+      }
       case "mock":
       default:
         this.provider = new MockProvider();
         break;
     }
+
+    this.initialized = true;
+  }
+
+  private async ensureInitialized(): Promise<void> {
+    if (!this.initialized) {
+      await this.initPromise;
+    }
   }
 
   async createCustomer(data: Parameters<PaymentProvider["createCustomer"]>[0]) {
+    await this.ensureInitialized();
     return this.provider.createCustomer(data);
   }
 
   async createSubscription(
     data: Parameters<PaymentProvider["createSubscription"]>[0],
   ) {
+    await this.ensureInitialized();
     return this.provider.createSubscription(data);
   }
 
   async cancelSubscription(subscriptionId: string) {
+    await this.ensureInitialized();
     return this.provider.cancelSubscription(subscriptionId);
   }
 
   async getSubscription(subscriptionId: string) {
+    await this.ensureInitialized();
     return this.provider.getSubscription(subscriptionId);
   }
 
   async createCheckoutSession(
     data: Parameters<PaymentProvider["createCheckoutSession"]>[0],
   ) {
+    await this.ensureInitialized();
     return this.provider.createCheckoutSession(data);
   }
 
-  async handleWebhook(payload: unknown) {
-    return this.provider.handleWebhook(payload);
+  async handleWebhook(payload: any, signature?: string) {
+    await this.ensureInitialized();
+    return this.provider.handleWebhook(payload, signature);
   }
 }

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "module": "CommonJS",
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "ignoreDeprecations": "6.0",
     "target": "ES2021",
     "declaration": true,
@@ -26,10 +26,20 @@
     "dist"
   ],
   "references": [
-    { "path": "../../packages/ai-adapter" },
-    { "path": "../../packages/cache" },
-    { "path": "../../packages/db" },
-    { "path": "../../packages/services" },
-    { "path": "../../packages/webhooks-utils" }
+    {
+      "path": "../../packages/ai-adapter"
+    },
+    {
+      "path": "../../packages/cache"
+    },
+    {
+      "path": "../../packages/db"
+    },
+    {
+      "path": "../../packages/services"
+    },
+    {
+      "path": "../../packages/webhooks-utils"
+    }
   ]
 }

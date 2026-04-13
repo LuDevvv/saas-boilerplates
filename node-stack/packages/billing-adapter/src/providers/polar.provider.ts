@@ -136,7 +136,7 @@ export class PolarProvider implements PaymentProvider {
     };
   }
 
-  async handleWebhook(payload: unknown): Promise<WebhookEvent> {
+  async handleWebhook(payload: any, _signature?: string): Promise<WebhookEvent> {
     const event = payload as any;
     return {
       id: event?.id ?? `polar_evt_${Date.now()}`,

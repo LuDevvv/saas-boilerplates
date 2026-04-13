@@ -1,6 +1,13 @@
+// Core interfaces — always safe to import
 export * from "./interfaces/payment-provider.interface";
-export * from "./providers/stripe.provider";
-export * from "./providers/polar.provider";
-export * from "./providers/lemon-squeezy.provider";
+
+// Mock provider — no external SDK dependency
 export * from "./providers/mock.provider";
+
+// Package-level billing service
 export * from "./billing.service";
+
+// SDK-dependent providers are excluded to avoid dependency bloat.
+// Polar is fetch-based and can be imported directly if needed:
+// import { PolarProvider } from "@node-stack/billing-adapter/dist/providers/polar.provider.js";
+export { PolarProvider } from "./providers/polar.provider";

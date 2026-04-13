@@ -1,30 +1,41 @@
-import { Home, Building2, Users, Settings, Layout, Puzzle } from "lucide-react";
+import {
+  Home,
+  Layout,
+  Package,
+  DollarSign,
+  User,
+  Settings,
+  BarChart3,
+  FileText,
+} from "lucide-react";
 import { MenuSection } from "../components/sidebar/types";
 
 export const MAIN_MENU_SECTIONS: MenuSection[] = [
   {
-    title: "Main",
+    title: "Principal",
     items: [
-      { icon: Home, label: "Dashboard", path: "/" },
-      { icon: Building2, label: "Workspaces", path: "/workspaces" },
+      { icon: Home, label: "Inicio", path: "/" },
+      { icon: Layout, label: "Workspaces", path: "/workspaces" },
     ],
   },
   {
-    title: "Management",
+    title: "Gestión",
     items: [
-      { icon: Users, label: "Members", path: "/workspaces" },
-      { icon: Settings, label: "Settings", path: "/settings" },
+      { icon: Package, label: "Productos", path: "/products" },
+      { icon: DollarSign, label: "Pagos", path: "/payments" },
     ],
   },
   {
-    title: "Modules",
+    title: "Reportes",
     items: [
-      { icon: Puzzle, label: "Module Playground", path: "/modules" },
+      { icon: BarChart3, label: "Analytics", path: "/analytics" },
+      { icon: FileText, label: "Reportes", path: "/reports" },
     ],
   },
 ];
 
 export const ACCOUNT_MENU_ITEMS = [
-  { icon: Layout, label: "Profile", path: "/settings/profile" },
-  { icon: Settings, label: "Settings", path: "/settings" },
+  { icon: User, label: "Perfil", path: "/profile" },
+  { icon: Layout, label: "Mis Workspaces", path: "/workspaces" },
+  { icon: Settings, label: "Configuración", path: "/settings" },
 ];
