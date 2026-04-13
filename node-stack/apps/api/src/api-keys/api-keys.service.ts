@@ -9,10 +9,10 @@ import {
 } from '@node-stack/db';
 import { CacheService } from '@node-stack/cache';
 import {
-  CreateApiKeyDto,
   ApiKeyResponseDto,
   CreateApiKeyResponseDto,
 } from '../workspaces/dto/api-key.dto';
+import { CreateApiKeyDto } from '@node-stack/validators';
 
 @Injectable()
 export class ApiKeysService {

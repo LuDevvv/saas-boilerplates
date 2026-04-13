@@ -1,35 +1,35 @@
-import { createHmac } from "crypto";
-
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+  Injectable,
+  UnauthorizedException,
+  Logger,
+  Inject,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { PolarProvider } from "@node-stack/billing-adapter";
-import type { CheckoutUrl, WebhookEvent } from "@node-stack/billing-adapter";
+import type {
+  PaymentProvider,
+  CheckoutUrl,
+  WebhookEvent,
+} from "@node-stack/billing-adapter";
 
-import type { CreateCheckoutDto } from "./dto/create-checkout.dto";
+import { CreateCheckoutDto } from "@node-stack/validators";
 import { OutboxService } from "../common/services/outbox.service";
 
 @Injectable()
 export class BillingService {
-  private polarProvider: PolarProvider;
+  private readonly logger = new Logger(BillingService.name);
 
   constructor(
-    private configService: ConfigService,
-    private outbox: OutboxService,
-  ) {
-    this.polarProvider = new PolarProvider(
-      this.configService.get("POLAR_ACCESS_TOKEN") ?? "",
-      this.configService.get("POLAR_WEBHOOK_SECRET"),
-    );
-  }
+    private readonly configService: ConfigService,
+    private readonly outbox: OutboxService,
+    @Inject("PAYMENT_PROVIDER") private readonly provider: PaymentProvider,
+  ) {}
 
   async createCheckout(
     data: CreateCheckoutDto & { workspaceId: string; userId: string },
   ): Promise<CheckoutUrl> {
-    // Create checkout on Polar
-    const checkout = await this.polarProvider.createCheckoutSession({
+    const checkout = await this.provider.createCheckoutSession({
       planId: data.planId,
-      ...(data.variantId ? { variantId: data.variantId } : {}),
-      ...(data.customerId ? { customerId: data.customerId } : {}),
+      variantId: data.variantId,
       successUrl: data.successUrl,
       cancelUrl: data.cancelUrl,
       metadata: {
@@ -38,47 +38,50 @@ export class BillingService {
       },
     });
 
-    // Write outbox event atomically
     await this.outbox.transaction(async (tx) => {
-      await this.outbox.createEvent("checkout.created", {
-        checkoutUrl: checkout.url,
-        workspaceId: data.workspaceId,
-        userId: data.userId,
-        expiresAt: checkout.expiresAt,
-      }, tx);
+      await this.outbox.createEvent(
+        "checkout.created",
+        {
+          checkoutUrl: checkout.url,
+          workspaceId: data.workspaceId,
+          userId: data.userId,
+          expiresAt: checkout.expiresAt,
+        },
+        tx,
+      );
     });
 
     return checkout;
   }
 
-  async verifyWebhook(
-    headers: Record<string, string>,
-    rawBody: string,
-  ): Promise<WebhookEvent> {
-    const signature = headers["polar-signature"] || headers["x-polar-signature"] || "";
-    const secret = this.configService.get("POLAR_WEBHOOK_SECRET");
-
-    if (secret && signature) {
-      const expected = createHmac("sha256", secret)
-        .update(rawBody)
-        .digest("hex");
-      if (signature !== expected) {
-        throw new UnauthorizedException("Invalid webhook signature");
+  async handleWebhook(payload: any, signature?: string): Promise<WebhookEvent> {
+    try {
+      const event = await this.provider.handleWebhook(payload, signature);
+      
+      if (event.processed) {
+        this.logger.log(`Processing billing event: ${event.type} (${event.id})`);
+        
+        await this.outbox.transaction(async (tx) => {
+          await this.outbox.createEvent(`billing.${event.type}`, event.data, tx);
+        });
       }
-    }
 
-    return this.polarProvider.handleWebhook(JSON.parse(rawBody));
+      return event;
+    } catch (err) {
+      this.logger.error(`Webhook processing failed: ${err.message}`);
+      throw new UnauthorizedException("Invalid webhook request");
+    }
   }
 
   async getSubscription(workspaceId: string) {
     return { status: "active", workspaceId };
   }
 
-  async portal(_opts: unknown) {
-    return { url: "https://polar.sh/customer-portal" };
+  async portal(customerId: string) {
+    return { url: "https://billing.provider.com/portal" };
   }
 
-  async invoices(_opts: unknown) {
+  async invoices(customerId: string) {
     return { invoices: [] };
   }
 }

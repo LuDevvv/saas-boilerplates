@@ -48,4 +48,10 @@ export class SessionRepository {
         ),
       );
   }
+
+  async deleteAll(userId: string): Promise<void> {
+    await this.db
+      .delete(schema.sessions)
+      .where(eq(schema.sessions.userId, userId));
+  }
 }

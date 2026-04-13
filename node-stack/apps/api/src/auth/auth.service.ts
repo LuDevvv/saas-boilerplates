@@ -53,7 +53,7 @@ export class AuthService {
     private sessionRepository: SessionRepository,
     private authRepository: AuthRepository,
     private cacheService: CacheService,
-  ) {}
+  ) { }
 
   async getActiveSessions(
     userId: string,
@@ -87,17 +87,23 @@ export class AuthService {
 
   async revokeAllOtherSessions(
     userId: string,
-    currentSessionId: string,
+    currentSessionId?: string,
   ): Promise<{ count: number }> {
     const before = await this.sessionRepository.findActiveByUserId(userId);
-    await this.sessionRepository.deleteAllExcept(userId, currentSessionId);
+
+    if (currentSessionId && currentSessionId !== "") {
+      await this.sessionRepository.deleteAllExcept(userId, currentSessionId);
+    } else {
+      await this.sessionRepository.deleteAll(userId);
+    }
+
     // Clear cache for all revoked sessions
     for (const s of before) {
       if (s.id !== currentSessionId) {
         await this.cacheService.del(`session:${s.id}`);
       }
     }
-    return { count: before.length - 1 };
+    return { count: (currentSessionId && currentSessionId !== "") ? before.length - 1 : before.length };
   }
 
   async register(
@@ -105,16 +111,11 @@ export class AuthService {
   ): Promise<
     TokenPair & { user: { id: string; email: string; name: string | null } }
   > {
-    // Hash password outside the transaction (CPU-bound, no DB dependency)
     const passwordHash = await bcrypt.hash(dto.password, 12);
     const sessionId = crypto.randomUUID();
 
-    // All DB operations inside a single transaction to prevent TOCTOU race conditions.
-    // The email uniqueness check MUST be inside the tx so two concurrent registrations
-    // cannot both pass the check before either insert completes.
     let outboxEventId: string | null = null;
     const user = await withTransaction(async (tx) => {
-      // Check for existing user INSIDE the transaction
       const existingUser = await this.authRepository.findUserByEmail(
         dto.email.toLowerCase(),
         tx,
@@ -149,7 +150,6 @@ export class AuthService {
       return newUser;
     });
 
-    // Trigger background processing for the outbox event after commit
     if (outboxEventId) {
       await OutboxProducer.addProcessOutboxJob(outboxEventId);
     }
@@ -256,6 +256,117 @@ export class AuthService {
       }
       throw new UnauthorizedException(AUTH_ERRORS.INVALID_TOKEN);
     }
+  }
+
+  async forgotPassword(email: string): Promise<void> {
+    const user = await this.authRepository.findUserByEmail(email.toLowerCase());
+    if (!user) return; // Silent return for security
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 1);
+
+    let outboxEventId: string | null = null;
+    await withTransaction(async (tx) => {
+      // Invalidate any previous reset tokens for this user
+      await this.authRepository.deleteVerificationTokensByUser(user.id, "password_reset", tx);
+
+      await this.authRepository.createVerificationToken({
+        identifier: "password_reset",
+        token,
+        expiresAt,
+        userId: user.id,
+      }, tx);
+
+      outboxEventId = await this.authRepository.createOutboxEvent(
+        "user.forgot_password",
+        { userId: user.id, email: user.email, token },
+        tx
+      );
+    });
+
+    if (outboxEventId) {
+      await OutboxProducer.addProcessOutboxJob(outboxEventId);
+    }
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const verification = await this.authRepository.findVerificationToken("password_reset", token);
+
+    if (!verification || verification.expiresAt < new Date()) {
+      throw new BadRequestException("Invalid or expired reset token");
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+
+    await withTransaction(async (tx) => {
+      await this.authRepository.updateUser(verification.userId, { passwordHash }, tx);
+      await this.authRepository.deleteVerificationToken(token, tx);
+
+      await this.authRepository.createOutboxEvent(
+        "user.password_changed",
+        { userId: verification.userId },
+        tx
+      );
+    });
+
+    // Revoke all active sessions for security
+    await this.revokeAllOtherSessions(verification.userId, "");
+  }
+
+  async sendVerificationEmail(userId: string): Promise<void> {
+    const user = await this.authRepository.findUserById(userId);
+    if (!user || user.emailVerified) return;
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 1);
+
+    let outboxEventId: string | null = null;
+    await withTransaction(async (tx) => {
+      // Invalidate any previous verification tokens for this user
+      await this.authRepository.deleteVerificationTokensByUser(userId, "email_verification", tx);
+
+      await this.authRepository.createVerificationToken({
+        identifier: "email_verification",
+        token,
+        expiresAt,
+        userId,
+      }, tx);
+
+      outboxEventId = await this.authRepository.createOutboxEvent(
+        "user.email_verification",
+        { userId, email: user.email, token },
+        tx
+      );
+    });
+
+    if (outboxEventId) {
+      await OutboxProducer.addProcessOutboxJob(outboxEventId);
+    }
+  }
+
+  async verifyEmail(token: string): Promise<void> {
+    const verification = await this.authRepository.findVerificationToken("email_verification", token);
+
+    if (!verification || verification.expiresAt < new Date()) {
+      throw new BadRequestException("Invalid or expired verification token");
+    }
+
+    await withTransaction(async (tx) => {
+      await this.authRepository.updateUser(verification.userId, { emailVerified: true }, tx);
+      await this.authRepository.deleteVerificationToken(token, tx);
+
+      await this.authRepository.createOutboxEvent(
+        "user.email_verified",
+        { userId: verification.userId },
+        tx
+      );
+    });
+  }
+
+  async getAuditLogs(userId: string) {
+    return this.authRepository.getAuthAuditLogs(userId);
   }
 
   async logout(sessionId: string): Promise<void> {

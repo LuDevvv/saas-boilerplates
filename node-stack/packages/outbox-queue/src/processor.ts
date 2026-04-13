@@ -18,10 +18,32 @@ export class OutboxProcessor extends WorkerHost {
     }
 
     try {
-      // Placeholder: add real event handlers here based on event.eventType
+      // Initialize the email sender 
+      // (in a real app, you might inject this via DI or configure it once)
+      const { EmailSender } = await import("@node-stack/emails");
+      const emailSender = new EmailSender();
+
+      const payload = event.payload as Record<string, any>;
+
       switch (event.eventType) {
         case "user.registered":
           // Implement user welcome logic, if needed
+          break;
+        case "user.forgot_password":
+          await emailSender.sendEmail({
+            to: payload.email,
+            subject: "Reset your password",
+            templateName: "reset_password",
+            templateData: { token: payload.token },
+          });
+          break;
+        case "user.email_verification":
+          await emailSender.sendEmail({
+            to: payload.email,
+            subject: "Verify your email address",
+            templateName: "verify_email",
+            templateData: { token: payload.token },
+          });
           break;
         case "workspace.created":
           // Implement workspace-related side effects

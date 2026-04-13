@@ -6,64 +6,64 @@ import {
   Param,
   HttpCode,
   UseGuards,
-  Inject,
-} from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue } from 'bullmq';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/guards/jwt.guard';
-import { WorkspaceGuard } from '../common/guards/workspace.guard';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { TenantId } from '../common/decorators/tenant-id.decorator';
-import { UserPayload } from '../common/types';
-import { SubmitAIJobDto } from '@node-stack/validators';
-import { AIJob } from '@node-stack/ai-adapter';
-import { CacheService } from '@node-stack/cache';
+} from "@nestjs/common";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Queue } from "bullmq";
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from "@nestjs/swagger";
+import { JwtAuthGuard } from "../auth/guards/jwt.guard";
+import { WorkspaceGuard } from "../common/guards/workspace.guard";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { Workspace } from "../common/decorators/workspace.decorator";
+import { UserPayload, WorkspaceContext } from "../common/types";
+import { SubmitAIJobDto } from "@node-stack/validators";
+import { CacheService } from "@node-stack/cache";
 
-@ApiTags('ai')
-@ApiBearerAuth('JWT-auth')
-@Controller('ai')
+@ApiTags("ai")
+@ApiBearerAuth("JWT-auth")
+@Controller("ai")
 @UseGuards(JwtAuthGuard, WorkspaceGuard)
 export class AiController {
   constructor(
-    @InjectQueue('ai') private readonly aiQueue: Queue,
+    @InjectQueue("ai") private readonly aiQueue: Queue,
     private readonly cacheService: CacheService,
   ) {}
 
-  @Post('jobs')
+  @Post("jobs")
   @HttpCode(202)
   @ApiOperation({ 
-    summary: 'Submit an AI processing job',
-    description: 'Enqueues a task for the AI worker. Returns a jobId to track status.'
+    summary: "Submit AI job",
+    description: "Enqueues a background task for AI processing. Results can be retrieved via polling or webhooks."
   })
-  @ApiResponse({ status: 202, description: 'Job accepted and queued' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 202, description: "Job accepted" })
   async submitJob(
     @Body() dto: SubmitAIJobDto,
-    @TenantId() workspaceId: string,
+    @Workspace() workspace: WorkspaceContext,
     @CurrentUser() user: UserPayload,
   ) {
-    const job = await this.aiQueue.add('process-ai', {
+    const job = await this.aiQueue.add("process-ai", {
       ...dto,
-      workspaceId,
+      workspaceId: workspace.id,
       userId: user.id,
-    } as AIJob);
+    });
 
-    return { jobId: job.id, status: 'queued' };
+    return { jobId: job.id, status: "queued" };
   }
 
-  @Get('jobs/:jobId')
-  @ApiOperation({ 
-    summary: 'Get AI job status and result',
-    description: 'Retrieves the status and result of a previously submitted AI job.'
-  })
-  @ApiResponse({ status: 200, description: 'Job status retrieved' })
-  async getJobResult(@Param('jobId') jobId: string) {
-    const cached = await this.cacheService.get<any>(`ai:job:${jobId}`);
+  @Get("jobs/:jobId")
+  @ApiOperation({ summary: "Get job status" })
+  async getJobResult(@Param("jobId") jobId: string) {
+    const cached = await this.cacheService.get<string>(`ai:job:${jobId}`);
     if (!cached) {
-      // Job still processing or expired
-      return { status: 'pending' };
+      return { status: "pending" };
     }
-    return { status: 'complete', ...cached };
+    
+    // Check if it's already a JSON object or a string
+    const result = typeof cached === "string" ? JSON.parse(cached) : cached;
+    return { status: "complete", ...result };
   }
 }

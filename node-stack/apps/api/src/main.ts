@@ -73,13 +73,17 @@ async function bootstrap() {
   app.useGlobalPipes(
     new (createZodValidationPipe({
       createValidationException: (error: any) => {
+        const errors = Array.isArray(error.errors)
+          ? error.errors.map((e: any) => ({
+              path: e.path,
+              message: e.message,
+            }))
+          : [];
+
         return new UnprocessableEntityException({
           statusCode: 422,
           message: 'Validation failed',
-          errors: error.errors.map((e: any) => ({
-            path: e.path,
-            message: e.message,
-          })),
+          errors,
         });
       },
     }))(),

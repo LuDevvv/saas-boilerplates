@@ -6,12 +6,9 @@ export const CreateApiKeySchema = z.object({
   name: z
     .string()
     .min(1)
-    .max(100)
+    .max(255)
+    .trim()
     .describe("Name for the API key (e.g. 'Production App')"),
-  scopes: z
-    .array(z.nativeEnum(ApiKeyScope))
-    .min(1)
-    .describe("List of permissions for the key"),
   expiresAt: z
     .string()
     .datetime()
@@ -19,4 +16,7 @@ export const CreateApiKeySchema = z.object({
     .describe("Optional expiration date in ISO format"),
 });
 
-export class CreateApiKeyDto extends createZodDto(CreateApiKeySchema) {}
+export class CreateApiKeyDto extends createZodDto(CreateApiKeySchema) {
+  declare name: string;
+  declare expiresAt?: string;
+}

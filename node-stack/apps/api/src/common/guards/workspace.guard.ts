@@ -14,10 +14,21 @@ import type { WorkspaceContext } from "../types";
 export class WorkspaceGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest() as any;
-    const workspaceId: string = req?.params?.id;
+    // Extract workspace ID: Look for explicit workspaceId param first,
+    // otherwise fallback to id only if the request concerns workspaces context.
+    const workspaceId: string =
+      req?.params?.workspaceId ||
+      (req?.params?.id &&
+        (req?.url?.includes("/workspaces") ||
+          req?.url?.includes("/api-keys") ||
+          req?.url?.includes("/storage") ||
+          req?.url?.includes("/ai"))
+        ? req.params.id
+        : undefined);
+
     const user = req?.user;
 
-    // Skip workspace check if no :id param (e.g., GET /workspaces listing)
+    // Skip workspace check if no relevant workspaceId param is found
     if (!workspaceId) {
       return true;
     }

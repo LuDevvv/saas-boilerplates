@@ -9,6 +9,7 @@ type User = typeof schema.users.$inferSelect;
 type CreateUserData = typeof schema.users.$inferInsert;
 type Session = typeof schema.sessions.$inferSelect;
 type OAuthAccount = typeof schema.oauthAccounts.$inferSelect;
+type VerificationToken = typeof schema.verificationTokens.$inferSelect;
 type Tx = NodePgDatabase<typeof schema>;
 
 export interface CreateSessionData {
@@ -63,6 +64,11 @@ export class AuthRepository {
       .values(data)
       .returning();
     return user;
+  }
+
+  async updateUser(id: string, data: Partial<User>, tx?: Tx): Promise<void> {
+    const database = tx ?? this.db;
+    await database.update(schema.users).set(data).where(eq(schema.users.id, id));
   }
 
   // ── Session queries ─────────────────────────────────────
@@ -135,6 +141,64 @@ export class AuthRepository {
   ): Promise<void> {
     const database = tx ?? this.db;
     await database.insert(schema.oauthAccounts).values(data);
+  }
+
+  // ── Verification Tokens ─────────────────────────────────
+
+  async createVerificationToken(
+    data: { identifier: string; token: string; expiresAt: Date; userId: string },
+    tx?: Tx,
+  ): Promise<void> {
+    const database = tx ?? this.db;
+    await database.insert(schema.verificationTokens).values(data);
+  }
+
+  async findVerificationToken(
+    identifier: string,
+    token: string,
+    tx?: Tx,
+  ): Promise<VerificationToken | undefined> {
+    const database = tx ?? this.db;
+    return database.query.verificationTokens.findFirst({
+      where: and(
+        eq(schema.verificationTokens.identifier, identifier),
+        eq(schema.verificationTokens.token, token),
+      ),
+    });
+  }
+
+  async deleteVerificationToken(token: string, tx?: Tx): Promise<void> {
+    const database = tx ?? this.db;
+    await database
+      .delete(schema.verificationTokens)
+      .where(eq(schema.verificationTokens.token, token));
+  }
+
+  async deleteVerificationTokensByUser(
+    userId: string,
+    identifier: string,
+    tx?: Tx,
+  ): Promise<void> {
+    const database = tx ?? this.db;
+    await database
+      .delete(schema.verificationTokens)
+      .where(
+        and(
+          eq(schema.verificationTokens.userId, userId),
+          eq(schema.verificationTokens.identifier, identifier),
+        ),
+      );
+  }
+
+  // ── Audit Logs ──────────────────────────────────────
+
+  async getAuthAuditLogs(userId: string, tx?: Tx) {
+    const database = tx ?? this.db;
+    return database.query.auditLogs.findMany({
+      where: eq(schema.auditLogs.userId, userId),
+      orderBy: (auditLogs, { desc }) => [desc(auditLogs.createdAt)],
+      limit: 50,
+    });
   }
 
   // ── Outbox queries ──────────────────────────────────────

@@ -9,3 +9,4 @@ export * from "./auth";
 export * from './ai';
 export * from './api-keys';
 export * from './billing';
+export * from './workspaces';

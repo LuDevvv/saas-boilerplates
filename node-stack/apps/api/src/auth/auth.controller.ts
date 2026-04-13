@@ -33,6 +33,9 @@ import {
   RefreshDto,
   Verify2faDto,
   Login2faDto,
+  RecoveryDto,
+  ResetPasswordDto,
+  VerifyEmailDto,
 } from "./dto";
 import { JwtAuthGuard } from "./guards";
 import { TwoFactorService } from "./two-factor/two-factor.service";
@@ -45,9 +48,9 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly twoFactorService: TwoFactorService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
-  @Throttle({ short: { ttl: 3600000, limit: 10 } }) // register: 10/hour
+  @Throttle({ short: { ttl: 3600000, limit: 10 } })
   @Public()
   @Post("register")
   @ApiOperation({
@@ -60,7 +63,7 @@ export class AuthController {
     return this.authService.register(dto);
   }
 
-  @Throttle({ short: { ttl: 60000, limit: 5 } }) // login: 5/min
+  @Throttle({ short: { ttl: 60000, limit: 5 } })
   @Public()
   @Post("login")
   @HttpCode(HttpStatus.OK)
@@ -174,7 +177,7 @@ export class AuthController {
     return this.twoFactorService.generateSecret(userId);
   }
 
-  @Throttle({ short: { ttl: 60000, limit: 10 } }) // 2FA: 10/min
+  @Throttle({ short: { ttl: 60000, limit: 10 } })
   @Post("2fa/verify")
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
@@ -204,7 +207,7 @@ export class AuthController {
     return { disabled: true };
   }
 
-  @Throttle({ short: { ttl: 60000, limit: 10 } }) // 2FA login: 10/min
+  @Throttle({ short: { ttl: 60000, limit: 10 } })
   @Public()
   @Post("login/2fa")
   @HttpCode(HttpStatus.OK)
@@ -219,7 +222,71 @@ export class AuthController {
     return this.twoFactorService.verifyLoginToken(userId, dto.token);
   }
 
-  // ── Google ────────────────────────────────────────────
+  @Public()
+  @Post("forgot-password")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Request password reset",
+    description: "Sends a password reset email if the user exists.",
+  })
+  @ApiResponse({ status: 200, description: "If the email was found, a recovery link was sent." })
+  async forgotPassword(@Body() dto: RecoveryDto) {
+    await this.authService.forgotPassword(dto.email);
+    return { message: "If the email was found, a recovery link was sent." };
+  }
+
+  @Public()
+  @Post("reset-password")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Reset password",
+    description: "Sets a new password using a valid reset token.",
+  })
+  @ApiResponse({ status: 200, description: "Password reset successfully." })
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    await this.authService.resetPassword(dto.token, dto.newPassword);
+    return { message: "Password reset successfully." };
+  }
+
+  @Post("email/verification-link")
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth("JWT-auth")
+  @ApiOperation({
+    summary: "Send verification email",
+    description: "Generates and sends an email verification link to the logged-in user.",
+  })
+  @ApiResponse({ status: 200, description: "Verification email sent if not already verified." })
+  async sendVerificationEmail(@CurrentUser("id") userId: string) {
+    await this.authService.sendVerificationEmail(userId);
+    return { message: "Verification email sent if not already verified." };
+  }
+
+  @Public()
+  @Post("email/verify")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Verify email address",
+    description: "Confirms a user's email address using a valid verification token.",
+  })
+  @ApiResponse({ status: 200, description: "Email verified successfully." })
+  async verifyEmail(@Body() dto: VerifyEmailDto) {
+    await this.authService.verifyEmail(dto.token);
+    return { message: "Email verified successfully." };
+  }
+
+  @Get("audit-logs")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth("JWT-auth")
+  @ApiOperation({
+    summary: "Get security audit logs",
+    description: "Returns the recent security-related actions for the current user.",
+  })
+  @ApiResponse({ status: 200, description: "List of audit logs." })
+  async getAuditLogs(@CurrentUser("id") userId: string) {
+    return this.authService.getAuditLogs(userId);
+  }
+
   @Public()
   @Get("google")
   @UseGuards(AuthGuard("google"))
@@ -228,7 +295,7 @@ export class AuthController {
     summary: "Initiate Google OAuth",
     description: "Redirects the user to Google to start the OAuth2 flow. Links to existing accounts if emails match.",
   })
-  async googleAuth(): Promise<void> {}
+  async googleAuth(): Promise<void> { }
 
   @Public()
   @Get("google/callback")
@@ -246,7 +313,6 @@ export class AuthController {
     res.redirect(url.toString());
   }
 
-  // ── GitHub ────────────────────────────────────────────
   @Public()
   @Get("github")
   @UseGuards(AuthGuard("github"))
@@ -255,7 +321,7 @@ export class AuthController {
     summary: "Initiate GitHub OAuth",
     description: "Redirects the user to GitHub to start the OAuth2 flow. Links to existing accounts if emails match.",
   })
-  async githubAuth(): Promise<void> {}
+  async githubAuth(): Promise<void> { }
 
   @Public()
   @Get("github/callback")

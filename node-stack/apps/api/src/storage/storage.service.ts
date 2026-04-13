@@ -7,8 +7,10 @@ import {
   sanitizeFilename,
   getFileExtension,
 } from "@node-stack/validators";
-import type {
+import {
   GetPresignedUrlDto,
+} from "@node-stack/validators";
+import type {
   UploadContext,
   MimeType,
 } from "@node-stack/validators";

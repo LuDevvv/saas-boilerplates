@@ -66,7 +66,12 @@ export const GetPresignedUrlSchema = z.object({
     .describe("The context/bucket for the upload"),
 });
 
-export class GetPresignedUrlDto extends createZodDto(GetPresignedUrlSchema) {}
+export class GetPresignedUrlDto extends createZodDto(GetPresignedUrlSchema) {
+  declare fileName: string;
+  declare mimeType: string;
+  declare fileSize: number;
+  declare context: UploadContext;
+}
 
 export function sanitizeFilename(name: string): string {
   return name

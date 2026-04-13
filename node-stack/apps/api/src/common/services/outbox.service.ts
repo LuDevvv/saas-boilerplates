@@ -7,8 +7,8 @@ export class OutboxService {
 
   async createEvent(
     eventType: string,
-    payload: Record<string, unknown>,
-    tx?: Database,
+    payload: Record<string, unknown> | unknown,
+    tx?: any,
     workspaceId?: string,
   ) {
     const database = tx ?? this.db;

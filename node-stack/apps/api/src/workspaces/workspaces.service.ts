@@ -7,7 +7,7 @@ import { CacheService } from "@node-stack/cache";
 import { WorkspaceRepository, schema } from "@node-stack/db";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import type { UpdateMemberRoleDto } from "./dto/update-member.dto";
+import type { UpdateMemberRoleDto } from "@node-stack/validators";
 import { OutboxService } from "../common/services/outbox.service";
 
 type WorkspaceRole = "owner" | "admin" | "member";
@@ -38,10 +38,9 @@ export class WorkspacesService {
   ): Promise<MemberWithUser[]> {
     await this.validateMembership(workspaceId, currentUserId);
 
-    const members =
-      await this.workspaceRepo.findMembersByWorkspaceId(workspaceId);
+    const members = await this.workspaceRepo.findMembersByWorkspaceId(workspaceId);
 
-    return members.map((m: any) => ({
+    return members.map((m) => ({
       userId: m.userId,
       role: m.role as WorkspaceRole,
       createdAt: m.createdAt,
@@ -55,15 +54,8 @@ export class WorkspacesService {
   }
 
   async getMyMembership(workspaceId: string, userId: string) {
-    const membership = await this.workspaceRepo.findMembership(
-      workspaceId,
-      userId,
-    );
-
-    if (!membership) {
-      throw new NotFoundException("Membership not found");
-    }
-
+    const membership = await this.workspaceRepo.findMembership(workspaceId, userId);
+    if (!membership) throw new NotFoundException("Membership not found");
     return membership;
   }
 
@@ -73,35 +65,20 @@ export class WorkspacesService {
     newRole: UpdateMemberRoleDto["role"],
     currentUserId: string,
   ): Promise<void> {
-    const currentMembership = await this.validateMembership(
-      workspaceId,
-      currentUserId,
-    );
+    const currentMembership = await this.validateMembership(workspaceId, currentUserId);
 
-    // Guard logic now handled by role-based guards; remove inline check
-
-    const targetMembership = await this.workspaceRepo.findMembership(
-      workspaceId,
-      targetUserId,
-    );
-
-    if (!targetMembership) {
-      throw new NotFoundException("Member not found in workspace");
-    }
+    const targetMembership = await this.workspaceRepo.findMembership(workspaceId, targetUserId);
+    if (!targetMembership) throw new NotFoundException("Member not found in workspace");
 
     const targetRole = targetMembership.role as WorkspaceRole;
-    if (targetRole === "owner") {
-      throw new ForbiddenException("Cannot change owner role");
-    }
+    if (targetRole === "owner") throw new ForbiddenException("Cannot change owner role");
 
     const currentRole = currentMembership.role as WorkspaceRole;
     if (currentRole === "admin" && targetRole === "admin") {
       throw new ForbiddenException("Admins cannot modify other admins");
     }
 
-    await this.workspaceRepo.updateMembership(workspaceId, targetUserId, {
-      role: newRole,
-    });
+    await this.workspaceRepo.updateMembership(workspaceId, targetUserId, { role: newRole });
     await this.cache.invalidate(`workspaces:${workspaceId}:members`);
   }
 
@@ -110,93 +87,48 @@ export class WorkspacesService {
     targetUserId: string,
     currentUserId: string,
   ): Promise<void> {
-    await this.workspaceRepo.transaction(async (tx: any) => {
-        const currentMembership = await this.workspaceRepo.findMembership(
-          workspaceId,
-          currentUserId,
-          tx,
-        );
+    await this.workspaceRepo.transaction(async (tx: NodePgDatabase<typeof schema>) => {
+      const currentMembership = await this.workspaceRepo.findMembership(workspaceId, currentUserId, tx);
+      if (!currentMembership) throw new ForbiddenException("Not a member of this workspace");
 
-        if (!currentMembership) {
-          throw new ForbiddenException(
-            "You are not a member of this workspace",
-          );
-        }
+      const targetMembership = await this.workspaceRepo.findMembership(workspaceId, targetUserId, tx);
+      if (!targetMembership) throw new NotFoundException("Member not found");
 
-        // Guard logic now handled by role-based guards; remove inline check
+      const targetRole = targetMembership.role as WorkspaceRole;
+      if (targetRole === "owner") throw new ForbiddenException("Cannot remove workspace owner");
 
-        const targetMembership = await this.workspaceRepo.findMembership(
-          workspaceId,
-          targetUserId,
-          tx,
-        );
+      const currentRole = currentMembership.role as WorkspaceRole;
+      if (currentRole === "admin" && targetRole === "admin") {
+        throw new ForbiddenException("Admins cannot remove other admins");
+      }
 
-        if (!targetMembership) {
-          throw new NotFoundException("Member not found in workspace");
-        }
-
-        const targetRole = targetMembership.role as WorkspaceRole;
-        if (targetRole === "owner") {
-          throw new ForbiddenException("Cannot remove workspace owner");
-        }
-
-        const currentRole = currentMembership.role as WorkspaceRole;
-        if (currentRole === "admin" && targetRole === "admin") {
-          throw new ForbiddenException("Admins cannot remove other admins");
-        }
-
-        await this.workspaceRepo.deleteMembership(
-          workspaceId,
-          targetUserId,
-          tx,
-        );
-
-        await this.outbox.createEvent(
-          "membership.removed",
-          { workspaceId, userId: targetUserId },
-          tx,
-        );
-      },
-    );
+      await this.workspaceRepo.deleteMembership(workspaceId, targetUserId, tx);
+      await this.outbox.createEvent("membership.removed", { workspaceId, userId: targetUserId }, tx);
+    });
 
     await this.cache.invalidate(`workspaces:${workspaceId}:members`);
   }
 
   async validateMembership(workspaceId: string, userId: string) {
-    const membership = await this.workspaceRepo.findMembership(
-      workspaceId,
-      userId,
-    );
-
-    if (!membership) {
-      throw new ForbiddenException("You are not a member of this workspace");
-    }
-
+    const membership = await this.workspaceRepo.findMembership(workspaceId, userId);
+    if (!membership) throw new ForbiddenException("Not a member of this workspace");
     return membership;
   }
 
   async createWorkspace(name: string, slug: string, userId: string) {
-    const workspace = await this.workspaceRepo.transaction(async (tx: any) => {
-        const workspace = await this.workspaceRepo.create({ name, slug }, tx);
+    const workspace = await this.workspaceRepo.transaction(async (tx: NodePgDatabase<typeof schema>) => {
+      const ws = await this.workspaceRepo.create({ name, slug }, tx);
 
-        await this.workspaceRepo.createMembership(
-          {
-            userId,
-            workspaceId: workspace.id,
-            role: "owner",
-          },
-          tx,
-        );
+      await this.workspaceRepo.createMembership({
+        userId,
+        workspaceId: ws.id,
+        role: "owner",
+      }, tx);
 
-        await this.outbox.createEvent(
-          "workspace.created",
-          { workspaceId: workspace.id, userId, name },
-          tx,
-        );
+      await this.outbox.createEvent("workspace.created", { workspaceId: ws.id, userId, name }, tx);
 
-        return workspace;
-      },
-    );
+      return ws;
+    });
 
     await this.cache.invalidate(`workspaces:${workspace.id}`);
     return workspace;
@@ -208,36 +140,13 @@ export class WorkspacesService {
     currentUserId: string,
     role: WorkspaceRole = "member",
   ): Promise<void> {
-    await this.workspaceRepo.transaction(async (tx: any) => {
-        const currentMembership = await this.workspaceRepo.findMembership(
-          workspaceId,
-          currentUserId,
-          tx,
-        );
+    await this.workspaceRepo.transaction(async (tx: NodePgDatabase<typeof schema>) => {
+      const currentMembership = await this.workspaceRepo.findMembership(workspaceId, currentUserId, tx);
+      if (!currentMembership) throw new ForbiddenException("Not a member of this workspace");
 
-        if (!currentMembership) {
-          throw new ForbiddenException(
-            "You are not a member of this workspace",
-          );
-        }
-        // Guard logic moved to role-based guards; remove inline check
-
-        await this.workspaceRepo.createMembership(
-          {
-            workspaceId,
-            userId: newUserId,
-            role,
-          },
-          tx,
-        );
-
-        await this.outbox.createEvent(
-          "membership.added",
-          { workspaceId, userId: newUserId, role },
-          tx,
-        );
-      },
-    );
+      await this.workspaceRepo.createMembership({ workspaceId, userId: newUserId, role }, tx);
+      await this.outbox.createEvent("membership.added", { workspaceId, userId: newUserId, role }, tx);
+    });
 
     await this.cache.invalidate(`workspaces:${workspaceId}:members`);
   }
@@ -253,3 +162,4 @@ export class WorkspacesService {
 }
 
 export type { MemberWithUser };
+

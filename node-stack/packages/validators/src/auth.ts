@@ -1,10 +1,14 @@
-import { createZodDto, ZodDto } from "nestjs-zod";
+import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
 
-const password = z
+const strongPassword = z
   .string()
   .min(8, "Password must be at least 8 characters")
-  .max(128, "Password must be at most 128 characters");
+  .max(128, "Password must be at most 128 characters")
+  .regex(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+    "Password must contain uppercase, lowercase, and a number",
+  );
 
 // ── Register ──────────────────────────────────────────────
 export const RegisterSchema = z.object({
@@ -14,7 +18,7 @@ export const RegisterSchema = z.object({
     .toLowerCase()
     .trim()
     .describe("User's email address (e.g. user@example.com)"),
-  password: password.describe("User's password (min 8 characters)"),
+  password: strongPassword.describe("User's password (min 8 chars, mixed case, numbers)"),
   name: z
     .string()
     .min(1)
@@ -23,7 +27,11 @@ export const RegisterSchema = z.object({
     .optional()
     .describe("Full name of the user (e.g. John Doe)"),
 });
-export class RegisterDto extends createZodDto(RegisterSchema) {}
+export class RegisterDto extends createZodDto(RegisterSchema) {
+  declare email: string;
+  declare password: string;
+  declare name?: string;
+}
 
 // ── Login ─────────────────────────────────────────────────
 export const LoginSchema = z.object({
@@ -35,7 +43,10 @@ export const LoginSchema = z.object({
     .describe("User's email address"),
   password: z.string().min(1).describe("User's password"),
 });
-export class LoginDto extends createZodDto(LoginSchema) {}
+export class LoginDto extends createZodDto(LoginSchema) {
+  declare email: string;
+  declare password: string;
+}
 
 // ── Refresh ───────────────────────────────────────────────
 export const RefreshSchema = z.object({
@@ -44,7 +55,9 @@ export const RefreshSchema = z.object({
     .min(1)
     .describe("Refresh token obtained during login"),
 });
-export class RefreshDto extends createZodDto(RefreshSchema) {}
+export class RefreshDto extends createZodDto(RefreshSchema) {
+  declare refreshToken: string;
+}
 
 // ── Verify 2FA ────────────────────────────────────────────
 export const Verify2faSchema = z.object({
@@ -54,7 +67,9 @@ export const Verify2faSchema = z.object({
     .regex(/^\d{6}$/, "Token must contain only digits")
     .describe("6-digit TOTP code (e.g. 123456)"),
 });
-export class Verify2faDto extends createZodDto(Verify2faSchema) {}
+export class Verify2faDto extends createZodDto(Verify2faSchema) {
+  declare token: string;
+}
 
 // ── Login 2FA ─────────────────────────────────────────────
 export const Login2faSchema = z.object({
@@ -68,10 +83,13 @@ export const Login2faSchema = z.object({
     .regex(/^\d{6}$/, "Token must contain only digits")
     .describe("6-digit TOTP code (e.g. 123456)"),
 });
-export class Login2faDto extends createZodDto(Login2faSchema) {}
+export class Login2faDto extends createZodDto(Login2faSchema) {
+  declare tempToken: string;
+  declare token: string;
+}
 
 // ── Forgot Password ──────────────────────────────────────
-export const ForgotPasswordSchema = z.object({
+export const RecoverySchema = z.object({
   email: z
     .string()
     .email("Invalid email address")
@@ -79,19 +97,27 @@ export const ForgotPasswordSchema = z.object({
     .trim()
     .describe("Email to send reset link to"),
 });
-export type ForgotPasswordDto = z.infer<typeof ForgotPasswordSchema>;
+export class RecoveryDto extends createZodDto(RecoverySchema) {
+  declare email: string;
+}
+
+export const ForgotPasswordSchema = RecoverySchema;
+export class ForgotPasswordDto extends RecoveryDto {}
 
 // ── Reset Password ────────────────────────────────────────
 export const ResetPasswordSchema = z.object({
   token: z.string().min(1, "Token is required").describe("Reset token from email"),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .max(128, "Password must be at most 128 characters")
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      "Password must contain uppercase, lowercase, and a number",
-    )
-    .describe("New password for the account"),
+  newPassword: strongPassword.describe("New password for the account"),
 });
-export type ResetPasswordDto = z.infer<typeof ResetPasswordSchema>;
+export class ResetPasswordDto extends createZodDto(ResetPasswordSchema) {
+  declare token: string;
+  declare newPassword: string;
+}
+
+// ── Verify Email ──────────────────────────────────────────
+export const VerifyEmailSchema = z.object({
+  token: z.string().min(1, "Token is required").describe("Verification token from email"),
+});
+export class VerifyEmailDto extends createZodDto(VerifyEmailSchema) {
+  declare token: string;
+}

@@ -5,9 +5,12 @@ const QUEUE_NAME = "outbox";
 export class OutboxProducer {
   private static queue: Queue | null = null;
 
-  static init(redisUrl?: string) {
+  static init() {
     this.queue = new Queue(QUEUE_NAME, {
-      connection: redisUrl ? ({ host: redisUrl } as any) : undefined,
+      connection: {
+        host: process.env.REDIS_HOST || "localhost",
+        port: Number(process.env.REDIS_PORT) || 6379,
+      },
     });
   }
 

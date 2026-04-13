@@ -6,17 +6,19 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { db, schema, eq } from "@node-stack/db";
-import { generateSecret, generateURI, verify } from "otplib";
+import { OTP } from "otplib";
 import * as QRCode from "qrcode";
 
 import { TOKEN_TYPE, JWT_CONSTANTS } from "../constants";
 
 @Injectable()
 export class TwoFactorService {
+  private readonly otp = new OTP();
+
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService,
-  ) {}
+  ) { }
 
   async generateSecret(
     userId: string,
@@ -29,10 +31,11 @@ export class TwoFactorService {
       throw new UnauthorizedException("User not found");
     }
 
-    const secret = generateSecret();
+    const secret = this.otp.generateSecret();
+    const appName = this.configService.get("APP_NAME", "NodeStack");
 
-    const otpAuthUrl = generateURI({
-      issuer: "NodeStack",
+    const otpAuthUrl = this.otp.generateURI({
+      issuer: appName,
       label: user.email,
       secret,
     });
@@ -48,8 +51,19 @@ export class TwoFactorService {
   }
 
   async verifyToken(secret: string, token: string): Promise<boolean> {
-    const result = await verify({ secret, token });
-    return result.valid;
+    try {
+      const cleanToken = String(token).replace(/\s+/g, "");
+
+      const result = await this.otp.verify({
+        secret,
+        token: cleanToken,
+        epochTolerance: 30, // Account for clock drift
+      });
+
+      return result.valid;
+    } catch (error) {
+      return false;
+    }
   }
 
   async enableTwoFactor(userId: string, token: string): Promise<void> {
@@ -59,13 +73,13 @@ export class TwoFactorService {
 
     if (!user || !user.twoFactorSecret) {
       throw new BadRequestException(
-        "Generate a 2FA secret first by calling /auth/2fa/enable",
+        "Generate a 2FA secret first by calling /v1/auth/2fa/generate",
       );
     }
 
-    const result = await verify({ secret: user.twoFactorSecret, token });
+    const isValid = await this.verifyToken(user.twoFactorSecret, token);
 
-    if (!result.valid) {
+    if (!isValid) {
       throw new UnauthorizedException("Invalid 2FA token");
     }
 
@@ -94,19 +108,17 @@ export class TwoFactorService {
       throw new UnauthorizedException("2FA is not enabled for this user");
     }
 
-    const result = await verify({ secret: user.twoFactorSecret, token });
+    const isValid = await this.verifyToken(user.twoFactorSecret, token);
 
-    if (!result.valid) {
+    if (!isValid) {
       throw new UnauthorizedException("Invalid 2FA token");
     }
 
-    const sessionId = crypto.randomUUID();
-    const accessSecret =
-      this.configService.get("JWT_SECRET") || JWT_CONSTANTS.ACCESS_SECRET;
+    const sessionId = (crypto as any).randomUUID();
+    const accessSecret = this.configService.get("JWT_SECRET");
     const refreshSecret =
       this.configService.get("JWT_REFRESH_SECRET") ||
-      this.configService.get("JWT_SECRET") ||
-      JWT_CONSTANTS.REFRESH_SECRET;
+      this.configService.get("JWT_SECRET");
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
@@ -126,6 +138,7 @@ export class TwoFactorService {
 
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
+
     await db.insert(schema.sessions).values({
       id: sessionId,
       userId: user.id,
@@ -139,8 +152,7 @@ export class TwoFactorService {
     return this.jwtService.sign(
       { sub: userId, type: "2fa_pending" },
       {
-        secret:
-          this.configService.get("JWT_SECRET") || JWT_CONSTANTS.ACCESS_SECRET,
+        secret: this.configService.get("JWT_SECRET"),
         expiresIn: "5m",
       },
     );
@@ -149,8 +161,7 @@ export class TwoFactorService {
   verifyTempToken(token: string): string {
     try {
       const payload = this.jwtService.verify(token, {
-        secret:
-          this.configService.get("JWT_SECRET") || JWT_CONSTANTS.ACCESS_SECRET,
+        secret: this.configService.get("JWT_SECRET"),
       });
 
       if (payload.type !== "2fa_pending") {
