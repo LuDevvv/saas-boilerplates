@@ -21,7 +21,7 @@ export const TabNavigation = <T extends string>({
   return (
     <div
       className={cn(
-        "flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-800/50 rounded-2xl w-full sm:w-fit overflow-x-auto no-scrollbar",
+        "flex items-center gap-1 p-1 bg-gray-50 dark:bg-gray-800/50 rounded-2xl w-full sm:w-fit overflow-x-auto no-scrollbar",
         className
       )}
     >

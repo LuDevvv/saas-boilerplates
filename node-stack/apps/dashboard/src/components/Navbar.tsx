@@ -4,9 +4,10 @@ import { useAuth } from "@/hooks/stores/useAuth";
 import { AccountSection } from "./sidebar/AccountSection";
 import { accountDropdownItems } from "@/config/navigation";
 import { LinkTransition } from "@components/utils/LinkTransition";
-import { Breadcrumbs } from "./Breadcrumbs";
+import { ThemeToggle } from "./ThemeToggle";
+import { useThemeStore } from "@/stores/themeStore";
 import { siteConfig } from "@/config/site-config";
-import { WorkspaceSwitcher } from "./navbar/WorkspaceSwitcher";
+import Breadcrumbs from "./Breadcrumbs";
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -15,22 +16,18 @@ interface NavbarProps {
 }
 
 export const Navbar: FC<NavbarProps> = ({ onMenuClick }) => {
-  const { user, isPremium, logout } = useAuth();
-  
-  // Generic plan name retrieval - can be enhanced later
-  const planName = isPremium ? "Premium" : "Free";
+  const { user, logout } = useAuth();
+  const { theme } = useThemeStore();
 
   return (
-    <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-gray-200 bg-white px-4 lg:px-6 shadow-sm dark:border-gray-800 dark:bg-gray-900 transition-all duration-300">
+    <header className="sticky top-0 z-20 flex h-16 w-full items-center justify-between border-b border-gray-100 dark:border-white/10 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md px-4 lg:px-6 transition-all duration-300">
       {/* Left Section: Logo (Mobile) or Breadcrumbs (Desktop) */}
       <div className="flex items-center gap-4">
         <LinkTransition href="/" className="lg:hidden flex items-center">
-          <img className="h-6 w-auto" src={siteConfig.defaultLogo} alt={siteConfig.name} />
+          <img className="h-6 w-auto" src={theme === 'dark' ? siteConfig.logo.dark : siteConfig.logo.light} alt={siteConfig.name} />
         </LinkTransition>
 
-        <div className="hidden lg:flex items-center gap-4">
-          <WorkspaceSwitcher />
-          <div className="h-6 w-px bg-gray-200 dark:bg-gray-800" />
+        <div className="hidden lg:flex items-center">
           <Breadcrumbs />
         </div>
       </div>
@@ -38,12 +35,11 @@ export const Navbar: FC<NavbarProps> = ({ onMenuClick }) => {
       {/* Right Section: Account + Menu */}
       <div className="flex items-center gap-1.5 lg:gap-3">
         {user && (
-          <div className="flex items-center">
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
             <AccountSection
               isCollapsed={false}
-              isPremium={isPremium}
               user={user}
-              planName={planName}
               onLogout={logout}
               dropdownItems={accountDropdownItems}
             />
@@ -54,7 +50,7 @@ export const Navbar: FC<NavbarProps> = ({ onMenuClick }) => {
           <button
             onClick={onMenuClick}
             className="flex items-center justify-center rounded-xl p-2 text-gray-500 transition-all hover:bg-gray-100 hover:text-gray-900 active:scale-95 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white lg:hidden cursor-pointer"
-            aria-label="Open menu"
+            aria-label="Abrir menú"
           >
             <Menu className="h-6 w-6" />
           </button>

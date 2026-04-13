@@ -14,7 +14,7 @@ const variantClasses = {
   primary:
     "bg-gradient-to-r from-primary-500 to-highlight-500 text-white hover:from-primary-600 hover:to-highlight-600 focus:ring-primary-500/50 shadow-primary-500/20",
   secondary:
-    "bg-gradient-to-r from-gray-700 to-gray-800 text-white hover:from-gray-800 hover:to-gray-900 focus:ring-gray-500/50 shadow-gray-500/20",
+    "bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 border border-transparent dark:border-white/5 focus:ring-gray-500/50 shadow-sm",
   ghost:
     "bg-transparent text-gray-700 hover:bg-gray-100 active:bg-gray-200 focus:ring-gray-300 dark:text-gray-300 dark:hover:bg-gray-800 shadow-none hover:shadow-none",
   danger:

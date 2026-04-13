@@ -1,14 +1,12 @@
-import { User, Role } from "@/types/auth";
+import { User } from "@/types/auth";
 import { LucideIcon } from "lucide-react";
 import { ReactNode } from "react";
-import { Permission } from "@/config/permissions";
 
 export interface SubMenuItem {
   id?: string;
   icon?: LucideIcon;
   label: string;
   path: string;
-  permission?: Permission;
   subItems?: SubMenuItem[];
 }
 
@@ -18,13 +16,11 @@ export interface MenuItem {
   label: string;
   path?: string;
   badge?: string;
-  permission?: Permission;
   subItems?: SubMenuItem[];
 }
 
 export interface MenuSection {
   title: string;
-  permission?: Permission;
   items: MenuItem[];
 }
 
@@ -51,11 +47,11 @@ export interface SidebarItemProps {
 
 export interface AccountSectionProps {
   isCollapsed: boolean;
-  isPremium: boolean;
   user: User | null;
-  planName?: string;
   onLogout: () => void;
   dropdownItems: DropdownItem[];
+  isPremium?: boolean;
+  currentPlan?: any;
 }
 
 export interface SidebarSectionProps {
@@ -67,17 +63,16 @@ export interface SidebarSectionProps {
 export interface AccountDropdownProps {
   isOpen: boolean;
   onClose: () => void;
-  isPremium: boolean;
-  planName?: string;
   onLogout: () => void;
   items: DropdownItem[];
   triggerRef: React.RefObject<HTMLButtonElement>;
+  isPremium?: boolean;
+  currentPlan?: any;
 }
 
 export interface DropdownItem {
   icon: LucideIcon;
   label: string;
   path: string;
-  showOnlyForFree?: boolean;
   highlight?: boolean;
 }

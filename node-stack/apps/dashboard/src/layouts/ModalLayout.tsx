@@ -150,7 +150,7 @@ export const ModalLayout: FC<ModalLayoutProps> = ({
           className={cn(
             "relative flex items-center justify-between px-4 sm:px-8 pt-7 pb-5 sm:pt-8 sm:pb-6 transition-all duration-300",
             isHeaderSticky
-              ? "bg-white/90 dark:bg-gray-950/90 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800 shadow-[0_4px_20px_-5px_rgba(0,0,0,0.05)]"
+              ? "bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl border-b border-white/5 dark:border-white/5 shadow-[0_4px_20px_-5px_rgba(0,0,0,0.08)]"
               : "bg-transparent border-b border-transparent"
           )}
         >
@@ -191,7 +191,7 @@ export const ModalLayout: FC<ModalLayoutProps> = ({
         {footer && (
           <footer
             className={cn(
-              "px-4 sm:px-8 py-4 sm:py-6 bg-gray-50/50 dark:bg-gray-950/20 border-t border-gray-100 dark:border-gray-800 transition-all",
+              "px-4 sm:px-8 py-4 sm:py-6 bg-gray-50/50 dark:bg-white/[0.02] border-t border-transparent transition-all",
               "flex items-center justify-end gap-3"
             )}
           >

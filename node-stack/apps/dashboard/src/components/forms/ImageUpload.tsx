@@ -8,7 +8,7 @@ import {
   Loader2,
   UserCircle,
 } from "lucide-react";
-import toast from "react-hot-toast";
+import { appToast } from "@/components/alerts/Toasts";
 import { cn } from "@utils/classNames";
 
 interface ImageUploadProps {
@@ -60,12 +60,18 @@ export const ImageUpload = ({
 
   const handleFileSelected = (file: File) => {
     if (file.size > 1 * 1024 * 1024) {
-      toast.error("La imagen es demasiado grande. El tamaño máximo es 1MB");
+      appToast.error({
+        title: "Archivo muy pesado",
+        description: "El tamaño máximo permitido es de 1MB para optimizar el rendimiento."
+      });
       return;
     }
 
     if (!file.type.startsWith("image/")) {
-      toast.error("Formato no soportado. Por favor, sube una imagen");
+      appToast.error({
+        title: "Formato inválido",
+        description: "Por favor, selecciona una imagen (JPG, PNG o WebP)."
+      });
       return;
     }
 

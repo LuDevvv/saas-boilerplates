@@ -3,8 +3,8 @@ import { ShieldCheck, Check } from "lucide-react";
 
 export const ForgotPasswordPreviewSection: FC = () => {
   return (
-    <div className="relative w-full overflow-hidden bg-[#7144F9] lg:min-h-screen lg:w-1/2">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#7144F9] via-[#7144F9] to-[#7573FB]"></div>
+    <div className="relative w-full overflow-hidden bg-[#7144F9] dark:bg-gray-950 lg:min-h-screen lg:w-1/2">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#7144F9] via-[#7144F9] to-[#7573FB] dark:from-gray-950 dark:via-gray-950 dark:to-[#7144F9]/20"></div>
 
       <div
         className="absolute inset-0 opacity-10"

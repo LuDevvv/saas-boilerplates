@@ -39,7 +39,7 @@ const GoogleButton: React.FC<GoogleButtonProps> = ({
       type="button"
       onClick={handleGoogleAuth}
       disabled={disabled || isLoading}
-      className={`flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-gray-100 bg-white px-4 py-3.5 text-[15px] font-semibold text-gray-700 shadow-sm transition-all duration-300 ease-out-expo hover:border-gray-200 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700/50 dark:bg-gray-800/50 dark:text-white dark:hover:border-gray-700 ${className}`}
+      className={`flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-gray-100 bg-white px-4 py-3.5 text-[15px] font-semibold text-gray-700 shadow-sm transition-all duration-300 ease-out-expo hover:border-gray-200 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:border-white/5 dark:bg-gray-900 dark:text-white dark:hover:border-white/10 ${className}`}
     >
       {isLoading ? (
         <svg

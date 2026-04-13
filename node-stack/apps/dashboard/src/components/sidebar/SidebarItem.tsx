@@ -6,7 +6,6 @@ import LinkTransition from "../utils/LinkTransition";
 import { Tooltip } from "../ui/Tooltip";
 import { SidebarItemProps } from "./types";
 import { useSidebarStore } from "@/stores/sidebarStore";
-import { usePermission } from "@/hooks/usePermission";
 
 export const SidebarItem: FC<SidebarItemProps> = ({
   id,
@@ -19,7 +18,6 @@ export const SidebarItem: FC<SidebarItemProps> = ({
   subItems,
   level = 0,
 }) => {
-  const { hasPermission } = usePermission();
   const [showTooltip, setShowTooltip] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const itemRef = useRef<HTMLDivElement>(null);
@@ -92,10 +90,10 @@ export const SidebarItem: FC<SidebarItemProps> = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={cn(
-        "group relative flex items-center transition-colors duration-150 cursor-pointer w-full",
+        "group relative flex items-center transition-all duration-200 cursor-pointer w-full",
         isVisuallyActive
-          ? "bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 font-medium"
-          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white",
+          ? "bg-primary-50 text-primary-700 dark:bg-primary-500/10 dark:text-primary-400 font-bold"
+          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white",
         isCollapsed
           ? "justify-center px-2 py-3 rounded-xl"
           : "gap-3 px-3 py-2.5 rounded-xl",
@@ -145,7 +143,7 @@ export const SidebarItem: FC<SidebarItemProps> = ({
             <div
               role="button"
               onClick={handleChevronClick}
-              className="p-1 rounded-lg hover:bg-white/80 dark:hover:bg-gray-700/50 transition-colors duration-200 shadow-sm group-hover:shadow-md"
+              className="p-1 rounded-lg hover:bg-white/80 dark:hover:bg-white/5 transition-colors duration-200 group-hover:shadow-sm"
             >
               <ChevronDown
                 className={cn(
@@ -164,9 +162,7 @@ export const SidebarItem: FC<SidebarItemProps> = ({
   const renderSubItems = (items: typeof subItems, parentLevel: number) => {
     if (!items) return null;
 
-    return items
-      .filter(item => !item.permission || hasPermission(item.permission))
-      .map((subItem) => {
+    return items.map((subItem) => {
       const isSubItemActive = !!(subItem.path === '/' 
         ? location.pathname === '/' 
         : subItem.path && typeof subItem.path === 'string' && location.pathname.startsWith(subItem.path));
@@ -200,8 +196,8 @@ export const SidebarItem: FC<SidebarItemProps> = ({
             className={cn(
               "flex items-center gap-3 px-3 py-2.5 transition-all duration-200 relative group cursor-pointer",
               isSubItemActive
-                ? "bg-gradient-to-r from-primary-50/40 to-transparent text-primary-700 dark:from-primary-900/15 dark:to-transparent dark:text-primary-400 font-medium rounded-xl"
-                : "text-gray-500 hover:bg-gradient-to-r hover:from-gray-50 hover:to-transparent hover:text-gray-900 dark:text-gray-500 dark:hover:bg-gradient-to-r dark:hover:from-gray-800/40 dark:hover:to-transparent dark:hover:text-white rounded-xl"
+                ? "bg-gradient-to-r from-primary-50/40 to-transparent text-primary-700 dark:from-primary-500/5 dark:to-transparent dark:text-primary-400 font-bold rounded-xl"
+                : "text-gray-500 hover:bg-gradient-to-r hover:from-gray-50 hover:to-transparent hover:text-gray-900 dark:text-gray-500 dark:hover:from-white/5 dark:hover:to-transparent dark:hover:text-white rounded-xl"
             )}
           >
             {/* Indentation line or dot */}
@@ -209,8 +205,8 @@ export const SidebarItem: FC<SidebarItemProps> = ({
               className={cn(
                 "w-1 h-1 rounded-full transition-all duration-200",
                 isSubItemActive
-                  ? "bg-primary-600"
-                  : "bg-gray-300 dark:bg-gray-700 group-hover:bg-gray-400"
+                  ? "bg-primary-600 scale-125 shadow-[0_0_8px] shadow-primary-500/50"
+                  : "bg-gray-300 dark:bg-white/10 group-hover:bg-gray-400 dark:group-hover:bg-white/20"
               )}
             />
 

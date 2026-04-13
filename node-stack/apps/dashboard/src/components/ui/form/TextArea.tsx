@@ -66,16 +66,16 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
               "w-full pr-4 py-3.5",
               icon ? "pl-11" : "pl-4",
               "text-[15px] text-gray-900 dark:text-white",
-              "bg-white dark:bg-gray-800/50",
+              "bg-gray-50/50 focus:bg-white dark:bg-white/[0.02] dark:focus:bg-gray-900",
               "border-2 rounded-2xl",
-              "transition-all duration-300 ease-out-expo",
+              "transition-all duration-500 ease-out-expo",
               "placeholder:text-gray-400/80 dark:placeholder:text-gray-500",
               "focus:outline-none",
               "resize-none",
               "disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-950",
               error
                 ? "border-red-200 dark:border-red-900/50 focus:border-red-500 shadow-sm"
-                : "border-gray-100 dark:border-gray-700/50 focus:border-primary-500 hover:border-gray-200 dark:hover:border-gray-700 shadow-sm hover:shadow-md",
+                : "border-transparent dark:border-white/[0.02] focus:border-primary-500/50 hover:border-primary-500/20 shadow-sm hover:shadow-md",
               className
             )}
             {...props}

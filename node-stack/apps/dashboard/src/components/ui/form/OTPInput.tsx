@@ -27,7 +27,7 @@ export const OTPInput: React.FC<OTPInputProps> = ({
 }) => {
   return (
     <div
-      className={cn("flex gap-3 justify-center", className)}
+      className={cn("flex gap-2 md:gap-3 justify-center w-full max-w-sm mx-auto", className)}
       onPaste={onPaste}
     >
       {Array.from({ length }).map((_, index) => (
@@ -44,12 +44,12 @@ export const OTPInput: React.FC<OTPInputProps> = ({
           onKeyDown={(e) => onKeyDown(index, e)}
           disabled={disabled}
           className={cn(
-            "w-12 h-14 md:w-14 md:h-16 text-center text-xl md:text-2xl font-bold",
-            "text-gray-900 dark:text-white bg-white dark:bg-gray-800/50",
-            "border-2 border-gray-100 dark:border-gray-700/50 rounded-2xl",
+            "flex-1 w-full max-w-[42px] h-12 md:max-w-none md:w-14 md:h-16 text-center text-xl md:text-2xl font-bold",
+            "text-gray-900 dark:text-white bg-white dark:bg-white/5",
+            "border-2 border-gray-100 dark:border-white/10 rounded-xl md:rounded-2xl",
             "transition-all duration-300 ease-out-expo shadow-sm",
-            "focus:outline-none focus:border-primary-500 hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-md",
-            "disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-950"
+            "focus:outline-none focus:border-[#7144F9] hover:border-gray-200 dark:hover:border-white/20 hover:shadow-md",
+            "disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-gray-900/50"
           )}
         />
       ))}

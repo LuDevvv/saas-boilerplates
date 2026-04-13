@@ -4,13 +4,11 @@ import { Crown, Sparkles } from "lucide-react";
 
 interface PlanBadgeProps {
   planName?: string;
-  isPremium?: boolean; // Deprecated, but keeping for compatibility if needed
   size?: "xs" | "sm" | "md" | "lg";
 }
 
 export const PlanBadge: FC<PlanBadgeProps> = ({
   planName,
-  isPremium,
   size = "md",
 }) => {
   const sizeClasses = {
@@ -27,9 +25,8 @@ export const PlanBadge: FC<PlanBadgeProps> = ({
     lg: "w-4 h-4",
   };
 
-  const isPro = planName === "Pro" || planName === "Business" || planName === "Premium" || isPremium;
-
-  const displayLabel = (planName || (isPremium ? "Pro" : "Gratis")).replace(/Premium/g, "Pro");
+  const isPro = planName?.toLowerCase() !== "free" && planName?.toLowerCase() !== "gratis" && !!planName;
+  const displayLabel = planName || "Free";
 
   if (isPro) {
     return (

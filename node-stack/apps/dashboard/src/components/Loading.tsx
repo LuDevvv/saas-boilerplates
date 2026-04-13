@@ -1,4 +1,5 @@
-import { Loader2 } from "lucide-react";
+import { LottieAnimation } from "@/components/lottie/LottieAnimation";
+import GenericLoader from "@assets/animations/generic-loader.json";
 import type { FC } from "react";
 
 const Loading: FC = () => {
@@ -6,7 +7,11 @@ const Loading: FC = () => {
     <div className="flex h-screen items-center justify-center bg-white dark:bg-gray-950">
       <div className="relative flex flex-col items-center gap-6">
         <div className="relative">
-          <Loader2 className="w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 text-primary-500 animate-spin" />
+          <LottieAnimation
+            animationData={GenericLoader}
+            className="w-32 h-32 md:w-48 md:h-48 lg:w-64 lg:h-64"
+            loop={true}
+          />
         </div>
       </div>
     </div>

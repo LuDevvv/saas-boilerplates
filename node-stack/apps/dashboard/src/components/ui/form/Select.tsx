@@ -114,12 +114,12 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
             type="button"
             onClick={() => setIsOpen(!isOpen)}
             className={cn(
-              "w-full py-3.5 pr-11 flex items-center gap-3 transition-all duration-300 ease-out-expo text-[15px] border-2 rounded-2xl",
+              "w-full py-3.5 pr-11 flex items-center gap-3 transition-all duration-500 ease-out-expo text-[15px] border-2 rounded-2xl",
               icon ? "pl-11" : "pl-4",
               error
                 ? "border-red-200 dark:border-red-900/50 focus:border-red-500 bg-white shadow-sm"
-                : "border-gray-100 dark:border-gray-700/50 hover:border-gray-200 dark:hover:border-gray-700 focus:border-primary-500 bg-white dark:bg-gray-800/50 shadow-sm hover:shadow-md",
-              isOpen && "border-primary-500",
+                : "border-transparent dark:border-white/[0.02] hover:border-primary-500/20 focus:border-primary-500 bg-gray-50/50 dark:bg-white/[0.02] shadow-sm hover:shadow-md",
+              isOpen && "border-primary-500/50 bg-white dark:bg-gray-900",
               className
             )}
           >
@@ -146,15 +146,15 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
 
           {/* Dropdown Menu */}
           {isOpen && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl z-[200] animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-950 border border-transparent dark:border-white/[0.05] rounded-2xl shadow-2xl z-[200] animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
               {searchable && (
-                <div className="p-3 border-b border-gray-100 dark:border-gray-800">
+                <div className="p-3 border-b border-transparent dark:border-white/[0.02]">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
                       ref={searchInputRef}
                       type="text"
-                      className="w-full bg-gray-50 dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-700 rounded-xl py-2.5 pl-9 pr-4 text-sm focus:outline-none focus:border-primary-500 text-gray-900 dark:text-white placeholder:text-gray-400"
+                      className="w-full bg-gray-50 dark:bg-white/[0.03] border-2 border-transparent focus:border-primary-500/50 rounded-xl py-2.5 pl-9 pr-4 text-sm focus:outline-none text-gray-900 dark:text-white placeholder:text-gray-400 decoration-none"
                       placeholder="Buscar..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}

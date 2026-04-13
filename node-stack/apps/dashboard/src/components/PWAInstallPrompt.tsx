@@ -51,7 +51,7 @@ export const PWAInstallPrompt: React.FC = () => {
 
           <div className="flex-1 min-w-0">
             <h3 className="text-sm font-bold text-gray-900 tracking-tight dark:text-white truncate">
-              Instalar Universal Dashboard
+              Instalar Azteli
             </h3>
             <p className="mt-0.5 text-[11px] font-medium text-gray-500 dark:text-gray-400 line-clamp-1 lg:mt-1 lg:text-xs">
               Acceso directo desde tu escritorio.

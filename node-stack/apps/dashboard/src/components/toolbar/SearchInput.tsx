@@ -24,11 +24,11 @@ export const SearchInput: FC<SearchInputProps> = ({
   return (
     <div
       className={cn(
-        "flex items-center bg-white dark:bg-gray-800 rounded-full shadow-sm border border-gray-100 dark:border-gray-700 p-1.5 pl-4 w-full sm:w-auto transition-shadow",
+        "flex items-center bg-gray-50/50 dark:bg-white/[0.03] rounded-2xl p-1.5 pl-4 w-full sm:w-auto transition-all duration-300 group focus-within:bg-white dark:focus-within:bg-white/[0.06] focus-within:shadow-md dark:focus-within:shadow-black/20",
         className
       )}
     >
-      <div className="shrink-0 flex items-center justify-center text-gray-400">
+      <div className="shrink-0 flex items-center justify-center text-gray-400 group-focus-within:text-primary-500 transition-colors">
         {isLoading ? (
           <Loader2 className="w-4 h-4 text-primary animate-spin" />
         ) : (
@@ -41,7 +41,7 @@ export const SearchInput: FC<SearchInputProps> = ({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full flex-1 bg-transparent border-none text-sm font-medium focus:ring-0 text-gray-700 dark:text-gray-200 placeholder-gray-400 px-3 outline-none min-w-0"
+        className="w-full flex-1 bg-transparent border-none text-sm font-semibold focus:ring-0 text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-600 px-3 outline-none min-w-0"
       />
 
       {(value || rightElement) && (
@@ -57,7 +57,7 @@ export const SearchInput: FC<SearchInputProps> = ({
             </button>
           )}
           {rightElement && (
-            <div className="flex items-center gap-1 border-l border-gray-200 dark:border-gray-700 pl-2 pr-1 shrink-0">
+            <div className="flex items-center gap-1 pl-2 pr-1 shrink-0">
               {rightElement}
             </div>
           )}

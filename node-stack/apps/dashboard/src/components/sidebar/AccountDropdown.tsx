@@ -8,7 +8,6 @@ import { useSidebarStore } from "@/stores/sidebarStore";
 export const AccountDropdown: FC<AccountDropdownProps> = ({
   isOpen,
   onClose,
-  planName = "Free",
   onLogout,
   items,
   triggerRef,
@@ -46,15 +45,10 @@ export const AccountDropdown: FC<AccountDropdownProps> = ({
 
   if (!isOpen) return null;
 
-  // Generic filter: in the future we can use planName to hide certain items
-  const filteredItems = items.filter(
-    (item) => !item.showOnlyForFree || planName === "Free"
-  );
-
   return (
     <div
       ref={dropdownRef}
-      className="absolute top-full right-0 mt-2 w-64 rounded-xl border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 overflow-hidden"
+      className="absolute top-full right-0 mt-2 w-64 rounded-xl border border-transparent bg-white shadow-2xl shadow-gray-200/50 dark:bg-gray-800/95 dark:shadow-none dark:backdrop-blur-xl overflow-hidden"
     >
       <div className="flex flex-col p-1">
         <div className="px-3 py-2">
@@ -63,7 +57,7 @@ export const AccountDropdown: FC<AccountDropdownProps> = ({
           </p>
         </div>
 
-        {filteredItems.map((item, index) => (
+        {items.map((item, index) => (
           <LinkTransition
             key={index}
             href={item.path}
@@ -94,7 +88,7 @@ export const AccountDropdown: FC<AccountDropdownProps> = ({
           </LinkTransition>
         ))}
 
-        <div className="my-1 border-t border-gray-100 dark:border-gray-700" />
+        <div className="my-1 border-t border-transparent" />
 
         <button
           onClick={onLogout}

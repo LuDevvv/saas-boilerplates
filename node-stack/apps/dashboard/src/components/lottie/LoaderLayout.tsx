@@ -39,8 +39,8 @@ const LoaderLayout = ({
   const lottieProps = animationData
     ? { animationData }
     : path
-    ? { path }
-    : { animationData: {} }; // Fallback
+      ? { path }
+      : { animationData: {} }; // Fallback
 
   return (
     <section

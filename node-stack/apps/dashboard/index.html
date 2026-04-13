@@ -1,27 +1,124 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="description" content="Universal Dashboard - A high-performance dashboard boilerplate" />
-    
-    <!-- PWA -->
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    
-    <!-- iOS PWA Meta Tags -->
+    <title>Premium Dashboard Boilerplate</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes"
+    />
+
+    <!-- Disable Workbox Logs -->
+    <script>
+      self.__WB_DISABLE_DEV_LOGS = true;
+
+      // Theme detection to prevent FOUC
+      (function() {
+        try {
+          const storage = JSON.parse(localStorage.getItem('theme-storage'));
+          if (storage && storage.state && storage.state.theme === 'dark') {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#3b82f6" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Dashboard" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="format-detection" content="telephone=no" />
-    
-    <title>Universal Dashboard</title>
+
+    <!-- Meta tags SEO -->
+    <meta
+      name="description"
+      content="A premium, standalone dashboard boilerplate. High-performance, API-agnostic, and fully customizable for any SaaS or internal tool project."
+    />
+    <meta
+      name="keywords"
+      content="dashboard, boilerplate, react admin, vite, tailwind css, premium ui, saas foundation"
+    />
+    <meta name="author" content="Dashboard" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="/" />
+    <meta
+      property="og:title"
+      content="Premium Dashboard Boilerplate"
+    />
+    <meta
+      property="og:description"
+      content="A high-performance, premium dashboard boilerplate built with React, Vite, and Tailwind CSS."
+    />
+    <meta
+      property="og:image"
+      content="/og-image.jpg"
+    />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="/" />
+    <meta
+      property="twitter:title"
+      content="Premium Dashboard Boilerplate"
+    />
+    <meta
+      property="twitter:description"
+      content="A high-performance, premium dashboard boilerplate built with React, Vite, and Tailwind CSS."
+    />
+    <meta
+      property="twitter:image"
+      content="/twitter-image.jpg"
+    />
+
+    <!-- Structured Data / Schema.org -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Dashboard Boilerplate",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "description": "Premium dashboard boilerplate for building scalable web applications."
+      }
+    </script>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+      type="text/css"
+    />
+
+    <!-- Favicon & PWA Icons -->
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/pwa-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/pwa-512x512.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <!-- Habilitar indexación -->
+    <meta name="robots" content="index, follow" />
   </head>
-  <body>
+
+  <body class="bg-gray-50 text-gray-950 dark:bg-gray-950 dark:text-white">
     <div id="root"></div>
+
+    <noscript>
+      <div style="padding: 20px; text-align: center">
+        <h1>Premium Dashboard</h1>
+        <p>A high-performance, premium dashboard boilerplate.</p>
+        <p>To use this application, please enable JavaScript in your browser.</p>
+      </div>
+    </noscript>
+
     <script type="module" src="/src/index.tsx"></script>
   </body>
 </html>
+

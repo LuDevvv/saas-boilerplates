@@ -4,7 +4,7 @@ import { compressImage } from "../compressImage";
 import { Button } from "@/components/ui/form/Button";
 import { ZoomIn, Scissors } from "lucide-react";
 import { ModalLayout } from "@/layouts/ModalLayout";
-import toast from "react-hot-toast";
+import { appToast } from "@/components/alerts/Toasts";
 
 interface ImageCropperModalProps {
   isOpen: boolean;
@@ -122,9 +122,10 @@ const CropperModal: React.FC<ImageCropperModalProps> = ({
         0.95
       );
     } catch (error) {
-      toast.error(
-        "No se pudo procesar la imagen para el recorte. Por favor, intenta con otra."
-      );
+      appToast.error({
+        title: "Error de procesamiento",
+        description: "No se pudo procesar la imagen para el recorte. Por favor, intenta con otra."
+      });
       onClose();
     }
   };
