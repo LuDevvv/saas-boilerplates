@@ -1,4 +1,4 @@
-// Legacy types kept for backward compatibility - should be migrated to shared packages
+// TODO: These should eventually be moved to azteli-api-client
 
 export enum PaymentMethodType {
   CARD = "card",
@@ -6,6 +6,7 @@ export enum PaymentMethodType {
   PAYPAL = "paypal",
 }
 
+// Re-export SubscriptionStatus as value (it's exported as type in the library)
 export enum SubscriptionStatus {
   ACTIVE = "active",
   CANCELED = "canceled",

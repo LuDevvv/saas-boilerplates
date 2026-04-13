@@ -1,39 +1,23 @@
-import { BaseService } from "../baseService";
+import { BaseService } from "../BaseService";
 
-export interface Workspace {
+export interface WorkspaceItem {
   id: string;
   name: string;
-  slug: string;
-  logo?: string;
-  role: "owner" | "admin" | "member";
-  plan: "free" | "pro" | "enterprise";
+  location: string;
+  status: "active" | "idle" | "error";
+  members: number;
+  lastActive: string;
 }
 
 class WorkspaceService extends BaseService {
   constructor() {
-    super("/workspaces");
+    super("workspaces");
   }
 
-  async getAll(): Promise<Workspace[]> {
-    return this.get<Workspace[]>("/", "workspaces.json");
-  }
-
-  async create(data: { name: string }): Promise<Workspace> {
-    return this.post<Workspace>("/", data);
-  }
-
-  async update(id: string, data: Partial<Workspace>): Promise<Workspace> {
-    return this.put<Workspace>(`/${id}`, data);
-  }
-
-  async removeWorkspace(id: string): Promise<void> {
-    return this.delete<void>(`/${id}`);
-  }
-
-  // Logo management will usually be handled via StorageService 
-  // but we can expose legacy wrappers or verification helpers here.
-  async deleteLogo(id: string): Promise<Workspace> {
-    return this.post<Workspace>(`/${id}/logo/delete`);
+  async getWorkspaces(): Promise<any> {
+    return this.handleRequest<any>(async () => {
+      throw new Error("Real API not implemented yet");
+    });
   }
 }
 

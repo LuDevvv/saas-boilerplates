@@ -14,7 +14,7 @@ export const useTour = () => {
                     element: "#onboarding-progress",
                     popover: {
                         title: "Tu camino al éxito",
-                        description: "Aquí verás qué te falta para tener tu menú profesional al 100%. Cada paso completado te acerca más a tus clientes.",
+                        description: "Aquí verás el progreso de configuración de tu cuenta. Completa todos los pasos para aprovechar al máximo la plataforma.",
                         side: "bottom",
                         align: "start"
                     }
@@ -23,16 +23,16 @@ export const useTour = () => {
                     element: "#bento-stats",
                     popover: {
                         title: "Analíticas en tiempo real",
-                        description: "Visualiza cuántas personas han visto tu menú hoy y qué es lo más pedido.",
+                        description: "Visualiza el rendimiento de tu negocio con métricas clave actualizadas al instante.",
                         side: "top",
                         align: "center"
                     }
                 },
                 {
-                    element: "#sidebar-branches",
+                    element: "#sidebar-workspaces",
                     popover: {
-                        title: "Gestiona tu local",
-                        description: "Desde aquí puedes configurar tus sucursales, horarios y métodos de envío.",
+                        title: "Gestiona tus espacios",
+                        description: "Desde aquí puedes crear y administrar diferentes áreas de trabajo o sedes.",
                         side: "right",
                         align: "start"
                     }
@@ -40,17 +40,17 @@ export const useTour = () => {
                 {
                     element: "#sidebar-products",
                     popover: {
-                        title: "Tu Carta Digital",
-                        description: "Añade platos, categorías y fotos increíbles para seducir a tus comensales.",
+                        title: "Gestión de Activos",
+                        description: "Administra tu inventario, servicios o productos con facilidad.",
                         side: "right",
                         align: "start"
                     }
                 },
                 {
-                    element: "#sidebar-qr",
+                    element: "#sidebar-analytics",
                     popover: {
-                        title: "Generador de QR",
-                        description: "Descarga e imprime tus códigos QR únicos para que tus clientes accedan al instante.",
+                        title: "Reportes Avanzados",
+                        description: "Accede a informes detallados y filtrado inteligente de tus datos.",
                         side: "right",
                         align: "start"
                     }

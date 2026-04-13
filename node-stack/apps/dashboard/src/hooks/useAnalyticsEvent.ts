@@ -8,24 +8,19 @@ export type AnalyticsEventName =
   | "password_reset"
   | "email_verified"
 
-  // empresa/sucursal
-  | "company_created"
-  | "company_updated"
-  | "branch_created"
-  | "branch_updated"
-  | "branch_deleted"
+  // organización/workspace
+  | "organization_created"
+  | "organization_updated"
+  | "workspace_created"
+  | "workspace_updated"
+  | "workspace_deleted"
 
-  // productos
-  | "product_created"
-  | "product_updated"
-  | "product_deleted"
-  | "product_viewed"
-  | "products_imported"
-
-  // categorías
-  | "category_created"
-  | "category_updated"
-  | "category_deleted"
+  // recursos
+  | "resource_created"
+  | "resource_updated"
+  | "resource_deleted"
+  | "resource_viewed"
+  | "data_imported"
 
   // suscripción
   | "subscription_started"
@@ -34,11 +29,6 @@ export type AnalyticsEventName =
   | "trial_started"
   | "payment_completed"
   | "payment_failed"
-
-  // QR
-  | "qr_generated"
-  | "qr_downloaded"
-  | "qr_shared"
 
   // navegación
   | "page_view"
@@ -64,9 +54,9 @@ export interface AnalyticsEventParams {
 
   // Parámetros específicos
   user_id?: string;
-  company_id?: string;
-  branch_id?: string;
-  product_id?: string;
+  organization_id?: string;
+  workspace_id?: string;
+  resource_id?: string;
   plan_type?: string;
   error_message?: string;
   page_path?: string;
@@ -83,23 +73,20 @@ export const useAnalyticsEvent = () => {
   const trackEvent = useCallback(
     (eventName: AnalyticsEventName, params?: AnalyticsEventParams) => {
       // Verificar si estamos en producción y si gtag está disponible
-      // No hace nada en desarrollo para limpiar consola
       if (import.meta.env.VITE_STAGE !== "prod") {
         return;
       }
 
-      if (typeof window === "undefined" || !window.gtag) {
+      if (typeof window === "undefined" || !(window as any).gtag) {
         console.warn("[GA] gtag no está disponible");
         return;
       }
 
       try {
         // Enviar evento a Google Analytics
-        window.gtag("event", eventName, {
+        (window as any).gtag("event", eventName, {
           ...params,
-          // Agregar timestamp
           timestamp: new Date().toISOString(),
-          // Agregar información del entorno
           environment: import.meta.env.VITE_STAGE,
         });
       } catch (error) {
@@ -109,9 +96,6 @@ export const useAnalyticsEvent = () => {
     []
   );
 
-  /**
-   * Registrar una vista de página
-   */
   const trackPageView = useCallback(
     (pagePath: string, pageTitle?: string) => {
       trackEvent("page_view", {
@@ -122,9 +106,6 @@ export const useAnalyticsEvent = () => {
     [trackEvent]
   );
 
-  /**
-   * Registrar un error
-   */
   const trackError = useCallback(
     (errorMessage: string, errorContext?: string) => {
       trackEvent("error_occurred", {
@@ -136,9 +117,6 @@ export const useAnalyticsEvent = () => {
     [trackEvent]
   );
 
-  /**
-   * Registrar una conversión (suscripción, pago, etc.)
-   */
   const trackConversion = useCallback(
     (conversionType: string, value?: number, currency: string = "USD") => {
       trackEvent("conversion", {

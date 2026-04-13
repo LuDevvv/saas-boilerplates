@@ -1,70 +1,40 @@
-import { AxiosResponse } from "axios";
-import apiClient from "@/lib/api-client";
 
 /**
- * Base service class to handle common API operations and Mocking logic.
- * Every service (Auth, Analytics, etc.) should extend this class.
+ * Base class for all data services.
+ * Implements a Mock Strategy based on VITE_USE_MOCKS environment variable.
  */
-export class BaseService {
-  protected useMocks: boolean = import.meta.env["VITE_USE_MOCKS"] === "true";
-  protected endpoint: string;
+export abstract class BaseService {
+  protected domain: string;
 
-  constructor(endpoint: string = "") {
-    this.endpoint = endpoint;
+  constructor(domain: string) {
+    this.domain = domain;
   }
 
   /**
-   * Generic GET request with mock support
+   * Wrapper for API requests with transparent Mock support.
+   * @param request Lambda that executes the actual API call (e.g. () => apiClient.get('/users'))
+   * @param mockFile Optional custom JSON file name in /mocks/ directory. Defaults to domain name.
    */
-  protected async get<T>(path: string, mockPath?: string): Promise<T> {
-    if (this.useMocks && mockPath) {
-      return this.getMockData<T>(mockPath);
+  protected async handleRequest<T>(
+    request: () => Promise<any>,
+    mockFile?: string
+  ): Promise<T> {
+    const useMocks = import.meta.env.VITE_USE_MOCKS === "true";
+
+    if (useMocks) {
+      const fileName = mockFile || this.domain;
+      try {
+        const response = await fetch(`/mocks/${fileName}.json`);
+        if (!response.ok) {
+          throw new Error(`Mock file ${fileName}.json not found`);
+        }
+        return await response.json();
+      } catch (error) {
+        console.warn(`[BaseService] Mock failed for ${fileName}, falling back to real API if possible.`, error);
+      }
     }
-    
-    const response: AxiosResponse<T> = await apiClient.get(`${this.endpoint}${path}`);
+
+    const response = await request();
     return response.data;
-  }
-
-  /**
-   * Generic POST request with mock support
-   */
-  protected async post<T>(path: string, data?: any, mockData?: T): Promise<T> {
-    if (this.useMocks && mockData !== undefined) {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      return mockData;
-    }
-
-    const response: AxiosResponse<T> = await apiClient.post(`${this.endpoint}${path}`, data);
-    return response.data;
-  }
-
-  /**
-   * Generic PUT request
-   */
-  protected async put<T>(path: string, data?: any): Promise<T> {
-    const response: AxiosResponse<T> = await apiClient.put(`${this.endpoint}${path}`, data);
-    return response.data;
-  }
-
-  /**
-   * Generic DELETE request
-   */
-  protected async delete<T>(path: string): Promise<T> {
-    const response: AxiosResponse<T> = await apiClient.delete(`${this.endpoint}${path}`);
-    return response.data;
-  }
-
-  /**
-   * Helper to load a JSON file from the public/mocks directory.
-   */
-  protected async getMockData<T>(path: string): Promise<T> {
-    // Simulate delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    
-    const response = await fetch(`/mocks/${path}`);
-    if (!response.ok) {
-      throw new Error(`Failed to load mock data: ${path}`);
-    }
-    return response.json() as Promise<T>;
   }
 }

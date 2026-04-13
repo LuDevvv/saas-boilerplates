@@ -1,12 +1,6 @@
 import Cookies from "js-cookie";
 
-export interface TokenStorage {
-  getToken(): string | null;
-  setToken(token: string): void;
-  removeToken(): void;
-}
-
-export class CookieTokenStorage implements TokenStorage {
+export class CookieTokenStorage {
   constructor(
     private cookieName: string = "token",
     private cookieOptions?: Cookies.CookieAttributes
@@ -24,3 +18,4 @@ export class CookieTokenStorage implements TokenStorage {
     Cookies.remove(this.cookieName);
   }
 }
+

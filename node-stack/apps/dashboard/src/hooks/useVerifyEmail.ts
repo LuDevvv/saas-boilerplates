@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/stores/useAuth";
-import toast from "react-hot-toast";
+import { useAuthStore } from "@/stores/authStore";
+import { appToast } from "@/components/alerts/Toasts";
 
 export const useVerifyEmail = () => {
     const [searchParams] = useSearchParams();
@@ -15,6 +16,7 @@ export const useVerifyEmail = () => {
         resendVerificationCode,
         logout,
         loading,
+        clearError,
         pendingVerificationEmail,
         setPendingVerificationEmail,
         user,
@@ -25,6 +27,11 @@ export const useVerifyEmail = () => {
     const [resendCooldown, setResendCooldown] = useState(fromSignup ? 60 : 0);
     const [canResend, setCanResend] = useState(!fromSignup);
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+    // Limpiar errores al montar/desmontar
+    useEffect(() => {
+        return () => clearError();
+    }, [clearError]);
 
     // Obtenemos el email de varias fuentes posibles, priorizando el parámetro de la URL
     const email = useMemo(() => {
@@ -69,7 +76,10 @@ export const useVerifyEmail = () => {
     useEffect(() => {
         if (!loading && !email && !isAuthenticated) {
             if (location.pathname !== "/auth/sign-up") {
-                toast.error("No se encontró el correo para verificar.");
+                appToast.error({
+                    title: "Acceso denegado",
+                    description: "No se encontró el correo para verificar."
+                });
                 navigate("/auth/sign-up", { replace: true });
             }
         }
@@ -90,23 +100,48 @@ export const useVerifyEmail = () => {
         async (codeToVerify?: string) => {
             const verificationCode = codeToVerify || code.join("");
             if (verificationCode.length !== 6) {
-                toast.error("El código debe tener 6 dígitos");
+                appToast.error({
+                    title: "Código incompleto",
+                    description: "El código debe tener exactamente 6 dígitos"
+                });
                 return;
             }
             if (!email) {
-                toast.error("No se pudo identificar tu correo.");
+                appToast.error({
+                    title: "Error de identidad",
+                    description: "No se pudo identificar tu correo."
+                });
                 return;
             }
+
+            const toastId = appToast.loading({
+                title: "Verificando",
+                description: "Validando tu código de acceso..."
+            });
             const success = await verifyEmail(email, verificationCode);
+            
             if (success) {
-                toast.success("¡Email verificado con éxito!");
+                appToast.success(
+                    {
+                        title: "¡Éxito!",
+                        description: "Email verificado correctamente."
+                    },
+                    { id: toastId }
+                );
                 // Forzamos actualización para que el ProtectedRoute detecte el cambio
                 await checkAuthStatus();
                 setPendingVerificationEmail(undefined);
-
-                const pendingToken = sessionStorage.getItem("pending_invite_token");
-                const redirect = searchParams.get("redirect") || (pendingToken ? `/invitation/${pendingToken}` : "/create-company");
-                navigate(redirect);
+                navigate("/create-company");
+            } else {
+                appToast.dismiss(toastId);
+                // Obtenemos el error fresco del store sin depender de él en el callback
+                const storeError = (useAuthStore.getState() as any).error;
+                const message = storeError?.message || "El código ingresado no es válido o ha expirado.";
+                
+                appToast.error({
+                    title: "Código inválido",
+                    description: message
+                });
             }
         },
         [code, email, navigate, setPendingVerificationEmail, verifyEmail, checkAuthStatus]
@@ -150,13 +185,32 @@ export const useVerifyEmail = () => {
 
     const handleResend = useCallback(async () => {
         if (!email) return;
+        const toastId = appToast.loading({
+            title: "Reenviando",
+            description: "Generando un nuevo código para ti..."
+        });
         const success = await resendVerificationCode(email);
         if (success) {
-            toast.success("Código reenviado.");
+            appToast.success(
+                {
+                    title: "Código enviado",
+                    description: "Revisa tu bandeja de entrada (y spam)."
+                },
+                { id: toastId }
+            );
             setResendCooldown(60);
             setCanResend(false);
             setCode(["", "", "", "", "", ""]);
             inputRefs.current[0]?.focus();
+        } else {
+            appToast.dismiss(toastId);
+            const storeError = (useAuthStore.getState() as any).error;
+            const message = storeError?.message || "No pudimos enviar el código en este momento.";
+            
+            appToast.error({
+                title: "Error de reenvío",
+                description: message
+            });
         }
     }, [email, resendVerificationCode]);
 

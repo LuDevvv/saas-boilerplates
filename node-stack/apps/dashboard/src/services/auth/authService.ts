@@ -1,59 +1,84 @@
-import { apiClient, setToken, removeToken } from "@/lib/api-client";
-import type { AuthResponse } from "@/types/auth";
+import { apiClient } from "@/lib/api-client";
+import { BaseService } from "../BaseService";
+import { 
+  LoginDto, 
+  RegisterDto, 
+  AuthResponse, 
+  MessageResponse 
+} from "@/types/auth";
 
-export const authService = {
-  checkStatus: async (): Promise<AuthResponse | null> => {
+class AuthService extends BaseService {
+  constructor() {
+    super("auth");
+  }
+
+  async checkStatus(): Promise<AuthResponse | null> {
     try {
-      const response = await apiClient.auth.login({ email: "", password: "" });
-      return response as unknown as AuthResponse;
-    } catch {
+      return await this.handleRequest<AuthResponse>(
+        () => apiClient.get("/auth/status"),
+        "user"
+      );
+    } catch (error) {
       return null;
     }
-  },
+  }
 
-  login: async (credentials: { email: string; password: string }) => {
-    const response = await apiClient.auth.login(credentials);
-    const data = response.data;
-    if (data.accessToken) {
-      setToken(data.accessToken);
-    }
-    return response;
-  },
+  async login(credentials: LoginDto): Promise<AuthResponse> {
+    return this.handleRequest<AuthResponse>(
+      () => apiClient.post("/auth/login", credentials),
+      "user"
+    );
+  }
 
-  register: async (userData: { email: string; password: string; firstName?: string }) => {
-    const response = await apiClient.auth.register({ 
-      email: userData.email, 
-      password: userData.password,
-      name: userData.firstName 
-    });
-    const data = response.data;
-    if (data.accessToken) {
-      setToken(data.accessToken);
-    }
-    return response;
-  },
+  async register(userData: RegisterDto): Promise<AuthResponse> {
+    return this.handleRequest<AuthResponse>(
+      () => apiClient.post("/auth/register", userData),
+      "user"
+    );
+  }
 
-  logout: async () => {
+  async logout(): Promise<void> {
+    // In a boilerplate, logout might just be local
+    // but we support server-side if provided
     try {
-      await apiClient.auth.logout();
-    } finally {
-      removeToken();
+      await apiClient.post("/auth/logout");
+    } catch (e) {
+      // Ignore if server logout fails
     }
-  },
+  }
 
-  verifyEmail: async (email: string, code: string) => {
-    return await apiClient.auth.verifyEmail({ token: code });
-  },
+  async requestPasswordReset(email: string): Promise<MessageResponse> {
+    return this.handleRequest<MessageResponse>(
+      () => apiClient.post("/auth/forgot-password", { email }),
+      "message"
+    );
+  }
 
-  resendVerificationCode: async (email: string) => {
-    return await apiClient.auth.forgotPassword({ email });
-  },
+  async resetPassword(token: string, password: string): Promise<MessageResponse> {
+    return this.handleRequest<MessageResponse>(
+      () => apiClient.post("/auth/reset-password", { token, password }),
+      "message"
+    );
+  }
 
-  requestPasswordReset: async (email: string) => {
-    return await apiClient.auth.forgotPassword({ email });
-  },
+  async loginWithGoogle(): Promise<void> {
+    const googleAuthUrl = `${apiClient.defaults.baseURL}/auth/google`;
+    window.location.href = googleAuthUrl;
+  }
 
-  resetPassword: async (token: string, password?: string) => {
-    return await apiClient.auth.resetPassword({ token, password: password || "" });
-  },
-};
+  async verifyEmail(email: string, code: string): Promise<AuthResponse> {
+    return this.handleRequest<AuthResponse>(
+      () => apiClient.post("/auth/verify-email", { email, code }),
+      "user"
+    );
+  }
+
+  async resendVerificationCode(email: string): Promise<MessageResponse> {
+    return this.handleRequest<MessageResponse>(
+      () => apiClient.post("/auth/resend-verification", { email }),
+      "message"
+    );
+  }
+}
+
+export const authService = new AuthService();

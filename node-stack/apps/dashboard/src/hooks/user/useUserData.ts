@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { userService } from "@/services/user/userService";
 import { useAuthStore } from "@/stores/authStore";
-import toast from "react-hot-toast";
+import { appToast } from "@/components/alerts/Toasts";
 
 export const useUserData = () => {
   const queryClient = useQueryClient();
@@ -20,52 +20,50 @@ export const useUserData = () => {
   const updateMutation = useMutation({
     mutationFn: (data: any) => userService.updateProfile(data),
     onSuccess: (user) => {
-      toast.success("Perfil actualizado correctamente");
+      appToast.success({
+        title: "¡Perfil actualizado!",
+        description: "Tus cambios se han guardado correctamente."
+      });
       updateAuthState(user);
       queryClient.setQueryData(["user-profile"], user);
     },
-    onError: () => toast.error("Error al actualizar el perfil"),
+    onError: () => appToast.error({
+      title: "Error de actualización",
+      description: "No pudimos guardar los cambios. Inténtalo de nuevo."
+    }),
   });
 
   const uploadAvatarMutation = useMutation({
-    mutationFn: async ({ file, onProgress }: { file: File, onProgress?: (p: number) => void }) => {
-      const { storageService } = await import("@/services/StorageService");
-      
-      // Step 1: Presigned URL
-      const { uploadUrl, fileKey } = await storageService.getPresignedUrl(
-        file.name, 
-        file.type, 
-        "avatar"
-      );
-
-      // Step 2: PUT Directly to S3/R2
-      await storageService.uploadFile(file, uploadUrl, onProgress);
-
-      // Step 3: Verify and complete
-      const response = await storageService.verifyUpload(fileKey);
-      return response.data; // Backend should return the updated User
-    },
+    mutationFn: (file: File) => userService.uploadProfilePicture(file),
     onSuccess: (user) => {
-      if (user && Object.keys(user).length > 0) {
-        updateAuthState(user);
-        queryClient.setQueryData(["user-profile"], user);
-      } else {
-        // Fallback for mock or empty data: force a refetch
-        queryClient.invalidateQueries({ queryKey: ["user-profile"] });
-      }
+      appToast.success({
+        title: "¡Imagen actualizada!",
+        description: "Tu nueva foto de perfil ya está lista."
+      });
+      updateAuthState(user);
+      queryClient.setQueryData(["user-profile"], user);
     },
-    onError: () => toast.error("Error al subir la imagen"),
+    onError: () => appToast.error({
+      title: "Error de subida",
+      description: "No se pudo actualizar la imagen de perfil."
+    }),
   });
 
   const deleteAvatarMutation = useMutation({
     mutationFn: () => userService.deleteProfilePicture(),
     onSuccess: () => {
-      toast.success("Imagen de perfil eliminada");
+      appToast.success({
+        title: "Imagen eliminada",
+        description: "Tu foto de perfil se ha quitado correctamente."
+      });
       queryClient.invalidateQueries({ queryKey: ["user-profile"] });
       // The invalidation will trigger a getProfile call which re-syncs authStore via userQuery onSuccess if we add one,
       // or we can manually check status here.
     },
-    onError: () => toast.error("Error al eliminar la imagen"),
+    onError: () => appToast.error({
+      title: "Error al eliminar",
+      description: "No pudimos quitar la imagen en este momento."
+    }),
   });
 
   return {

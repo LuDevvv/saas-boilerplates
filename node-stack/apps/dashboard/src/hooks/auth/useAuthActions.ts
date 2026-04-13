@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuthStore } from "@/stores/authStore";
-import { LoginDto, RegisterDto } from "@node-stack/types";
+import { LoginDto, RegisterDto } from "@/types/auth";
 import { useNavigate } from "react-router-dom";
 
 /**

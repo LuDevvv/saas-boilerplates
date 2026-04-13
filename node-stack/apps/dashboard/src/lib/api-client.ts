@@ -1,70 +1,65 @@
-import { 
-  createClient, 
-  AppError, 
-  auth, 
-  workspace, 
-} from "@node-stack/api-client";
-import { siteConfig } from "@/config/site-config";
-import Cookies from "js-cookie";
+import axios, { AxiosInstance, AxiosResponse, AxiosError, InternalAxiosRequestConfig } from "axios";
+import { CookieTokenStorage } from "./cookie-storage";
+import { appToast } from "@/components/alerts/Toasts";
 
-const getToken = (): string | null => {
-  if (siteConfig.auth.storage === "cookie") {
-    return Cookies.get(siteConfig.auth.tokenKey) || null;
+const cookieStorage = new CookieTokenStorage("token", {
+  secure: window.location.protocol === "https:",
+  sameSite: "lax",
+  expires: 7,
+  path: "/",
+});
+
+export const cookieTokenStorage = cookieStorage;
+
+/**
+ * Standard Axios instance for the Dashboard Boilerplate.
+ * Decoupled from proprietary SDKs.
+ */
+export const apiClient: AxiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_SERVER_URL || "http://localhost:3000/api/v1",
+  timeout: 10000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Request Interceptor: Attach Token & Workspace ID
+apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  const token = cookieStorage.getToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-  return localStorage.getItem(siteConfig.auth.tokenKey);
-};
+  return config;
+});
 
-const getWorkspaceId = (): string | null => {
-  return localStorage.getItem("active_workspace_id");
-};
+// Response Interceptor: Global Error Handling
+apiClient.interceptors.response.use(
+  (response: AxiosResponse) => response,
+  (error: AxiosError) => {
+    const isNetworkError = !error.response;
+    const isServerError = error.response && error.response.status >= 500;
+    const isUnauthorized = error.response && error.response.status === 401;
 
-const handleUnauthorized = () => {
-  removeToken();
-  if (window.location.pathname !== "/auth/sign-in") {
-    window.location.href = "/auth/sign-in";
+    if (isNetworkError) {
+      appToast.error(
+        {
+          title: "Connection Error",
+          description: "Please check your internet connection and try again.",
+        },
+        { id: "network-error" }
+      );
+    } else if (isServerError) {
+      appToast.error(
+        {
+          title: "Server Error",
+          description: "Our engineers are notified. Please try again later.",
+        },
+        { id: "server-error" }
+      );
+    } else if (isUnauthorized) {
+      // Local logout logic can be triggered here
+    }
+
+    return Promise.reject(error);
   }
-};
-
-export const createApiClient = () => {
-  const baseURL = import.meta.env["VITE_API_URL"] || "http://localhost:3000/api";
-  
-  const axiosClient = createClient({
-    baseURL,
-    timeout: 10000,
-    getToken,
-    getWorkspaceId,
-    onUnauthorized: handleUnauthorized,
-  });
-
-  return {
-    axios: axiosClient,
-    auth: auth(axiosClient),
-    workspace: workspace(axiosClient),
-    setToken,
-    removeToken,
-    getToken,
-  };
-};
-
-export const apiClient = createApiClient();
-
-export const setToken = (token: string) => {
-  if (siteConfig.auth.storage === "cookie") {
-    Cookies.set(siteConfig.auth.tokenKey, token, { expires: 7, secure: true, sameSite: "lax" });
-  } else {
-    localStorage.setItem(siteConfig.auth.tokenKey, token);
-  }
-};
-
-export const removeToken = () => {
-  if (siteConfig.auth.storage === "cookie") {
-    Cookies.remove(siteConfig.auth.tokenKey);
-  } else {
-    localStorage.removeItem(siteConfig.auth.tokenKey);
-  }
-};
-
-export { AppError };
-export { createClient } from "@node-stack/api-client";
-
-export default apiClient.axios;
+);

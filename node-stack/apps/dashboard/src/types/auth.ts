@@ -1,72 +1,42 @@
-export enum Role {
-  SUPERADMIN = "SUPERADMIN",
-  OWNER = "OWNER",
-  ADMIN = "ADMIN",
-  MEMBER = "MEMBER",
-}
-
-/**
- * Generic User interface for the universal dashboard.
- */
 export interface User {
   id: string;
   email: string;
   name: string;
-  lastName?: string;
-  username?: string;
-  profilePicture?: {
-    url: string;
-  };
-  role: Role | string; // Global role
-  isEmailVerified: boolean;
-  isActive?: boolean;
-  phone?: string | number;
-  provider?: "local" | "google" | "github";
-  createdAt: Date;
-  updatedAt: Date;
-  memberships?: WorkspaceMembership[];
+  avatar?: string;
+  role: string;
+  createdAt: string;
+  isEmailVerified?: boolean;
 }
 
-export interface WorkspaceMembership {
-  workspaceId: string;
-  role: Role | string;
-}
-
-/**
- * Generic Workspace/Company interface.
- */
 export interface Workspace {
   id: string;
   name: string;
+  slug: string;
   logo?: string;
-  role: Role | string; // User role in this workspace
 }
 
-/**
- * Auth response structure.
- */
+export interface Session {
+  user: User;
+  workspace?: Workspace;
+  token: string;
+}
+
 export interface AuthResponse {
   user: User;
   token: string;
-  requiresVerification?: boolean;
+  refreshToken?: string;
 }
 
-export interface LoginCredentials {
+export interface LoginDto {
   email: string;
   password?: string;
+  rememberMe?: boolean;
 }
 
-export interface SignupCredentials extends LoginCredentials {
+export interface RegisterDto extends LoginDto {
   name: string;
-  lastName?: string;
 }
 
-export interface VerifyEmailParams {
-  email: string;
-  code: string;
-}
-
-export interface ResetPasswordParams {
-  token: string;
-  password?: string;
+export interface MessageResponse {
+  message: string;
 }
