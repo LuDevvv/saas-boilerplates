@@ -1,4 +1,4 @@
-import { eq, and, gt } from "drizzle-orm";
+import { eq, and, gt, ne } from "drizzle-orm";
 import type { Database } from "../db";
 import { sessions, type Session, type NewSession } from "../schema/auth";
 
@@ -48,5 +48,29 @@ export const SessionRepository = {
    */
   async deleteByUserId(db: Database, userId: string): Promise<void> {
     await db.delete(sessions).where(eq(sessions.userId, userId));
+  },
+
+  /**
+   * Finds all valid sessions for a user.
+   */
+  async findByUserId(db: Database, userId: string): Promise<Session[]> {
+    return await db
+      .select()
+      .from(sessions)
+      .where(and(eq(sessions.userId, userId), gt(sessions.expiresAt, new Date())));
+  },
+
+  /**
+   * Deletes a specific session belonging to a user.
+   */
+  async deleteUserSession(db: Database, userId: string, sessionId: string): Promise<void> {
+    await db.delete(sessions).where(and(eq(sessions.userId, userId), eq(sessions.id, sessionId)));
+  },
+
+  /**
+   * Deletes all sessions for a user except the specified one.
+   */
+  async deleteAllExcept(db: Database, userId: string, sessionId: string): Promise<void> {
+    await db.delete(sessions).where(and(eq(sessions.userId, userId), ne(sessions.id, sessionId)));
   },
 };

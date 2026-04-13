@@ -75,7 +75,7 @@ pnpm dev       # Starts API Worker + Web frontend concurrently
 | Feature                     | Status | Details                                                      |
 | --------------------------- | ------ | ------------------------------------------------------------ |
 | **Multi-Tenant Workspaces** | ✅     | RBAC (Owner/Admin/Member), invitations, isolation            |
-| **Authentication**          | ✅     | JWT + HttpOnly cookies, 2FA (TOTP), OAuth (Google, Facebook) |
+| **Authentication**          | ✅     | JWT + HttpOnly cookies, 2FA (TOTP), OAuth, Active Sessions, Password Recovery |
 | **Multi-Provider Billing**  | ✅     | LemonSqueezy + Creem.io via adapter pattern                  |
 | **Customer Portal**         | ✅     | Provider-agnostic subscription management                    |
 | **Dashboard Metrics**       | ✅     | Real-time workspace stats (members, tasks, usage)            |

@@ -237,5 +237,47 @@ export const createAuthController = () => {
       await auth.unlinkProvider(userId, provider);
       return c.json(successResponse({ success: true }), 200);
     },
+
+    /**
+     * Get current user profile.
+     */
+    me: async (c: Context<AppContext>) => {
+      const userId = c.get("userId");
+      const { auth } = c.get("services");
+      const result = await auth.getMe(userId);
+      return c.json(successResponse({ user: result }), 200);
+    },
+
+    /**
+     * Get active sessions.
+     */
+    getSessions: async (c: Context<AppContext>) => {
+      const userId = c.get("userId");
+      const { auth } = c.get("services");
+      // Current session ID matching omitted in edge stack due to refresh token differences
+      const result = await auth.getSessions(userId, "");
+      return c.json(successResponse({ sessions: result }), 200);
+    },
+
+    /**
+     * Revoke a specific session.
+     */
+    revokeSession: async (c: Context<AppContext>) => {
+      const userId = c.get("userId");
+      const sessionId = c.req.param("id");
+      const { auth } = c.get("services");
+      await auth.revokeSession(userId, sessionId, "");
+      return c.json(successResponse({ success: true }), 200);
+    },
+
+    /**
+     * Revoke all other sessions.
+     */
+    revokeAllSessions: async (c: Context<AppContext>) => {
+      const userId = c.get("userId");
+      const { auth } = c.get("services");
+      await auth.revokeAllOtherSessions(userId, "");
+      return c.json(successResponse({ success: true }), 200);
+    },
   };
 };

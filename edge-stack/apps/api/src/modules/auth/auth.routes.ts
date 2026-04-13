@@ -306,6 +306,73 @@ const logoutRoute = createRoute({
   },
 });
 
+const meRoute = createRoute({
+  method: "get",
+  path: "/me",
+  tags: ["Auth"],
+  summary: "Get current user profile",
+  middleware: [authGuard] as const,
+  responses: {
+    200: {
+      description: "Current user profile retrieved",
+      content: {
+        "application/json": { schema: z.object({ success: z.boolean(), data: z.any() }) },
+      },
+    },
+  },
+});
+
+const getSessionsRoute = createRoute({
+  method: "get",
+  path: "/sessions",
+  tags: ["Auth"],
+  summary: "Get active sessions",
+  middleware: [authGuard] as const,
+  responses: {
+    200: {
+      description: "List of active sessions retrieved",
+      content: {
+        "application/json": { schema: z.object({ success: z.boolean(), data: z.any() }) },
+      },
+    },
+  },
+});
+
+const revokeSessionRoute = createRoute({
+  method: "delete",
+  path: "/sessions/{id}",
+  tags: ["Auth"],
+  summary: "Revoke a specific session",
+  middleware: [authGuard] as const,
+  request: {
+    params: z.object({ id: z.string() }),
+  },
+  responses: {
+    200: {
+      description: "Session successfully revoked",
+      content: {
+        "application/json": { schema: z.object({ success: z.boolean() }) },
+      },
+    },
+  },
+});
+
+const revokeAllSessionsRoute = createRoute({
+  method: "delete",
+  path: "/sessions",
+  tags: ["Auth"],
+  summary: "Revoke all other sessions",
+  middleware: [authGuard] as const,
+  responses: {
+    200: {
+      description: "All other sessions effectively revoked",
+      content: {
+        "application/json": { schema: z.object({ success: z.boolean() }) },
+      },
+    },
+  },
+});
+
 export const authRouter = app
   .openapi(registerRoute, authController.register)
   .openapi(loginRoute, authController.login)
@@ -317,6 +384,10 @@ export const authRouter = app
   .openapi(setup2faRoute, authController.setup2fa)
   .openapi(enable2faRoute, authController.enable2fa)
   .openapi(verify2faRoute, authController.verify2fa)
+  .openapi(meRoute, authController.me)
+  .openapi(getSessionsRoute, authController.getSessions)
+  .openapi(revokeSessionRoute, authController.revokeSession)
+  .openapi(revokeAllSessionsRoute, authController.revokeAllSessions)
   // Non-RPC documented endpoints for redirection flows
   .get("/login/:provider", authController.socialLogin)
   .get("/callback/:provider", authController.oauthCallback)

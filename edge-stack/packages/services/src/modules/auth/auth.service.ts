@@ -178,6 +178,39 @@ export const createAuthService = (
       await SessionRepository.delete(db, refreshToken);
     },
 
+    getMe: async (userId: string) => {
+      const user = await UserRepository.findById(db, userId);
+      if (!user) throw new AppError("User not found", 404, "NOT_FOUND");
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        avatarUrl: user.avatarUrl,
+        role: user.role,
+        createdAt: user.createdAt,
+      };
+    },
+
+    getSessions: async (userId: string, currentSessionId: string) => {
+      const sessions = await SessionRepository.findByUserId(db, userId);
+      return sessions.map((s) => ({
+        id: s.id,
+        expiresAt: s.expiresAt,
+        isCurrent: s.id === currentSessionId,
+      }));
+    },
+
+    revokeSession: async (userId: string, sessionId: string, currentSessionId: string) => {
+      if (sessionId === currentSessionId) {
+        throw new AppError("Cannot revoke current session. Use logout.", 400, "BAD_REQUEST");
+      }
+      await SessionRepository.deleteUserSession(db, userId, sessionId);
+    },
+
+    revokeAllOtherSessions: async (userId: string, currentSessionId: string) => {
+      await SessionRepository.deleteAllExcept(db, userId, currentSessionId);
+    },
+
     refresh: async (oldRefreshToken: string) => {
       const session = await SessionRepository.findValid(db, oldRefreshToken);
       if (!session) throw new AppError("Invalid session", 401, "INVALID_SESSION");
