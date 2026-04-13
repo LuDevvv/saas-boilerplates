@@ -1,0 +1,12 @@
+{
+  "token": "mock-jwt-token-for-login",
+  "user": {
+    "id": "1",
+    "name": "Admin",
+    "lastName": "User",
+    "email": "admin@example.com",
+    "role": "admin",
+    "isEmailVerified": true,
+    "avatar": "https://ui-avatars.com/api/?name=Admin+User&background=7144F9&color=fff"
+  }
+}

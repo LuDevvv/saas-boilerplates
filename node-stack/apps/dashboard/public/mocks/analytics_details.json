@@ -1,0 +1,21 @@
+{
+  "analytics": {
+    "traffic": [
+      { "date": "2024-01-01", "visits": 1200, "conversions": 45 },
+      { "date": "2024-01-02", "visits": 1500, "conversions": 52 },
+      { "date": "2024-01-03", "visits": 1400, "conversions": 48 },
+      { "date": "2024-01-04", "visits": 1800, "conversions": 61 },
+      { "date": "2024-01-05", "visits": 2100, "conversions": 72 }
+    ],
+    "topPages": [
+      { "path": "/dashboard", "visits": 4500, "bounceRate": "12%" },
+      { "path": "/profile", "visits": 1200, "bounceRate": "34%" },
+      { "path": "/settings", "visits": 800, "bounceRate": "45%" }
+    ],
+    "geoData": [
+      { "country": "USA", "users": 15000 },
+      { "country": "Spain", "users": 4000 },
+      { "country": "Mexico", "users": 3500 }
+    ]
+  }
+}

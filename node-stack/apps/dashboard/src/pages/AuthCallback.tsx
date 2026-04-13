@@ -1,28 +1,64 @@
-import { useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/stores/authStore";
+import Loading from "@/components/Loading";
 
 const AuthCallback = () => {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { handleGoogleCallback } = useAuthStore();
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = searchParams.get("token");
-    if (token) {
-      localStorage.setItem("auth_token", token);
-      navigate("/");
-    } else {
-      navigate("/auth/sign-in");
-    }
-  }, [searchParams, navigate]);
+    const processCallback = async () => {
+      try {
+        // Verifica si hay un error en la URL (redirigido desde backend)
+        const urlParams = new URLSearchParams(window.location.search);
+        const errorCode = urlParams.get("error");
+        const errorMessage = urlParams.get("message");
 
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p className="text-gray-600">Processing authentication...</p>
-      </div>
-    </div>
-  );
+        if (errorCode) {
+          setError(errorMessage || "Error de autenticación");
+          setLoading(false);
+          return;
+        }
+
+        // Procesar el token
+        const token = urlParams.get("token");
+
+        if (!token) {
+          setError("No se recibió token de autenticación");
+          setLoading(false);
+          navigate("/auth/sign-in", { replace: true });
+          return;
+        }
+
+        await handleGoogleCallback(token);
+        
+        navigate("/", { replace: true });
+      } catch (error) {
+        console.error("Error en AuthCallback:", error);
+        setError(
+          "Error inesperado: " +
+            (error instanceof Error ? error.message : String(error))
+        );
+        setLoading(false);
+        navigate("/auth/sign-in", { replace: true });
+      }
+    };
+
+    processCallback();
+  }, []);
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  if (error) {
+    return <div className="p-4 text-red-500">{error}</div>;
+  }
+
+  return null;
 };
 
 export default AuthCallback;

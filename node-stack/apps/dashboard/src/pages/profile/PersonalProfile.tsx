@@ -1,27 +1,22 @@
-import { useAuthStore } from "@/stores/authStore";
+import { User as UserComponent } from "@/components/sections/profile/User";
+import { User } from "lucide-react";
+import { HeroBanner } from "@/components/ui/HeroBanner";
 
-export default function PersonalProfile() {
-  const { user } = useAuthStore();
-
+const PersonalProfile = () => {
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Profile</h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">Manage your personal information</p>
-      </div>
+    <div className="flex flex-col gap-6 min-h-full animate-fade-in-up w-full pt-6">
+      <HeroBanner
+        icon={<User />}
+        label="Perfil Personal"
+        title="Tu información de contacto y"
+        titleHighlight="datos de tu cuenta"
+        description="Administra tu nombre, correo electrónico, teléfono y foto de perfil."
+        colorScheme="indigo"
+      />
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-500">Name</label>
-            <p className="text-lg">{(user as any)?.name || (user as any)?.firstName || "N/A"}</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-500">Email</label>
-            <p className="text-lg">{user?.email || "N/A"}</p>
-          </div>
-        </div>
-      </div>
+      <UserComponent />
     </div>
   );
-}
+};
+
+export default PersonalProfile;
