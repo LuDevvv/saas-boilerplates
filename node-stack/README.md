@@ -25,7 +25,7 @@ Unlike generic boilerplates that focus on UI components, Node Stack focuses on t
 | :--- | :--- | :--- |
 | **🔐 Auth** | Enterprise Authentication | JWT + Refresh Tokens + Google/GitHub OAuth + 2FA support. |
 | **📂 Workspaces** | Native Multi-tenancy | Advanced Member Roles (RBAC), Permission-based Access, and Slug management. |
-| **💳 Billing** | Global Transactions | Multi-currency (USD/MXN), Polar/Stripe integration, and Idempotency. |
+| **💳 Billing** | Global Transactions | Multi-currency (USD/MXN), Polar.sh (exclusive) integration, and Idempotency. |
 | **📁 Storage** | Secure Asset Management | High-performance direct-to-S3 uploads with presigned URL validation. |
 | **🤖 AI Engine** | Scalable Inference | Decoupled background workers for LLM tasks with job tracking. |
 | **🔗 Webhooks** | Outbound Resilience | Resilient dispatcher with circuit breakers and outbox consistency. |
