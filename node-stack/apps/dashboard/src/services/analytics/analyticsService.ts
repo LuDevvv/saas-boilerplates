@@ -38,6 +38,10 @@ class AnalyticsService extends BaseService {
       throw new Error("Real API not implemented yet");
     });
   }
+
+  async getWorkspaceUsage(workspaceId: string): Promise<any> {
+    return this.get(`/workspaces/${workspaceId}/usage`);
+  }
 }
 
 export const analyticsService = new AnalyticsService();

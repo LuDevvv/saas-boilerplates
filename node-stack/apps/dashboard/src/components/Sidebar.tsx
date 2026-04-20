@@ -14,6 +14,7 @@ import { getMenuSections } from "@/config/navigation";
 import { SidebarProps } from "./sidebar/types";
 import { siteConfig } from "@/config/site-config";
 import { useThemeStore } from "@/stores/themeStore";
+import UsageMeter from "./dashboard/UsageMeter";
 
 export const Sidebar: FC<SidebarProps> = ({
   isOpen,
@@ -29,16 +30,22 @@ export const Sidebar: FC<SidebarProps> = ({
     propCurrentPath || location.pathname
   );
 
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   useEffect(() => {
     setCurrentPage(propCurrentPath || location.pathname);
   }, [propCurrentPath, location.pathname]);
 
-  const menuSections = useMemo(
-    () => propMenuSections || getMenuSections(),
-    [propMenuSections]
-  );
+  const menuSections = useMemo(() => {
+    const rawSections = propMenuSections || getMenuSections();
+    
+    // If not superadmin, hide the Admin section
+    if (user?.role !== "SUPERADMIN") {
+      return rawSections.filter(section => section.title !== "Admin");
+    }
+    
+    return rawSections;
+  }, [propMenuSections, user?.role]);
 
   return (
     <>
@@ -138,7 +145,9 @@ export const Sidebar: FC<SidebarProps> = ({
           ))}
         </nav>
 
-        <div className="p-3 flex-shrink-0 z-20 bg-inherit">
+        <div className="p-3 flex-shrink-0 z-20 bg-inherit space-y-4">
+          <UsageMeter isCollapsed={isCollapsed} />
+          
           <button
             onClick={() => logout()}
             className={cn(

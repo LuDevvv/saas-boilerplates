@@ -7,8 +7,11 @@ import {
   ChevronRight,
   Monitor,
   Trash2,
-  MoreVertical
+  MoreVertical,
+  Settings
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { HeroBanner } from "@/components/ui/HeroBanner";
 import { workspaceService, WorkspaceItem } from "@/services/workspaces/workspaceService";
 import { cn } from "@/utils/classNames";
 import { Button } from "@/components/ui/form/Button";
@@ -17,6 +20,7 @@ import { Input } from "@/components/ui/form/Input";
 import { appToast } from "@/components/alerts/Toasts";
 
 const WorkspacesPage: FC = () => {
+  const navigate = useNavigate();
   const [workspaces, setWorkspaces] = useState<WorkspaceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -110,25 +114,27 @@ const WorkspacesPage: FC = () => {
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto animate-fadeIn">
       {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-            Workspaces
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            Manage your globally distributed work environments.
-          </p>
-        </div>
-        <Button 
-          onClick={openCreateModal}
-          icon={Plus}
-          className="rounded-xl h-11 px-6 font-bold tracking-wide active:scale-95 transition-all text-[11px] uppercase shadow-lg shadow-primary-500/10"
-        >
-          Create New Workspace
-        </Button>
-      </header>
+      <HeroBanner
+        icon={<MapPin />}
+        label="Infrastructure"
+        title="Distributed"
+        titleHighlight="Workspaces"
+        description="Manage your globally distributed work environments and scalable infrastructure from a single dashboard."
+        colorScheme="blue"
+        action={
+          <div className="pt-2">
+            <Button 
+              variant="primary" 
+              onClick={openCreateModal}
+              icon={Plus}
+            >
+              Create New Workspace
+            </Button>
+          </div>
+        }
+      />
 
       {/* Controls */}
       <div className="flex flex-col md:flex-row gap-4">
@@ -163,6 +169,14 @@ const WorkspacesPage: FC = () => {
                   className="rounded-full hover:bg-gray-100 dark:hover:bg-white/10"
                 >
                   <MoreVertical size={20} />
+                </Button>
+                <Button 
+                  onClick={() => navigate(`/workspaces/${ws.id}/settings`)}
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-slate-400 hover:text-indigo-400"
+                >
+                  <Settings size={20} />
                 </Button>
               </div>
 

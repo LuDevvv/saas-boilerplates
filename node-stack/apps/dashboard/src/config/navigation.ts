@@ -3,11 +3,13 @@ import {
   User,
   Settings,
   Shield,
+  ShieldCheck,
   Bell,
   CheckCircle,
   Clock,
   Layout,
-  FileText
+  FileText,
+  Sparkles
 } from "lucide-react";
 import {
   DropdownItem,
@@ -24,6 +26,7 @@ export const getMenuSections = (): MenuSection[] => {
       items: [
         { icon: Home, label: "Overview", path: "/" },
         { icon: Layout, label: "Workspaces", path: "/workspaces" },
+        { icon: Sparkles, label: "AI Playground", path: "/ai-playground" },
         { icon: Bell, label: "Notifications", path: "/notifications" },
       ],
     },
@@ -46,6 +49,13 @@ export const getMenuSections = (): MenuSection[] => {
             { icon: FileText, label: "Billing", path: "/profile/billing" },
           ],
         },
+      ],
+    },
+    {
+      title: "Admin",
+      items: [
+        { icon: ShieldCheck, label: "Admin Overview", path: "/admin" },
+        { icon: User, label: "Manage Users", path: "/admin/users" },
       ],
     },
   ];

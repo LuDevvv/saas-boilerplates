@@ -11,6 +11,10 @@ const WorkspacesPage = lazy(() => import("@pages/workspaces/WorkspacesPage"));
 const AnalyticsPage = lazy(() => import("@pages/analytics/AnalyticsPage"));
 const ReportsPage = lazy(() => import("@pages/reports/ReportsPage"));
 const PersonalProfile = lazy(() => import("@pages/profile/PersonalProfile"));
+const AIPlayground = lazy(() => import("@pages/ai/AIPlayground"));
+const WorkspaceSettingsPage = lazy(() => import("@pages/workspaces/WorkspaceSettingsPage"));
+const AdminOverview = lazy(() => import("@pages/admin/AdminOverview"));
+const ManageUsers = lazy(() => import("@pages/admin/ManageUsers"));
 
 // Auth pages
 const LoginPage = lazy(() => import("@pages/auth/SignIn"));
@@ -53,8 +57,14 @@ const App = () => {
           <Route path="profile/personal" element={<PersonalProfile />} />
           
           <Route path="workspaces" element={<WorkspacesPage />} />
+          <Route path="workspaces/:workspaceId/settings" element={<WorkspaceSettingsPage />} />
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="reports" element={<ReportsPage />} />
+          <Route path="ai-playground" element={<AIPlayground />} />
+          
+          {/* Admin Routes */}
+          <Route path="admin" element={<AdminOverview />} />
+          <Route path="admin/users" element={<ManageUsers />} />
           
           {/* Internal tool placeholders */}
           <Route path="notifications" element={<DashboardPage />} />
