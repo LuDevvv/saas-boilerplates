@@ -5,7 +5,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from 'nestjs-throttler-storage-redis';
 import Redis from 'ioredis';
 
-import { FeatureFlagsAdminController } from './admin/feature-flags.controller';
+import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt.guard';
 import { BillingModule } from './billing/billing.module';
@@ -19,6 +19,9 @@ import { ApiKeysModule } from './api-keys/api-keys.module';
 import { HealthModule } from './health/health.module';
 import { AiModule } from './ai/ai.module';
 import { FeatureFlagGuard } from './common/guards/feature-flag.guard';
+import { AnalyticsModule } from './analytics/analytics.module';
+import { PortabilityModule } from './portability/portability.module';
+
 import { AdminGuard } from './common/guards/admin.guard';
 import { CacheInvalidationInterceptor } from './common/interceptors/cache-invalidation.interceptor';
 import { WorkspaceGuard } from './common/guards/workspace.guard';
@@ -29,13 +32,18 @@ import { CustomThrottlerGuard } from './common/guards/throttler.guard';
 import { CommonModule } from './common/common.module';
 import { DatabaseModule } from './common/database/database.module';
 import { RealtimeModule } from './realtime/realtime.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { CacheModule } from '@node-stack/cache';
+
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { WebhooksModule } from './webhooks/webhooks.module';
 
 @Module({
   imports: [
     CacheModule,
     CommonModule,
     DatabaseModule,
+    EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -48,6 +56,11 @@ import { CacheModule } from '@node-stack/cache';
     AiModule,
     MetricsModule,
     RealtimeModule,
+    NotificationsModule,
+    WebhooksModule,
+    AnalyticsModule,
+    PortabilityModule,
+    AdminModule,
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -62,7 +75,7 @@ import { CacheModule } from '@node-stack/cache';
       }),
     }),
   ],
-  controllers: [FeatureFlagsAdminController],
+  controllers: [],
   providers: [
     MetricsService,
     { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },

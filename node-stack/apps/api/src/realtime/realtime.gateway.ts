@@ -10,6 +10,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { UseGuards, Logger } from '@nestjs/common';
 import { WsJwtGuard } from './ws-jwt.guard';
+import { WorkspacesService } from '../workspaces/workspaces.service';
 
 @WebSocketGateway({
   namespace: '/v1/realtime',
@@ -19,6 +20,10 @@ import { WsJwtGuard } from './ws-jwt.guard';
 export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
+
+  constructor(
+    private readonly workspacesService: WorkspacesService,
+  ) {}
 
   private readonly logger = new Logger(RealtimeGateway.name);
 
@@ -35,12 +40,20 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
     const workspaceId = client.handshake.query.workspaceId as string;
 
     // Join user-specific room
-    await client.join(`user:${userId}`);
+    await this.safeJoin(client, `user:${userId}`);
 
     if (workspaceId) {
-      // Join workspace-specific room
-      await client.join(`workspace:${workspaceId}`);
-      this.logger.log(`User ${userId} joined workspace:${workspaceId}`);
+      try {
+        // Validate user is actually a member of this workspace
+        await this.workspacesService.validateMembership(workspaceId, userId);
+        
+        // Join workspace-specific room
+        await this.safeJoin(client, `workspace:${workspaceId}`);
+        this.logger.log(`User ${userId} joined workspace:${workspaceId}`);
+      } catch (error) {
+        this.logger.warn(`SECURITY: User ${userId} blocked from workspace:${workspaceId} - Unauthorized`);
+        // We allow the connection to stay alive (for user notifications) but deny workspace room
+      }
     } else {
       this.logger.log(`User ${userId} connected without workspace context.`);
     }
@@ -58,11 +71,29 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { from?: string; to: string },
   ) {
-    if (data.from) {
-      await client.leave(`workspace:${data.from}`);
+    const userId = client.data.user.id;
+    
+    try {
+      // Validate membership before switching
+      await this.workspacesService.validateMembership(data.to, userId);
+      
+      if (data.from) {
+        await client.leave(`workspace:${data.from}`);
+      }
+      await this.safeJoin(client, `workspace:${data.to}`);
+      this.logger.log(`User ${userId} switched to workspace:${data.to}`);
+    } catch (error) {
+      this.logger.warn(`SECURITY: User ${userId} failed to switch to unauthorized workspace:${data.to}`);
     }
-    await client.join(`workspace:${data.to}`);
-    this.logger.log(`User ${client.data.user.id} switched to workspace:${data.to}`);
+  }
+
+  private async safeJoin(client: Socket, room: string) {
+    // Basic format validation
+    if (!room.startsWith('user:') && !room.startsWith('workspace:')) {
+      this.logger.error(`INTERNAL ERROR: Attempted to join invalid room format: ${room}`);
+      return;
+    }
+    await client.join(room);
   }
 
   // Helper method for other services to emit to rooms

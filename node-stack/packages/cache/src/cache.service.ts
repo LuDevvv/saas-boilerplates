@@ -11,9 +11,10 @@ export class CacheService {
     @Optional() namespace: string = "default",
     @Optional() ttlDefault: number = 300,
   ) {
-    this.namespace = namespace;
-    this.ttlDefault = ttlDefault;
     const url = process.env.REDIS_URL || "redis://localhost:6379";
+    const prefix = process.env.REDIS_PREFIX || "";
+    this.namespace = prefix ? `${prefix}:${namespace}` : namespace;
+    this.ttlDefault = ttlDefault;
     this.client = new Redis(url);
   }
 
@@ -88,15 +89,28 @@ export class CacheService {
   }
   async publish(channel: string, message: any): Promise<void> {
     const data = typeof message === 'string' ? message : JSON.stringify(message);
-    await this.client.publish(channel, data);
+    const prefixedChannel = this.namespace ? `${this.namespace}:${channel}` : channel;
+    await this.client.publish(prefixedChannel, data);
   }
 
   async subscribe(channel: string, callback: (message: string) => void): Promise<void> {
     const subClient = this.client.duplicate();
-    await subClient.subscribe(channel);
+    const prefixedChannel = this.namespace ? `${this.namespace}:${channel}` : channel;
+    await subClient.subscribe(prefixedChannel);
     subClient.on('message', (ch, msg) => {
-      if (ch === channel) {
+      if (ch === prefixedChannel) {
         callback(msg);
+      }
+    });
+  }
+
+  async psubscribe(pattern: string, callback: (channel: string, message: string) => void): Promise<void> {
+    const subClient = this.client.duplicate();
+    const prefixedPattern = this.namespace ? `${this.namespace}:${pattern}` : pattern;
+    await subClient.psubscribe(prefixedPattern);
+    subClient.on('pmessage', (p, ch, msg) => {
+      if (p === prefixedPattern) {
+        callback(ch, msg);
       }
     });
   }

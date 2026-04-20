@@ -24,8 +24,12 @@ export class RedisIoAdapter extends IoAdapter {
     const subClient = pubClient.duplicate();
 
     await Promise.all([pubClient.connect(), subClient.connect()]);
+    
+    const redisPrefix = configService.get<string>('REDIS_PREFIX', 'socket.io');
 
-    this.adapterConstructor = createAdapter(pubClient, subClient);
+    this.adapterConstructor = createAdapter(pubClient, subClient, {
+      key: redisPrefix,
+    });
   }
 
   createIOServer(port: number, options?: ServerOptions): any {
