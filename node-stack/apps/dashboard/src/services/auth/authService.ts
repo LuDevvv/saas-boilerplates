@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api-client";
-import { BaseService } from "../BaseService";
+import { BaseService } from "../baseService";
 import { 
   LoginDto, 
   RegisterDto, 

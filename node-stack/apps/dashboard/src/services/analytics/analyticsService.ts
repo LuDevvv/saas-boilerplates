@@ -1,4 +1,4 @@
-import { BaseService } from "../BaseService";
+import { BaseService } from "../baseService";
 
 export interface DashboardMetric {
   title: string;
