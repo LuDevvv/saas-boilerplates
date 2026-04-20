@@ -10,3 +10,4 @@ export * from './ai';
 export * from './api-keys';
 export * from './billing';
 export * from './workspaces';
+export * from "./admin";

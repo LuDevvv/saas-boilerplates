@@ -11,7 +11,8 @@
     "skipLibCheck": true,
     "strict": true,
     "emitDecoratorMetadata": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "types": ["node"]
   },
   "include": [
     "src/**/*"

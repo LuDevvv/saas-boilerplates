@@ -47,8 +47,19 @@ export interface AIJobResult {
 
 export const AI_PROVIDER_TOKEN = 'AI_PROVIDER';
 
+export interface AIStreamChunk {
+  content: string;
+  isDone: boolean;
+  metadata?: {
+    inputTokens?: number;
+    outputTokens?: number;
+    model?: string;
+  };
+}
+
 export interface AIProvider {
   complete(params: AICompletionParams): Promise<AICompletionResult>;
+  stream(params: AICompletionParams): AsyncIterable<AIStreamChunk>;
   readonly defaultModel: string;
   readonly providerName: string;
 }

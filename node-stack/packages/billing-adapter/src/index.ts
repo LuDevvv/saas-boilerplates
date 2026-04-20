@@ -10,4 +10,4 @@ export * from "./billing.service";
 // SDK-dependent providers are excluded to avoid dependency bloat.
 // Polar is fetch-based and can be imported directly if needed:
 // import { PolarProvider } from "@node-stack/billing-adapter/dist/providers/polar.provider.js";
-export { PolarProvider } from "./providers/polar.provider";
+export { PolarProvider, type PolarProviderConfig } from "./providers/polar.provider";

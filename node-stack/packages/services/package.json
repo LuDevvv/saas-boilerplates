@@ -10,10 +10,14 @@
     "build": "tsc -b --clean && tsc -b"
   },
   "dependencies": {
-    "@nestjs/common": "^11.0.0"
+    "@nestjs/common": "^11.0.0",
+    "@node-stack/db": "workspace:^",
+    "@node-stack/storage": "workspace:^",
+    "jszip": "^3.10.1"
   },
   "devDependencies": {
-    "@types/node": "^25.5.0",
+    "@types/jszip": "^3.4.1",
+    "@types/node": "^25.6.0",
     "typescript": "latest"
   }
 }

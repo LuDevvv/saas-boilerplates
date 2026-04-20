@@ -2,18 +2,24 @@
   "name": "@node-stack/emails",
   "version": "1.0.0",
   "private": true,
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src --ext .ts --max-warnings 0",
+    "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
     "build": "tsc -b --clean && tsc -b"
   },
   "dependencies": {
-    "@aws-sdk/client-ses": "^3.0.0"
+    "@aws-sdk/client-ses": "^3.0.0",
+    "@react-email/components": "latest",
+    "@react-email/render": "latest",
+    "react": "latest",
+    "react-dom": "latest"
   },
   "devDependencies": {
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
     "typescript": "latest"
   }
 }

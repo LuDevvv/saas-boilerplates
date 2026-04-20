@@ -31,23 +31,36 @@ export const InviteMemberSchema = z.object({
     .trim()
     .describe("Email of the person to invite"),
   role: z
-    .enum(["admin", "member"])
+    .enum(["admin", "member", "guest"])
     .default("member")
     .describe("Role to assign to the invited user"),
 });
 
 export class InviteMemberDto extends createZodDto(InviteMemberSchema) {
   declare email: string;
-  declare role: "admin" | "member";
+  declare role: "admin" | "member" | "guest";
 }
 
 // ── Update Member ──────────────────────────────────────────
 export const UpdateMemberRoleSchema = z.object({
   role: z
-    .enum(["admin", "member"])
+    .enum(["admin", "member", "guest"])
     .describe("New role for the workspace member"),
 });
 
 export class UpdateMemberRoleDto extends createZodDto(UpdateMemberRoleSchema) {
-  declare role: "admin" | "member";
+  declare role: "admin" | "member" | "guest";
+}
+
+// ── Update Workspace ─────────────────────────────────────
+export const UpdateWorkspaceSchema = z.object({
+  name: z.string().min(1).max(100).optional(),
+  slug: z.string().min(1).max(50).regex(/^[a-z0-9-]+$/).optional(),
+  logoUrl: z.string().url().nullable().optional(),
+});
+
+export class UpdateWorkspaceDto extends createZodDto(UpdateWorkspaceSchema) {
+  declare name?: string;
+  declare slug?: string;
+  declare logoUrl?: string | null;
 }

@@ -22,3 +22,19 @@ export const SubmitAIJobSchema = z.object({
 });
 
 export class SubmitAIJobDto extends createZodDto(SubmitAIJobSchema) {}
+
+export const ChatMessageSchema = z.object({
+  role: z.enum(["system", "user", "assistant"]),
+  content: z.string().min(1),
+});
+
+export type ChatMessage = z.infer<typeof ChatMessageSchema>;
+
+export const ChatCompletionSchema = z.object({
+  messages: z.array(ChatMessageSchema).min(1),
+  model: z.string().optional(),
+  maxTokens: z.number().int().positive().optional(),
+  temperature: z.number().min(0).max(2).optional(),
+});
+
+export class ChatCompletionDto extends createZodDto(ChatCompletionSchema) {}

@@ -4,6 +4,7 @@ import {
   AIProvider,
   AICompletionParams,
   AICompletionResult,
+  AIStreamChunk,
 } from '../interfaces/ai-provider.interface';
 import {
   AIError,
@@ -42,20 +43,58 @@ export class OpenAIProvider implements AIProvider {
         durationMs: Date.now() - start,
       };
     } catch (error: any) {
-      if (error.status === 429) {
-        if (error.code === 'insufficient_quota') {
-          throw new AIInsufficientQuotaError(this.providerName, error);
-        }
-        throw new AIRateLimitError(this.providerName, error);
-      }
-      if (error.status === 401) {
-        throw new AIAuthenticationError(this.providerName, error);
-      }
-      throw new AIError(
-        error.message || 'Error communicating with OpenAI',
-        this.providerName,
-        error
-      );
+      this.handleError(error);
     }
+  }
+
+  async *stream(params: AICompletionParams): AsyncIterable<AIStreamChunk> {
+    const model = params.model ?? this.defaultModel;
+
+    try {
+      const stream = await this.client.chat.completions.create({
+        model,
+        messages: params.messages,
+        max_tokens: params.maxTokens ?? 1000,
+        temperature: params.temperature ?? 0.7,
+        stream: true,
+        stream_options: { include_usage: true },
+      });
+
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content ?? '';
+        const usage = chunk.usage;
+
+        yield {
+          content,
+          isDone: !!chunk.choices[0]?.finish_reason,
+          metadata: usage
+            ? {
+                inputTokens: usage.prompt_tokens,
+                outputTokens: usage.completion_tokens,
+                model: chunk.model,
+              }
+            : undefined,
+        };
+      }
+    } catch (error: any) {
+      this.handleError(error);
+    }
+  }
+
+  private handleError(error: any): never {
+    if (error.status === 429) {
+      if (error.code === 'insufficient_quota') {
+        throw new AIInsufficientQuotaError(this.providerName, error);
+      }
+      throw new AIRateLimitError(this.providerName, error);
+    }
+    if (error.status === 401) {
+      throw new AIAuthenticationError(this.providerName, error);
+    }
+    throw new AIError(
+      error.message || 'Error communicating with OpenAI',
+      this.providerName,
+      error,
+    );
   }
 }

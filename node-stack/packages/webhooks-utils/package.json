@@ -16,7 +16,7 @@
     "crypto": "latest"
   },
   "devDependencies": {
-    "@types/node": "^25.5.0",
+    "@types/node": "^25.6.0",
     "typescript": "latest"
   }
 }

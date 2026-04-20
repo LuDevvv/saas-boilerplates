@@ -1,26 +1,21 @@
 {
-  "name": "@node-stack/billing-adapter",
+  "name": "@node-stack/notifications",
   "version": "1.0.0",
   "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./dist/*": "./dist/*"
-  },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts --max-warnings 0",
     "build": "tsc -b --clean && tsc -b"
   },
+  "dependencies": {
+    "@node-stack/db": "workspace:*",
+    "@node-stack/emails": "workspace:*",
+    "@node-stack/utils": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "^25.6.0",
     "typescript": "latest"
-  },
-  "dependencies": {
-    "@polar-sh/sdk": "^0.47.0"
   }
 }

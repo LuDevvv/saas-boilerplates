@@ -42,4 +42,46 @@ export class OpenRouterProvider implements AIProvider {
       durationMs: Date.now() - start,
     };
   }
+
+  async *stream(params: AICompletionParams): AsyncIterable<import('../interfaces/ai-provider.interface').AIStreamChunk> {
+    const stream = await this.client.chat.completions.create({
+      model: params.model ?? this.defaultModel,
+      messages: params.messages as any[],
+      max_tokens: params.maxTokens ?? 1000,
+      temperature: params.temperature ?? 0.7,
+      stream: true,
+      stream_options: {
+        include_usage: true,
+      },
+    });
+
+    let inputTokens = 0;
+    let outputTokens = 0;
+    let model = params.model ?? this.defaultModel;
+
+    for await (const chunk of stream) {
+      if (chunk.model) {
+        model = chunk.model;
+      }
+      if (chunk.usage) {
+        inputTokens = chunk.usage.prompt_tokens;
+        outputTokens = chunk.usage.completion_tokens;
+      }
+
+      const content = chunk.choices[0]?.delta?.content ?? '';
+      const isDone = chunk.choices[0]?.finish_reason != null || chunk.choices.length === 0 && chunk.usage != null;
+
+      yield {
+        content,
+        isDone,
+        ...(isDone ? {
+          metadata: {
+            inputTokens,
+            outputTokens,
+            model,
+          }
+        } : {})
+      };
+    }
+  }
 }

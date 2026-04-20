@@ -12,11 +12,9 @@
     "sourceMap": true,
     "skipLibCheck": true,
     "types": ["node"],
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "ignoreDeprecations": "6.0",
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "composite": true,
-    "baseUrl": ".",
     "paths": {
       "@node-stack/types": ["./node_modules/@node-stack/types/dist/index.d.ts"]
     }
