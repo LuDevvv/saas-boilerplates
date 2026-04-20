@@ -16,6 +16,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ApiVersionMiddleware } from './common/middleware/api-version.middleware';
 import { LoggingMiddleware } from './common/middleware/logging.middleware';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
+import { setupSwagger } from './common/docs/swagger.config';
 import { RedisIoAdapter } from './realtime/redis-io.adapter';
 
 Sentry.init({
@@ -94,42 +95,7 @@ async function bootstrap() {
   // Global JSON body parser (excluding webhook path which uses raw body)
 
   // Swagger configuration
-  const config = new DocumentBuilder()
-    .setTitle('Node Stack API')
-    .setDescription(
-      'Production-ready Node.js SaaS Backend with NestJS, PostgreSQL, Redis, and BullMQ.',
-    )
-    .setVersion('1.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        description: 'Enter JWT token',
-      },
-      'JWT-auth',
-    )
-    .addApiKey(
-      {
-        type: 'apiKey',
-        name: 'X-API-KEY',
-        in: 'header',
-        description: 'Enter your workspace API key',
-      },
-      'ApiKeyAuth',
-    )
-    .addTag('auth', 'Authentication and session management')
-    .addTag('workspaces', 'Workspace and team member management')
-    .addTag('api-keys', 'Programmable API key management')
-    .addTag('ai', 'AI generation and task processing')
-    .addTag('webhooks', 'Inbound and outbound webhook configuration')
-    .addTag('billing', 'Subscription and billing management')
-    .addTag('users', 'User profile management')
-    .addTag('storage', 'File storage and presigned URLs')
-    .addTag('health', 'Service health and readiness')
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, cleanupOpenApiDoc(document));
+  setupSwagger(app);
 
   const port = process.env.PORT || 4000;
 

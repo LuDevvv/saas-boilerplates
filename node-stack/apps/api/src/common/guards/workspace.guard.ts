@@ -6,12 +6,15 @@ import {
   NotFoundException,
   BadRequestException,
 } from "@nestjs/common";
+import { CacheService } from "@node-stack/cache";
 import { db, schema, eq, and } from "@node-stack/db";
 
 import type { WorkspaceContext } from "../types";
 
 @Injectable()
 export class WorkspaceGuard implements CanActivate {
+  constructor(private readonly cache: CacheService) {}
+
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest() as any;
     // Extract workspace ID: Look for explicit workspaceId param first,
@@ -36,28 +39,50 @@ export class WorkspaceGuard implements CanActivate {
       throw new ForbiddenException("Authentication required");
     }
 
-    const ws = await db.query.workspaces.findFirst({
-      where: eq(schema.workspaces.id, workspaceId),
-    });
+    // Cache workspace existence check (5 min TTL)
+    const ws = await this.cache.getOrSet(
+      `ws:${workspaceId}:exists`,
+      async () => {
+        const result = await db.query.workspaces.findFirst({
+          where: eq(schema.workspaces.id, workspaceId),
+        });
+        return result ?? null;
+      },
+      300,
+    );
+
     if (!ws) {
       throw new NotFoundException("Workspace not found");
     }
 
-    const membership = await db.query.memberships.findFirst({
-      where: and(
-        eq(schema.memberships.workspaceId, workspaceId),
-        eq(schema.memberships.userId, user.id),
-      ),
-    });
+    // Cache membership lookup (60s TTL — short to reflect role changes quickly)
+    const membership = await this.cache.getOrSet(
+      `ws:${workspaceId}:u:${user.id}:member`,
+      async () => {
+        const result = await db.query.memberships.findFirst({
+          where: and(
+            eq(schema.memberships.workspaceId, workspaceId),
+            eq(schema.memberships.userId, user.id),
+          ),
+        });
+        return result ?? null;
+      },
+      60,
+    );
 
     if (!membership) {
       throw new ForbiddenException("You are not a member of this workspace");
+    }
+
+    if (membership.status !== "active") {
+      throw new ForbiddenException("Your membership is not active (pending approval)");
     }
 
     req.workspace = {
       id: ws.id,
       name: ws.name,
       role: membership.role,
+      status: membership.status,
     } as WorkspaceContext;
 
     // Attach workspace role to user for downstream RBAC guards

@@ -1,19 +1,21 @@
 import { Module } from '@nestjs/common';
-import { BullModule } from '@nestjs/bullmq';
 import { AiController } from './ai.controller';
+import { AiService } from './ai.service';
 import { CacheModule } from '@node-stack/cache';
+import { DatabaseModule } from '@node-stack/db';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
+
+/**
+ * AI module — no longer registers its own BullMQ queue.
+ * All queue configuration is centralized in QueueModule (common/queues).
+ * The controller uses JobService instead of injecting Queue directly.
+ */
 @Module({
-  imports: [
-    CacheModule,
-    BullModule.registerQueue({
-      name: 'ai',
-      connection: {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: Number(process.env.REDIS_PORT) || 6379,
-      },
-    }),
-  ],
+  imports: [CacheModule, DatabaseModule, AnalyticsModule],
+
   controllers: [AiController],
+  providers: [AiService],
+  exports: [AiService],
 })
 export class AiModule {}

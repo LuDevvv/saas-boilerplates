@@ -3,14 +3,15 @@ import {
   NotFoundException,
   ForbiddenException,
 } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { CacheService } from "@node-stack/cache";
 import { WorkspaceRepository, schema } from "@node-stack/db";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import type { UpdateMemberRoleDto } from "@node-stack/validators";
+import type { UpdateMemberRoleDto, UpdateWorkspaceDto } from "@node-stack/validators";
 import { OutboxService } from "../common/services/outbox.service";
 
-type WorkspaceRole = "owner" | "admin" | "member";
+type WorkspaceRole = "owner" | "admin" | "member" | "guest";
 
 interface MemberWithUser {
   userId: string;
@@ -30,6 +31,7 @@ export class WorkspacesService {
     private readonly workspaceRepo: WorkspaceRepository,
     private readonly cache: CacheService,
     private readonly outbox: OutboxService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async getMembers(
@@ -65,20 +67,36 @@ export class WorkspacesService {
     newRole: UpdateMemberRoleDto["role"],
     currentUserId: string,
   ): Promise<void> {
-    const currentMembership = await this.validateMembership(workspaceId, currentUserId);
+    await this.workspaceRepo.transaction(async (tx: NodePgDatabase<typeof schema>) => {
+      const currentMembership = await this.validateMembership(workspaceId, currentUserId);
 
-    const targetMembership = await this.workspaceRepo.findMembership(workspaceId, targetUserId);
-    if (!targetMembership) throw new NotFoundException("Member not found in workspace");
+      const targetMembership = await this.workspaceRepo.findMembership(workspaceId, targetUserId, tx);
+      if (!targetMembership) throw new NotFoundException("Member not found in workspace");
 
-    const targetRole = targetMembership.role as WorkspaceRole;
-    if (targetRole === "owner") throw new ForbiddenException("Cannot change owner role");
+      const targetRole = targetMembership.role as WorkspaceRole;
+      if (targetRole === "owner") throw new ForbiddenException("Cannot change owner role");
 
-    const currentRole = currentMembership.role as WorkspaceRole;
-    if (currentRole === "admin" && targetRole === "admin") {
-      throw new ForbiddenException("Admins cannot modify other admins");
-    }
+      const currentRole = currentMembership.role as WorkspaceRole;
+      if (currentRole === "admin" && targetRole === "admin") {
+        throw new ForbiddenException("Admins cannot modify other admins");
+      }
 
-    await this.workspaceRepo.updateMembership(workspaceId, targetUserId, { role: newRole });
+      await this.workspaceRepo.updateMembership(workspaceId, targetUserId, { role: newRole }, tx);
+      
+      await this.outbox.createEvent("membership.updated", {
+        workspaceId,
+        userId: targetUserId,
+        role: newRole,
+      }, tx);
+    });
+
+    this.eventEmitter.emit("membership.updated", {
+      workspaceId,
+      userId: targetUserId,
+      actorId: currentUserId,
+      role: newRole,
+    });
+
     await this.cache.invalidate(`workspaces:${workspaceId}:members`);
   }
 
@@ -106,6 +124,12 @@ export class WorkspacesService {
       await this.outbox.createEvent("membership.removed", { workspaceId, userId: targetUserId }, tx);
     });
 
+    this.eventEmitter.emit("membership.removed", {
+      workspaceId,
+      userId: targetUserId,
+      actorId: currentUserId,
+    });
+
     await this.cache.invalidate(`workspaces:${workspaceId}:members`);
   }
 
@@ -130,6 +154,12 @@ export class WorkspacesService {
       return ws;
     });
 
+    this.eventEmitter.emit("workspace.created", {
+      workspaceId: workspace.id,
+      userId,
+      name,
+    });
+
     await this.cache.invalidate(`workspaces:${workspace.id}`);
     return workspace;
   }
@@ -148,7 +178,40 @@ export class WorkspacesService {
       await this.outbox.createEvent("membership.added", { workspaceId, userId: newUserId, role }, tx);
     });
 
+    this.eventEmitter.emit("membership.added", {
+      workspaceId,
+      userId: newUserId,
+      actorId: currentUserId,
+      role,
+    });
+
     await this.cache.invalidate(`workspaces:${workspaceId}:members`);
+  }
+
+  async updateWorkspace(workspaceId: string, data: UpdateWorkspaceDto, currentUserId: string) {
+    const currentMembership = await this.validateMembership(workspaceId, currentUserId);
+    if (currentMembership.role !== "owner" && currentMembership.role !== "admin") {
+      throw new ForbiddenException("Only owners and admins can update the workspace");
+    }
+
+    const updated = await this.workspaceRepo.transaction(async (tx: NodePgDatabase<typeof schema>) => {
+      const workspace = await this.workspaceRepo.update(workspaceId, data, tx);
+      
+      await this.outbox.createEvent("workspace.updated", {
+        workspaceId,
+        ...data,
+      }, tx);
+
+      return workspace;
+    });
+
+    this.eventEmitter.emit("workspace.updated", {
+      workspaceId,
+      ...data,
+    });
+
+    await this.cache.invalidate(`workspaces:${workspaceId}`);
+    return updated;
   }
 
   async listWorkspaces(userId: string, cursor?: string, limit?: number) {

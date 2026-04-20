@@ -18,8 +18,11 @@ import {
 import { Role, Permission } from "@node-stack/types";
 import { InviteMemberDto } from "@node-stack/validators";
 
+import { Throttle } from "@nestjs/throttler";
+
 import { InvitationsService } from "./invitations.service";
 import { CurrentUser } from "../auth/decorators";
+import { Public } from "../common/decorators/public.decorator";
 import { RequirePermissions } from "../common/decorators/permissions.decorator";
 import { Roles } from "../common/decorators/roles.decorator";
 import { UserPayload } from "../common/types";
@@ -31,6 +34,7 @@ export class InvitationsController {
   constructor(private readonly invitationsService: InvitationsService) {}
 
   @Post("/workspaces/:id/invitations")
+  @Throttle({ short: { ttl: 60000, limit: 10 } })
   @Roles(Role.ADMIN)
   @RequirePermissions(Permission.MEMBER_INVITE)
   @ApiOperation({ summary: "Create a workspace invitation" })
@@ -92,6 +96,7 @@ export class InvitationsController {
   }
 
   @Get("/workspace-invitations/:token")
+  @Public()
   @ApiOperation({ summary: "Get invitation details by token" })
   @ApiResponse({ status: 200, description: "Invitation details retrieved" })
   async getInvitationDetails(@Param("token", ParseUUIDPipe) token: string) {

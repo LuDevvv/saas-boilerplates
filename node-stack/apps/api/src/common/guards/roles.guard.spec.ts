@@ -16,7 +16,7 @@ describe("RolesGuard", () => {
 
   it("allows access when no roles required", () => {
     reflector.getAllAndOverride.mockReturnValue(undefined);
-    const ctx = mockExecutionContext({ user: { workspaceRole: Role.GUEST } });
+    const ctx = mockExecutionContext({ user: { workspaceRole: Role.VIEWER } });
     expect(guard.canActivate(ctx)).toBe(true);
   });
 
@@ -28,7 +28,7 @@ describe("RolesGuard", () => {
 
   it("denies access when user role is below minimum", () => {
     reflector.getAllAndOverride.mockReturnValue([Role.ADMIN]);
-    const ctx = mockExecutionContext({ user: { workspaceRole: Role.GUEST } });
+    const ctx = mockExecutionContext({ user: { workspaceRole: Role.VIEWER } });
     expect(() => guard.canActivate(ctx)).toThrow(ForbiddenException);
   });
 

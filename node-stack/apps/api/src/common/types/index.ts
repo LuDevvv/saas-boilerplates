@@ -11,4 +11,5 @@ export interface WorkspaceContext {
   id: string;
   name: string;
   role: Role;
+  status: string;
 }

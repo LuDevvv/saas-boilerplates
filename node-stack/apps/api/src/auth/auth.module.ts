@@ -13,10 +13,12 @@ import { CacheService } from '@node-stack/cache';
 import { SessionRepository } from '@node-stack/db';
 
 import { DatabaseModule } from '../common/database/database.module';
+import { ApiKeysModule } from '../api-keys/api-keys.module';
 
 @Module({
   imports: [
     DatabaseModule,
+    ApiKeysModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

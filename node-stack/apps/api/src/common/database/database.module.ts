@@ -8,6 +8,9 @@ import {
   SessionRepository,
   AuthRepository,
   ApiKeyRepository,
+  BillingRepository,
+  FileRepository,
+  InboundWebhookRepository,
 } from "@node-stack/db";
 
 @Global()
@@ -23,6 +26,9 @@ import {
     SessionRepository,
     AuthRepository,
     ApiKeyRepository,
+    BillingRepository,
+    FileRepository,
+    InboundWebhookRepository,
   ],
   exports: [
     DB_TOKEN,
@@ -32,6 +38,9 @@ import {
     SessionRepository,
     AuthRepository,
     ApiKeyRepository,
+    BillingRepository,
+    FileRepository,
+    InboundWebhookRepository,
   ],
 })
 export class DatabaseModule {}

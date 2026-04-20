@@ -39,9 +39,9 @@ export class BillingController {
   @UseGuards(IdempotencyGuard)
   @UseInterceptors(IdempotencyInterceptor)
   @RequirePermissions(Permission.BILLING_WRITE)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: "Create checkout session",
-    description: "Initializes a checkout session for the selected plan."
+    description: "Initializes a checkout session for the selected plan.",
   })
   @ApiResponse({ status: 201, description: "Checkout URL generated" })
   async checkout(
@@ -56,21 +56,33 @@ export class BillingController {
     });
   }
 
+  /**
+   * Polar webhook listener.
+   *
+   * The raw body middleware (`express.raw()`) in `main.ts` ensures this
+   * endpoint receives a Buffer, which is required for Standard Webhooks
+   * HMAC signature verification via `@polar-sh/sdk/webhooks`.
+   */
   @SkipThrottle()
   @Public()
   @Post("webhook")
-  @ApiOperation({ 
+  @ApiOperation({
     summary: "Billing webhook listener",
-    description: "Accepts events from Polar or generic mock billing events."
+    description:
+      "Accepts events from Polar. Body must be raw for signature verification.",
   })
-  async webhook(
-    @Req() req: Request,
-    @Headers("polar-signature") polarSignature?: string,
-  ) {
-    const signature = polarSignature;
-    
-    // Body is raw buffer due to middleware in main.ts
-    return this.billing.handleWebhook(req.body, signature);
+  @ApiResponse({ status: 200, description: "Webhook processed" })
+  @ApiResponse({ status: 401, description: "Invalid signature" })
+  async webhook(@Req() req: Request) {
+    // req.body is a raw Buffer because of the express.raw() middleware
+    // Pass the full headers object for Standard Webhooks verification
+    // (webhook-id, webhook-timestamp, webhook-signature)
+    const rawBody: Buffer | string = req.body;
+    const headers = req.headers as Record<string, string>;
+
+    const event = await this.billing.handleWebhook(rawBody, headers);
+
+    return { received: true, eventId: event.id, type: event.type };
   }
 
   @Get("subscription")
@@ -84,8 +96,13 @@ export class BillingController {
   @RequirePermissions(Permission.BILLING_READ)
   @ApiOperation({ summary: "Get customer portal link" })
   async portal(@Workspace() workspace: WorkspaceContext) {
-    // We would fetch the customerId from our DB based on workspace.id
-    const customerId = "cus_TODO"; 
-    return this.billing.portal(customerId);
+    return this.billing.portal(workspace.id);
+  }
+
+  @Get("invoices")
+  @RequirePermissions(Permission.BILLING_READ)
+  @ApiOperation({ summary: "Get invoices" })
+  async invoices(@Workspace() workspace: WorkspaceContext) {
+    return this.billing.invoices(workspace.id);
   }
 }

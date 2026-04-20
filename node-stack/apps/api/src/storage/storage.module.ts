@@ -1,11 +1,14 @@
 import { Module } from "@nestjs/common";
-import { createStorageService } from "@node-stack/storage";
+import { createStorageProvider } from "@node-stack/storage";
 
 import { StorageController } from "./storage.controller";
 import { AppStorageService } from "./storage.service";
 import { IdempotencyService } from "../common/services/idempotency.service";
+import { AnalyticsModule } from "../analytics/analytics.module";
 
 @Module({
+  imports: [AnalyticsModule],
+
   controllers: [StorageController],
   providers: [
     AppStorageService,
@@ -13,29 +16,28 @@ import { IdempotencyService } from "../common/services/idempotency.service";
     {
       provide: "STORAGE_SERVICE",
       useFactory: () => {
-        const provider = (
-          process.env.STORAGE_PROVIDER || "minio"
-        ).toLowerCase();
-        const endpoint =
-          provider === "minio"
-            ? process.env.MINIO_ENDPOINT
-            : process.env.R2_ENDPOINT;
-        const bucket =
-          process.env.MINIO_BUCKET || process.env.R2_BUCKET || "attachments";
-        const publicUrl =
-          process.env.MINIO_PUBLIC_URL || process.env.R2_PUBLIC_URL;
-        const accessKey =
-          process.env.MINIO_ACCESS_KEY || process.env.R2_ACCESS_KEY_ID || "";
-        const secret =
-          process.env.MINIO_SECRET_KEY ||
-          process.env.R2_SECRET_ACCESS_KEY ||
-          "";
-        return createStorageService({
-          endpoint,
-          bucket,
-          publicUrl,
-          accessKeyId: accessKey,
-          secretAccessKey: secret,
+        const provider = (process.env.STORAGE_PROVIDER || "local").toLowerCase() as "s3" | "local";
+        
+        if (provider === "s3") {
+          return createStorageProvider({
+            provider: "s3",
+            s3: {
+              endpoint: process.env.STORAGE_S3_ENDPOINT || process.env.MINIO_ENDPOINT,
+              region: process.env.STORAGE_S3_REGION || "us-east-1",
+              accessKeyId: process.env.STORAGE_S3_ACCESS_KEY || process.env.MINIO_ACCESS_KEY || "",
+              secretAccessKey: process.env.STORAGE_S3_SECRET_KEY || process.env.MINIO_SECRET_KEY || "",
+              bucket: process.env.STORAGE_S3_BUCKET || process.env.MINIO_BUCKET || "attachments",
+              publicUrl: process.env.STORAGE_S3_PUBLIC_URL || process.env.MINIO_PUBLIC_URL,
+            },
+          });
+        }
+
+        return createStorageProvider({
+          provider: "local",
+          local: {
+            basePath: process.env.STORAGE_LOCAL_PATH || "./storage",
+            baseUrl: process.env.STORAGE_LOCAL_URL || "http://localhost:3000/api/storage",
+          },
         });
       },
     },

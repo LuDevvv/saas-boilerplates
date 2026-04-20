@@ -25,14 +25,15 @@ export class RealtimeService implements OnModuleInit {
   async handleAiJobCompleted(payload: { userId: string; workspaceId: string; jobId: string; result: any }) {
     this.logger.log(`AI job completed for user ${payload.userId}, job ${payload.jobId}`);
     
-    this.realtimeGateway.emitToUser(payload.userId, 'ai_job.completed', {
+    // Transient real-time update
+    this.emitToUser(payload.userId, 'ai_job.completed', {
       jobId: payload.jobId,
       result: payload.result,
       timestamp: new Date().toISOString(),
     });
 
     if (payload.workspaceId) {
-      this.realtimeGateway.emitToWorkspace(payload.workspaceId, 'ai_job.completed', {
+      this.emitToWorkspace(payload.workspaceId, 'ai_job.completed', {
         jobId: payload.jobId,
         result: payload.result,
         userId: payload.userId,
@@ -41,21 +42,11 @@ export class RealtimeService implements OnModuleInit {
     }
   }
 
-  @OnEvent('notification.created')
-  async handleNotificationCreated(payload: { userId: string; notification: any }) {
-    this.logger.log(`Notification created for user ${payload.userId}`);
-    
-    this.realtimeGateway.emitToUser(payload.userId, 'notification.created', {
-      notification: payload.notification,
-      timestamp: new Date().toISOString(),
-    });
-  }
-
   @OnEvent('webhook.delivery.failed')
   async handleWebhookDeliveryFailed(payload: { workspaceId: string; webhookId: string; error: string; attempts: number }) {
     this.logger.log(`Webhook delivery failed for workspace ${payload.workspaceId}, webhook ${payload.webhookId}`);
     
-    this.realtimeGateway.emitToWorkspace(payload.workspaceId, 'webhook.delivery.failed', {
+    this.emitToWorkspace(payload.workspaceId, 'webhook.delivery.failed', {
       webhookId: payload.webhookId,
       error: payload.error,
       attempts: payload.attempts,

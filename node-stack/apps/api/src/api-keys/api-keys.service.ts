@@ -1,4 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { OnEvent } from '@nestjs/event-emitter';
 import {
   ApiKeyRepository,
   withTransaction,
@@ -6,6 +8,8 @@ import {
   generateApiKey,
   hashKey,
   getKeyPreview,
+  extractPrefix,
+  verifyApiKey,
 } from '@node-stack/db';
 import { CacheService } from '@node-stack/cache';
 import {
@@ -16,10 +20,15 @@ import { CreateApiKeyDto } from '@node-stack/validators';
 
 @Injectable()
 export class ApiKeysService {
+  private readonly pepper: string;
+
   constructor(
     private readonly repo: ApiKeyRepository,
     private readonly cache: CacheService,
-  ) {}
+    private readonly config: ConfigService,
+  ) {
+    this.pepper = this.config.getOrThrow<string>('API_KEY_PEPPER');
+  }
 
   async create(
     workspaceId: string,
@@ -27,8 +36,9 @@ export class ApiKeysService {
     dto: CreateApiKeyDto,
   ): Promise<CreateApiKeyResponseDto> {
     const plainKey = generateApiKey();
-    const keyHash = hashKey(plainKey);
+    const keyHash = hashKey(plainKey, this.pepper);
     const keyPreview = getKeyPreview(plainKey);
+    const prefix = extractPrefix(plainKey);
     const expiresAt = dto.expiresAt ? new Date(dto.expiresAt) : null;
 
     let outboxEventId: string | null = null;
@@ -39,6 +49,7 @@ export class ApiKeysService {
         name: dto.name,
         keyHash,
         keyPreview,
+        prefix,
         expiresAt,
       }, tx as any);
 
@@ -55,13 +66,47 @@ export class ApiKeysService {
       return key;
     });
 
-    // In a real app, you'd trigger the outbox worker here via job queue if needed
-    // or rely on a separate polling service.
-
     return {
       ...this.mapToDto(record),
       plainKey, // ONLY RETURNED ONCE!
     };
+  }
+
+  /**
+   * High-performance validation with caching and timing-safe checks
+   */
+  async validateKey(rawKey: string): Promise<any> {
+    const prefix = extractPrefix(rawKey);
+    const tempHash = hashKey(rawKey, this.pepper); // For cache key
+    const cacheKey = `api-key:v1:${tempHash}`;
+
+    // 1. L1 Cache lookup
+    const cached = await this.cache.get<any>(cacheKey);
+    if (cached) return cached;
+
+    // 2. DB lookup by prefix (indexed)
+    const apiKey = await this.repo.findByPrefix(prefix);
+    if (!apiKey) return null;
+
+    // 3. Timing-safe verification
+    const isValid = verifyApiKey(rawKey, apiKey.keyHash, this.pepper);
+    if (!isValid) return null;
+
+    // 4. Expiration check
+    if (apiKey.expiresAt && new Date(apiKey.expiresAt) < new Date()) {
+      return null;
+    }
+
+    // 5. Populate cache (5 mins)
+    await this.cache.set(cacheKey, apiKey, 300);
+
+    return apiKey;
+  }
+
+  @OnEvent('api_key.used')
+  async handleUsage(apiKeyId: string) {
+    // Non-blocking background update
+    await this.repo.updateLastUsed(apiKeyId);
   }
 
   async list(workspaceId: string): Promise<ApiKeyResponseDto[]> {
@@ -86,8 +131,10 @@ export class ApiKeysService {
         });
     });
 
-    // IMMEDIATELY invalidate Redis cache (Logic Check requirement)
-    const cacheKey = `api-key:${apiKey.keyHash}`;
+    // IMMEDIATELY invalidate Redis cache
+    // Note: We need to invalidate ALL possible hashes if we used salt/pepper, 
+    // but since we search by prefix, we can just let it expire or if we have the hash in apiKey, use it.
+    const cacheKey = `api-key:v1:${apiKey.keyHash}`;
     await this.cache.del(cacheKey);
   }
 

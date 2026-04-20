@@ -9,11 +9,13 @@ import { EventBridgeService } from './event-bridge.service';
 import { WsJwtGuard } from './ws-jwt.guard';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JWT_CONSTANTS } from '../auth/constants';
+import { WorkspacesModule } from '../workspaces/workspaces.module';
 
 @Module({
   imports: [
     CacheModule,
     EventEmitterModule.forRoot(),
+    WorkspacesModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

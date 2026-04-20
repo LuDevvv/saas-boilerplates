@@ -117,6 +117,9 @@ export class InvitationsService {
   }
 
   async acceptInvitation(token: string, currentUserId: string) {
+    const currentUser = await this.userRepo.findById(currentUserId);
+    if (!currentUser) throw new UnauthorizedException("User not found");
+
     return this.workspaceRepo.transaction(async (tx: NodePgDatabase<typeof schema>) => {
       // Row lock for safety
       const [lockedInvitation] = await tx
@@ -132,6 +135,10 @@ export class InvitationsService {
       if (lockedInvitation.expiresAt < new Date()) {
         await this.invitationRepo.update(lockedInvitation.id, { status: "expired" }, tx);
         throw new BadRequestException("Invitation has expired");
+      }
+
+      if (currentUser.email.toLowerCase() !== lockedInvitation.email.toLowerCase()) {
+        throw new UnauthorizedException("You can only accept invitations sent to your email address");
       }
 
       const existingMembership = await this.workspaceRepo.findMembership(lockedInvitation.workspaceId, currentUserId, tx);

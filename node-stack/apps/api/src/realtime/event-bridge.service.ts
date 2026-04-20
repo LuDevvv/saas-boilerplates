@@ -14,16 +14,15 @@ export class EventBridgeService implements OnModuleInit {
   async onModuleInit() {
     this.logger.log('Initializing Cross-Process Event Bridge via Redis...');
     
-    await this.cacheService.subscribe('internal_events', (message) => {
+    await this.cacheService.psubscribe('internal_events:*', (channel, message) => {
       try {
         const { type, payload } = JSON.parse(message);
-        this.logger.log(`Received cross-process event: ${type}`);
+        this.logger.log(`Received cross-process event on [${channel}]: ${type}`);
         
-        // Forward the Redis event to the local NestJS EventEmitter
-        // This decouples the Redis listening from the RealtimeService logic
+        // Forward to local lifecycle
         this.eventEmitter.emit(type, payload);
       } catch (err) {
-        this.logger.error(`Error parsing cross-process event: ${err.message}`);
+        this.logger.error(`Error parsing message on [${channel}]: ${err.message}`);
       }
     });
   }

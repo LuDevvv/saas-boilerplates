@@ -412,7 +412,27 @@ export class AuthService {
     };
   }
 
+  async createImpersonationSession(userId: string): Promise<TokenPair> {
+    const user = await this.authRepository.findUserById(userId);
+    if (!user) {
+      throw new UnauthorizedException(AUTH_ERRORS.USER_NOT_FOUND);
+    }
+
+    const sessionId = crypto.randomUUID();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 1); // Shorter expiry for impersonation? Or keep same.
+
+    await this.authRepository.createSession({
+      id: sessionId,
+      userId,
+      expiresAt,
+    });
+
+    return this.generateTokens(userId, user.email, sessionId);
+  }
+
   private async generateTokens(
+
     userId: string,
     email: string,
     sessionId?: string,

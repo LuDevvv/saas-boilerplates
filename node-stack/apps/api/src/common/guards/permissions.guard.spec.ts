@@ -16,7 +16,7 @@ describe("PermissionsGuard", () => {
 
   it("allows access when no permissions required", () => {
     reflector.getAllAndOverride.mockReturnValue(undefined);
-    const ctx = mockExecutionContext({ user: { workspaceRole: Role.GUEST } });
+    const ctx = mockExecutionContext({ user: { workspaceRole: Role.VIEWER } });
     expect(guard.canActivate(ctx)).toBe(true);
   });
 
@@ -29,8 +29,8 @@ describe("PermissionsGuard", () => {
 
   it("denies access when user missing one required permission", () => {
     reflector.getAllAndOverride.mockReturnValue([Permission.BILLING_WRITE]);
-    // GUEST only has WORKSPACE_READ
-    const ctx = mockExecutionContext({ user: { workspaceRole: Role.GUEST } });
+    // VIEWER only has WORKSPACE_READ
+    const ctx = mockExecutionContext({ user: { workspaceRole: Role.VIEWER } });
     expect(() => guard.canActivate(ctx)).toThrow(ForbiddenException);
   });
 
@@ -40,9 +40,9 @@ describe("PermissionsGuard", () => {
     expect(guard.canActivate(ctx)).toBe(true);
   });
 
-  it("GUEST role only has read permissions (denies write)", () => {
+  it("VIEWER role only has read permissions (denies write)", () => {
     reflector.getAllAndOverride.mockReturnValue([Permission.WORKSPACE_WRITE]);
-    const ctx = mockExecutionContext({ user: { workspaceRole: Role.GUEST } });
+    const ctx = mockExecutionContext({ user: { workspaceRole: Role.VIEWER } });
     expect(() => guard.canActivate(ctx)).toThrow(ForbiddenException);
   });
 });

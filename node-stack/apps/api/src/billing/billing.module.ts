@@ -6,12 +6,14 @@ import { MockProvider } from "@node-stack/billing-adapter";
 import { BillingController } from "./billing.controller";
 import { BillingService } from "./billing.service";
 import { DatabaseModule } from "../common/database/database.module";
+import { EncryptionService } from "../common/services/encryption.service";
 
 @Module({
   imports: [ConfigModule, DatabaseModule],
   controllers: [BillingController],
   providers: [
     BillingService,
+    EncryptionService,
     {
       provide: "PAYMENT_PROVIDER",
       useFactory: async (config: ConfigService): Promise<PaymentProvider> => {
@@ -20,12 +22,15 @@ import { DatabaseModule } from "../common/database/database.module";
         switch (provider) {
           case "polar": {
             const { PolarProvider } = await import(
-              "@node-stack/billing-adapter/dist/providers/polar.provider.js"
+              "@node-stack/billing-adapter"
             );
-            return new PolarProvider(
-              config.getOrThrow("POLAR_ACCESS_TOKEN"),
-              config.get("POLAR_WEBHOOK_SECRET"),
-            );
+            return new PolarProvider({
+              accessToken: config.getOrThrow("POLAR_ACCESS_TOKEN"),
+              webhookSecret: config.get("POLAR_WEBHOOK_SECRET"),
+              server: config.get("POLAR_SERVER", "production") as
+                | "sandbox"
+                | "production",
+            });
           }
           case "mock":
           default:
@@ -35,6 +40,6 @@ import { DatabaseModule } from "../common/database/database.module";
       inject: [ConfigService],
     },
   ],
-  exports: [BillingService],
+  exports: [BillingService, EncryptionService],
 })
 export class BillingModule {}

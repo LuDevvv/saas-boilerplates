@@ -1,7 +1,5 @@
 import { Module } from "@nestjs/common";
-import { CacheService } from "@node-stack/cache";
 import { WorkspaceRepository } from "@node-stack/db";
-import { BullModule } from "@nestjs/bullmq";
 
 import { InvitationsModule } from "./invitations.module";
 import { WorkspacesController } from "./workspaces.controller";
@@ -18,13 +16,6 @@ import { DatabaseModule } from "../common/database/database.module";
   imports: [
     InvitationsModule, 
     DatabaseModule,
-    BullModule.registerQueue({
-      name: "webhooks.delivery",
-      connection: {
-        host: process.env.REDIS_HOST || "localhost",
-        port: Number(process.env.REDIS_PORT) || 6379,
-      },
-    }),
   ],
   controllers: [WorkspacesController, WebhooksController],
   providers: [
@@ -33,8 +24,8 @@ import { DatabaseModule } from "../common/database/database.module";
     ApiKeysService,
     OutboxService,
     IdempotencyService,
-    CacheService,
   ],
   exports: [WorkspacesService, WebhooksService],
 })
 export class WorkspacesModule {}
+

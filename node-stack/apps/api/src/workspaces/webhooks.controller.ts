@@ -70,4 +70,13 @@ export class WebhooksController {
   ) {
     return this.webhooksService.test(workspaceId, webhookId);
   }
+
+  @Post(":webhookId/rotate-secret")
+  @ApiOperation({ summary: "Rotate webhook secret" })
+  async rotateSecret(
+    @TenantId() workspaceId: string,
+    @Param("webhookId", ParseUUIDPipe) webhookId: string
+  ) {
+    return this.webhooksService.rotateSecret(workspaceId, webhookId);
+  }
 }

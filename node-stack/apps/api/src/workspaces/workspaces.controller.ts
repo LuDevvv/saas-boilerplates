@@ -22,7 +22,8 @@ import type { PaginationDto } from "@node-stack/utils";
 import { 
   CreateWorkspaceDto, 
   UpdateMemberRoleDto,
-  CreateApiKeyDto
+  CreateApiKeyDto,
+  UpdateWorkspaceDto,
 } from "@node-stack/validators";
 
 import { WorkspacesService } from "./workspaces.service";
@@ -124,6 +125,19 @@ export class WorkspacesController {
   @ApiResponse({ status: 200, description: "Workspace details retrieved" })
   async getWorkspace(@Workspace() workspace: WorkspaceContext) {
     return workspace;
+  }
+
+  @Patch(":id")
+  @Roles(Role.ADMIN)
+  @RequirePermissions(Permission.WORKSPACE_WRITE)
+  @ApiOperation({ summary: "Update workspace details" })
+  @ApiResponse({ status: 200, description: "Workspace updated successfully" })
+  async updateWorkspace(
+    @TenantId() workspaceId: string,
+    @Body() dto: UpdateWorkspaceDto,
+    @CurrentUser("id") userId: string,
+  ) {
+    return this.workspacesService.updateWorkspace(workspaceId, dto, userId);
   }
 
   @Get(":id/members")
