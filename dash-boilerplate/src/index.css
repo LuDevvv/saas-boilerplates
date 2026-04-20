@@ -1,0 +1,271 @@
+@import "./styles/player.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased;
+  }
+}
+
+@layer utilities {
+  @keyframes bounce-subtle {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes bounce-subtle-delayed {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  .animate-bounce-subtle {
+    animation: bounce-subtle 3s ease-in-out infinite;
+  }
+
+  .animate-bounce-subtle-delayed {
+    animation: bounce-subtle-delayed 3.5s ease-in-out infinite;
+    animation-delay: 1s;
+  }
+}
+
+@layer components {
+  /* Design System - Premium Components */
+
+  .btn-base {
+    @apply flex items-center justify-center gap-2 px-4 py-2 font-bold transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Primary Button - Linear Gradient Premium */
+  .btn-primary {
+    @apply btn-base bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 hover:scale-[1.02] rounded-2xl;
+  }
+
+  /* Secondary Button - Glassmorphism style */
+  .btn-secondary {
+    @apply btn-base bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-700 rounded-2xl;
+  }
+
+  /* Danger Button - Red accented */
+  .btn-danger {
+    @apply btn-base bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/20 hover:bg-red-500 hover:text-white dark:hover:bg-red-600 rounded-2xl shadow-sm hover:shadow-red-500/20 transition-all;
+  }
+
+  /* Ghost Button */
+  .btn-ghost {
+    @apply btn-base text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-2xl;
+  }
+
+  /* Premium Card Implementation */
+  .card-premium {
+    @apply bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm transition-all duration-500 overflow-hidden;
+  }
+
+  /* Standard Input field */
+  .input-standard {
+    @apply w-full px-5 py-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300;
+  }
+
+  /* Badges */
+  .badge-premium {
+    @apply px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-md;
+  }
+}
+
+.shadow-glow {
+  box-shadow: 0 0 5px 1px rgba(52, 211, 153, 0.8);
+}
+
+.main__content {
+  animation: scaleMainContent 0.35s;
+}
+
+@keyframes scaleMainContent {
+  0% {
+    transform: scale(0.97);
+    opacity: 0.5;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Custom Scrollbar Premium */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-gray-200 dark:bg-gray-800 rounded-full hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors;
+}
+
+@media (min-width: 1024px) {
+  main {
+    flex-direction: row;
+  }
+
+  main>section:first-child {
+    order: 1;
+  }
+
+  main>section:last-child {
+    order: 2;
+  }
+}
+
+/* ===== Fix: Force primary color border on ALL focus states ===== */
+/* Prevents browser default orange/amber focus ring */
+input:focus,
+select:focus,
+textarea:focus,
+button:focus {
+  outline: none !important;
+}
+
+input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+/* ===== Flag Icons (Phone + Currency) ===== */
+.currency-flag {
+  width: 22px;
+  height: 16px;
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow: 0 0 1px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+/* Toast Custom Entrance Animation */
+@keyframes toastEntrance {
+  0% { opacity: 0; transform: translateY(-0.5rem) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-toast-enter {
+  animation: toastEntrance 0.2s ease-out forwards;
+}
+
+@keyframes toastExit {
+  0% { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(1rem); }
+}
+
+.animate-toast-exit {
+  animation: toastExit 0.2s ease-in forwards;
+}
+
+@keyframes toastProgress {
+  /* Hold at 100% during entrance (200ms of 5000ms = 4%) */
+  0%, 4% { transform: scaleX(1); }
+  100% { transform: scaleX(0); }
+}
+
+.animate-toast-progress {
+  transform-origin: left;
+  animation: toastProgress var(--toast-duration, 5000ms) linear forwards;
+}
+
+/* Theme Toggle View Transitions (Polygon) */
+:root {
+  --expo-in: linear(
+    0 0%, 0.0085 31.26%, 0.0167 40.94%,
+    0.0289 48.86%, 0.0471 55.92%,
+    0.0717 61.99%, 0.1038 67.32%,
+    0.1443 72.07%, 0.1989 76.7%,
+    0.2659 80.89%, 0.3465 84.71%,
+    0.4419 88.22%, 0.554 91.48%,
+    0.6835 94.51%, 0.8316 97.34%, 1 100%
+  );
+  --expo-out: linear(
+    0 0%, 0.1684 2.66%, 0.3165 5.49%,
+    0.446 8.52%, 0.5581 11.78%,
+    0.6535 15.29%, 0.7341 19.11%,
+    0.8011 23.3%, 0.8557 27.93%,
+    0.8962 32.68%, 0.9283 38.01%,
+    0.9529 44.08%, 0.9711 51.14%,
+    0.9833 59.06%, 0.9915 68.74%, 1 100%
+  );
+}
+
+.theme-toggling::view-transition-group(root) {
+  animation-duration: 0.8s;
+  animation-timing-function: var(--expo-out);
+}
+
+.theme-toggling::view-transition-new(root) {
+  animation-name: reveal-theme;
+  animation-fill-mode: both;
+  will-change: clip-path;
+}
+
+.theme-toggling::view-transition-old(root),
+.theme-toggling.dark::view-transition-old(root) {
+  animation: none;
+  z-index: -1;
+}
+
+@keyframes reveal-theme {
+  from {
+    clip-path: circle(0% at var(--x) var(--y));
+  }
+  to {
+    clip-path: circle(150% at var(--x) var(--y));
+  }
+}

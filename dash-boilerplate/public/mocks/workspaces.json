@@ -1,0 +1,33 @@
+{
+  "workspaces": [
+    {
+      "id": "1",
+      "name": "Production Hub",
+      "location": "San Francisco, CA",
+      "status": "active",
+      "members": 24,
+      "lastActive": "10 mins ago"
+    },
+    {
+      "id": "2",
+      "name": "Design Studio",
+      "location": "New York, NY",
+      "status": "active",
+      "members": 12,
+      "lastActive": "1 hour ago"
+    },
+    {
+      "id": "3",
+      "name": "Development Lab",
+      "location": "Austin, TX",
+      "status": "idle",
+      "members": 8,
+      "lastActive": "3 days ago"
+    }
+  ],
+  "stats": {
+    "totalWorkspaces": 3,
+    "activeMembers": 44,
+    "uptime": "99.9%"
+  }
+}
