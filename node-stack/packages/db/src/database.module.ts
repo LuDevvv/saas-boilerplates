@@ -9,6 +9,14 @@ import { ApiKeyRepository } from './repositories/api-key.repository';
 import { UserRepository } from './repositories/user.repository';
 import { WorkspaceRepository } from './repositories/workspace.repository';
 import { SessionRepository } from './repositories/session.repository';
+import { AiRepository } from './repositories/ai.repository';
+import { BillingRepository } from './repositories/billing.repository';
+import { InboundWebhookRepository } from './repositories/inbound-webhook.repository';
+import { AnalyticsRepository } from './repositories/analytics.repository';
+import { FileRepository } from './repositories/file.repository';
+import { AuditLogRepository } from './repositories/audit-log.repository';
+import { SystemConfigRepository } from './repositories/system-config.repository';
+import { PortabilityRepository } from './repositories/portability.repository';
 import * as schema from './schema';
 import { DB_TOKEN } from './tokens';
 
@@ -33,6 +41,14 @@ import { DB_TOKEN } from './tokens';
     SessionRepository,
     ApiKeyRepository,
     AuthRepository,
+    AiRepository,
+    BillingRepository,
+    InboundWebhookRepository,
+    AnalyticsRepository,
+    FileRepository,
+    AuditLogRepository,
+    SystemConfigRepository,
+    PortabilityRepository,
   ],
   exports: [
     DB_TOKEN,
@@ -42,6 +58,14 @@ import { DB_TOKEN } from './tokens';
     SessionRepository,
     ApiKeyRepository,
     AuthRepository,
+    AiRepository,
+    BillingRepository,
+    InboundWebhookRepository,
+    AnalyticsRepository,
+    FileRepository,
+    AuditLogRepository,
+    SystemConfigRepository,
+    PortabilityRepository,
   ],
 })
 export class DatabaseModule {}

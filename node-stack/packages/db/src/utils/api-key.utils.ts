@@ -1,4 +1,4 @@
-import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 
 /**
  * Stripe-style API Key generation.
@@ -10,11 +10,10 @@ export function generateApiKey(env: 'live' | 'test' = 'live'): string {
 }
 
 /**
- * SHA-256 hashing for secure storage.
- * Stripe pattern: Store the hash of the full key.
+ * HMAC-SHA256 hashing with pepper for secure storage.
  */
-export function hashKey(key: string): string {
-  return createHash('sha256').update(key).digest('hex');
+export function hashKey(key: string, pepper: string): string {
+  return createHmac('sha256', pepper).update(key).digest('hex');
 }
 
 /**
@@ -35,7 +34,13 @@ export function extractPrefix(key: string): string {
 /**
  * Constant-time comparison to prevent timing attacks
  */
-export function verifyApiKey(rawKey: string, hashedKey: string): boolean {
-  const hash = hashKey(rawKey);
-  return hash === hashedKey;
+export function verifyApiKey(rawKey: string, hashedKey: string, pepper: string): boolean {
+  const hash = Buffer.from(hashKey(rawKey, pepper), 'hex');
+  const storedHash = Buffer.from(hashedKey, 'hex');
+
+  if (hash.length !== storedHash.length) {
+    return false;
+  }
+
+  return timingSafeEqual(hash, storedHash);
 }

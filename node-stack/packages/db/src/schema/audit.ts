@@ -22,7 +22,7 @@ export const auditLogs = pgTable(
     }),
     action: text("action").notNull(),
     entityType: text("entity_type"),
-    entityId: uuid("entity_id"),
+    entityId: text("entity_id"),
     metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
     ipAddress: text("ip_address"),
     userAgent: text("user_agent"),

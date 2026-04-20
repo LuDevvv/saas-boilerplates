@@ -5,4 +5,11 @@ export * from "./invitation.repository";
 export * from "./session.repository";
 export * from "./auth.repository";
 export * from "./api-key.repository";
-
+export * from "./billing.repository";
+export * from "./file.repository";
+export * from "./ai.repository";
+export * from "./analytics.repository";
+export * from "./inbound-webhook.repository";
+export * from "./portability.repository";
+export * from "./audit-log.repository";
+export * from "./system-config.repository";

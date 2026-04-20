@@ -15,6 +15,12 @@ export const workspaceRoleEnum = pgEnum("workspace_role", [
   "owner",
   "admin",
   "member",
+  "guest",
+]);
+
+export const membershipStatusEnum = pgEnum("membership_status", [
+  "active",
+  "pending",
 ]);
 
 export const workspaces = pgTable(
@@ -45,6 +51,7 @@ export const memberships = pgTable(
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
     role: workspaceRoleEnum("role").notNull().default("member"),
+    status: membershipStatusEnum("status").notNull().default("active"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (table) => ({

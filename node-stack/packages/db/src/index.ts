@@ -65,12 +65,19 @@ export type Database = typeof db;
 export * from './repositories';
 export * from './repositories/api-key.repository';
 export * from './utils/api-key.utils';
-export { hashKey, getKeyPreview, generateApiKey } from './utils/api-key.utils';
+export { hashKey, getKeyPreview, generateApiKey, extractPrefix, verifyApiKey } from './utils/api-key.utils';
 export { WorkspaceRepository } from './repositories/workspace.repository';
 export { UserRepository } from './repositories/user.repository';
 export { InvitationRepository } from './repositories/invitation.repository';
 export { SessionRepository } from './repositories/session.repository';
 export { AuthRepository } from './repositories/auth.repository';
+export { BillingRepository } from './repositories/billing.repository';
+export { FileRepository } from './repositories/file.repository';
+export { InboundWebhookRepository } from './repositories/inbound-webhook.repository';
+export { AnalyticsRepository } from './repositories/analytics.repository';
+export { AuditLogRepository } from './repositories/audit-log.repository';
+export { SystemConfigRepository } from './repositories/system-config.repository';
+export { PortabilityRepository } from './repositories/portability.repository';
 export { DB_TOKEN } from './tokens';
 
 export async function withTransaction<T>(
@@ -116,7 +123,10 @@ export const {
   outbox,
   customers,
   subscriptions,
+  billingEvents,
+  files,
 } = schema;
 
 export * from './factories';
 export { DatabaseModule } from './database.module';
+export { DatabaseModule as DbModule } from './database.module';

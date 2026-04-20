@@ -201,6 +201,20 @@ export class AuthRepository {
     });
   }
 
+  async findAll(options: { page: number; limit: number; search?: string }, tx?: Tx) {
+    const database = tx ?? this.db;
+    const offset = (options.page - 1) * options.limit;
+
+    // In a real application, you'd add complex filtering here
+    const users = await database.query.users.findMany({
+      limit: options.limit,
+      offset,
+      orderBy: (u, { desc }) => [desc(u.createdAt)],
+    });
+
+    return users;
+  }
+
   // ── Outbox queries ──────────────────────────────────────
 
   async createOutboxEvent(
