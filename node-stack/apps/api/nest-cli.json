@@ -5,7 +5,17 @@
   "compilerOptions": {
     "deleteOutDir": false,
     "webpack": false,
-    "tsConfig": "tsconfig.json"
+    "tsConfigPath": "tsconfig.build.json",
+    "plugins": [
+      {
+        "name": "@nestjs/swagger",
+        "options": {
+          "classValidatorShim": false,
+          "introspectComments": true,
+          "dtoFileNameSuffix": [".dto.ts", ".schema.ts"]
+        }
+      }
+    ]
   },
   "generators": {},
   "cli": {}
