@@ -1,6 +1,6 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Job } from 'bullmq';
-import { Logger, Inject, OnModuleDestroy } from '@nestjs/common';
+import { Processor, InjectQueue } from '@nestjs/bullmq';
+import { Job, Queue } from 'bullmq';
+import { Logger, Inject } from '@nestjs/common';
 import {
   AIProvider,
   AIJob,
@@ -9,6 +9,7 @@ import {
   AIInsufficientQuotaError,
 } from '@node-stack/ai-adapter';
 import { CacheService } from '@node-stack/cache';
+import { BaseWorker } from '../base.worker';
 
 const PROMPT_TEMPLATES: Record<string, (j: AIJob) => string> = {
   'summarize-document': (j) =>
@@ -23,32 +24,24 @@ const PROMPT_TEMPLATES: Record<string, (j: AIJob) => string> = {
 };
 
 @Processor('ai')
-export class AIProcessor extends WorkerHost implements OnModuleDestroy {
-  private readonly logger = new Logger(AIProcessor.name);
+export class AIProcessor extends BaseWorker {
+  protected readonly logger = new Logger(AIProcessor.name);
+  protected readonly queueName = 'ai';
 
   constructor(
     @Inject(AI_PROVIDER_TOKEN) private readonly aiProvider: AIProvider,
     private readonly cacheService: CacheService,
+    @InjectQueue('dlq') private readonly dlqQueue: Queue,
   ) {
     super();
   }
 
-  /**
-   * Lifecycle hook called by NestJS when the module is being destroyed (app.close()).
-   * Gracefully closes the BullMQ AI worker — stops accepting new jobs and waits for
-   * active AI jobs to finish before the process exits.
-   */
-  async onModuleDestroy() {
-    this.logger.log(
-      '[Worker] Gracefully closing BullMQ AI worker...',
-    );
-    await this.worker.close();
-    this.logger.log('[Worker] AI worker closed.');
+  protected getDlqQueue(): Queue {
+    return this.dlqQueue;
   }
 
-  async process(job: Job<AIJob, AIJobResult, string>): Promise<AIJobResult> {
+  async processJob(job: Job<AIJob, AIJobResult, string>): Promise<AIJobResult> {
     const data = job.data;
-    this.logger.log(`Processing AI job ${job.id} type=${data.jobType}`);
 
     try {
       await job.updateProgress(10);
@@ -86,10 +79,9 @@ export class AIProcessor extends WorkerHost implements OnModuleDestroy {
       );
 
       await job.updateProgress(100);
-      this.logger.log(`AI job ${job.id} complete in ${result.durationMs}ms`);
 
       // Emit cross-process event for real-time notification
-      await this.cacheService.publish('internal_events', {
+      await this.cacheService.publish(`internal_events:workspace:${data.workspaceId}`, {
         type: 'ai_job.completed',
         payload: {
           userId: data.userId,

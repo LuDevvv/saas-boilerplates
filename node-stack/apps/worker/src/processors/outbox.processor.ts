@@ -1,23 +1,27 @@
-import { Processor, WorkerHost, InjectQueue } from "@nestjs/bullmq";
-import { Logger, OnModuleDestroy, Inject } from "@nestjs/common";
+import { Processor, InjectQueue } from "@nestjs/bullmq";
+import { Logger, Inject } from "@nestjs/common";
 import { db, schema, eq } from "@node-stack/db";
 import { Job, Queue } from "bullmq";
 import { WebhookDispatcher } from "./webhook-dispatcher.service";
-
-export type EventHandler = (event: Record<string, unknown>) => Promise<void>;
-export type EventHandlers = Record<string, EventHandler>;
+import { BaseWorker } from "../base.worker";
 
 @Processor("outbox")
-export class OutboxProcessor extends WorkerHost implements OnModuleDestroy {
-  private readonly logger = new Logger(OutboxProcessor.name);
+export class OutboxProcessor extends BaseWorker {
+  protected readonly logger = new Logger(OutboxProcessor.name);
+  protected readonly queueName = "outbox";
   private successCount = 0;
   private failureCount = 0;
 
   constructor(
     @InjectQueue("outbox") private jobQueue: Queue,
+    @InjectQueue("dlq") private readonly dlqQueue: Queue,
     @Inject(WebhookDispatcher) private readonly webhookDispatcher: WebhookDispatcher,
   ) {
     super();
+  }
+
+  protected getDlqQueue(): Queue {
+    return this.dlqQueue;
   }
 
   private readonly maxRetries: number =
@@ -27,22 +31,7 @@ export class OutboxProcessor extends WorkerHost implements OnModuleDestroy {
   private readonly backoffType: string =
     process.env.BULLMQ_OUTBOX_BACKOFF_TYPE || "exponential";
 
-  /**
-   * Lifecycle hook called by NestJS when the module is being destroyed (app.close()).
-   * Gracefully closes the BullMQ worker — stops accepting new jobs and waits for
-   * active jobs to finish before the process exits.
-   */
-  async onModuleDestroy() {
-    this.logger.log(
-      "[Worker] Gracefully closing BullMQ outbox worker...",
-    );
-    await this.worker.close();
-    this.logger.log(
-      `[Worker] Outbox worker closed. Stats: ${this.successCount} succeeded, ${this.failureCount} failed.`,
-    );
-  }
-
-  async process(job: Job<Record<string, unknown>, unknown, string>): Promise<void> {
+  async processJob(job: Job<Record<string, unknown>, unknown, string>): Promise<void> {
     const outboxId = job.data?.outboxId as string;
     const event = await db.query.outbox.findFirst({
       where: eq(schema.outbox.id, outboxId),
@@ -115,7 +104,7 @@ export class OutboxProcessor extends WorkerHost implements OnModuleDestroy {
 
   private getHandlerForEvent(
     eventType: string,
-  ): EventHandler | null {
+  ): ((event: Record<string, unknown>) => Promise<void>) | null {
     switch (eventType) {
       case "user.registered":
         return async (event: Record<string, unknown>) => {
@@ -149,5 +138,16 @@ export class OutboxProcessor extends WorkerHost implements OnModuleDestroy {
     }
     // exponential backoff
     return this.baseDelayMs * Math.pow(2, attempt - 1);
+  }
+
+  /** Override base onModuleDestroy to include worker stats */
+  async onModuleDestroy() {
+    this.logger.log(
+      `[Worker] Gracefully closing BullMQ outbox worker...`,
+    );
+    await this.worker.close();
+    this.logger.log(
+      `[Worker] Outbox worker closed. Stats: ${this.successCount} succeeded, ${this.failureCount} failed.`,
+    );
   }
 }
