@@ -9,7 +9,7 @@ import {
   AIInsufficientQuotaError,
 } from '@node-stack/ai-adapter';
 import { CacheService } from '@node-stack/cache';
-import { BaseWorker } from '../base.worker';
+import { BaseWorker } from '../base.worker.js';
 
 const PROMPT_TEMPLATES: Record<string, (j: AIJob) => string> = {
   'summarize-document': (j) =>
@@ -30,7 +30,7 @@ export class AIProcessor extends BaseWorker {
 
   constructor(
     @Inject(AI_PROVIDER_TOKEN) private readonly aiProvider: AIProvider,
-    private readonly cacheService: CacheService,
+    @Inject(CacheService) private readonly cacheService: CacheService,
     @InjectQueue('dlq') private readonly dlqQueue: Queue,
   ) {
     super();

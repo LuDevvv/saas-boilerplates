@@ -1,8 +1,8 @@
-import './env';
+import './env.js';
 import { Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import * as schema from './schema';
-import { createUserWithPassword, createWorkspace } from './factories';
+import * as schema from './schema/index.js';
+import { createUserWithPassword, createWorkspace } from './factories/index.js';
 
 async function seed(): Promise<void> {
   const connectionString = process.env.DATABASE_URL;

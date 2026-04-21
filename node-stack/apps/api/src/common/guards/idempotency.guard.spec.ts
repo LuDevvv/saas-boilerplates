@@ -1,7 +1,7 @@
 import { ConflictException } from "@nestjs/common";
-import { IdempotencyGuard, IDEMPOTENCY_KEY_HEADER } from "./idempotency.guard";
-import { IdempotencyService } from "../services/idempotency.service";
-import { mockExecutionContext } from "./test-helpers/mock-context";
+import { IdempotencyGuard, IDEMPOTENCY_KEY_HEADER } from "./idempotency.guard.js";
+import { IdempotencyService } from "../services/idempotency.service.js";
+import { mockExecutionContext } from "./test-helpers/mock-context.js";
 
 describe("IdempotencyGuard", () => {
   let guard: IdempotencyGuard;

@@ -3,9 +3,9 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Settings, Globe, Shield, Bell, ArrowLeft } from "lucide-react";
 import { HeroBanner } from "@/components/ui/HeroBanner";
 import { workspaceService, WorkspaceItem } from "@/services/workspaces/workspaceService";
-import GeneralSettings from "./tabs/GeneralSettings";
-import WebhooksSettings from "./tabs/WebhooksSettings";
-import PortabilitySettings from "./tabs/PortabilitySettings";
+import GeneralSettings from "./tabs/GeneralSettings.js";
+import WebhooksSettings from "./tabs/WebhooksSettings.js";
+import PortabilitySettings from "./tabs/PortabilitySettings.js";
 
 type Tab = "general" | "webhooks" | "portability" | "access" | "notifications";
 

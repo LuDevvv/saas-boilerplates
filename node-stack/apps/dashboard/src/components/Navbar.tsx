@@ -1,13 +1,13 @@
 import { FC } from "react";
 import { Menu } from "lucide-react";
 import { useAuth } from "@/hooks/stores/useAuth";
-import { AccountSection } from "./sidebar/AccountSection";
+import { AccountSection } from "./sidebar/AccountSection.js";
 import { accountDropdownItems } from "@/config/navigation";
 import { LinkTransition } from "@components/utils/LinkTransition";
-import { ThemeToggle } from "./ThemeToggle";
+import { ThemeToggle } from "./ThemeToggle.js";
 import { useThemeStore } from "@/stores/themeStore";
 import { siteConfig } from "@/config/site-config";
-import Breadcrumbs from "./Breadcrumbs";
+import Breadcrumbs from "./Breadcrumbs.js";
 
 interface NavbarProps {
   onMenuClick?: () => void;

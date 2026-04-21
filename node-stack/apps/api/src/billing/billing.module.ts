@@ -3,10 +3,10 @@ import { ConfigService, ConfigModule } from "@nestjs/config";
 import type { PaymentProvider } from "@node-stack/billing-adapter";
 import { MockProvider } from "@node-stack/billing-adapter";
 
-import { BillingController } from "./billing.controller";
-import { BillingService } from "./billing.service";
-import { DatabaseModule } from "../common/database/database.module";
-import { EncryptionService } from "../common/services/encryption.service";
+import { BillingController } from "./billing.controller.js";
+import { BillingService } from "./billing.service.js";
+import { DatabaseModule } from "@node-stack/db";
+import { EncryptionService } from "../common/services/encryption.service.js";
 
 @Module({
   imports: [ConfigModule, DatabaseModule],

@@ -2,8 +2,8 @@ import { Injectable, NotFoundException, BadRequestException } from "@nestjs/comm
 import { db, schema, eq, and, desc } from "@node-stack/db";
 import { validateWebhookUrl } from "@node-stack/webhooks-utils";
 import { randomUUID } from "node:crypto";
-import { JobService } from "../common/queues/job.service";
-import { EncryptionService } from "../common/services/encryption.service";
+import { JobService } from "../common/queues/job.service.js";
+import { EncryptionService } from "../common/services/encryption.service.js";
 
 @Injectable()
 export class WebhooksService {

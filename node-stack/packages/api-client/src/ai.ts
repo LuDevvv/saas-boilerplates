@@ -1,5 +1,5 @@
 import { AxiosInstance } from "axios";
-import { createClient } from "./client";
+import { createClient } from "./client.js";
 import { z } from "zod";
 
 export type AIJobStatus = "pending" | "processing" | "completed" | "failed";

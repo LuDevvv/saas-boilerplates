@@ -1,3 +1,3 @@
-export * from "./jwt.guard";
-export * from "./jwt-refresh.guard";
-export * from "./api-key.guard";
+export * from "./jwt.guard.js";
+export * from "./jwt-refresh.guard.js";
+export * from "./api-key.guard.js";

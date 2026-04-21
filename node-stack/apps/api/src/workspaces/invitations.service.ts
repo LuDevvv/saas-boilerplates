@@ -18,7 +18,7 @@ import {
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import type { InviteMemberDto } from "@node-stack/validators";
-import { OutboxService } from "../common/services/outbox.service";
+import { OutboxService } from "../common/services/outbox.service.js";
 
 @Injectable()
 export class InvitationsService {

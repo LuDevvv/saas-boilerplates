@@ -1,6 +1,6 @@
 import { pgTable, text, timestamp, uuid, jsonb, index } from "drizzle-orm/pg-core";
-import { users } from "./users";
-import { workspaces } from "./workspaces";
+import { users } from "./users.js";
+import { workspaces } from "./workspaces.js";
 
 export const notifications = pgTable(
   "notifications",

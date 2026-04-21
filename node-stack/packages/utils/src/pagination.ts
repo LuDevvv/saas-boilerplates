@@ -1,5 +1,5 @@
 // Lightweight cursor-based pagination helper
-import type { PaginatedResponse } from "./dto/pagination.dto";
+import type { PaginatedResponse } from "./dto/pagination.dto.js";
 
 /**
  * Encode an object into a base64 cursor string.

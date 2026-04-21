@@ -9,8 +9,8 @@ import {
   pgEnum,
   index,
 } from "drizzle-orm/pg-core";
-import { workspaces } from "./workspaces";
-import { users } from "./users";
+import { workspaces } from "./workspaces.js";
+import { users } from "./users.js";
 
 export const fileStatusEnum = pgEnum("file_status", [
   "pending",

@@ -12,9 +12,9 @@ import {
   ApiBearerAuth,
 } from "@nestjs/swagger";
 
-import { HealthService, HealthStatus } from "./health.service";
-import { JwtAuthGuard } from "../auth/guards/jwt.guard";
-import { Public } from "../common/decorators/public.decorator";
+import { HealthService, HealthStatus } from "./health.service.js";
+import { JwtAuthGuard } from "../auth/guards/jwt.guard.js";
+import { Public } from "../common/decorators/public.decorator.js";
 
 @ApiTags("health")
 @Controller("health")

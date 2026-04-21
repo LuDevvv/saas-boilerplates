@@ -1,5 +1,5 @@
-import type { PaymentProvider } from "./interfaces/payment-provider.interface";
-import { MockProvider } from "./providers/mock.provider";
+import type { PaymentProvider } from "./interfaces/payment-provider.interface.js";
+import { MockProvider } from "./providers/mock.provider.js";
 
 export type ProviderType = "polar" | "mock";
 

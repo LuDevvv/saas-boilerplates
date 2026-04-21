@@ -15,17 +15,17 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from "@nestjs/swagger";
-import { JwtAuthGuard } from "../auth/guards/jwt.guard";
-import { WorkspaceGuard } from "../common/guards/workspace.guard";
-import { CurrentUser } from "../auth/decorators/current-user.decorator";
-import { Workspace } from "../common/decorators/workspace.decorator";
-import { UserPayload, WorkspaceContext } from "../common/types";
+import { JwtAuthGuard } from "../auth/guards/jwt.guard.js";
+import { WorkspaceGuard } from "../common/guards/workspace.guard.js";
+import { CurrentUser } from "../auth/decorators/current-user.decorator.js";
+import { Workspace } from "../common/decorators/workspace.decorator.js";
+import { UserPayload, WorkspaceContext } from "../common/types/index.js";
 import { SubmitAIJobDto, ChatCompletionDto } from "@node-stack/validators";
 import { CacheService } from "@node-stack/cache";
-import { AiService } from "./ai.service";
-import { JobService } from "../common/queues/job.service";
-import { QUEUE_NAMES } from "../common/queues/queue.constants";
-import { BillingGuard } from "../common/guards/billing.guard";
+import { AiService } from "./ai.service.js";
+import { JobService } from "../common/queues/job.service.js";
+import { QUEUE_NAMES } from "../common/queues/queue.constants.js";
+import { BillingGuard } from "../common/guards/billing.guard.js";
 
 @ApiTags("ai")
 @ApiBearerAuth("JWT-auth")
@@ -46,7 +46,10 @@ export class AiController {
     @CurrentUser() user: UserPayload,
   ) {
     return this.aiService.chat(workspace.id, user.id, {
-      ...dto,
+      messages: dto.messages,
+      model: dto.model,
+      maxTokens: dto.maxTokens,
+      temperature: dto.temperature,
       jobId: `chat_${Date.now()}`,
       workspaceId: workspace.id,
     });
@@ -65,7 +68,10 @@ export class AiController {
     res.setHeader("Connection", "keep-alive");
 
     const iterable = this.aiService.streamChat(workspace.id, user.id, {
-      ...dto,
+      messages: dto.messages,
+      model: dto.model,
+      maxTokens: dto.maxTokens,
+      temperature: dto.temperature,
       jobId: `stream_${Date.now()}`,
       workspaceId: workspace.id,
     });
@@ -90,7 +96,10 @@ export class AiController {
     @CurrentUser() user: UserPayload,
   ) {
     const job = await this.jobService.addAIJob({
-      ...dto,
+      jobType: dto.jobType,
+      prompt: dto.prompt,
+      context: dto.context,
+      model: dto.model,
       workspaceId: workspace.id,
       userId: user.id,
     });

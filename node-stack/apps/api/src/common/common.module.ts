@@ -1,12 +1,12 @@
 import { Module, Global } from "@nestjs/common";
 import { FeatureFlagService } from "@node-stack/config";
-import { AuditService } from "./services/audit.service";
-import { IdempotencyService } from "./services/idempotency.service";
-import { IdempotencyGuard } from "./guards/idempotency.guard";
-import { IdempotencyInterceptor } from "./interceptors/idempotency.interceptor";
-import { OutboxService } from "./services/outbox.service";
-import { QueueModule } from "./queues/queue.module";
-import { JobsController } from "./controllers/jobs.controller";
+import { AuditService } from "./services/audit.service.js";
+import { IdempotencyService } from "./services/idempotency.service.js";
+import { IdempotencyGuard } from "./guards/idempotency.guard.js";
+import { IdempotencyInterceptor } from "./interceptors/idempotency.interceptor.js";
+import { OutboxService } from "./services/outbox.service.js";
+import { QueueModule } from "./queues/queue.module.js";
+import { JobsController } from "./controllers/jobs.controller.js";
 
 @Global()
 @Module({

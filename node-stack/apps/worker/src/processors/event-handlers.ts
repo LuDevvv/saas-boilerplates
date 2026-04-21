@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { OutboxEvent } from "@node-stack/db";
 
-import { OutboxProcessor } from "./outbox.processor";
+import { OutboxProcessor } from "./outbox.processor.js";
 
 export type EventHandlers = Record<string, (event: any) => Promise<void>>;
 

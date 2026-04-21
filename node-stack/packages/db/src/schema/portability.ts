@@ -8,8 +8,8 @@ import {
   jsonb,
 } from "drizzle-orm/pg-core";
 
-import { workspaces } from "./workspaces";
-import { users } from "./users";
+import { workspaces } from "./workspaces.js";
+import { users } from "./users.js";
 
 export const portabilityStatusEnum = pgEnum("portability_status", [
   "pending",

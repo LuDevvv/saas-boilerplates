@@ -1,8 +1,8 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { BillingService } from "./billing.service";
+import { BillingService } from "./billing.service.js";
 import { ConfigService } from "@nestjs/config";
-import { OutboxService } from "../common/services/outbox.service";
-import { EncryptionService } from "../common/services/encryption.service";
+import { OutboxService } from "../common/services/outbox.service.js";
+import { EncryptionService } from "../common/services/encryption.service.js";
 import { BillingRepository } from "@node-stack/db";
 import { UnauthorizedException } from "@nestjs/common";
 

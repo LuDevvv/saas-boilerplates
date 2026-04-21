@@ -1,5 +1,5 @@
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
-import { IEmailProvider, SendEmailOptions, EmailProviderResponse } from "./types";
+import { IEmailProvider, SendEmailOptions, EmailProviderResponse } from "./types.js";
 
 export interface SESProviderOptions {
   region: string;

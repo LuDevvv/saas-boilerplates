@@ -1,11 +1,11 @@
 import type { FC } from "react";
 import { useRef, useState } from "react";
-import { Avatar } from "../ui/Avatar";
-import { PlanBadge } from "../ui/PlanBadge";
+import { Avatar } from "../ui/Avatar.js";
+import { PlanBadge } from "../ui/PlanBadge.js";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/utils/classNames";
-import { AccountDropdown } from "./AccountDropdown";
-import type { AccountSectionProps } from "./types";
+import { AccountDropdown } from "./AccountDropdown.js";
+import type { AccountSectionProps } from "./types.js";
 
 // Helper function to generate initials from user data
 const getInitials = (user: AccountSectionProps["user"]): string => {

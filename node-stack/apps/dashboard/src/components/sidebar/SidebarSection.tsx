@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { SidebarSectionProps } from "./types";
+import { SidebarSectionProps } from "./types.js";
 
 export const SidebarSection: FC<SidebarSectionProps> = ({
   title,

@@ -2,9 +2,9 @@ import { ChevronDown } from "lucide-react";
 import { FC, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { cn } from "@/utils/classNames";
-import LinkTransition from "../utils/LinkTransition";
-import { Tooltip } from "../ui/Tooltip";
-import { SidebarItemProps } from "./types";
+import LinkTransition from "../utils/LinkTransition.js";
+import { Tooltip } from "../ui/Tooltip.js";
+import { SidebarItemProps } from "./types.js";
 import { useSidebarStore } from "@/stores/sidebarStore";
 
 export const SidebarItem: FC<SidebarItemProps> = ({

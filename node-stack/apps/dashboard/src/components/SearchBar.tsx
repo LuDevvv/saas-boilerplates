@@ -1,6 +1,6 @@
 import { FC, ReactNode } from "react";
-import { AdminToolbar } from "./toolbar/AdminToolbar";
-import { ViewMode } from "./toolbar/ViewToggle";
+import { AdminToolbar } from "./toolbar/AdminToolbar.js";
+import { ViewMode } from "./toolbar/ViewToggle.js";
 
 export interface SearchBarTag {
   id: string;

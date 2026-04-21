@@ -5,7 +5,7 @@ import { createHmac, timingSafeEqual } from "crypto";
 import type {
   InboundWebhookHandler,
   TransformedWebhookEvent,
-} from "../interfaces/webhook-handler.interface";
+} from "../interfaces/webhook-handler.interface.js";
 
 /**
  * Generic Webhook Handler.

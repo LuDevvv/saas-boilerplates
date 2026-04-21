@@ -1,4 +1,4 @@
-import { BillingService } from "./src";
+import { BillingService } from "./src/index.js";
 
 const billingService = new BillingService("stripe");
 

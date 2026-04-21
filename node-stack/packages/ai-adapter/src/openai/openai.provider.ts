@@ -5,13 +5,13 @@ import {
   AICompletionParams,
   AICompletionResult,
   AIStreamChunk,
-} from '../interfaces/ai-provider.interface';
+} from '../interfaces/ai-provider.interface.js';
 import {
   AIError,
   AIInsufficientQuotaError,
   AIRateLimitError,
   AIAuthenticationError,
-} from '../errors/ai-errors';
+} from '../errors/ai-errors.js';
 
 @Injectable()
 export class OpenAIProvider implements AIProvider {

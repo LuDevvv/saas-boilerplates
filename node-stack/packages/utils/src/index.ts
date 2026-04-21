@@ -1,2 +1,2 @@
-export * from "./pagination";
-export * from "./dto/pagination.dto";
+export * from "./pagination.js";
+export * from "./dto/pagination.dto.js";

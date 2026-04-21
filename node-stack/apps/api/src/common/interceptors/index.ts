@@ -1,2 +1,2 @@
-export * from "./audit.interceptor";
-export * from "./idempotency.interceptor";
+export * from "./audit.interceptor.js";
+export * from "./idempotency.interceptor.js";

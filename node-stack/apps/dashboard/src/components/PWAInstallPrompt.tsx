@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { X, Download } from "lucide-react";
-import { usePWAInstall } from "../hooks/usePWAInstall";
+import { usePWAInstall } from "../hooks/usePWAInstall.js";
 
 export const PWAInstallPrompt: React.FC = () => {
   const { isInstallable, install } = usePWAInstall();

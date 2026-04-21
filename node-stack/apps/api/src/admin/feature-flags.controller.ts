@@ -8,8 +8,8 @@ import {
 } from "@nestjs/common";
 import { FeatureFlagService } from "@node-stack/config";
 
-import { JwtAuthGuard } from "../auth/guards/jwt.guard";
-import { AdminGuard } from "../common/guards/admin.guard";
+import { JwtAuthGuard } from "../auth/guards/jwt.guard.js";
+import { AdminGuard } from "../common/guards/admin.guard.js";
 
 @Controller("admin/feature-flags")
 @UseGuards(JwtAuthGuard, AdminGuard)

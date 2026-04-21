@@ -2,8 +2,8 @@ import { Injectable, Inject } from "@nestjs/common";
 import { eq, and } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import { DB_TOKEN } from "../tokens";
-import * as schema from "../schema";
+import { DB_TOKEN } from "../tokens.js";
+import * as schema from "../schema/index.js";
 
 type Invitation = typeof schema.workspaceInvitations.$inferSelect;
 type CreateInvitationData = typeof schema.workspaceInvitations.$inferInsert;

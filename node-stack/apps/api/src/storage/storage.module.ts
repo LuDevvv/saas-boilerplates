@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
 import { createStorageProvider } from "@node-stack/storage";
 
-import { StorageController } from "./storage.controller";
-import { AppStorageService } from "./storage.service";
-import { IdempotencyService } from "../common/services/idempotency.service";
-import { AnalyticsModule } from "../analytics/analytics.module";
+import { StorageController } from "./storage.controller.js";
+import { AppStorageService } from "./storage.service.js";
+import { IdempotencyService } from "../common/services/idempotency.service.js";
+import { AnalyticsModule } from "../analytics/analytics.module.js";
 
 @Module({
   imports: [AnalyticsModule],

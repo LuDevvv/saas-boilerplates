@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError, InternalAxiosRequestConfig } from "axios";
-import { CookieTokenStorage } from "./cookie-storage";
+import { CookieTokenStorage } from "./cookie-storage.js";
 import { appToast } from "@/components/alerts/Toasts";
 
 const cookieStorage = new CookieTokenStorage("token", {

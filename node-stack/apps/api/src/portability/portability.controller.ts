@@ -13,12 +13,12 @@ import {
   ApiResponse,
 } from "@nestjs/swagger";
 import { Role, Permission } from "@node-stack/types";
-import { PortabilityService } from "./portability.service";
-import { CurrentUser } from "../auth/decorators";
-import { RequirePermissions } from "../common/decorators/permissions.decorator";
-import { Roles } from "../common/decorators/roles.decorator";
-import { TenantId } from "../common/decorators/tenant-id.decorator";
-import { AuditLog } from "../common/decorators/audit-log.decorator";
+import { PortabilityService } from "./portability.service.js";
+import { CurrentUser } from "../auth/decorators/index.js";
+import { RequirePermissions } from "../common/decorators/permissions.decorator.js";
+import { Roles } from "../common/decorators/roles.decorator.js";
+import { TenantId } from "../common/decorators/tenant-id.decorator.js";
+import { AuditLog } from "../common/decorators/audit-log.decorator.js";
 
 @ApiTags("portability")
 @ApiBearerAuth("JWT-auth")

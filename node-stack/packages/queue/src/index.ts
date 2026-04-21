@@ -1,2 +1,2 @@
-export * from "./email.producer";
-export * from "./queues";
+export * from "./email.producer.js";
+export * from "./queues.js";

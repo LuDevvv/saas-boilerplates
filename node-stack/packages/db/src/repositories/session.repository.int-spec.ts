@@ -1,7 +1,7 @@
-import { createTestDb, truncateAll, TestDb } from '../testing/test-db';
-import { createUser } from '../factories';
-import { SessionRepository } from './session.repository';
-import * as schema from '../schema';
+import { createTestDb, truncateAll, TestDb } from '../testing/test-db.js';
+import { createUser } from '../factories/index.js';
+import { SessionRepository } from './session.repository.js';
+import * as schema from '../schema/index.js';
 
 describe('SessionRepository (integration)', () => {
   let testDb: TestDb;

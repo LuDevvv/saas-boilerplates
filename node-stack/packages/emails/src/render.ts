@@ -1,6 +1,6 @@
 import { render } from "@react-email/render";
 import * as React from "react";
-import { WelcomeEmail } from "./templates/WelcomeEmail";
+import { WelcomeEmail } from "./templates/WelcomeEmail.js";
 
 export type EmailTemplate = 
   | { name: "WELCOME"; data: { name: string; loginUrl: string } }
@@ -10,7 +10,7 @@ export type EmailTemplate =
   | { name: "AI_COMPLETED"; data: { jobId: string; message: string } };
 
 export async function renderEmail(template: EmailTemplate) {
-  let Component: React.ReactElement;
+  let Component: any;
 
   switch (template.name.toUpperCase()) {
     case "WELCOME":

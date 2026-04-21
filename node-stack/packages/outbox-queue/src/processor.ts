@@ -1,12 +1,13 @@
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { db, schema, eq } from "@node-stack/db";
+import { EmailSender } from "@node-stack/emails";
 import { Job } from "bullmq";
 
 const MAX_RETRIES = 5;
 
 @Processor("outbox")
 export class OutboxProcessor extends WorkerHost {
-  async process(job: Job<any, any, string>): Promise<any> {
+  async process(job: any, token?: string): Promise<any> {
     const outboxId = job.data?.outboxId as string;
 
     const event = await db.query.outbox.findFirst({
@@ -19,8 +20,6 @@ export class OutboxProcessor extends WorkerHost {
 
     try {
       // Initialize the email sender 
-      // (in a real app, you might inject this via DI or configure it once)
-      const { EmailSender } = await import("@node-stack/emails");
       const emailSender = new EmailSender();
 
       const payload = event.payload as Record<string, any>;

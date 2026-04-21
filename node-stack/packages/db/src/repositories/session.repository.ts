@@ -2,8 +2,8 @@ import { Injectable, Inject } from "@nestjs/common";
 import { and, eq, gt, ne, desc } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import { DB_TOKEN } from "../tokens";
-import * as schema from "../schema";
+import { DB_TOKEN } from "../tokens.js";
+import * as schema from "../schema/index.js";
 
 @Injectable()
 export class SessionRepository {

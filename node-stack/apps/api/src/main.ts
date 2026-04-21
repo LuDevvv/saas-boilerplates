@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import './tracing';
+import './tracing.js';
 import { Logger, UnprocessableEntityException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -10,14 +10,14 @@ import compression from 'compression';
 import express from 'express';
 import helmet from 'helmet';
 import { cleanupOpenApiDoc, createZodValidationPipe } from 'nestjs-zod';
-import { AppModule } from './app.module';
+import { AppModule } from './app.module.js';
 
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
-import { ApiVersionMiddleware } from './common/middleware/api-version.middleware';
-import { LoggingMiddleware } from './common/middleware/logging.middleware';
-import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
-import { setupSwagger } from './common/docs/swagger.config';
-import { RedisIoAdapter } from './realtime/redis-io.adapter';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
+import { ApiVersionMiddleware } from './common/middleware/api-version.middleware.js';
+import { LoggingMiddleware } from './common/middleware/logging.middleware.js';
+import { RequestIdMiddleware } from './common/middleware/request-id.middleware.js';
+import { setupSwagger } from './common/docs/swagger.config.js';
+import { RedisIoAdapter } from './realtime/redis-io.adapter.js';
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,

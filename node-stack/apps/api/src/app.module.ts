@@ -3,40 +3,40 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { ThrottlerStorageRedisService } from 'nestjs-throttler-storage-redis';
-import Redis from 'ioredis';
+import { Redis } from "ioredis";
 
-import { AdminModule } from './admin/admin.module';
-import { AuthModule } from './auth/auth.module';
-import { JwtAuthGuard } from './auth/guards/jwt.guard';
-import { BillingModule } from './billing/billing.module';
-import { AuditInterceptor } from './common/interceptors/audit.interceptor';
-import { MetricsModule } from './metrics/metrics.module';
-import { MetricsInterceptor } from './metrics/metrics.interceptor';
-import { MetricsService } from './metrics/metrics.service';
-import { StorageModule } from './storage/storage.module';
-import { WorkspacesModule } from './workspaces/workspaces.module';
-import { ApiKeysModule } from './api-keys/api-keys.module';
-import { HealthModule } from './health/health.module';
-import { AiModule } from './ai/ai.module';
-import { FeatureFlagGuard } from './common/guards/feature-flag.guard';
-import { AnalyticsModule } from './analytics/analytics.module';
-import { PortabilityModule } from './portability/portability.module';
+import { AdminModule } from './admin/admin.module.js';
+import { AuthModule } from './auth/auth.module.js';
+import { JwtAuthGuard } from './auth/guards/jwt.guard.js';
+import { BillingModule } from './billing/billing.module.js';
+import { AuditInterceptor } from './common/interceptors/audit.interceptor.js';
+import { MetricsModule } from './metrics/metrics.module.js';
+import { MetricsInterceptor } from './metrics/metrics.interceptor.js';
+import { MetricsService } from './metrics/metrics.service.js';
+import { StorageModule } from './storage/storage.module.js';
+import { WorkspacesModule } from './workspaces/workspaces.module.js';
+import { ApiKeysModule } from './api-keys/api-keys.module.js';
+import { HealthModule } from './health/health.module.js';
+import { AiModule } from './ai/ai.module.js';
+import { FeatureFlagGuard } from './common/guards/feature-flag.guard.js';
+import { AnalyticsModule } from './analytics/analytics.module.js';
+import { PortabilityModule } from './portability/portability.module.js';
 
-import { AdminGuard } from './common/guards/admin.guard';
-import { CacheInvalidationInterceptor } from './common/interceptors/cache-invalidation.interceptor';
-import { WorkspaceGuard } from './common/guards/workspace.guard';
-import { RolesGuard } from './common/guards/roles.guard';
-import { PermissionsGuard } from './common/guards/permissions.guard';
-import { CustomThrottlerGuard } from './common/guards/throttler.guard';
+import { AdminGuard } from './common/guards/admin.guard.js';
+import { CacheInvalidationInterceptor } from './common/interceptors/cache-invalidation.interceptor.js';
+import { WorkspaceGuard } from './common/guards/workspace.guard.js';
+import { RolesGuard } from './common/guards/roles.guard.js';
+import { PermissionsGuard } from './common/guards/permissions.guard.js';
+import { CustomThrottlerGuard } from './common/guards/throttler.guard.js';
 
-import { CommonModule } from './common/common.module';
-import { DatabaseModule } from './common/database/database.module';
-import { RealtimeModule } from './realtime/realtime.module';
-import { NotificationsModule } from './notifications/notifications.module';
+import { CommonModule } from './common/common.module.js';
+import { DatabaseModule } from '@node-stack/db';
+import { RealtimeModule } from './realtime/realtime.module.js';
+import { NotificationsModule } from './notifications/notifications.module.js';
 import { CacheModule } from '@node-stack/cache';
 
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { WebhooksModule } from './webhooks/webhooks.module';
+import { WebhooksModule } from './webhooks/webhooks.module.js';
 
 @Module({
   imports: [

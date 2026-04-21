@@ -1,5 +1,5 @@
 import { AxiosInstance } from "axios";
-import { createClient } from "./client";
+import { createClient } from "./client.js";
 import { GetPresignedUrlSchema, sanitizeFilename } from "@node-stack/validators";
 
 export interface PresignedUrlResponse {

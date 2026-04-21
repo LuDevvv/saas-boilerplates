@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
-import { AnalyticsService } from "./analytics.service";
+import { AnalyticsService } from "./analytics.service.js";
 
-import { UsageQuotaService } from "./usage-quota.service";
-import { AnalyticsController } from "./analytics.controller";
-import { DatabaseModule } from "../common/database/database.module";
-import { BillingModule } from "../billing/billing.module";
+import { UsageQuotaService } from "./usage-quota.service.js";
+import { AnalyticsController } from "./analytics.controller.js";
+import { DatabaseModule } from "@node-stack/db";
+import { BillingModule } from "../billing/billing.module.js";
 
 @Module({
   imports: [DatabaseModule, BillingModule],

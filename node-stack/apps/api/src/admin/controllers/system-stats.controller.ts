@@ -1,5 +1,5 @@
 import { Controller, Get } from "@nestjs/common";
-import { AdminOnly } from "../../common/decorators/admin.decorator";
+import { AdminOnly } from "../../common/decorators/admin.decorator.js";
 import { AnalyticsRepository } from "@node-stack/db";
 
 @Controller("admin/stats")

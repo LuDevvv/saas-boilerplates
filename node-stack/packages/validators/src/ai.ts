@@ -21,7 +21,12 @@ export const SubmitAIJobSchema = z.object({
     .describe("Specific AI model to use (e.g. 'gpt-4o', 'claude-3-opus')"),
 });
 
-export class SubmitAIJobDto extends createZodDto(SubmitAIJobSchema) {}
+export class SubmitAIJobDto extends createZodDto(SubmitAIJobSchema) {
+  jobType!: "summarize-document" | "classify-ticket" | "generate-description" | "analyze-usage" | "custom";
+  prompt!: string;
+  context?: string;
+  model?: string;
+}
 
 export const ChatMessageSchema = z.object({
   role: z.enum(["system", "user", "assistant"]),
@@ -37,4 +42,9 @@ export const ChatCompletionSchema = z.object({
   temperature: z.number().min(0).max(2).optional(),
 });
 
-export class ChatCompletionDto extends createZodDto(ChatCompletionSchema) {}
+export class ChatCompletionDto extends createZodDto(ChatCompletionSchema) {
+  messages!: ChatMessage[];
+  model?: string;
+  maxTokens?: number;
+  temperature?: number;
+}

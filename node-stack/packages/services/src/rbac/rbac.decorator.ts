@@ -8,8 +8,8 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 
-import { Role, Permission } from "./permissions";
-import { RbacService } from "./rbac.service";
+import { Role, Permission } from "./permissions.js";
+import { RbacService } from "./rbac.service.js";
 
 export type WorkspaceContext = {
   id: string;

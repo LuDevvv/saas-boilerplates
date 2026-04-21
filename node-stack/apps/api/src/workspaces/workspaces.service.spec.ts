@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { WorkspacesService } from './workspaces.service';
+import { WorkspacesService } from './workspaces.service.js';
 import { WorkspaceRepository } from '@node-stack/db';
 import { CacheService } from '@node-stack/cache';
-import { OutboxService } from '../common/services/outbox.service';
+import { OutboxService } from '../common/services/outbox.service.js';
 import { ForbiddenException } from '@nestjs/common';
 
 describe('WorkspacesService', () => {

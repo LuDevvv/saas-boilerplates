@@ -2,8 +2,8 @@ import { Injectable, Inject } from "@nestjs/common";
 import { eq, desc } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import { DB_TOKEN } from "../tokens";
-import * as schema from "../schema";
+import { DB_TOKEN } from "../tokens.js";
+import * as schema from "../schema/index.js";
 
 type AuditLog = typeof schema.auditLogs.$inferSelect;
 type NewAuditLog = typeof schema.auditLogs.$inferInsert;

@@ -1,4 +1,4 @@
-import { createApp, getRequest } from './setup';
+import { createApp, getRequest } from './setup.js';
 
 describe('Auth (e2e)', () => {
   beforeAll(async () => { await createApp(); });

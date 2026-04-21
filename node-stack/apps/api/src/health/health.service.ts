@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { db, getPoolStats } from "@node-stack/db";
 import { sql } from "drizzle-orm";
-import Redis from "ioredis";
+import { Redis } from "ioredis";
 
 export interface HealthStatus {
   status: "healthy" | "unhealthy";

@@ -15,7 +15,7 @@ import { CacheService } from '@node-stack/cache';
 import {
   ApiKeyResponseDto,
   CreateApiKeyResponseDto,
-} from '../workspaces/dto/api-key.dto';
+} from '../workspaces/dto/api-key.dto.js';
 import { CreateApiKeyDto } from '@node-stack/validators';
 
 @Injectable()

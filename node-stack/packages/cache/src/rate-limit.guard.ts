@@ -7,8 +7,8 @@ import {
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
-import { RateLimitOptions, RateLimit } from "./rate-limit.decorator";
-import { RateLimiterService } from "./rate-limiter";
+import { RateLimitOptions, RateLimit } from "./rate-limit.decorator.js";
+import { RateLimiterService } from "./rate-limiter.js";
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {

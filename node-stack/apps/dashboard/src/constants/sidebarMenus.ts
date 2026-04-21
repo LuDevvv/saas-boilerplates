@@ -8,7 +8,7 @@ import {
   BarChart3,
   FileText,
 } from "lucide-react";
-import { MenuSection } from "../components/sidebar/types";
+import { MenuSection } from "../components/sidebar/types.js";
 
 export const MAIN_MENU_SECTIONS: MenuSection[] = [
   {

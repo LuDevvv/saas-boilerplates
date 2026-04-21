@@ -4,7 +4,7 @@ import { PassportStrategy } from "@nestjs/passport";
 import { db, schema, eq } from "@node-stack/db";
 import { ExtractJwt, Strategy } from "passport-jwt";
 
-import { TOKEN_TYPE } from "../constants";
+import { TOKEN_TYPE } from "../constants.js";
 
 export interface JwtPayload {
   sub: string;

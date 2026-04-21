@@ -1,9 +1,9 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { StatsCards } from "./stats-cards";
-import { RecentUsersTable } from "./recent-users-table";
-import { SystemHealth } from "./system-health";
+import { StatsCards } from "./stats-cards.js";
+import { RecentUsersTable } from "./recent-users-table.js";
+import { SystemHealth } from "./system-health.js";
 import { fetcher } from "@/lib/fetcher";
 
 export function AdminOverview() {

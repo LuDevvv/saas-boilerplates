@@ -1,6 +1,6 @@
-export { useGoogleAnalytics } from "./useGoogleAnalytics";
-export { useAnalyticsEvent } from "./useAnalyticsEvent";
+export { useGoogleAnalytics } from "./useGoogleAnalytics.js";
+export { useAnalyticsEvent } from "./useAnalyticsEvent.js";
 export type {
   AnalyticsEventName,
   AnalyticsEventParams,
-} from "./useAnalyticsEvent";
+} from "./useAnalyticsEvent.js";

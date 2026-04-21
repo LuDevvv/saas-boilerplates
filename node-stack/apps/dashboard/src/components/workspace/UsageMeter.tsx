@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { analyticsService } from '../../services/analytics/analyticsService';
+import { analyticsService } from '../../services/analytics/analyticsService.js';
 
 interface UsageItem {
   type: 'ai' | 'storage';

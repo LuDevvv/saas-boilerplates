@@ -1,7 +1,7 @@
 import { Processor, InjectQueue } from '@nestjs/bullmq';
 import { Job, Queue } from 'bullmq';
 import { Logger } from '@nestjs/common';
-import { BaseWorker } from '../base.worker';
+import { BaseWorker } from '../base.worker.js';
 
 /**
  * Notifications processor — handles email and push notification jobs.

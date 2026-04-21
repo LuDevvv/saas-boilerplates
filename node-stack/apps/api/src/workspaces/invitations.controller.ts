@@ -20,12 +20,12 @@ import { InviteMemberDto } from "@node-stack/validators";
 
 import { Throttle } from "@nestjs/throttler";
 
-import { InvitationsService } from "./invitations.service";
-import { CurrentUser } from "../auth/decorators";
-import { Public } from "../common/decorators/public.decorator";
-import { RequirePermissions } from "../common/decorators/permissions.decorator";
-import { Roles } from "../common/decorators/roles.decorator";
-import { UserPayload } from "../common/types";
+import { InvitationsService } from "./invitations.service.js";
+import { CurrentUser } from "../auth/decorators/index.js";
+import { Public } from "../common/decorators/public.decorator.js";
+import { RequirePermissions } from "../common/decorators/permissions.decorator.js";
+import { Roles } from "../common/decorators/roles.decorator.js";
+import { UserPayload } from "../common/types/index.js";
 
 @ApiTags("invitations")
 @ApiBearerAuth("JWT-auth")

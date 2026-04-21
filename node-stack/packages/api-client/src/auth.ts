@@ -1,5 +1,5 @@
 import { AxiosInstance } from "axios";
-import { createClient, AuthTokens } from "./client";
+import { createClient, AuthTokens } from "./client.js";
 import { LoginSchema, RegisterSchema, RefreshSchema, Verify2faSchema, Login2faSchema, ForgotPasswordSchema, ResetPasswordSchema } from "@node-stack/validators";
 
 export interface LoginResponse extends AuthTokens {

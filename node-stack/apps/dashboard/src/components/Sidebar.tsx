@@ -8,13 +8,13 @@ import {
 import { cn } from "@/utils/classNames";
 import { useAuth } from "@/hooks/stores/useAuth";
 import { LinkTransition } from "@components/utils/LinkTransition";
-import { SidebarItem } from "./sidebar/SidebarItem";
-import { SidebarSection } from "./sidebar/SidebarSection";
+import { SidebarItem } from "./sidebar/SidebarItem.js";
+import { SidebarSection } from "./sidebar/SidebarSection.js";
 import { getMenuSections } from "@/config/navigation";
-import { SidebarProps } from "./sidebar/types";
+import { SidebarProps } from "./sidebar/types.js";
 import { siteConfig } from "@/config/site-config";
 import { useThemeStore } from "@/stores/themeStore";
-import UsageMeter from "./dashboard/UsageMeter";
+import UsageMeter from "./dashboard/UsageMeter.js";
 
 export const Sidebar: FC<SidebarProps> = ({
   isOpen,

@@ -8,7 +8,7 @@ import {
   boolean,
 } from "drizzle-orm/pg-core";
 
-import { workspaces } from "./workspaces";
+import { workspaces } from "./workspaces.js";
 
 // ─── Enums ───────────────────────────────────────────────────────────────
 

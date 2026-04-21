@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Patch, Body, Param, Query, Request } from "@nestjs/common";
-import { AdminOnly } from "../../common/decorators/admin.decorator";
-import { ImpersonationService } from "../services/impersonation.service";
+import { AdminOnly } from "../../common/decorators/admin.decorator.js";
+import { ImpersonationService } from "../services/impersonation.service.js";
 import { AuthRepository } from "@node-stack/db";
 import { ZodValidationPipe } from "nestjs-zod";
 import { UpdateUserRoleSchema, type UpdateUserRoleDto } from "@node-stack/validators";

@@ -18,15 +18,15 @@ import { Throttle, SkipThrottle } from "@nestjs/throttler";
 import { Permission } from "@node-stack/types";
 import { Request } from "express";
 
-import { BillingService } from "./billing.service";
+import { BillingService } from "./billing.service.js";
 import { CreateCheckoutDto } from "@node-stack/validators";
-import { CurrentUser } from "../auth/decorators";
-import { RequirePermissions } from "../common/decorators/permissions.decorator";
-import { Public } from "../common/decorators/public.decorator";
-import { Workspace } from "../common/decorators/workspace.decorator";
-import { IdempotencyGuard } from "../common/guards/idempotency.guard";
-import { IdempotencyInterceptor } from "../common/interceptors/idempotency.interceptor";
-import { UserPayload, WorkspaceContext } from "../common/types";
+import { CurrentUser } from "../auth/decorators/index.js";
+import { RequirePermissions } from "../common/decorators/permissions.decorator.js";
+import { Public } from "../common/decorators/public.decorator.js";
+import { Workspace } from "../common/decorators/workspace.decorator.js";
+import { IdempotencyGuard } from "../common/guards/idempotency.guard.js";
+import { IdempotencyInterceptor } from "../common/interceptors/idempotency.interceptor.js";
+import { UserPayload, WorkspaceContext } from "../common/types/index.js";
 
 @ApiTags("billing")
 @ApiBearerAuth("JWT-auth")

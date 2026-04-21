@@ -3,14 +3,14 @@ import { Module, OnModuleInit } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { Queue } from "bullmq";
 
-import { OutboxProcessor } from "./processors/outbox.processor";
-import { AIProcessor } from "./processors/ai.processor";
-import { WebhookProcessor } from "./processors/webhook.processor";
-import { WebhookDispatcher } from "./processors/webhook-dispatcher.service";
-import { NotificationsProcessor } from "./processors/notifications.processor";
-import { DlqProcessor } from "./processors/dlq.processor";
-import { PortabilityProcessor } from "./processors/portability.processor";
-import { SystemProcessor } from "./processors/system.processor";
+import { OutboxProcessor } from "./processors/outbox.processor.js";
+import { AIProcessor } from "./processors/ai.processor.js";
+import { WebhookProcessor } from "./processors/webhook.processor.js";
+import { WebhookDispatcher } from "./processors/webhook-dispatcher.service.js";
+import { NotificationsProcessor } from "./processors/notifications.processor.js";
+import { DlqProcessor } from "./processors/dlq.processor.js";
+import { PortabilityProcessor } from "./processors/portability.processor.js";
+import { SystemProcessor } from "./processors/system.processor.js";
 import { PortabilityExporter } from "@node-stack/services";
 import { createStorageProvider } from "@node-stack/storage";
 import { 
@@ -20,6 +20,7 @@ import {
   OpenRouterProvider
 } from "@node-stack/ai-adapter";
 import { CacheModule } from "@node-stack/cache";
+import { DatabaseModule } from "@node-stack/db";
 
 /**
  * Worker module — registers all BullMQ queues and processors.
@@ -29,6 +30,7 @@ import { CacheModule } from "@node-stack/cache";
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    DatabaseModule,
     CacheModule,
     BullModule.forRootAsync({
       inject: [ConfigService],

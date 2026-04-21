@@ -2,8 +2,8 @@ import { Injectable, Inject } from "@nestjs/common";
 import { eq, and, desc, sql } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import * as schema from "../schema";
-import { DB_TOKEN } from "../tokens";
+import * as schema from "../schema/index.js";
+import { DB_TOKEN } from "../tokens.js";
 
 type Db = NodePgDatabase<typeof schema>;
 

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import Redis from "ioredis";
+import { Redis } from "ioredis";
 
 const IDEMPOTENCY_PREFIX = "idempotency:";
 const LOCK_PREFIX = "idempotency:lock:";

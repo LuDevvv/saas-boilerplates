@@ -1,4 +1,4 @@
-import { IEmailProvider, SendEmailOptions, EmailProviderResponse } from "./types";
+import { IEmailProvider, SendEmailOptions, EmailProviderResponse } from "./types.js";
 
 export class ConsoleProvider implements IEmailProvider {
   public name = "console";

@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Request } from "@nestjs/common";
-import { AdminOnly } from "../../common/decorators/admin.decorator";
-import { DynamicConfigService } from "../services/dynamic-config.service";
+import { AdminOnly } from "../../common/decorators/admin.decorator.js";
+import { DynamicConfigService } from "../services/dynamic-config.service.js";
 import { SetConfigSchema, type SetConfigDto } from "@node-stack/validators";
 import { ZodValidationPipe } from "nestjs-zod";
 

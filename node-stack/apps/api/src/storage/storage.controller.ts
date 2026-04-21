@@ -19,14 +19,14 @@ import {
 import type { IStorageProvider } from "@node-stack/storage";
 import { GetPresignedUrlDto } from "@node-stack/validators";
 
-import { AppStorageService } from "./storage.service";
-import { CurrentUser } from "../auth/decorators";
-import { JwtAuthGuard } from "../auth/guards/jwt.guard";
-import { Workspace } from "../common/decorators/workspace.decorator";
-import { IdempotencyGuard } from "../common/guards/idempotency.guard";
-import { WorkspaceGuard } from "../common/guards/workspace.guard";
-import { IdempotencyInterceptor } from "../common/interceptors/idempotency.interceptor";
-import type { UserPayload, WorkspaceContext } from "../common/types";
+import { AppStorageService } from "./storage.service.js";
+import { CurrentUser } from "../auth/decorators/index.js";
+import { JwtAuthGuard } from "../auth/guards/jwt.guard.js";
+import { Workspace } from "../common/decorators/workspace.decorator.js";
+import { IdempotencyGuard } from "../common/guards/idempotency.guard.js";
+import { WorkspaceGuard } from "../common/guards/workspace.guard.js";
+import { IdempotencyInterceptor } from "../common/interceptors/idempotency.interceptor.js";
+import type { UserPayload, WorkspaceContext } from "../common/types/index.js";
 
 @ApiTags("storage")
 @ApiBearerAuth("JWT-auth")

@@ -1,8 +1,8 @@
 import { Module, Global } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { QUEUE_NAMES, QUEUE_DEFAULT_OPTIONS } from './queue.constants';
-import { JobService } from './job.service';
+import { QUEUE_NAMES, QUEUE_DEFAULT_OPTIONS } from './queue.constants.js';
+import { JobService } from './job.service.js';
 
 /**
  * Centralized queue module.

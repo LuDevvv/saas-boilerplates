@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 
-import { WorkerModule } from "./worker.module";
+import { WorkerModule } from "./worker.module.js";
 
 // Note: Environment variables are loaded via `node -r dotenv/config` in package.json
 

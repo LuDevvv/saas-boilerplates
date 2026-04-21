@@ -1,7 +1,7 @@
 import { Queue } from "bullmq";
-import Redis from "ioredis";
+import { Redis } from "ioredis";
 
-import type { EmailJobPayload } from "./queues";
+import type { EmailJobPayload } from "./queues.js";
 
 // Simple producer for sending email jobs
 export class EmailProducer {

@@ -4,7 +4,7 @@ import {
   AIProvider,
   AICompletionParams,
   AICompletionResult,
-} from '../interfaces/ai-provider.interface';
+} from '../interfaces/ai-provider.interface.js';
 
 @Injectable()
 export class OpenRouterProvider implements AIProvider {
@@ -43,7 +43,7 @@ export class OpenRouterProvider implements AIProvider {
     };
   }
 
-  async *stream(params: AICompletionParams): AsyncIterable<import('../interfaces/ai-provider.interface').AIStreamChunk> {
+  async *stream(params: AICompletionParams): AsyncIterable<import('../interfaces/ai-provider.interface.js').AIStreamChunk> {
     const stream = await this.client.chat.completions.create({
       model: params.model ?? this.defaultModel,
       messages: params.messages as any[],

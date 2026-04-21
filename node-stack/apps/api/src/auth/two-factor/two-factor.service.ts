@@ -9,7 +9,7 @@ import { db, schema, eq } from "@node-stack/db";
 import { OTP } from "otplib";
 import * as QRCode from "qrcode";
 
-import { TOKEN_TYPE, JWT_CONSTANTS } from "../constants";
+import { TOKEN_TYPE, JWT_CONSTANTS } from "../constants.js";
 
 @Injectable()
 export class TwoFactorService {

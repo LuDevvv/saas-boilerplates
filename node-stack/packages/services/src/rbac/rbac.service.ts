@@ -6,7 +6,7 @@ import {
   ROLE_PERMISSIONS,
   ROLE_HIERARCHY,
   canManageMember,
-} from "./permissions";
+} from "./permissions.js";
 
 @Injectable()
 export class RbacService {

@@ -5,7 +5,7 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { BillingRepository, AiRepository } from "@node-stack/db";
-import { PLAN_LIMITS, DEFAULT_PLAN } from "../config/plans.config";
+import { PLAN_LIMITS, DEFAULT_PLAN } from "../config/plans.config.js";
 
 @Injectable()
 export class BillingGuard implements CanActivate {

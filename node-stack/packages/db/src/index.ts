@@ -1,8 +1,8 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import * as schema from './schema';
+import * as schema from './schema/index.js';
 
-export * from './schema';
+export * from './schema/index.js';
 import {
   eq,
   and,
@@ -58,27 +58,27 @@ export const db = drizzle(pool, {
   logger: isDev,
 });
 
-export * from './constants';
+export * from './constants.js';
 export type Database = typeof db;
 
 // Repositories barrel export
-export * from './repositories';
-export * from './repositories/api-key.repository';
-export * from './utils/api-key.utils';
-export { hashKey, getKeyPreview, generateApiKey, extractPrefix, verifyApiKey } from './utils/api-key.utils';
-export { WorkspaceRepository } from './repositories/workspace.repository';
-export { UserRepository } from './repositories/user.repository';
-export { InvitationRepository } from './repositories/invitation.repository';
-export { SessionRepository } from './repositories/session.repository';
-export { AuthRepository } from './repositories/auth.repository';
-export { BillingRepository } from './repositories/billing.repository';
-export { FileRepository } from './repositories/file.repository';
-export { InboundWebhookRepository } from './repositories/inbound-webhook.repository';
-export { AnalyticsRepository } from './repositories/analytics.repository';
-export { AuditLogRepository } from './repositories/audit-log.repository';
-export { SystemConfigRepository } from './repositories/system-config.repository';
-export { PortabilityRepository } from './repositories/portability.repository';
-export { DB_TOKEN } from './tokens';
+export * from './repositories/index.js';
+export * from './repositories/api-key.repository.js';
+export * from './utils/api-key.utils.js';
+export { hashKey, getKeyPreview, generateApiKey, extractPrefix, verifyApiKey } from './utils/api-key.utils.js';
+export { WorkspaceRepository } from './repositories/workspace.repository.js';
+export { UserRepository } from './repositories/user.repository.js';
+export { InvitationRepository } from './repositories/invitation.repository.js';
+export { SessionRepository } from './repositories/session.repository.js';
+export { AuthRepository } from './repositories/auth.repository.js';
+export { BillingRepository } from './repositories/billing.repository.js';
+export { FileRepository } from './repositories/file.repository.js';
+export { InboundWebhookRepository } from './repositories/inbound-webhook.repository.js';
+export { AnalyticsRepository } from './repositories/analytics.repository.js';
+export { AuditLogRepository } from './repositories/audit-log.repository.js';
+export { SystemConfigRepository } from './repositories/system-config.repository.js';
+export { PortabilityRepository } from './repositories/portability.repository.js';
+export { DB_TOKEN } from './tokens.js';
 
 export async function withTransaction<T>(
   callback: (tx: Database) => Promise<T>,
@@ -127,6 +127,6 @@ export const {
   files,
 } = schema;
 
-export * from './factories';
-export { DatabaseModule } from './database.module';
-export { DatabaseModule as DbModule } from './database.module';
+export * from './factories/index.js';
+export { DatabaseModule } from './database.module.js';
+export { DatabaseModule as DbModule } from './database.module.js';

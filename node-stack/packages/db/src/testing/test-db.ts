@@ -3,7 +3,7 @@ import { Pool } from 'pg';
 import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { sql } from 'drizzle-orm';
-import * as schema from '../schema';
+import * as schema from '../schema/index.js';
 import * as path from 'path';
 
 export interface TestDb {

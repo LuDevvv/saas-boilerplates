@@ -3,17 +3,17 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { JWT_CONSTANTS } from './constants';
-import { JwtStrategy, LocalStrategy, GoogleStrategy, GitHubStrategy } from './strategies';
-import { ApiKeyStrategy } from './strategies/api-key.strategy';
-import { TwoFactorService } from './two-factor/two-factor.service';
+import { AuthController } from './auth.controller.js';
+import { AuthService } from './auth.service.js';
+import { JWT_CONSTANTS } from './constants.js';
+import { JwtStrategy, LocalStrategy, GoogleStrategy, GitHubStrategy } from './strategies/index.js';
+import { ApiKeyStrategy } from './strategies/api-key.strategy.js';
+import { TwoFactorService } from './two-factor/two-factor.service.js';
 import { CacheService } from '@node-stack/cache';
 import { SessionRepository } from '@node-stack/db';
 
-import { DatabaseModule } from '../common/database/database.module';
-import { ApiKeysModule } from '../api-keys/api-keys.module';
+import { DatabaseModule } from "@node-stack/db";
+import { ApiKeysModule } from '../api-keys/api-keys.module.js';
 
 @Module({
   imports: [

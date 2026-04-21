@@ -9,8 +9,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { UseGuards, Logger } from '@nestjs/common';
-import { WsJwtGuard } from './ws-jwt.guard';
-import { WorkspacesService } from '../workspaces/workspaces.service';
+import { WsJwtGuard } from './ws-jwt.guard.js';
+import { WorkspacesService } from '../workspaces/workspaces.service.js';
 
 @WebSocketGateway({
   namespace: '/v1/realtime',

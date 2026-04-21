@@ -9,7 +9,7 @@ import {
 import { CacheService } from "@node-stack/cache";
 import { db, schema, eq, and } from "@node-stack/db";
 
-import type { WorkspaceContext } from "../types";
+import type { WorkspaceContext } from "../types/index.js";
 
 @Injectable()
 export class WorkspaceGuard implements CanActivate {

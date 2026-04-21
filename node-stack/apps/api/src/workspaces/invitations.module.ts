@@ -5,11 +5,11 @@ import {
   UserRepository 
 } from "@node-stack/db";
 
-import { InvitationsController } from "./invitations.controller";
-import { InvitationsService } from "./invitations.service";
-import { OutboxService } from "../common/services/outbox.service";
+import { InvitationsController } from "./invitations.controller.js";
+import { InvitationsService } from "./invitations.service.js";
+import { OutboxService } from "../common/services/outbox.service.js";
 
-import { DatabaseModule } from "../common/database/database.module";
+import { DatabaseModule } from "@node-stack/db";
 
 @Module({
   imports: [DatabaseModule],

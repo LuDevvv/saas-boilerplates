@@ -1,9 +1,9 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { DB_TOKEN } from "../tokens";
-import * as schema from "../schema";
-import { BaseRepository } from "./base.repository";
-import { aiLogs, NewAiLog, AiLog } from "../schema/ai";
+import { DB_TOKEN } from "../tokens.js";
+import * as schema from "../schema/index.js";
+import { BaseRepository } from "./base.repository.js";
+import { aiLogs, NewAiLog, AiLog } from "../schema/ai.js";
 import { eq, and, desc, gte, sql } from "drizzle-orm";
 
 @Injectable()

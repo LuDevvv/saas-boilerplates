@@ -2,8 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { eq, and, sql } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import * as schema from "../schema";
-import { BaseRepository } from "./base.repository";
+import * as schema from "../schema/index.js";
+import { BaseRepository } from "./base.repository.js";
 
 type PortabilityRequest = typeof schema.portabilityRequests.$inferSelect;
 

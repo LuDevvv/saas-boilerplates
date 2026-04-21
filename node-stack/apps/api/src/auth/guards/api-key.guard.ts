@@ -4,7 +4,7 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ApiKeysService } from '../../api-keys/api-keys.service';
+import { ApiKeysService } from '../../api-keys/api-keys.service.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()

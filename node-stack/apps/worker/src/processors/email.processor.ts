@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { Worker, Job } from "bullmq";
-import Redis from "ioredis";
+import { Redis } from "ioredis";
 
 export type EmailJobPayload = any;
 const renderTemplate = (a: any, b: any) => `Email template body simulated`;

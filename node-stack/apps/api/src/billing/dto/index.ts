@@ -1,1 +1,1 @@
-export * from "./create-checkout.dto";
+export * from "./create-checkout.dto.js";

@@ -1,5 +1,5 @@
 // Re-export common types from local definitions
-export * from "./auth";
+export * from "./auth.js";
 
 // Legacy constants (converted to local enums if needed)
-export { SubscriptionStatus, PaymentMethodType } from "./legacy";
+export { SubscriptionStatus, PaymentMethodType } from "./legacy.js";

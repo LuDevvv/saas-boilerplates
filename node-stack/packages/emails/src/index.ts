@@ -1,12 +1,12 @@
-export * from "./providers/types";
-export * from "./providers/ses.provider";
-export * from "./providers/console.provider";
-export * from "./render";
+export * from "./providers/types.js";
+export * from "./providers/ses.provider.js";
+export * from "./providers/console.provider.js";
+export * from "./render.js";
 
-import { ConsoleProvider } from "./providers/console.provider";
-import { SESProvider } from "./providers/ses.provider";
-import { IEmailProvider, SendEmailOptions } from "./providers/types";
-import { renderEmail, EmailTemplate } from "./render";
+import { ConsoleProvider } from "./providers/console.provider.js";
+import { SESProvider } from "./providers/ses.provider.js";
+import { IEmailProvider, SendEmailOptions } from "./providers/types.js";
+import { renderEmail, EmailTemplate } from "./render.js";
 
 export interface LegacyEmailOptions {
   to: string | string[];

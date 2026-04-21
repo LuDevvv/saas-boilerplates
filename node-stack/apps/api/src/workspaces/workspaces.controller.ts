@@ -26,16 +26,16 @@ import {
   UpdateWorkspaceDto,
 } from "@node-stack/validators";
 
-import { WorkspacesService } from "./workspaces.service";
-import { ApiKeysService } from "../api-keys/api-keys.service";
-import { CurrentUser } from "../auth/decorators";
-import { RequirePermissions } from "../common/decorators/permissions.decorator";
-import { Roles } from "../common/decorators/roles.decorator";
-import { TenantId } from "../common/decorators/tenant-id.decorator";
-import { Workspace } from "../common/decorators/workspace.decorator";
-import { IdempotencyGuard } from "../common/guards/idempotency.guard";
-import { IdempotencyInterceptor } from "../common/interceptors/idempotency.interceptor";
-import { WorkspaceContext } from "../common/types";
+import { WorkspacesService } from "./workspaces.service.js";
+import { ApiKeysService } from "../api-keys/api-keys.service.js";
+import { CurrentUser } from "../auth/decorators/index.js";
+import { RequirePermissions } from "../common/decorators/permissions.decorator.js";
+import { Roles } from "../common/decorators/roles.decorator.js";
+import { TenantId } from "../common/decorators/tenant-id.decorator.js";
+import { Workspace } from "../common/decorators/workspace.decorator.js";
+import { IdempotencyGuard } from "../common/guards/idempotency.guard.js";
+import { IdempotencyInterceptor } from "../common/interceptors/idempotency.interceptor.js";
+import { WorkspaceContext } from "../common/types/index.js";
 
 @ApiTags("workspaces")
 @ApiBearerAuth("JWT-auth")

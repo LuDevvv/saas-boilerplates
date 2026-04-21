@@ -8,7 +8,7 @@ import { Reflector } from "@nestjs/core";
 import { CacheService } from "@node-stack/cache";
 import { tap } from "rxjs";
 
-import { CACHE_INVALIDATE_KEY } from "../decorators/cache-invalidate.decorator";
+import { CACHE_INVALIDATE_KEY } from "../decorators/cache-invalidate.decorator.js";
 
 @Injectable()
 export class CacheInvalidationInterceptor implements NestInterceptor {

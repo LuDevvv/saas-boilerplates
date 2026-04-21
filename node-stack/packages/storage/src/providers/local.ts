@@ -1,6 +1,6 @@
 import * as fs from "fs/promises";
 import * as path from "path";
-import { IStorageProvider, FileMetadata } from "../interface";
+import { IStorageProvider, FileMetadata } from "../interface.js";
 
 export interface LocalStorageConfig {
   basePath: string;

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ApiKeysController } from './api-keys.controller';
-import { ApiKeysService } from './api-keys.service';
-import { DatabaseModule } from '../common/database/database.module';
+import { ApiKeysController } from './api-keys.controller.js';
+import { ApiKeysService } from './api-keys.service.js';
+import { DatabaseModule } from "@node-stack/db";
 
 @Module({
   imports: [DatabaseModule],

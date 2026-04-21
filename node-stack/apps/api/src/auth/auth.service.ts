@@ -19,9 +19,9 @@ import { OutboxProducer } from "@node-stack/outbox-queue";
 import type { OAuthProfile } from "@node-stack/types";
 import * as bcrypt from "bcrypt";
 
-import { TOKEN_TYPE, AUTH_ERRORS, JWT_CONSTANTS } from "./constants";
-import type { RegisterDto, LoginDto, RefreshDto } from "./dto";
-import { TwoFactorService } from "./two-factor/two-factor.service";
+import { TOKEN_TYPE, AUTH_ERRORS, JWT_CONSTANTS } from "./constants.js";
+import type { RegisterDto, LoginDto, RefreshDto } from "./dto/index.js";
+import { TwoFactorService } from "./two-factor/two-factor.service.js";
 
 export interface TokenPair {
   accessToken: string;

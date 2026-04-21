@@ -1,10 +1,10 @@
 import { Controller, Post, Get, Delete, Body, Param, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { ApiKeysService } from './api-keys.service';
+import { ApiKeysService } from './api-keys.service.js';
 import { CreateApiKeyDto } from '@node-stack/validators';
-import { JwtAuthGuard } from '../auth/guards/jwt.guard';
-import { WorkspaceGuard } from '../common/guards/workspace.guard';
-import { Permissions } from '../common/decorators/permissions.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt.guard.js';
+import { WorkspaceGuard } from '../common/guards/workspace.guard.js';
+import { Permissions } from '../common/decorators/permissions.decorator.js';
 import { Permission } from '@node-stack/types';
 
 @ApiTags('api-keys')

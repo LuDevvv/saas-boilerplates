@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException, Inject, ForbiddenException } from "@nestjs/common";
 import { db, schema, eq, and, desc } from "@node-stack/db";
-import { JobService } from "../common/queues/job.service";
+import { JobService } from "../common/queues/job.service.js";
 import { IStorageProvider } from "@node-stack/storage";
 import { v4 as uuidv4 } from 'uuid';
 

@@ -9,7 +9,7 @@ import { WorkspaceRepository, schema } from "@node-stack/db";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import type { UpdateMemberRoleDto, UpdateWorkspaceDto } from "@node-stack/validators";
-import { OutboxService } from "../common/services/outbox.service";
+import { OutboxService } from "../common/services/outbox.service.js";
 
 type WorkspaceRole = "owner" | "admin" | "member" | "guest";
 
@@ -42,7 +42,7 @@ export class WorkspacesService {
 
     const members = await this.workspaceRepo.findMembersByWorkspaceId(workspaceId);
 
-    return members.map((m) => ({
+    return members.map((m: any) => ({
       userId: m.userId,
       role: m.role as WorkspaceRole,
       createdAt: m.createdAt,

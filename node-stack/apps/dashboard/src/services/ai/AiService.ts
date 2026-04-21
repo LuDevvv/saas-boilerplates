@@ -1,5 +1,5 @@
 import { apiClient, cookieTokenStorage } from "@/lib/api-client";
-import { BaseService } from "../baseService";
+import { BaseService } from "../baseService.js";
 import { ChatCompletionDto } from "@node-stack/validators";
 
 export class AiService extends BaseService {

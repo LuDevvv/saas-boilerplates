@@ -1,2 +1,2 @@
-export { OutboxProducer } from "./producer";
-export * from "./processor";
+export { OutboxProducer } from "./producer.js";
+export * from "./processor.js";

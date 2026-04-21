@@ -1,6 +1,6 @@
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import * as schema from '../schema';
-import { withTransaction } from '../index';
+import * as schema from '../schema/index.js';
+import { withTransaction } from '../index.js';
 
 export type CreateWorkspaceInput = Partial<typeof schema.workspaces.$inferInsert>;
 

@@ -2,8 +2,8 @@ import { Processor, InjectQueue } from "@nestjs/bullmq";
 import { Logger, Inject } from "@nestjs/common";
 import { db, schema, eq } from "@node-stack/db";
 import { Job, Queue } from "bullmq";
-import { WebhookDispatcher } from "./webhook-dispatcher.service";
-import { BaseWorker } from "../base.worker";
+import { WebhookDispatcher } from "./webhook-dispatcher.service.js";
+import { BaseWorker } from "../base.worker.js";
 
 @Processor("outbox")
 export class OutboxProcessor extends BaseWorker {

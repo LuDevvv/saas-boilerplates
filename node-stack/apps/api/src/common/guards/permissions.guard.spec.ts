@@ -2,8 +2,8 @@ import { Reflector } from "@nestjs/core";
 import { ForbiddenException } from "@nestjs/common";
 import { Role, Permission } from "@node-stack/types";
 
-import { PermissionsGuard } from "./permissions.guard";
-import { mockExecutionContext } from "./test-helpers/mock-context";
+import { PermissionsGuard } from "./permissions.guard.js";
+import { mockExecutionContext } from "./test-helpers/mock-context.js";
 
 describe("PermissionsGuard", () => {
   let guard: PermissionsGuard;

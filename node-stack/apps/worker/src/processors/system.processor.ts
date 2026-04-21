@@ -2,7 +2,7 @@ import { Processor } from "@nestjs/bullmq";
 import { Logger, Inject } from "@nestjs/common";
 import { db, schema, eq, and, lt, sql } from "@node-stack/db";
 import { Job } from "bullmq";
-import { BaseWorker } from "../base.worker";
+import { BaseWorker } from "../base.worker.js";
 import { IStorageProvider } from "@node-stack/storage";
 
 @Processor("system")

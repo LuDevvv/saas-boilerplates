@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api-client";
-import { BaseService } from "../baseService";
+import { BaseService } from "../baseService.js";
 import { 
   LoginDto, 
   RegisterDto, 

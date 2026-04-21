@@ -3,7 +3,7 @@ import {
   validateEvent,
   WebhookVerificationError,
 } from "@polar-sh/sdk/webhooks";
-import { CircuitBreaker } from "../circuit-breaker";
+import { CircuitBreaker } from "../circuit-breaker.js";
 import type {
   PaymentProvider,
   CreateCustomerData,
@@ -14,7 +14,7 @@ import type {
   CheckoutUrl,
   WebhookEvent,
   WebhookEventType,
-} from "../interfaces/payment-provider.interface";
+} from "../interfaces/payment-provider.interface.js";
 
 export interface PolarProviderConfig {
   accessToken: string;

@@ -1,8 +1,8 @@
 import { FC, useEffect, useRef } from "react";
-import LinkTransition from "../utils/LinkTransition";
+import LinkTransition from "../utils/LinkTransition.js";
 import { LogOut } from "lucide-react";
 import { cn } from "@/utils/classNames";
-import { AccountDropdownProps } from "./types";
+import { AccountDropdownProps } from "./types.js";
 import { useSidebarStore } from "@/stores/sidebarStore";
 
 export const AccountDropdown: FC<AccountDropdownProps> = ({

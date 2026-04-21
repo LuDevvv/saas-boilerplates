@@ -7,10 +7,10 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../auth/guards/jwt.guard';
-import { AdminGuard } from '../../common/guards/admin.guard';
-import { JobService } from '../queues/job.service';
-import { QUEUE_NAMES, type QueueName } from '../queues/queue.constants';
+import { JwtAuthGuard } from '../../auth/guards/jwt.guard.js';
+import { AdminGuard } from '../../common/guards/admin.guard.js';
+import { JobService } from '../queues/job.service.js';
+import { QUEUE_NAMES, type QueueName } from '../queues/queue.constants.js';
 
 /**
  * Admin-only endpoint for job tracking and queue observability.

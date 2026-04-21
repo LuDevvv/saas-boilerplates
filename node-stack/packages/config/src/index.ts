@@ -1,1 +1,1 @@
-export { FeatureFlagService } from "./feature-flags";
+export { FeatureFlagService } from "./feature-flags.js";

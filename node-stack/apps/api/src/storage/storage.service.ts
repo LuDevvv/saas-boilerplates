@@ -13,7 +13,7 @@ import type {
   UploadContext,
 } from "@node-stack/validators";
 import { FileRepository } from "@node-stack/db";
-import { UsageQuotaService } from "../analytics/usage-quota.service";
+import { UsageQuotaService } from "../analytics/usage-quota.service.js";
 
 
 @Injectable()

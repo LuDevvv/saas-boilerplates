@@ -1,10 +1,10 @@
-import { S3StorageProvider } from "./providers/s3";
-import { LocalStorageProvider, LocalStorageConfig } from "./providers/local";
-import { IStorageProvider } from "./interface";
+import { S3StorageProvider } from "./providers/s3.js";
+import { LocalStorageProvider, LocalStorageConfig } from "./providers/local.js";
+import { IStorageProvider } from "./interface.js";
 
-export * from "./interface";
-export { S3StorageProvider } from "./providers/s3";
-export { LocalStorageProvider } from "./providers/local";
+export * from "./interface.js";
+export { S3StorageProvider } from "./providers/s3.js";
+export { LocalStorageProvider } from "./providers/local.js";
 
 export interface UnifiedStorageConfig {
   provider: "s3" | "local";

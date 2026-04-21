@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { AiController } from './ai.controller';
-import { AiService } from './ai.service';
+import { AiController } from './ai.controller.js';
+import { AiService } from './ai.service.js';
 import { CacheModule } from '@node-stack/cache';
 import { DatabaseModule } from '@node-stack/db';
-import { AnalyticsModule } from '../analytics/analytics.module';
+import { AnalyticsModule } from '../analytics/analytics.module.js';
 
 
 /**

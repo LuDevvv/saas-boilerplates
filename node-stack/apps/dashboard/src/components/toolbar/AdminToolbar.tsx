@@ -1,7 +1,7 @@
 import { FC, ReactNode } from "react";
-import { SearchInput } from "./SearchInput";
-import { FilterTags, FilterTag } from "./FilterTags";
-import { ViewToggle, ViewMode } from "./ViewToggle";
+import { SearchInput } from "./SearchInput.js";
+import { FilterTags, FilterTag } from "./FilterTags.js";
+import { ViewToggle, ViewMode } from "./ViewToggle.js";
 import { cn } from "@/utils/classNames";
 
 interface AdminToolbarProps {

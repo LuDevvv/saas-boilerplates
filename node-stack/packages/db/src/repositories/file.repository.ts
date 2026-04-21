@@ -1,6 +1,7 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { files, File, NewFile } from "../schema/storage";
-import { DB_TOKEN, Database } from "../index";
+import { files, File, NewFile } from "../schema/storage.js";
+import { DB_TOKEN } from "../tokens.js";
+import type { Database } from "../index.js";
 import { eq, and } from "drizzle-orm";
 
 @Injectable()

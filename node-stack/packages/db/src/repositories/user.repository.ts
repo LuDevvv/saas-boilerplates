@@ -2,8 +2,8 @@ import { Injectable, Inject } from "@nestjs/common";
 import { eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import { DB_TOKEN } from "../tokens";
-import * as schema from "../schema";
+import { DB_TOKEN } from "../tokens.js";
+import * as schema from "../schema/index.js";
 
 type User = typeof schema.users.$inferSelect;
 type CreateUserData = typeof schema.users.$inferInsert;

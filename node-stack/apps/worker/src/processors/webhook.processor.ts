@@ -1,5 +1,5 @@
 import { Processor, InjectQueue } from "@nestjs/bullmq";
-import { Logger } from "@nestjs/common";
+import { Logger, Inject } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { db, schema, eq } from "@node-stack/db";
 import { 
@@ -10,7 +10,7 @@ import {
 import { Job, Queue } from "bullmq";
 import { CacheService } from "@node-stack/cache";
 import { EncryptionUtils } from "@node-stack/services";
-import { BaseWorker } from "../base.worker";
+import { BaseWorker } from "../base.worker.js";
 
 @Processor("webhooks.delivery")
 export class WebhookProcessor extends BaseWorker {
@@ -21,8 +21,8 @@ export class WebhookProcessor extends BaseWorker {
   constructor(
     @InjectQueue("webhooks.delivery") private jobQueue: Queue,
     @InjectQueue("dlq") private readonly dlqQueue: Queue,
-    private readonly cacheService: CacheService,
-    private readonly config: ConfigService,
+    @Inject(CacheService) private readonly cacheService: CacheService,
+    @Inject(ConfigService) private readonly config: ConfigService,
   ) {
     super();
     this.encryption = new EncryptionUtils(this.config.get("ENCRYPTION_KEY"));

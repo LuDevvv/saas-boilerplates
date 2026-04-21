@@ -1,10 +1,10 @@
 import { Logger } from "@nestjs/common";
 import { db, schema, eq } from "@node-stack/db";
-import { OutboxWriter } from "./src/processors/outbox.writer";
+import { OutboxWriter } from "./src/processors/outbox.writer.js";
 import {
   OutboxProcessor,
   EventHandlers,
-} from "./src/processors/outbox.processor";
+} from "./src/processors/outbox.processor.js";
 
 const logger = new Logger("TestOutbox");
 

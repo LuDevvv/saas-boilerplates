@@ -7,7 +7,7 @@ import type {
   Subscription,
   CheckoutUrl,
   WebhookEvent,
-} from "../interfaces/payment-provider.interface";
+} from "../interfaces/payment-provider.interface.js";
 
 export class MockProvider implements PaymentProvider {
   async createCustomer(data: CreateCustomerData): Promise<Customer> {

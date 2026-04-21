@@ -1,6 +1,6 @@
 import { apiClient } from "@/lib/api-client";
 import { User, MessageResponse } from "@/types/auth";
-import { BaseService } from "../baseService";
+import { BaseService } from "../baseService.js";
 
 class UserService extends BaseService {
   constructor() {

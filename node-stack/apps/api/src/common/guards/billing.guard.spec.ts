@@ -1,7 +1,7 @@
 /// <reference types="jest" />
 import { ForbiddenException, ExecutionContext } from "@nestjs/common";
-import { BillingGuard } from "./billing.guard";
-import { PLAN_LIMITS, DEFAULT_PLAN } from "../config/plans.config";
+import { BillingGuard } from "./billing.guard.js";
+import { PLAN_LIMITS, DEFAULT_PLAN } from "../config/plans.config.js";
 
 describe("BillingGuard", () => {
   let guard: BillingGuard;

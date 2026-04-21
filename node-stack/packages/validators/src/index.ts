@@ -3,11 +3,11 @@ export {
   GetPresignedUrlSchema,
   sanitizeFilename,
   getFileExtension,
-} from "./storage";
-export type { UploadContext, MimeType, GetPresignedUrlDto } from "./storage";
-export * from "./auth";
-export * from './ai';
-export * from './api-keys';
-export * from './billing';
-export * from './workspaces';
-export * from "./admin";
+} from "./storage.js";
+export type { UploadContext, MimeType, GetPresignedUrlDto } from "./storage.js";
+export * from "./auth.js";
+export * from './ai.js';
+export * from './api-keys.js';
+export * from './billing.js';
+export * from './workspaces.js';
+export * from "./admin.js";

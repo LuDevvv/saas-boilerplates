@@ -1,8 +1,8 @@
-import { createTestDb, truncateAll, TestDb } from '../testing/test-db';
-import { createUser, createWorkspace } from '../factories';
-import { WorkspaceRepository } from './workspace.repository';
-import { withTransaction } from '../index';
-import * as schema from '../schema';
+import { createTestDb, truncateAll, TestDb } from '../testing/test-db.js';
+import { createUser, createWorkspace } from '../factories/index.js';
+import { WorkspaceRepository } from './workspace.repository.js';
+import { withTransaction } from '../index.js';
+import * as schema from '../schema/index.js';
 
 describe('WorkspaceRepository (integration)', () => {
   let testDb: TestDb;

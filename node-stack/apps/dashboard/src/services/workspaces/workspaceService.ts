@@ -1,4 +1,4 @@
-import { BaseService } from "../baseService";
+import { BaseService } from "../baseService.js";
 
 export interface WorkspaceItem {
   id: string;

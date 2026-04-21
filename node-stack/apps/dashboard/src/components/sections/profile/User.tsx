@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { UserCircle, Mail, Phone, Shield, Edit2, Camera } from "lucide-react";
-import { ImageUpload } from "../../forms/ImageUpload";
+import { ImageUpload } from "../../forms/ImageUpload.js";
 import { Input } from "@/components/ui/form/Input";
 import { Button } from "@/components/ui/form/Button";
 import { PhoneInput } from "@/components/ui/form/PhoneInput";

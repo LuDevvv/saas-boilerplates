@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { Upload, X, ImageIcon, Crop } from "lucide-react";
-import { CropperModal } from "./CropperModal";
-import { compressImage } from "./compressImage";
+import { CropperModal } from "./CropperModal/index.js";
+import { compressImage } from "./compressImage.js";
 import { cn } from "@utils/classNames";
 
 interface ImageObject {

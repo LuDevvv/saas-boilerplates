@@ -2,7 +2,7 @@ import { Processor, InjectQueue } from "@nestjs/bullmq";
 import { Logger, Inject } from "@nestjs/common";
 import { db, schema, eq } from "@node-stack/db";
 import { Job, Queue } from "bullmq";
-import { BaseWorker } from "../base.worker";
+import { BaseWorker } from "../base.worker.js";
 import { PortabilityExporter } from "@node-stack/services";
 import { IStorageProvider } from "@node-stack/storage";
 
@@ -19,7 +19,7 @@ export class PortabilityProcessor extends BaseWorker {
 
   constructor(
     @InjectQueue("dlq") private readonly dlqQueue: Queue,
-    private readonly exporter: PortabilityExporter,
+    @Inject(PortabilityExporter) private readonly exporter: PortabilityExporter,
     @Inject("STORAGE_SERVICE") private readonly storage: IStorageProvider,
   ) {
     super();

@@ -1,5 +1,5 @@
 import { Logger } from "@nestjs/common";
-import { RbacService, PERMISSIONS } from "./src";
+import { RbacService, PERMISSIONS } from "./src/index.js";
 
 const logger = new Logger("RbacTest");
 const rbacService = new RbacService();

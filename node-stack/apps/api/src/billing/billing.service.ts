@@ -16,8 +16,8 @@ import { BillingRepository, type Subscription } from "@node-stack/db";
 import { CacheService } from "@node-stack/cache";
 
 import { CreateCheckoutDto } from "@node-stack/validators";
-import { OutboxService } from "../common/services/outbox.service";
-import { EncryptionService } from "../common/services/encryption.service";
+import { OutboxService } from "../common/services/outbox.service.js";
+import { EncryptionService } from "../common/services/encryption.service.js";
 
 /** Maps Polar SDK subscription statuses → our DB enums */
 const STATUS_MAP: Record<string, Subscription["status"]> = {

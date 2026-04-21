@@ -7,7 +7,7 @@ import {
   AICompletionResult,
   AIStreamChunk,
 } from "@node-stack/ai-adapter";
-import { UsageQuotaService } from "../analytics/usage-quota.service";
+import { UsageQuotaService } from "../analytics/usage-quota.service.js";
 
 
 @Injectable()

@@ -1,10 +1,10 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { and, eq } from 'drizzle-orm';
-import * as apiKeys from '../schema/api-keys';
-import * as schema from '../schema';
-import { DB_TOKEN } from '../tokens';
-import { BaseRepository } from './base.repository';
+import * as apiKeys from '../schema/api-keys.js';
+import * as schema from '../schema/index.js';
+import { DB_TOKEN } from '../tokens.js';
+import { BaseRepository } from './base.repository.js';
 
 @Injectable()
 export class ApiKeyRepository extends BaseRepository<typeof apiKeys.apiKeys.$inferSelect> {

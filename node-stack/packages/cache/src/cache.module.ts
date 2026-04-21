@@ -1,8 +1,8 @@
 import { Module, Global } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { CacheService } from "./cache.service";
-import { RateLimiterService } from "./rate-limiter";
-import { RateLimitGuard } from "./rate-limit.guard";
+import { CacheService } from "./cache.service.js";
+import { RateLimiterService } from "./rate-limiter.js";
+import { RateLimitGuard } from "./rate-limit.guard.js";
 
 @Global()
 @Module({

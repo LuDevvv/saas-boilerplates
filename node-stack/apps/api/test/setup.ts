@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, UnprocessableEntityException } from '@nestjs/common';
-import { AppModule } from '../src/app.module';
+import { AppModule } from '../src/app.module.js';
 import { createZodValidationPipe } from 'nestjs-zod';
 import * as request from 'supertest';
-import { HttpExceptionFilter } from '../src/common/filters/http-exception.filter';
+import { HttpExceptionFilter } from '../src/common/filters/http-exception.filter.js';
 
 // Mock Redis at the module level since services create their own instances via `new Redis()`
 jest.mock('ioredis', () => require('ioredis-mock'));

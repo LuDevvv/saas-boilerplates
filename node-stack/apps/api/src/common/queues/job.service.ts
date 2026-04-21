@@ -10,7 +10,7 @@ import {
   type WebhookDeliveryPayload,
   type OutboxJobPayload,
   type PortabilityJobPayload,
-} from './queue.constants';
+} from './queue.constants.js';
 
 /**
  * Type-safe job dispatcher.

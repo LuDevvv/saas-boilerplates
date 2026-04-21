@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
-import { compressImage } from "../compressImage";
+import { compressImage } from "../compressImage.js";
 import { Button } from "@/components/ui/form/Button";
 import { ZoomIn, Scissors } from "lucide-react";
 import { ModalLayout } from "@/layouts/ModalLayout";
