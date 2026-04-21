@@ -60,13 +60,13 @@ importers:
     dependencies:
       '@nestjs/bullmq':
         specifier: ^11.0.0
-        version: 11.0.4(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.19)(@nestjs/websockets@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2))(bullmq@5.74.1)
+        version: 11.0.4(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.19)(@nestjs/websockets@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2))(bullmq@5.75.2)
       '@nestjs/common':
         specifier: 11.1.19
         version: 11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/config':
         specifier: latest
-        version: 4.0.4(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
+        version: 4.0.4(@nestjs/common@11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
       '@nestjs/core':
         specifier: 11.1.19
         version: 11.1.19(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.19)(@nestjs/websockets@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -171,7 +171,7 @@ importers:
         version: 6.0.0
       bullmq:
         specifier: latest
-        version: 5.74.1
+        version: 5.75.2
       compression:
         specifier: ^1.7.5
         version: 1.8.1
@@ -509,7 +509,7 @@ importers:
     dependencies:
       '@nestjs/bullmq':
         specifier: ^11.0.0
-        version: 11.0.4(@nestjs/common@11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19(@nestjs/common@11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.19)(@nestjs/websockets@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2))(bullmq@5.74.1)
+        version: 11.0.4(@nestjs/common@11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19(@nestjs/common@11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.19)(@nestjs/websockets@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2))(bullmq@5.75.2)
       '@nestjs/common':
         specifier: 11.1.19
         version: 11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -542,7 +542,7 @@ importers:
         version: link:../../packages/webhooks-utils
       bullmq:
         specifier: latest
-        version: 5.74.1
+        version: 5.75.2
       dotenv:
         specifier: ^16.0.0
         version: 16.6.1
@@ -658,7 +658,7 @@ importers:
         version: 11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/config':
         specifier: latest
-        version: 4.0.4(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
+        version: 4.0.4(@nestjs/common@11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
       ioredis:
         specifier: ^5.10.1
         version: 5.10.1
@@ -676,8 +676,8 @@ importers:
         specifier: 11.1.19
         version: 11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/config':
-        specifier: ^4.0.3
-        version: 4.0.3(@nestjs/common@11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
+        specifier: latest
+        version: 4.0.4(@nestjs/common@11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
       '@nestjs/core':
         specifier: 11.1.19
         version: 11.1.19(@nestjs/common@11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.19)(@nestjs/websockets@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -807,7 +807,7 @@ importers:
     dependencies:
       bullmq:
         specifier: latest
-        version: 5.74.1
+        version: 5.75.2
       ioredis:
         specifier: latest
         version: 5.10.1
@@ -5684,8 +5684,8 @@ packages:
   bullmq@2.4.0:
     resolution: {integrity: sha512-wchNwRagCfRjEqxpALD2P8Pjz110/lFnXjs/vBLWsHP5aYqyicl3EKDkrzEythZC+IEdyeaZ5wtmcSHWOAr7Sg==}
 
-  bullmq@5.74.1:
-    resolution: {integrity: sha512-GfJEos2zoOGM9xqkB7VZouwwFuejKFqm667cBcmbBekJXKqqXWk4QYP3Uy2pzgUwCbg1cR7GgGmGczM7fnhWSA==}
+  bullmq@5.75.2:
+    resolution: {integrity: sha512-5GDO2L5OfzogDxzJCeT7icYdI41vQZ5Wuw2z4EqpfPc1m4/gxyg0sEATULGPdR1sMw0kwCPqbehiIPseXxBX9A==}
 
   busboy@1.6.0:
     resolution: {integrity: sha512-8SFQbg/0hQ9xy3UNTB0YEnsNBbWfhf7RtnzpL7TkBiTBRfrQ9Fxcnz7VJsleJpyp6rVLvXiuORqjlHi5q+PYuA==}
@@ -12646,20 +12646,20 @@ snapshots:
       bullmq: 2.4.0
       tslib: 2.8.1
 
-  '@nestjs/bullmq@11.0.4(@nestjs/common@11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19(@nestjs/common@11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.19)(@nestjs/websockets@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2))(bullmq@5.74.1)':
+  '@nestjs/bullmq@11.0.4(@nestjs/common@11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19(@nestjs/common@11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.19)(@nestjs/websockets@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2))(bullmq@5.75.2)':
     dependencies:
       '@nestjs/bull-shared': 11.0.4(@nestjs/common@11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19(@nestjs/common@11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.19)(@nestjs/websockets@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2))
       '@nestjs/common': 11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.1.19(@nestjs/common@11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.19)(@nestjs/websockets@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      bullmq: 5.74.1
+      bullmq: 5.75.2
       tslib: 2.8.1
 
-  '@nestjs/bullmq@11.0.4(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.19)(@nestjs/websockets@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2))(bullmq@5.74.1)':
+  '@nestjs/bullmq@11.0.4(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.19)(@nestjs/websockets@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2))(bullmq@5.75.2)':
     dependencies:
       '@nestjs/bull-shared': 11.0.4(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.19)(@nestjs/websockets@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2))
       '@nestjs/common': 11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.1.19(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.19)(@nestjs/websockets@11.1.18)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      bullmq: 5.74.1
+      bullmq: 5.75.2
       tslib: 2.8.1
 
   '@nestjs/cli@11.0.16(@swc/core@1.15.24)(@types/node@25.6.0)(prettier@3.8.1)':
@@ -12743,7 +12743,7 @@ snapshots:
       lodash: 4.17.23
       rxjs: 7.8.2
 
-  '@nestjs/config@4.0.4(@nestjs/common@11.1.19(class-transformer@0.5.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)':
+  '@nestjs/config@4.0.4(@nestjs/common@11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)':
     dependencies:
       '@nestjs/common': 11.1.19(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       dotenv: 17.4.1
@@ -16260,7 +16260,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  bullmq@5.74.1:
+  bullmq@5.75.2:
     dependencies:
       cron-parser: 4.9.0
       ioredis: 5.10.1

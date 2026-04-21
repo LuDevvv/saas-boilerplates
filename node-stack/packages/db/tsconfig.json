@@ -1,23 +1,22 @@
 {
   "compilerOptions": {
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
     "declaration": true,
     "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "ES2021",
     "sourceMap": true,
-    "rootDir": "./src",
     "outDir": "./dist",
-    "skipLibCheck": true,
-    "strict": true,
-    "types": ["node", "jest"],
+    "types": [
+      "node",
+      "jest"
+    ],
     "composite": true,
-    "allowJs": true,
-    "esModuleInterop": true
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+    "allowJs": true},
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "extends": "../../tsconfig.json"
 }

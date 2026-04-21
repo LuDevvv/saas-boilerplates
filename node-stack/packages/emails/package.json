@@ -2,8 +2,9 @@
   "name": "@node-stack/emails",
   "version": "1.0.0",
   "private": true,
-  "main": "dist/src/index.js",
-  "types": "dist/src/index.d.ts",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx --max-warnings 0",

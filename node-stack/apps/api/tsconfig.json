@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "module": "Node16",
-    "moduleResolution": "Node16",
-    "target": "ES2021",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
     "lib": [
-      "ES2021"
+      "ES2022"
     ],
     "types": [
       "node",
@@ -16,7 +16,6 @@
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
-    "rootDir": "./src",
     "outDir": "./dist",
     "incremental": true,
     "skipLibCheck": true,
@@ -35,13 +34,61 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "composite": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "rootDir": "../../"
   },
   "include": [
     "src/**/*"
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "**/*.spec.ts",
+    "scripts"
+  ],
+  "extends": "../../tsconfig.json",
+  "references": [
+    {
+      "path": "../../packages/ai-adapter"
+    },
+    {
+      "path": "../../packages/billing-adapter"
+    },
+    {
+      "path": "../../packages/cache"
+    },
+    {
+      "path": "../../packages/config"
+    },
+    {
+      "path": "../../packages/db"
+    },
+    {
+      "path": "../../packages/emails"
+    },
+    {
+      "path": "../../packages/notifications"
+    },
+    {
+      "path": "../../packages/outbox-queue"
+    },
+    {
+      "path": "../../packages/services"
+    },
+    {
+      "path": "../../packages/storage"
+    },
+    {
+      "path": "../../packages/types"
+    },
+    {
+      "path": "../../packages/utils"
+    },
+    {
+      "path": "../../packages/validators"
+    },
+    {
+      "path": "../../packages/webhooks-utils"
+    }
   ]
 }

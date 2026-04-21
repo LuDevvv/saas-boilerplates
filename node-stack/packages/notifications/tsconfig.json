@@ -2,11 +2,23 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src",
-    "composite": true,
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext"
-  },
-  "include": ["src/**/*.ts"],
-  "exclude": ["dist", "node_modules"]
+    "composite": true},
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+  "references": [
+    {
+      "path": "../db"
+    },
+    {
+      "path": "../emails"
+    },
+    {
+      "path": "../utils"
+    }
+  ]
 }

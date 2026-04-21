@@ -1,6 +1,11 @@
 {
   "compilerOptions": {
-    "paths": {},
+    "paths": {
+      "@node-stack/*": [
+        "./packages/*/src/index.ts",
+        "./packages/*/src"
+      ]
+    },
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "strict": true,
@@ -11,16 +16,75 @@
     ],
     "module": "nodenext",
     "moduleResolution": "nodenext",
-    "composite": true
+    "composite": true,
+    "rootDir": ".",
+    "jsx": "react-jsx"
   },
   "include": [
-    "apps/**/*.ts",
-    "packages/**/*.ts",
     "eslint.config.mjs"
   ],
   "exclude": [
     "node_modules",
     "dist",
     "coverage"
+  ],
+  "references": [
+    {
+      "path": "./packages/ai-adapter"
+    },
+    {
+      "path": "./packages/api-client"
+    },
+    {
+      "path": "./packages/billing-adapter"
+    },
+    {
+      "path": "./packages/cache"
+    },
+    {
+      "path": "./packages/config"
+    },
+    {
+      "path": "./packages/db"
+    },
+    {
+      "path": "./packages/emails"
+    },
+    {
+      "path": "./packages/notifications"
+    },
+    {
+      "path": "./packages/outbox-queue"
+    },
+    {
+      "path": "./packages/queue"
+    },
+    {
+      "path": "./packages/services"
+    },
+    {
+      "path": "./packages/storage"
+    },
+    {
+      "path": "./packages/types"
+    },
+    {
+      "path": "./packages/utils"
+    },
+    {
+      "path": "./packages/validators"
+    },
+    {
+      "path": "./packages/webhooks-utils"
+    },
+    {
+      "path": "./apps/api"
+    },
+    {
+      "path": "./apps/dashboard"
+    },
+    {
+      "path": "./apps/worker"
+    }
   ]
 }

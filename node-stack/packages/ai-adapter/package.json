@@ -17,5 +17,6 @@
   },
   "peerDependencies": {
     "@nestjs/common": "*"
-  }
+  },
+  "type": "module"
 }

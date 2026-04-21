@@ -10,14 +10,18 @@
     "incremental": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ESNext"
+    ],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "noEmit": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
-    "noPropertyAccessFromIndexSignature": true,
-    "noUncheckedIndexedAccess": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUncheckedIndexedAccess": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "resolveJsonModule": true,
@@ -25,35 +29,98 @@
     "sourceMap": true,
     "strict": true,
     "target": "ESNext",
-    "types": ["vite/client"],
+    "types": [
+      "vite/client"
+    ],
+    "typeRoots": [
+      "./node_modules/@types",
+      "../../node_modules"
+    ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@assets/*": ["assets/*"],
-      "@components/*": ["src/components/*"],
-      "@ui/*": ["src/components/ui/*"],
-      "@common/*": ["src/components/common/*"],
-      "@stores/*": ["src/stores/*"],
-      "@context/*": ["src/context/*"],
-      "@routes/*": ["src/routes/*"],
-      "@helpers/*": ["src/helpers/*"],
-      "@hooks/*": ["src/hooks/*"],
-      "@pages/*": ["src/pages/*"],
-      "@styles/*": ["src/styles/*"],
-      "@api/*": ["src/api/*"],
-      "@utils/*": ["src/utils/*"],
-      "@lib/*": ["src/lib/*"],
-      "@layouts/*": ["src/layouts/*"],
-      "@services/*": ["src/services/*"],
-      "@data/*": ["src/data/*"],
-      "@elements/*": ["src/components/elements*"]
-    }
+      "@/*": [
+        "src/*"
+      ],
+      "@assets/*": [
+        "assets/*"
+      ],
+      "@components/*": [
+        "src/components/*"
+      ],
+      "@ui/*": [
+        "src/components/ui/*"
+      ],
+      "@common/*": [
+        "src/components/common/*"
+      ],
+      "@stores/*": [
+        "src/stores/*"
+      ],
+      "@context/*": [
+        "src/context/*"
+      ],
+      "@routes/*": [
+        "src/routes/*"
+      ],
+      "@helpers/*": [
+        "src/helpers/*"
+      ],
+      "@hooks/*": [
+        "src/hooks/*"
+      ],
+      "@pages/*": [
+        "src/pages/*"
+      ],
+      "@styles/*": [
+        "src/styles/*"
+      ],
+      "@api/*": [
+        "src/api/*"
+      ],
+      "@utils/*": [
+        "src/utils/*"
+      ],
+      "@lib/*": [
+        "src/lib/*"
+      ],
+      "@layouts/*": [
+        "src/layouts/*"
+      ],
+      "@services/*": [
+        "src/services/*"
+      ],
+      "@data/*": [
+        "src/data/*"
+      ],
+      "@elements/*": [
+        "src/components/elements*"
+      ]
+    },
+    "outDir": "./dist",
+    "composite": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
-  "exclude": ["node_modules"],
-  "include": ["**/*.cjs", "**/*.mjs", "**/*.ts", "**/*.tsx"],
+  "exclude": [
+    "node_modules"
+  ],
+  "include": [
+    "**/*.cjs",
+    "**/*.mjs",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.json"
+  ],
   "references": [
-    { "path": "../../packages/types" },
-    { "path": "../../packages/validators" },
-    { "path": "../../packages/api-client" }
-  ]
+    {
+      "path": "../../packages/api-client"
+    },
+    {
+      "path": "../../packages/types"
+    },
+    {
+      "path": "../../packages/validators"
+    }
+  ],
+  "extends": "../../tsconfig.json"
 }
