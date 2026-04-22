@@ -1,19 +1,28 @@
 {
-  "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "outDir": "./dist",
-    "composite": true,
-    "declaration": true,
-    "sourceMap": true,
-    "allowSyntheticDefaultImports": true,
-    "types": [
-      "node"
-    ]},
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+    "extends":  "../../tsconfig.json",
+    "compilerOptions":  {
+                            "composite":  true,
+                            "declaration":  true,
+                            "sourceMap":  true,
+                            "allowSyntheticDefaultImports":  true,
+                            "types":  [
+                                          "node"
+                                      ],
+                            "outDir":  "./dist",
+                            "rootDir":  "./src",
+                            "paths":  {
+                                          "@node-stack/*":  [
+                                                                "../../packages/*/src/index.ts",
+                                                                "../../packages/*/src"
+                                                            ]
+                                      },
+                            "jsx":  "react-jsx"
+                        },
+    "include":  [
+                    "src/**/*"
+                ],
+    "exclude":  [
+                    "node_modules",
+                    "dist"
+                ]
 }

@@ -2,11 +2,13 @@ import { Processor, InjectQueue } from '@nestjs/bullmq';
 import { Job, Queue } from 'bullmq';
 import { Logger, Inject } from '@nestjs/common';
 import {
+  AI_PROVIDER_TOKEN,
+  AIInsufficientQuotaError,
+} from '@node-stack/ai-adapter';
+import type {
   AIProvider,
   AIJob,
   AIJobResult,
-  AI_PROVIDER_TOKEN,
-  AIInsufficientQuotaError,
 } from '@node-stack/ai-adapter';
 import { CacheService } from '@node-stack/cache';
 import { BaseWorker } from '../base.worker.js';

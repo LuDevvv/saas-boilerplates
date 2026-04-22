@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import './tracing.js';
+// import './tracing.js';
 import { Logger, UnprocessableEntityException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -35,13 +35,28 @@ Sentry.init({
   },
 });
 
+// Global error handlers — MUST be before bootstrap() to catch silent crashes
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[FATAL] Unhandled Rejection at:', promise, 'reason:', reason);
+});
+process.on('uncaughtException', (error) => {
+  console.error('[FATAL] Uncaught Exception:', error);
+  process.exit(1);
+});
+
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
+
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT_SECRET environment variable is required');
   }
 
-  const app = await NestFactory.create(AppModule);
-  const logger = new Logger('Bootstrap');
+  logger.log('Creating NestJS application...');
+  const app = await NestFactory.create(AppModule, {
+    logger: ['log', 'error', 'warn', 'debug'],
+    abortOnError: true,
+  });
+  logger.log('NestJS application created successfully.');
   const configService = app.get(ConfigService);
 
   // WebSocket Redis adapter for horizontal scaling
@@ -161,4 +176,7 @@ async function bootstrap() {
   logger.log(`API is running on: http://localhost:${port}`);
 }
 
-bootstrap();
+bootstrap().catch((err) => {
+  console.error('Failed to start API:', err);
+  process.exit(1);
+});

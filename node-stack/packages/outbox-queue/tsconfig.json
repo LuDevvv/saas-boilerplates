@@ -1,19 +1,27 @@
 {
-  "extends": "../../tsconfig.json",
-  "compilerOptions": {
-    "outDir": "./dist",
-    
-    "composite": true
-  },
-  "include": [
-    "src/**/*"
-  ],
-  "references": [
-    {
-      "path": "../db"
-    },
-    {
-      "path": "../emails"
-    }
-  ]
+    "extends":  "../../tsconfig.json",
+    "compilerOptions":  {
+                            "composite":  true,
+                            "outDir":  "./dist",
+                            "rootDir":  "./src",
+                            "baseUrl":  ".",
+                            "paths":  {
+                                          "@node-stack/*":  [
+                                                                "../../packages/*/src/index.ts",
+                                                                "../../packages/*/src"
+                                                            ]
+                                      },
+                            "jsx":  "react-jsx"
+                        },
+    "include":  [
+                    "src/**/*"
+                ],
+    "references":  [
+                       {
+                           "path":  "../db"
+                       },
+                       {
+                           "path":  "../emails"
+                       }
+                   ]
 }

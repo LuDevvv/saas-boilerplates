@@ -1,7 +1,9 @@
+version: "3.8"
+
 services:
   postgres:
-    container_name: postgres
     image: postgres:15-alpine
+    container_name: ${PROJECT_NAME:-node-stack}-postgres
     environment:
       POSTGRES_USER: app_user
       POSTGRES_PASSWORD: changeme
@@ -21,8 +23,8 @@ services:
       - app-network
 
   redis:
-    container_name: redis
     image: redis:7-alpine
+    container_name: ${PROJECT_NAME:-node-stack}-redis
     command: redis-server --save 60 1 --loglevel warning --maxmemory-policy noeviction
     ports:
       - "6379:6379"
@@ -39,8 +41,8 @@ services:
       - app-network
 
   minio:
-    container_name: minio
     image: minio/minio:latest
+    container_name: ${PROJECT_NAME:-node-stack}-minio
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
@@ -61,8 +63,8 @@ services:
       - app-network
 
   pgadmin:
-    container_name: pgadmin
     image: dpage/pgadmin4:latest
+    container_name: ${PROJECT_NAME:-node-stack}-pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@example.com
       PGADMIN_DEFAULT_PASSWORD: admin
@@ -74,15 +76,7 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "--spider",
-          "http://localhost:80/misc/health",
-        ]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -92,8 +86,8 @@ services:
       - app-network
 
   jaeger:
-    container_name: jaeger
     image: jaegertracing/all-in-one:latest
+    container_name: ${PROJECT_NAME:-node-stack}-jaeger
     ports:
       - "16686:16686" # UI
       - "4318:4318" # OTLP HTTP
@@ -104,16 +98,24 @@ services:
       - app-network
 
   api:
-    container_name: api
     build:
       context: .
       dockerfile: apps/api/Dockerfile.dev
+    container_name: ${PROJECT_NAME:-node-stack}-api
     ports:
       - "${API_PORT:-4000}:4000"
-    command: tail -f /dev/null
+    command: pnpm --filter @node-stack/api dev
     env_file:
       - apps/api/.env
       - .env
+    volumes:
+      # Bind-mount the full monorepo for live-reload
+      - .:/app
+      # Protect node_modules from host override using named volumes
+      # These preserve the Linux-native installs from the Docker image build
+      - api_node_modules:/app/node_modules
+      - api_app_node_modules:/app/apps/api/node_modules
+      - worker_app_node_modules:/app/apps/worker/node_modules
     environment:
       - DATABASE_URL=postgresql://app_user:changeme@postgres:5432/app
       - REDIS_URL=redis://redis:6379
@@ -130,25 +132,13 @@ services:
         condition: service_healthy
     networks:
       - app-network
-    develop:
-      watch:
-        - path: apps/api
-          action: sync
-          target: /app/apps/api
-          ignore:
-            - node_modules
-        - path: packages
-          action: sync
-          target: /app/packages
-          ignore:
-            - node_modules
 
   worker:
-    container_name: worker
     build:
       context: .
       dockerfile: apps/api/Dockerfile.dev
-    command: tail -f /dev/null
+    container_name: ${PROJECT_NAME:-node-stack}-worker
+    command: pnpm --filter @node-stack/worker dev
     env_file:
       - .env
     environment:
@@ -163,6 +153,13 @@ services:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
+    volumes:
+      # Bind-mount the full monorepo for live-reload
+      - .:/app
+      # Protect node_modules from host override using named volumes
+      - worker_root_node_modules:/app/node_modules
+      - worker_worker_node_modules:/app/apps/worker/node_modules
+      - worker_api_node_modules:/app/apps/api/node_modules
     depends_on:
       postgres:
         condition: service_healthy
@@ -170,18 +167,6 @@ services:
         condition: service_healthy
     networks:
       - app-network
-    develop:
-      watch:
-        - path: apps/worker
-          action: sync
-          target: /app/apps/worker
-          ignore:
-            - node_modules
-        - path: packages
-          action: sync
-          target: /app/packages
-          ignore:
-            - node_modules
 
 volumes:
   postgres_data:
@@ -192,7 +177,19 @@ volumes:
     driver: local
   pgadmin_data:
     driver: local
-  node_modules:
+  # Named volumes for node_modules — prevents host Windows symlinks from contaminating containers
+  # IMPORTANT: Run `docker compose down -v` when you change dependencies to recreate these
+  api_node_modules:
+    driver: local
+  api_app_node_modules:
+    driver: local
+  worker_app_node_modules:
+    driver: local
+  worker_root_node_modules:
+    driver: local
+  worker_worker_node_modules:
+    driver: local
+  worker_api_node_modules:
     driver: local
 
 networks:

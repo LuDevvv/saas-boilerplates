@@ -5,6 +5,8 @@
   "compilerOptions": {
     "deleteOutDir": false,
     "webpack": false,
+    "builder": "swc",
+    "typeCheck": true,
     "tsConfigPath": "tsconfig.json",
     "plugins": []
   },

@@ -184,7 +184,7 @@ const CreateFoodVariantSchema = z.object({
   sku: z.string().optional(),
   isActive: z.boolean().default(true),
   stock: z.number().default(0),
-  options: z.record(z.string()).default({}),
+  options: z.record(z.string(), z.string()).default({}),
 });
 
 const CreateCategorySchema = z.object({

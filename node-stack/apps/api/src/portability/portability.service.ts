@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException, Inject, ForbiddenException } from "@nestjs/common";
 import { db, schema, eq, and, desc } from "@node-stack/db";
 import { JobService } from "../common/queues/job.service.js";
-import { IStorageProvider } from "@node-stack/storage";
+import type { IStorageProvider } from "@node-stack/storage";
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class PortabilityService {
   constructor(
     private readonly jobService: JobService,
     @Inject("STORAGE_SERVICE") private readonly storage: IStorageProvider,
-  ) {}
+  ) { }
 
   async requestExport(workspaceId: string, userId: string) {
     this.logger.log(`Requesting portability export for user ${userId} in workspace ${workspaceId}`);
@@ -69,7 +69,7 @@ export class PortabilityService {
     // (Acl check is partly handled by controller guards, but we double check userId here if not admin)
     // For now, let's assume if they got here via the workspace:id/portability route, 
     // the controller's roles/permissions guards did the heavy lifting.
-    
+
     const fileKey = request.metadata.fileKey as string;
     const url = await this.storage.getDownloadUrl(fileKey, 3600); // 1 hour
 

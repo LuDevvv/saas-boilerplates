@@ -8,7 +8,7 @@ import {
   UseGuards,
   Res,
 } from "@nestjs/common";
-import { Response } from "express";
+import type { Response } from "express";
 import {
   ApiTags,
   ApiOperation,
@@ -19,7 +19,7 @@ import { JwtAuthGuard } from "../auth/guards/jwt.guard.js";
 import { WorkspaceGuard } from "../common/guards/workspace.guard.js";
 import { CurrentUser } from "../auth/decorators/current-user.decorator.js";
 import { Workspace } from "../common/decorators/workspace.decorator.js";
-import { UserPayload, WorkspaceContext } from "../common/types/index.js";
+import type { UserPayload, WorkspaceContext } from "../common/types/index.js";
 import { SubmitAIJobDto, ChatCompletionDto } from "@node-stack/validators";
 import { CacheService } from "@node-stack/cache";
 import { AiService } from "./ai.service.js";

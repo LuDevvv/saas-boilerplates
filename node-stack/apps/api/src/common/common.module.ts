@@ -7,6 +7,7 @@ import { IdempotencyInterceptor } from "./interceptors/idempotency.interceptor.j
 import { OutboxService } from "./services/outbox.service.js";
 import { QueueModule } from "./queues/queue.module.js";
 import { JobsController } from "./controllers/jobs.controller.js";
+import { EncryptionService } from "./services/encryption.service.js";
 
 @Global()
 @Module({
@@ -22,6 +23,7 @@ import { JobsController } from "./controllers/jobs.controller.js";
     IdempotencyGuard,
     IdempotencyInterceptor,
     OutboxService,
+    EncryptionService,
   ],
   exports: [
     QueueModule,
@@ -31,6 +33,7 @@ import { JobsController } from "./controllers/jobs.controller.js";
     IdempotencyGuard, 
     IdempotencyInterceptor,
     OutboxService,
+    EncryptionService,
   ],
 })
 export class CommonModule {}

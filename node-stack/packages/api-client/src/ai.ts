@@ -17,7 +17,7 @@ export interface AIJob {
 
 const GenerateRequestSchema = z.object({
   type: z.enum(["description", "seo", "social", "image"]),
-  context: z.record(z.unknown()),
+  context: z.record(z.string(), z.unknown()),
 });
 
 export const ai = (client: AxiosInstance) => ({

@@ -5,7 +5,7 @@ import {
   CallHandler,
   Logger,
 } from "@nestjs/common";
-import { Response } from "express";
+import type { Response } from "express";
 import { Observable, of, throwError } from "rxjs";
 import { tap, catchError } from "rxjs/operators";
 

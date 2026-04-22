@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   Logger,
   Inject,
+  forwardRef,
 } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { ConfigService } from "@nestjs/config";

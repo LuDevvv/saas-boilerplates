@@ -6,14 +6,12 @@ import { MockProvider } from "@node-stack/billing-adapter";
 import { BillingController } from "./billing.controller.js";
 import { BillingService } from "./billing.service.js";
 import { DatabaseModule } from "@node-stack/db";
-import { EncryptionService } from "../common/services/encryption.service.js";
 
 @Module({
-  imports: [ConfigModule, DatabaseModule],
+  imports: [DatabaseModule],
   controllers: [BillingController],
   providers: [
     BillingService,
-    EncryptionService,
     {
       provide: "PAYMENT_PROVIDER",
       useFactory: async (config: ConfigService): Promise<PaymentProvider> => {
@@ -40,6 +38,6 @@ import { EncryptionService } from "../common/services/encryption.service.js";
       inject: [ConfigService],
     },
   ],
-  exports: [BillingService, EncryptionService],
+  exports: [BillingService],
 })
 export class BillingModule {}

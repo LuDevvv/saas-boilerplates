@@ -4,19 +4,17 @@
     "removeComments": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true,
-    "outDir": "./dist",
-    "types": [
-      "node",
-      "jest"
-    ],
+    "types": ["node", "jest"],
     "composite": true,
-    "allowJs": true},
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ],
+    "allowJs": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "paths": {
+      "@node-stack/*": ["../../packages/*/src/index.ts", "../../packages/*/src"]
+    },
+    "jsx": "react-jsx"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"],
   "extends": "../../tsconfig.json"
 }

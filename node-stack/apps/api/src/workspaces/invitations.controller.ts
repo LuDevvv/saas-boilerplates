@@ -25,7 +25,7 @@ import { CurrentUser } from "../auth/decorators/index.js";
 import { Public } from "../common/decorators/public.decorator.js";
 import { RequirePermissions } from "../common/decorators/permissions.decorator.js";
 import { Roles } from "../common/decorators/roles.decorator.js";
-import { UserPayload } from "../common/types/index.js";
+import type { UserPayload } from "../common/types/index.js";
 
 @ApiTags("invitations")
 @ApiBearerAuth("JWT-auth")

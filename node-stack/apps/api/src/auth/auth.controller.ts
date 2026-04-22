@@ -10,7 +10,7 @@ import {
   Param,
   Delete,
 } from "@nestjs/common";
-import { UserPayload } from "../common/types/index.js";
+import type { UserPayload } from "../common/types/index.js";
 import { ConfigService } from "@nestjs/config";
 import { AuthGuard } from "@nestjs/passport";
 import {

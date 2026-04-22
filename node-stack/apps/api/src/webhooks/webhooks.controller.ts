@@ -17,7 +17,7 @@ import {
   ApiQuery,
 } from "@nestjs/swagger";
 import { SkipThrottle, Throttle } from "@nestjs/throttler";
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 
 import { Public } from "../common/decorators/public.decorator.js";
 import { InboundWebhookService } from "./webhooks.service.js";

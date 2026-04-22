@@ -40,13 +40,13 @@ import { WebhooksModule } from './webhooks/webhooks.module.js';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     CacheModule,
     CommonModule,
     DatabaseModule,
     EventEmitterModule.forRoot(),
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
     AuthModule,
     WorkspacesModule,
     ApiKeysModule,

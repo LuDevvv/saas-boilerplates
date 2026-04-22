@@ -4,7 +4,7 @@ import { db, schema, eq } from "@node-stack/db";
 import { Job, Queue } from "bullmq";
 import { BaseWorker } from "../base.worker.js";
 import { PortabilityExporter } from "@node-stack/services";
-import { IStorageProvider } from "@node-stack/storage";
+import type { IStorageProvider } from "@node-stack/storage";
 
 interface PortabilityJobPayload {
   requestId: string;

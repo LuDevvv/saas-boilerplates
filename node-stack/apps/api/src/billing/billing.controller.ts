@@ -16,7 +16,7 @@ import {
 } from "@nestjs/swagger";
 import { Throttle, SkipThrottle } from "@nestjs/throttler";
 import { Permission } from "@node-stack/types";
-import { Request } from "express";
+import type { Request } from "express";
 
 import { BillingService } from "./billing.service.js";
 import { CreateCheckoutDto } from "@node-stack/validators";
@@ -26,7 +26,7 @@ import { Public } from "../common/decorators/public.decorator.js";
 import { Workspace } from "../common/decorators/workspace.decorator.js";
 import { IdempotencyGuard } from "../common/guards/idempotency.guard.js";
 import { IdempotencyInterceptor } from "../common/interceptors/idempotency.interceptor.js";
-import { UserPayload, WorkspaceContext } from "../common/types/index.js";
+import type { UserPayload, WorkspaceContext } from "../common/types/index.js";
 
 @ApiTags("billing")
 @ApiBearerAuth("JWT-auth")

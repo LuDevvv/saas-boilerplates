@@ -35,7 +35,7 @@ import { TenantId } from "../common/decorators/tenant-id.decorator.js";
 import { Workspace } from "../common/decorators/workspace.decorator.js";
 import { IdempotencyGuard } from "../common/guards/idempotency.guard.js";
 import { IdempotencyInterceptor } from "../common/interceptors/idempotency.interceptor.js";
-import { WorkspaceContext } from "../common/types/index.js";
+import type { WorkspaceContext } from "../common/types/index.js";
 
 @ApiTags("workspaces")
 @ApiBearerAuth("JWT-auth")
