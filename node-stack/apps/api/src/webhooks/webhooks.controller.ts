@@ -29,25 +29,10 @@ export class WebhooksController {
 
   constructor(private readonly webhookService: InboundWebhookService) {}
 
-  // ─── Inbound Webhook Endpoint ──────────────────────────────────────────
 
   /**
-   * Universal webhook receiver.
-   *
-   * Route: POST /webhooks/:provider
-   * Examples:
-   *   POST /webhooks/stripe
-   *   POST /webhooks/polar
-   *   POST /webhooks/clerk
-   *   POST /webhooks/generic
-   *
-   * The raw body middleware (`express.raw()`) in `main.ts` ensures this
-   * endpoint receives a Buffer, required for HMAC signature verification.
-   *
-   * This endpoint is:
-   *   - Public (no JWT required)
-   *   - Rate-limit exempt (providers send high volumes)
-   *   - Always returns 200 after receiving (even on errors) to prevent retry storms
+   * Universal webhook receiver for external providers.
+   * Validates signatures and ensures 200 OK to prevent retry storms.
    */
   @SkipThrottle()
   @Public()
@@ -94,7 +79,6 @@ export class WebhooksController {
     });
   }
 
-  // ─── Debug / Admin Endpoints ───────────────────────────────────────────
 
   @Throttle({ medium: { ttl: 60000, limit: 30 } })
   @Get("logs/recent")
