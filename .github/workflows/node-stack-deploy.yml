@@ -2,8 +2,10 @@ name: Deploy
 
 on:
   push:
-    branches: [ main ]
-    tags: [ "v*" ]
+    branches: [main]
+    tags: ["v*"]
+    paths:
+      - 'node-stack/**'
 
 jobs:
   deploy:
@@ -29,8 +31,9 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /app/node-stack
-            docker-compose pull
-            docker-compose up -d
+            docker compose pull
+            docker compose up -d
+            docker compose exec -T api pnpm --filter @node-stack/db db:migrate
             docker image prune -f
 
   notify:
