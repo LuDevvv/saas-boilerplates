@@ -1,23 +1,52 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalPassThroughEnv": ["DATABASE_URL", "REDIS_URL", "REDIS_HOST", "REDIS_PORT", "NODE_ENV", "JWT_SECRET", "SENTRY_DSN", "OTEL_EXPORTER_OTLP_ENDPOINT", "CORS_ORIGINS", "PORT", "MINIO_ENDPOINT", "MINIO_ROOT_USER", "MINIO_ROOT_PASSWORD", "OPENAI_API_KEY"],
+  "globalPassThroughEnv": [
+    "DATABASE_URL",
+    "REDIS_URL",
+    "REDIS_HOST",
+    "REDIS_PORT",
+    "NODE_ENV",
+    "JWT_SECRET",
+    "SENTRY_DSN",
+    "OTEL_EXPORTER_OTLP_ENDPOINT",
+    "CORS_ORIGINS",
+    "PORT",
+    "MINIO_ENDPOINT",
+    "MINIO_ROOT_USER",
+    "MINIO_ROOT_PASSWORD",
+    "OPENAI_API_KEY"
+  ],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**"],
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "dist/**",
+        ".next/**",
+        "!.next/cache/**"
+      ],
       "cache": true
     },
     "clean": {
       "cache": false
     },
     "test": {
-      "dependsOn": ["^build"],
-      "outputs": ["coverage/**"],
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "coverage/**"
+      ],
       "cache": false
     },
     "test:cov": {
-      "dependsOn": ["^build"],
-      "outputs": ["coverage/**"],
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        "coverage/**"
+      ],
       "cache": false
     },
     "lint": {
@@ -25,7 +54,9 @@
       "cache": true
     },
     "typecheck": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
       "outputs": [],
       "cache": true
     },
