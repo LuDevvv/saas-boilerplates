@@ -16,6 +16,7 @@ import { FileRepository } from './repositories/file.repository.js';
 import { AuditLogRepository } from './repositories/audit-log.repository.js';
 import { SystemConfigRepository } from './repositories/system-config.repository.js';
 import { PortabilityRepository } from './repositories/portability.repository.js';
+import { RequestContextService } from './context/request-context.service.js';
 import * as schema from './schema/index.js';
 import { DB_TOKEN } from './tokens.js';
 
@@ -50,6 +51,7 @@ import { DB_TOKEN } from './tokens.js';
     AuditLogRepository,
     SystemConfigRepository,
     PortabilityRepository,
+    RequestContextService,
   ],
   exports: [
     DB_TOKEN,
@@ -67,6 +69,7 @@ import { DB_TOKEN } from './tokens.js';
     AuditLogRepository,
     SystemConfigRepository,
     PortabilityRepository,
+    RequestContextService,
   ],
 })
 export class DatabaseModule {}

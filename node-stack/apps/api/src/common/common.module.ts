@@ -2,7 +2,6 @@ import { Module, Global } from "@nestjs/common";
 import { FeatureFlagService } from "@node-stack/config";
 import { AuditService } from "./services/audit.service.js";
 import { IdempotencyService } from "./services/idempotency.service.js";
-import { IdempotencyGuard } from "./guards/idempotency.guard.js";
 import { IdempotencyInterceptor } from "./interceptors/idempotency.interceptor.js";
 import { OutboxService } from "./services/outbox.service.js";
 import { QueueModule } from "./queues/queue.module.js";
@@ -20,7 +19,6 @@ import { EncryptionService } from "./services/encryption.service.js";
     },
     AuditService,
     IdempotencyService,
-    IdempotencyGuard,
     IdempotencyInterceptor,
     OutboxService,
     EncryptionService,
@@ -30,7 +28,6 @@ import { EncryptionService } from "./services/encryption.service.js";
     FeatureFlagService, 
     AuditService, 
     IdempotencyService, 
-    IdempotencyGuard, 
     IdempotencyInterceptor,
     OutboxService,
     EncryptionService,

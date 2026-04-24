@@ -1,10 +1,11 @@
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
+import { ApiProperty } from "@nestjs/swagger";
 
 export const SubmitAIJobSchema = z.object({
   jobType: z
     .enum(["summarize-document", "classify-ticket", "generate-description", "analyze-usage", "custom"])
-    .describe("The type of task for the AI processor (e.g. summarize-document)"),
+    .describe("The type of task for the AI processor"),
   prompt: z
     .string()
     .min(1)
@@ -18,13 +19,20 @@ export const SubmitAIJobSchema = z.object({
   model: z
     .string()
     .optional()
-    .describe("Specific AI model to use (e.g. 'gpt-4o', 'claude-3-opus')"),
+    .describe("Specific AI model to use"),
 });
 
 export class SubmitAIJobDto extends createZodDto(SubmitAIJobSchema) {
+  @ApiProperty({ example: "summarize-document", enum: ["summarize-document", "classify-ticket", "generate-description", "analyze-usage", "custom"] })
   jobType!: "summarize-document" | "classify-ticket" | "generate-description" | "analyze-usage" | "custom";
+
+  @ApiProperty({ example: "Please summarize this report." })
   prompt!: string;
+
+  @ApiProperty({ example: "The report content is...", required: false })
   context?: string;
+
+  @ApiProperty({ example: "gpt-4o", required: false })
   model?: string;
 }
 
@@ -33,7 +41,13 @@ export const ChatMessageSchema = z.object({
   content: z.string().min(1),
 });
 
-export type ChatMessage = z.infer<typeof ChatMessageSchema>;
+export class ChatMessageDto {
+  @ApiProperty({ example: "user", enum: ["system", "user", "assistant"] })
+  role!: "system" | "user" | "assistant";
+
+  @ApiProperty({ example: "Hello, AI!" })
+  content!: string;
+}
 
 export const ChatCompletionSchema = z.object({
   messages: z.array(ChatMessageSchema).min(1),
@@ -43,8 +57,15 @@ export const ChatCompletionSchema = z.object({
 });
 
 export class ChatCompletionDto extends createZodDto(ChatCompletionSchema) {
-  messages!: ChatMessage[];
+  @ApiProperty({ type: [ChatMessageDto] })
+  messages!: ChatMessageDto[];
+
+  @ApiProperty({ example: "gpt-4o", required: false })
   model?: string;
+
+  @ApiProperty({ example: 1000, required: false })
   maxTokens?: number;
+
+  @ApiProperty({ example: 0.7, required: false })
   temperature?: number;
 }

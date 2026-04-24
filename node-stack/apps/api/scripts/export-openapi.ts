@@ -3,6 +3,10 @@ import { AppModule } from '../src/app.module.js';
 import { setupSwagger } from '../src/common/docs/swagger.config.js';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Script to export the OpenAPI JSON specification.
@@ -11,8 +15,17 @@ import * as path from 'node:path';
 async function exportOpenApi() {
   const app = await NestFactory.create(AppModule, { logger: false });
   
-  // Set explicit API prefix if used
-  app.setGlobalPrefix('api');
+  // Align with main.ts prefix
+  app.setGlobalPrefix('v1', {
+    exclude: [
+      '/api/docs',
+      '/api/docs-json',
+      '/billing/webhook',
+      '/health',
+      '/health/live',
+      '/health/ready',
+    ],
+  });
   
   const document = setupSwagger(app);
   const outputPath = path.resolve(__dirname, '../openapi-spec.json');

@@ -23,6 +23,12 @@ export const membershipStatusEnum = pgEnum("membership_status", [
   "pending",
 ]);
 
+export const workspaceTierEnum = pgEnum("workspace_tier", [
+  "free",
+  "pro",
+  "enterprise",
+]);
+
 export const workspaces = pgTable(
   "workspaces",
   {
@@ -30,6 +36,7 @@ export const workspaces = pgTable(
     name: text("name").notNull(),
     slug: text("slug").notNull().unique(),
     logoUrl: text("logo_url"),
+    tier: workspaceTierEnum("tier").notNull().default("free"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()

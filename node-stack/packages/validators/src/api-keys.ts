@@ -1,6 +1,7 @@
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
 import { ApiKeyScope } from "@node-stack/types";
+import { ApiProperty } from "@nestjs/swagger";
 
 export const CreateApiKeySchema = z.object({
   name: z
@@ -8,7 +9,7 @@ export const CreateApiKeySchema = z.object({
     .min(1)
     .max(255)
     .trim()
-    .describe("Name for the API key (e.g. 'Production App')"),
+    .describe("Name for the API key"),
   expiresAt: z
     .string()
     .datetime()
@@ -17,6 +18,9 @@ export const CreateApiKeySchema = z.object({
 });
 
 export class CreateApiKeyDto extends createZodDto(CreateApiKeySchema) {
+  @ApiProperty({ example: "Production App", description: "A descriptive name for the API key" })
   declare name: string;
+
+  @ApiProperty({ example: "2025-12-31T23:59:59Z", required: false, description: "Optional expiration date" })
   declare expiresAt?: string;
 }

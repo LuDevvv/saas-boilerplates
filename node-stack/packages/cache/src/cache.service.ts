@@ -1,8 +1,8 @@
-import { Injectable, Optional } from "@nestjs/common";
+import { Injectable, Optional, OnModuleDestroy } from "@nestjs/common";
 import { Redis } from "ioredis";
 
 @Injectable()
-export class CacheService {
+export class CacheService implements OnModuleDestroy {
   private client: Redis;
   private namespace: string;
   private ttlDefault: number;
@@ -15,7 +15,13 @@ export class CacheService {
     const prefix = process.env.REDIS_PREFIX || "";
     this.namespace = prefix ? `${prefix}:${namespace}` : namespace;
     this.ttlDefault = ttlDefault;
-    this.client = new Redis(url);
+    this.client = new Redis(url, {
+      maxRetriesPerRequest: null,
+    });
+  }
+
+  async onModuleDestroy() {
+    await this.client.quit();
   }
 
   private key(key: string, tenantId?: string): string {
@@ -113,5 +119,9 @@ export class CacheService {
         callback(ch, msg);
       }
     });
+  }
+
+  async ping(): Promise<string> {
+    return await this.client.ping();
   }
 }

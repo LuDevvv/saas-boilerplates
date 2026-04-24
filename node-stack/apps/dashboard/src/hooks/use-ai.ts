@@ -1,12 +1,12 @@
 import { useState, useCallback } from "react";
 import { aiService } from "@/services/ai/AiService";
-import { ChatCompletionDto, ChatMessage } from "@node-stack/validators";
+import { ChatCompletionDto, ChatMessageDto } from "@node-stack/validators";
 
 export const useAi = (workspaceId: string = "default-workspace") => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const chat = useCallback(async (messages: ChatMessage[], options?: Partial<ChatCompletionDto>) => {
+  const chat = useCallback(async (messages: ChatMessageDto[], options?: Partial<ChatCompletionDto>) => {
     setLoading(true);
     setError(null);
     try {
@@ -26,7 +26,7 @@ export const useAi = (workspaceId: string = "default-workspace") => {
   }, [workspaceId]);
 
   const streamChat = useCallback(async (
-    messages: ChatMessage[], 
+    messages: ChatMessageDto[], 
     onChunk: (chunk: string) => void,
     options?: Partial<ChatCompletionDto>
   ) => {

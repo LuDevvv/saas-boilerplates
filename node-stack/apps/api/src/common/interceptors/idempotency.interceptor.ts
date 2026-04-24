@@ -4,49 +4,71 @@ import {
   ExecutionContext,
   CallHandler,
   Logger,
+  ConflictException,
 } from "@nestjs/common";
-import type { Response } from "express";
-import { Observable, of, throwError } from "rxjs";
-import { tap, catchError } from "rxjs/operators";
+import type { Request, Response } from "express";
+import { Observable, of, throwError, from } from "rxjs";
+import { tap, catchError, switchMap } from "rxjs/operators";
 
 import { IdempotencyService } from "../services/idempotency.service.js";
 
 @Injectable()
 export class IdempotencyInterceptor implements NestInterceptor {
   private readonly logger = new Logger(IdempotencyInterceptor.name);
+  private readonly IDEMPOTENCY_HEADER = "idempotency-key";
 
   constructor(private readonly idempotency: IdempotencyService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const req = context.switchToHttp().getRequest();
-    const res: Response = context.switchToHttp().getResponse();
+    const req = context.switchToHttp().getRequest<Request>();
+    const res = context.switchToHttp().getResponse<Response>();
 
-    if (req.idempotencyCachedResponse) {
-      const cached = req.idempotencyCachedResponse;
-      res.status(cached.statusCode);
-      return of(cached.data);
-    }
+    const idempotencyKey = req.headers[this.IDEMPOTENCY_HEADER] as string;
 
-    if (!req.idempotencyKey) {
+    // Only apply if the header is present and it's a mutating request
+    if (!idempotencyKey || !["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
       return next.handle();
     }
 
-    return next.handle().pipe(
-      tap(async (data) => {
-        const statusCode = res.statusCode;
-        await this.idempotency.set(req.idempotencyKey, { statusCode, data });
-        await this.idempotency.releaseLock(req.idempotencyKey);
-      }),
-      catchError((err) => {
-        this.idempotency
-          .releaseLock(req.idempotencyKey)
-          .catch((lockErr) =>
-            this.logger.error(
-              `Failed to release lock for key ${req.idempotencyKey}`,
-              lockErr,
-            ),
-          );
-        return throwError(() => err);
+    this.logger.debug(`Processing request with idempotency key: ${idempotencyKey}`);
+
+    return from(this.idempotency.get(idempotencyKey)).pipe(
+      switchMap((cached) => {
+        if (cached) {
+          this.logger.log(`Idempotency cache hit for key: ${idempotencyKey}`);
+          res.status(cached.statusCode);
+          res.setHeader("X-Idempotency-Hit", "true");
+          return of(cached.data);
+        }
+
+        return from(this.idempotency.setWithLock(idempotencyKey)).pipe(
+          switchMap((locked) => {
+            if (!locked) {
+              this.logger.warn(`Idempotency lock contention for key: ${idempotencyKey}`);
+              throw new ConflictException(
+                "A request with this idempotency key is already in progress",
+              );
+            }
+
+            return next.handle().pipe(
+              tap(async (data) => {
+                const statusCode = res.statusCode;
+                // Only cache successful responses (2xx) or specific ones?
+                // Usually we cache all except server errors (5xx)
+                if (statusCode < 500) {
+                  await this.idempotency.set(idempotencyKey, { statusCode, data });
+                }
+                await this.idempotency.releaseLock(idempotencyKey);
+              }),
+              catchError((err) => {
+                // Release lock on error but don't cache (or cache if it's a 4xx)
+                return from(this.idempotency.releaseLock(idempotencyKey)).pipe(
+                  switchMap(() => throwError(() => err)),
+                );
+              }),
+            );
+          }),
+        );
       }),
     );
   }

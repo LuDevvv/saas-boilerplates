@@ -19,6 +19,7 @@ import { JwtAuthGuard } from "../auth/guards/jwt.guard.js";
 import { WorkspaceGuard } from "../common/guards/workspace.guard.js";
 import { CurrentUser } from "../auth/decorators/current-user.decorator.js";
 import { Workspace } from "../common/decorators/workspace.decorator.js";
+import { Idempotent } from "../common/decorators/idempotent.decorator.js";
 import type { UserPayload, WorkspaceContext } from "../common/types/index.js";
 import { SubmitAIJobDto, ChatCompletionDto } from "@node-stack/validators";
 import { CacheService } from "@node-stack/cache";
@@ -29,6 +30,7 @@ import { BillingGuard } from "../common/guards/billing.guard.js";
 
 @ApiTags("ai")
 @ApiBearerAuth("JWT-auth")
+@Idempotent()
 @Controller("ai")
 @UseGuards(JwtAuthGuard, WorkspaceGuard, BillingGuard)
 export class AiController {
@@ -40,6 +42,9 @@ export class AiController {
 
   @Post("chat")
   @ApiOperation({ summary: "Synchronous AI chat completion" })
+  @ApiResponse({ status: 200, description: "AI completion retrieved" })
+  @ApiResponse({ status: 400, description: "Invalid request or prompt" })
+  @ApiResponse({ status: 402, description: "Payment required (AI credits exhausted)" })
   async chat(
     @Body() dto: ChatCompletionDto,
     @Workspace() workspace: WorkspaceContext,

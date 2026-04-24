@@ -1,11 +1,13 @@
 import { Controller, Get, Post, Patch, Body, Param, Query, Request } from "@nestjs/common";
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from "@nestjs/swagger";
 import { AdminOnly } from "../../common/decorators/admin.decorator.js";
 import { ImpersonationService } from "../services/impersonation.service.js";
 import { AuthRepository } from "@node-stack/db";
 import { ZodValidationPipe } from "nestjs-zod";
-import { UpdateUserRoleSchema, type UpdateUserRoleDto } from "@node-stack/validators";
+import { UpdateUserRoleSchema, UpdateUserRoleDto } from "@node-stack/validators";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 
+@ApiTags("admin-users")
 @Controller("admin/users")
 @AdminOnly()
 export class UsersAdminController {
@@ -16,6 +18,11 @@ export class UsersAdminController {
   ) {}
 
   @Get()
+  @ApiOperation({ summary: "List all users (Admin only)" })
+  @ApiQuery({ name: "page", required: false, type: Number })
+  @ApiQuery({ name: "limit", required: false, type: Number })
+  @ApiQuery({ name: "search", required: false, type: String })
+  @ApiResponse({ status: 200, description: "List of users retrieved" })
   async listUsers(
     @Query("page") page = 1,
     @Query("limit") limit = 10,
@@ -29,6 +36,9 @@ export class UsersAdminController {
   }
 
   @Patch(":id/role")
+  @ApiOperation({ summary: "Update user role (Admin only)" })
+  @ApiParam({ name: "id", description: "User ID" })
+  @ApiResponse({ status: 200, description: "User role updated successfully" })
   async updateUserRole(
     @Param("id") id: string,
     @Body(new ZodValidationPipe(UpdateUserRoleSchema)) data: UpdateUserRoleDto,
@@ -55,6 +65,9 @@ export class UsersAdminController {
   }
 
   @Post(":id/impersonate")
+  @ApiOperation({ summary: "Impersonate a user (Admin only)" })
+  @ApiParam({ name: "id", description: "User ID to impersonate" })
+  @ApiResponse({ status: 201, description: "Impersonation session created" })
   async impersonate(
     @Param("id") id: string,
     @Request() req: any,

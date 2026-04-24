@@ -1,6 +1,7 @@
 import { Processor, InjectQueue } from '@nestjs/bullmq';
 import { Job, Queue } from 'bullmq';
 import { Logger } from '@nestjs/common';
+import { RequestContextService } from '@node-stack/db';
 import { BaseWorker } from '../base.worker.js';
 
 /**
@@ -17,8 +18,9 @@ export class NotificationsProcessor extends BaseWorker {
 
   constructor(
     @InjectQueue('dlq') private readonly dlqQueue: Queue,
+    protected readonly contextService: RequestContextService,
   ) {
-    super();
+    super(contextService);
   }
 
   protected getDlqQueue(): Queue {

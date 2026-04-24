@@ -11,6 +11,7 @@ import type {
   AIJobResult,
 } from '@node-stack/ai-adapter';
 import { CacheService } from '@node-stack/cache';
+import { RequestContextService } from '@node-stack/db';
 import { BaseWorker } from '../base.worker.js';
 
 const PROMPT_TEMPLATES: Record<string, (j: AIJob) => string> = {
@@ -34,8 +35,9 @@ export class AIProcessor extends BaseWorker {
     @Inject(AI_PROVIDER_TOKEN) private readonly aiProvider: AIProvider,
     @Inject(CacheService) private readonly cacheService: CacheService,
     @InjectQueue('dlq') private readonly dlqQueue: Queue,
+    protected readonly contextService: RequestContextService,
   ) {
-    super();
+    super(contextService);
   }
 
   protected getDlqQueue(): Queue {

@@ -1,13 +1,16 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, Inject } from "@nestjs/common";
 import { InjectQueue } from "@nestjs/bullmq";
-import { db, schema, eq, sql, and } from "@node-stack/db";
+import { schema, eq, sql, and, DB_TOKEN, type Database } from "@node-stack/db";
 import { Queue } from "bullmq";
 
 @Injectable()
 export class WebhookDispatcher {
   private readonly logger = new Logger(WebhookDispatcher.name);
 
-  constructor(@InjectQueue("webhooks.delivery") private deliveryQueue: Queue) {}
+  constructor(
+    @InjectQueue("webhooks.delivery") private deliveryQueue: Queue,
+    @Inject(DB_TOKEN) private readonly db: Database,
+  ) {}
 
   async dispatch(eventType: string, payload: Record<string, unknown>, workspaceId?: string) {
     if (!workspaceId) {
@@ -16,7 +19,7 @@ export class WebhookDispatcher {
     }
 
     // Find all endpoints for this workspace that listen to this event type or '*'
-    const endpoints = await db.query.webhookEndpoints.findMany({
+    const endpoints = await this.db.query.webhookEndpoints.findMany({
       where: and(
         eq(schema.webhookEndpoints.workspaceId, workspaceId),
         eq(schema.webhookEndpoints.enabled, true),

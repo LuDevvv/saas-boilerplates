@@ -4,7 +4,7 @@ import Loading from "@/components/Loading";
 import { useAuth } from "@/hooks/stores/useAuth";
 
 interface PublicRouteProps {
-  children: JSX.Element;
+  children: React.ReactElement;
 }
 
 const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {

@@ -1,7 +1,7 @@
 import { Processor, InjectQueue } from "@nestjs/bullmq";
 import { Logger, Inject } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { db, schema, eq } from "@node-stack/db";
+import { schema, eq, RequestContextService, DB_TOKEN, type Database } from "@node-stack/db";
 import { 
   generateWebhookSignature, 
   formatWebhookHeader,
@@ -23,8 +23,10 @@ export class WebhookProcessor extends BaseWorker {
     @InjectQueue("dlq") private readonly dlqQueue: Queue,
     @Inject(CacheService) private readonly cacheService: CacheService,
     @Inject(ConfigService) private readonly config: ConfigService,
+    @Inject(DB_TOKEN) private readonly db: Database,
+    protected readonly contextService: RequestContextService,
   ) {
-    super();
+    super(contextService);
     this.encryption = new EncryptionUtils(this.config.get("ENCRYPTION_KEY"));
   }
 
@@ -35,7 +37,7 @@ export class WebhookProcessor extends BaseWorker {
   async processJob(job: Job<any>): Promise<void> {
     const { endpointId, payload } = job.data;
 
-    const endpoint = await db.query.webhookEndpoints.findFirst({
+    const endpoint = await this.db.query.webhookEndpoints.findFirst({
       where: eq(schema.webhookEndpoints.id, endpointId),
     });
 
@@ -50,11 +52,11 @@ export class WebhookProcessor extends BaseWorker {
       this.logger.error(`POTENTIAL SSRF REJECTED: Webhook endpoint ${endpointId} uses an unsafe URL: ${endpoint.url}`);
       
       // Auto-disable unsafe endpoints
-      await db.update(schema.webhookEndpoints)
+      await this.db.update(schema.webhookEndpoints)
         .set({ enabled: false })
         .where(eq(schema.webhookEndpoints.id, endpointId));
       
-      await db.insert(schema.webhookDeliveries).values({
+      await this.db.insert(schema.webhookDeliveries).values({
         endpointId,
         payload,
         status: "failed",
@@ -106,7 +108,7 @@ export class WebhookProcessor extends BaseWorker {
     }
 
     // Record delivery attempt
-    await db.insert(schema.webhookDeliveries).values({
+    await this.db.insert(schema.webhookDeliveries).values({
       endpointId,
       payload,
       statusCode,
@@ -133,7 +135,7 @@ export class WebhookProcessor extends BaseWorker {
     const newFailures = failures + 1;
     
     if (newFailures >= 50) {
-      await db.update(schema.webhookEndpoints)
+      await this.db.update(schema.webhookEndpoints)
         .set({ enabled: false })
         .where(eq(schema.webhookEndpoints.id, endpointId));
       
@@ -142,7 +144,7 @@ export class WebhookProcessor extends BaseWorker {
       this.logger.error(`Endpoint ${endpointId} disabled after 50 consecutive failures.`);
       
       // Trigger Outbox for user notification
-      await db.insert(schema.outbox).values({
+      await this.db.insert(schema.outbox).values({
         eventType: "webhook.endpoint.disabled",
         payload: { 
           message: "Endpoint disabled due to 50 consecutive failures",

@@ -1,17 +1,23 @@
-import { Logger } from "@nestjs/common";
+import "./tracing.js";
+import { validateEnv } from "@node-stack/config";
+
+// Validate environment variables before anything else
+validateEnv(process.env);
+
+import { Logger as NestLogger } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import { Logger } from "nestjs-pino";
 
 import { WorkerModule } from "./worker.module.js";
 
-// Note: Environment variables are loaded via `node -r dotenv/config` in package.json
-
 async function bootstrap() {
-  const logger = new Logger("Worker");
+  const logger = new NestLogger("Worker");
 
   // Create app
   const app = await NestFactory.createApplicationContext(WorkerModule, {
-    logger: ["log", "error", "warn", "debug"],
+    bufferLogs: true,
   });
+  app.useLogger(app.get(Logger));
 
   // Enable NestJS lifecycle hooks (OnModuleDestroy, OnApplicationShutdown, etc.)
   // so that processors can clean up their BullMQ workers gracefully.
@@ -22,17 +28,36 @@ async function bootstrap() {
   logger.log("Waiting for events to process...");
 
   // Graceful shutdown handler — works with Docker SIGTERM and local Ctrl+C (SIGINT).
-  // We do NOT call process.exit() — we let NestJS lifecycle finish naturally
-  // after app.close() triggers OnModuleDestroy on all processors.
+  let shuttingDown = false;
+  const GRACE_PERIOD_MS = 30000; // 30 seconds for BullMQ jobs
+
   const shutdown = async (signal: string) => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    
     logger.log(`[Worker] ${signal} received. Starting graceful shutdown...`);
 
+    const forceExitTimer = setTimeout(() => {
+      logger.error(`[Worker] Graceful shutdown timed out after ${GRACE_PERIOD_MS}ms. Forcing exit.`);
+      process.exit(1);
+    }, GRACE_PERIOD_MS + 5000); // Give a bit of extra time for app.close() itself
+
     try {
-      logger.log("[Worker] Closing NestJS application context...");
+      logger.log("[Worker] Closing NestJS application context (this waits for workers to drain)...");
       await app.close();
+      
+      try {
+        const mod = await import('@node-stack/db') as Record<string, unknown>;
+        if (typeof mod.endPool === 'function') await (mod.endPool as () => Promise<void>)();
+      } catch {
+        // ignore
+      }
+
+      clearTimeout(forceExitTimer);
       logger.log(
         "[Worker] Shutdown complete. All jobs finished. Goodbye! 🛑",
       );
+      process.exit(0);
     } catch (error) {
       logger.error(
         `[Worker] Error during shutdown: ${error instanceof Error ? error.message : String(error)}`,

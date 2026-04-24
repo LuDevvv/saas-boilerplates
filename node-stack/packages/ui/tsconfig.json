@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "declaration": true,
+    "composite": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "types": ["node"],
+    "jsx": "react-jsx",
+    "paths": {
+      "@node-stack/*": ["../../packages/*/src/index.ts", "../../packages/*/src"]
+    }
+  },
+  "include": ["src/**/*"],
+  "extends": "../../tsconfig.json"
+}

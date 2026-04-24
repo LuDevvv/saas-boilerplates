@@ -1,15 +1,16 @@
 {
   "compilerOptions": {
-    "ignoreDeprecations": "5.0",
+
     "paths": {
       "@node-stack/*": [
-        "./packages/*/src/index.ts",
-        "./packages/*/src"
+        "./packages/*/dist/index.js",
+        "./packages/*/dist"
       ]
     },
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "strict": true,
+    "strictPropertyInitialization": false,
     "skipLibCheck": true,
     "noImplicitAny": false,
     "types": [

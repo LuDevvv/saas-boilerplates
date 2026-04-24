@@ -2,12 +2,16 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "declaration": false,
-    "composite": false
+    "composite": false,
+    "baseUrl": "."
   },
   "exclude": [
     "node_modules",
     "dist",
     "**/*.spec.ts",
-    "**/*.test.ts"
+    "**/*.test.ts",
+    "**/test-helpers/**",
+    "**/test/**",
+    "**/*.int-spec.ts"
   ]
 }

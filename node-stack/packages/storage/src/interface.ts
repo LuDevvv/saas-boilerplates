@@ -15,4 +15,5 @@ export interface IStorageProvider {
     contentType?: string;
     public?: boolean;
   }): Promise<void>;
+  ping(): Promise<boolean>;
 }

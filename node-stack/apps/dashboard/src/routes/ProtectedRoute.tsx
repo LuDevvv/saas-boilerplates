@@ -1,9 +1,10 @@
+import React from "react";
 import { useLocation, Navigate } from "react-router-dom";
 import Loading from "@/components/Loading";
 import { useAuthStore } from "@/stores/authStore";
 
 interface ProtectedRouteProps {
-  children: JSX.Element;
+  children: React.ReactElement;
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {

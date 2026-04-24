@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useAi } from "@/hooks/use-ai";
-import { ChatMessage } from "@node-stack/validators";
+import { ChatMessageDto } from "@node-stack/validators";
 import { 
   Send, 
   Bot, 
@@ -19,7 +19,7 @@ function cn(...inputs: ClassValue[]) {
 }
 
 const AIPlayground: React.FC = () => {
-  const [messages, setMessages] = useState<ChatMessage[]>([
+  const [messages, setMessages] = useState<ChatMessageDto[]>([
     { 
       role: "assistant", 
       content: "Hello! I'm your AI assistant. How can I help you today?" 
@@ -54,7 +54,7 @@ const AIPlayground: React.FC = () => {
   const handleSend = async () => {
     if (!input.trim() || loading || quotaExceeded) return;
 
-    const userMessage: ChatMessage = { role: "user", content: input };
+    const userMessage: ChatMessageDto = { role: "user", content: input };
     const newMessages = [...messages, userMessage];
     
     setMessages(newMessages);

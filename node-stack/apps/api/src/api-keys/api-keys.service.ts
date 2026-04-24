@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OnEvent } from '@nestjs/event-emitter';
 import {
@@ -10,6 +10,8 @@ import {
   getKeyPreview,
   extractPrefix,
   verifyApiKey,
+  DB_TOKEN,
+  type Database,
 } from '@node-stack/db';
 import { CacheService } from '@node-stack/cache';
 import {
@@ -26,6 +28,7 @@ export class ApiKeysService {
     private readonly repo: ApiKeyRepository,
     private readonly cache: CacheService,
     private readonly config: ConfigService,
+    @Inject(DB_TOKEN) private readonly db: Database,
   ) {
     this.pepper = this.config.getOrThrow<string>('API_KEY_PEPPER');
   }
@@ -64,7 +67,7 @@ export class ApiKeysService {
       outboxEventId = outboxRecord.id;
       
       return key;
-    });
+    }, this.db);
 
     return {
       ...this.mapToDto(record),
@@ -129,7 +132,7 @@ export class ApiKeysService {
           eventType: 'api_key.revoked',
           payload: { apiKeyId: id, workspaceId },
         });
-    });
+    }, this.db);
 
     // IMMEDIATELY invalidate Redis cache
     // Note: We need to invalidate ALL possible hashes if we used salt/pepper, 

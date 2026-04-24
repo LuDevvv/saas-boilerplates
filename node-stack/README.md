@@ -65,9 +65,8 @@ pnpm dev
 
 ## 📚 Technical Documentation
 
-- **[Architecture Deep Dive](./docs/ARCHITECTURE.md)**: Explore the Unit of Work, Outbox Pattern, and Multi-tenant design.
+- **[Documentation Index](./docs/README.md)**: Explore the definitive guides for architecture, database, security, docker, and observability.
 - **[OpenAPI / Swagger Specs](http://localhost:3000/api/docs)**: Explore the fully documented API surface.
-- **[Development Guide](./docs/DEVELOPMENT.md)** (Internal): Coding standards and deployment workflows.
 
 ---
 

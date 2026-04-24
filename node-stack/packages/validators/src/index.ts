@@ -11,4 +11,6 @@ export * from './ai.js';
 export * from './api-keys.js';
 export * from './billing.js';
 export * from './workspaces.js';
+export * from './marketing.js';
 export * from "./admin.js";
+export * from './tickets.js';

@@ -3,6 +3,7 @@ import {
   GetObjectCommand,
   DeleteObjectCommand,
   HeadObjectCommand,
+  HeadBucketCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
@@ -76,5 +77,17 @@ export class S3StorageProvider implements IStorageProvider {
       ACL: options.public ? "public-read" : "private",
     });
     await this.client.send(command);
+  }
+
+  async ping(): Promise<boolean> {
+    try {
+      const command = new HeadBucketCommand({
+        Bucket: this.config.bucket,
+      });
+      await this.client.send(command);
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 }

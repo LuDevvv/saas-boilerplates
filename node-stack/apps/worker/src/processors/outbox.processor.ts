@@ -1,6 +1,6 @@
 import { Processor, InjectQueue } from "@nestjs/bullmq";
 import { Logger, Inject } from "@nestjs/common";
-import { db, schema, eq } from "@node-stack/db";
+import { schema, eq, RequestContextService, DB_TOKEN, type Database } from "@node-stack/db";
 import { Job, Queue } from "bullmq";
 import { WebhookDispatcher } from "./webhook-dispatcher.service.js";
 import { BaseWorker } from "../base.worker.js";
@@ -16,8 +16,10 @@ export class OutboxProcessor extends BaseWorker {
     @InjectQueue("outbox") private jobQueue: Queue,
     @InjectQueue("dlq") private readonly dlqQueue: Queue,
     @Inject(WebhookDispatcher) private readonly webhookDispatcher: WebhookDispatcher,
+    @Inject(DB_TOKEN) private readonly db: Database,
+    protected readonly contextService: RequestContextService,
   ) {
-    super();
+    super(contextService);
   }
 
   protected getDlqQueue(): Queue {
@@ -32,8 +34,13 @@ export class OutboxProcessor extends BaseWorker {
     process.env.BULLMQ_OUTBOX_BACKOFF_TYPE || "exponential";
 
   async processJob(job: Job<Record<string, unknown>, unknown, string>): Promise<void> {
+    if (job.name === "relay-outbox") {
+      await this.relayOutbox();
+      return;
+    }
+
     const outboxId = job.data?.outboxId as string;
-    const event = await db.query.outbox.findFirst({
+    const event = await this.db.query.outbox.findFirst({
       where: eq(schema.outbox.id, outboxId),
     });
 
@@ -41,7 +48,7 @@ export class OutboxProcessor extends BaseWorker {
 
     const handler = this.getHandlerForEvent(event.eventType);
     if (!handler) {
-      await db
+      await this.db
         .update(schema.outbox)
         .set({
           processed: true,
@@ -55,7 +62,7 @@ export class OutboxProcessor extends BaseWorker {
 
     try {
       await handler(event as unknown as Record<string, unknown>);
-      await db
+      await this.db
         .update(schema.outbox)
         .set({ processed: true, processedAt: new Date() })
         .where(eq(schema.outbox.id, outboxId));
@@ -73,7 +80,7 @@ export class OutboxProcessor extends BaseWorker {
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       const retryCount = (event.retryCount ?? 0) + 1;
-      await db
+      await this.db
         .update(schema.outbox)
         .set({ retryCount, lastError: errorMessage })
         .where(eq(schema.outbox.id, outboxId));
@@ -86,7 +93,7 @@ export class OutboxProcessor extends BaseWorker {
           { delay: delayMs },
         );
       } else {
-        await db
+        await this.db
           .update(schema.outbox)
           .set({
             processed: true,
@@ -98,6 +105,37 @@ export class OutboxProcessor extends BaseWorker {
         this.logger.warn(
           `Outbox ${outboxId} failed after ${this.maxRetries} retries (total failures: ${this.failureCount})`,
         );
+      }
+    }
+  }
+
+  private async relayOutbox() {
+    const pendingEvents = await this.db.query.outbox.findMany({
+      where: eq(schema.outbox.processed, false),
+      limit: 100,
+    });
+
+    if (pendingEvents.length === 0) return;
+
+    this.logger.log(`[Relay] Found ${pendingEvents.length} pending outbox events. Publishing to queue...`);
+
+    for (const event of pendingEvents) {
+      try {
+        // We push to queue and mark as processed in DB.
+        // Even though Redis and Postgres aren't in a single transaction, 
+        // we can use a DB transaction to ensure consistency if the queue add fails.
+        await this.jobQueue.add("process-outbox", { outboxId: event.id });
+        
+        await this.db
+          .update(schema.outbox)
+          .set({ 
+            processed: true, 
+            processedAt: new Date(),
+            lastError: null // Clear any previous errors if it was a retry
+          })
+          .where(eq(schema.outbox.id, event.id));
+      } catch (error) {
+        this.logger.error(`Failed to relay outbox event ${event.id}`, error);
       }
     }
   }

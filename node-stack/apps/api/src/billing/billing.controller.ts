@@ -24,20 +24,18 @@ import { CurrentUser } from "../auth/decorators/index.js";
 import { RequirePermissions } from "../common/decorators/permissions.decorator.js";
 import { Public } from "../common/decorators/public.decorator.js";
 import { Workspace } from "../common/decorators/workspace.decorator.js";
-import { IdempotencyGuard } from "../common/guards/idempotency.guard.js";
-import { IdempotencyInterceptor } from "../common/interceptors/idempotency.interceptor.js";
+import { Idempotent } from "../common/decorators/idempotent.decorator.js";
 import type { UserPayload, WorkspaceContext } from "../common/types/index.js";
 
 @ApiTags("billing")
 @ApiBearerAuth("JWT-auth")
+@Idempotent()
 @Controller("billing")
 export class BillingController {
   constructor(private readonly billing: BillingService) {}
 
   @Throttle({ medium: { ttl: 60000, limit: 5 } })
   @Post("checkout")
-  @UseGuards(IdempotencyGuard)
-  @UseInterceptors(IdempotencyInterceptor)
   @RequirePermissions(Permission.BILLING_WRITE)
   @ApiOperation({
     summary: "Create checkout session",
@@ -88,6 +86,9 @@ export class BillingController {
   @Get("subscription")
   @RequirePermissions(Permission.BILLING_READ)
   @ApiOperation({ summary: "Get subscription details" })
+  @ApiResponse({ status: 200, description: "Subscription details retrieved" })
+  @ApiResponse({ status: 401, description: "Unauthorized" })
+  @ApiResponse({ status: 403, description: "Forbidden" })
   async subscription(@Workspace() workspace: WorkspaceContext) {
     return this.billing.getSubscription(workspace.id);
   }
@@ -95,6 +96,7 @@ export class BillingController {
   @Get("portal")
   @RequirePermissions(Permission.BILLING_READ)
   @ApiOperation({ summary: "Get customer portal link" })
+  @ApiResponse({ status: 200, description: "Customer portal link retrieved" })
   async portal(@Workspace() workspace: WorkspaceContext) {
     return this.billing.portal(workspace.id);
   }
@@ -102,6 +104,7 @@ export class BillingController {
   @Get("invoices")
   @RequirePermissions(Permission.BILLING_READ)
   @ApiOperation({ summary: "Get invoices" })
+  @ApiResponse({ status: 200, description: "Invoices retrieved" })
   async invoices(@Workspace() workspace: WorkspaceContext) {
     return this.billing.invoices(workspace.id);
   }

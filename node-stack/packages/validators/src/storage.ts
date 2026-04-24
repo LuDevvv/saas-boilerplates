@@ -42,6 +42,7 @@ export type MimeType =
   (typeof UPLOAD_POLICIES)[UploadContext]["allowedMimeTypes"][number];
 
 import { createZodDto } from "nestjs-zod";
+import { ApiProperty } from "@nestjs/swagger";
 
 export const GetPresignedUrlSchema = z.object({
   fileName: z
@@ -67,9 +68,16 @@ export const GetPresignedUrlSchema = z.object({
 });
 
 export class GetPresignedUrlDto extends createZodDto(GetPresignedUrlSchema) {
+  @ApiProperty({ example: "profile.jpg", description: "Original name of the file" })
   declare fileName: string;
+
+  @ApiProperty({ example: "image/jpeg", description: "IANA media type" })
   declare mimeType: string;
+
+  @ApiProperty({ example: 1024576, description: "Size of the file in bytes" })
   declare fileSize: number;
+
+  @ApiProperty({ example: "avatar", enum: ["avatar", "attachment", "export"], description: "The context/bucket for the upload" })
   declare context: UploadContext;
 }
 

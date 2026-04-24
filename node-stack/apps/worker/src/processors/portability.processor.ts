@@ -1,6 +1,6 @@
 import { Processor, InjectQueue } from "@nestjs/bullmq";
 import { Logger, Inject } from "@nestjs/common";
-import { db, schema, eq } from "@node-stack/db";
+import { schema, eq, RequestContextService, DB_TOKEN, type Database } from "@node-stack/db";
 import { Job, Queue } from "bullmq";
 import { BaseWorker } from "../base.worker.js";
 import { PortabilityExporter } from "@node-stack/services";
@@ -21,8 +21,10 @@ export class PortabilityProcessor extends BaseWorker {
     @InjectQueue("dlq") private readonly dlqQueue: Queue,
     @Inject(PortabilityExporter) private readonly exporter: PortabilityExporter,
     @Inject("STORAGE_SERVICE") private readonly storage: IStorageProvider,
+    @Inject(DB_TOKEN) private readonly db: Database,
+    protected readonly contextService: RequestContextService,
   ) {
-    super();
+    super(contextService);
   }
 
   protected getDlqQueue(): Queue {
@@ -34,7 +36,7 @@ export class PortabilityProcessor extends BaseWorker {
 
     this.logger.log(`Starting portability processing for request: ${requestId}`);
 
-    await db
+    await this.db
       .update(schema.portabilityRequests)
       .set({
         status: 'processing',
@@ -56,7 +58,7 @@ export class PortabilityProcessor extends BaseWorker {
       });
 
       // 3. Mark as completed
-      await db
+      await this.db
         .update(schema.portabilityRequests)
         .set({
           status: 'completed',
@@ -72,7 +74,7 @@ export class PortabilityProcessor extends BaseWorker {
     } catch (error) {
       this.logger.error(`Failed to process portability request ${requestId}: ${error}`);
       
-      await db
+      await this.db
         .update(schema.portabilityRequests)
         .set({
           status: 'failed',

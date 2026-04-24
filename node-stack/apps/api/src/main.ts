@@ -1,6 +1,11 @@
 import 'reflect-metadata';
-// import './tracing.js';
-import { Logger, UnprocessableEntityException } from '@nestjs/common';
+import './tracing.js';
+import { validateEnv } from '@node-stack/config';
+
+// Validate environment variables before anything else
+validateEnv(process.env);
+
+import { Logger as NestLogger, UnprocessableEntityException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -10,30 +15,14 @@ import compression from 'compression';
 import express from 'express';
 import helmet from 'helmet';
 import { cleanupOpenApiDoc, createZodValidationPipe } from 'nestjs-zod';
+import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module.js';
 
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { ApiVersionMiddleware } from './common/middleware/api-version.middleware.js';
-import { LoggingMiddleware } from './common/middleware/logging.middleware.js';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware.js';
 import { setupSwagger } from './common/docs/swagger.config.js';
 import { RedisIoAdapter } from './realtime/redis-io.adapter.js';
-
-Sentry.init({
-  dsn: process.env.SENTRY_DSN,
-  environment: process.env.NODE_ENV,
-  release: process.env.APP_VERSION,
-  integrations: [nestIntegration()],
-  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-  profilesSampleRate: 0.1,
-  beforeSend(event) {
-    if (event.user) {
-      delete event.user.email;
-      delete event.user.ip_address;
-    }
-    return event;
-  },
-});
 
 // Global error handlers — MUST be before bootstrap() to catch silent crashes
 process.on('unhandledRejection', (reason, promise) => {
@@ -45,17 +34,18 @@ process.on('uncaughtException', (error) => {
 });
 
 async function bootstrap() {
-  const logger = new Logger('Bootstrap');
-
-  if (!process.env.JWT_SECRET) {
-    throw new Error('JWT_SECRET environment variable is required');
-  }
+  const logger = new NestLogger('Bootstrap');
 
   logger.log('Creating NestJS application...');
   const app = await NestFactory.create(AppModule, {
-    logger: ['log', 'error', 'warn', 'debug'],
+    bufferLogs: true,
     abortOnError: true,
   });
+  app.useLogger(app.get(Logger));
+  
+  // Enable NestJS shutdown hooks (OnModuleDestroy, etc.)
+  app.enableShutdownHooks();
+  
   logger.log('NestJS application created successfully.');
   const configService = app.get(ConfigService);
 
@@ -64,8 +54,33 @@ async function bootstrap() {
   await redisIoAdapter.connectToRedis(configService);
   app.useWebSocketAdapter(redisIoAdapter);
 
-  // Security headers (must be first)
-  app.use(helmet());
+  // Security headers with strict CSP (must be first)
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'"],
+      },
+    },
+  }));
+
+  // Defensive cookie configuration: force secure defaults on all res.cookie calls
+  app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const originalCookie = res.cookie;
+    res.cookie = function (this: express.Response, name: string, value: any, options?: express.CookieOptions) {
+      const secureOptions: express.CookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        ...(options || {}),
+      };
+      return (originalCookie as any).call(this, name, value, secureOptions);
+    } as any;
+    next();
+  });
 
   // Set global API prefix (v1) with exclusions
   app.setGlobalPrefix('v1', {
@@ -83,8 +98,6 @@ async function bootstrap() {
   app.use(new RequestIdMiddleware().use);
   // Register API version middleware
   app.use(new ApiVersionMiddleware().use);
-  // Register structured logging middleware (production-ready JSON logs in production, pretty in development)
-  app.use((req: any, res: any, next: any) => new LoggingMiddleware().use(req, res, next));
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalPipes(
     new (createZodValidationPipe({
@@ -160,8 +173,8 @@ async function bootstrap() {
       // ignore errors during close
     }
     try {
-      const mod = await import('@node-stack/db');
-      if (typeof mod.endPool === 'function') await mod.endPool();
+      const mod = await import('@node-stack/db') as Record<string, unknown>;
+      if (typeof mod.endPool === 'function') await (mod.endPool as () => Promise<void>)();
     } catch {
       // ignore
     }

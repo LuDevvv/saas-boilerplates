@@ -1,0 +1,7 @@
+@import "../../../packages/ui/src/globals.css";
+
+/* Extra web-specific styles if any */
+:root {
+  --primary: 262.1 83.3% 57.8%;
+  --secondary: 172 96% 42%;
+}

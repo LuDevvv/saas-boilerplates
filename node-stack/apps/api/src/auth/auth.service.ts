@@ -14,6 +14,7 @@ import {
   AuthRepository,
   SessionRepository,
 } from "@node-stack/db";
+import * as schema from "@node-stack/db/schema";
 import type { Database } from "@node-stack/db";
 import { OutboxProducer } from "@node-stack/outbox-queue";
 import type { OAuthProfile } from "@node-stack/types";
@@ -60,7 +61,7 @@ export class AuthService {
     currentSessionId: string,
   ): Promise<SessionListItem[]> {
     const sessions = await this.sessionRepository.findActiveByUserId(userId);
-    return sessions.map((s) => ({
+    return sessions.map((s: typeof schema.sessions.$inferSelect) => ({
       id: s.id,
       userAgent: s.userAgent ?? "Unknown device",
       ipAddress: s.ipAddress ?? null,
@@ -115,7 +116,7 @@ export class AuthService {
     const sessionId = crypto.randomUUID();
 
     let outboxEventId: string | null = null;
-    const user = await withTransaction(async (tx) => {
+    const user = await withTransaction(async (tx: Database) => {
       const existingUser = await this.authRepository.findUserByEmail(
         dto.email.toLowerCase(),
         tx,
@@ -148,7 +149,7 @@ export class AuthService {
       );
 
       return newUser;
-    });
+    }, this.authRepository.db);
 
     if (outboxEventId) {
       await OutboxProducer.addProcessOutboxJob(outboxEventId);
@@ -241,13 +242,13 @@ export class AuthService {
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + 7);
 
-      await withTransaction(async (tx) => {
+      await withTransaction(async (tx: Database) => {
         await this.authRepository.rotateSession(
           payload.sessionId,
           { id: newSessionId, userId: user.id, expiresAt },
           tx,
         );
-      });
+      }, this.authRepository.db);
 
       return tokens;
     } catch (error) {
@@ -267,7 +268,7 @@ export class AuthService {
     expiresAt.setHours(expiresAt.getHours() + 1);
 
     let outboxEventId: string | null = null;
-    await withTransaction(async (tx) => {
+    await withTransaction(async (tx: Database) => {
       // Invalidate any previous reset tokens for this user
       await this.authRepository.deleteVerificationTokensByUser(user.id, "password_reset", tx);
 
@@ -283,7 +284,7 @@ export class AuthService {
         { userId: user.id, email: user.email, token },
         tx
       );
-    });
+    }, this.authRepository.db);
 
     if (outboxEventId) {
       await OutboxProducer.addProcessOutboxJob(outboxEventId);
@@ -299,7 +300,7 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(newPassword, 12);
 
-    await withTransaction(async (tx) => {
+    await withTransaction(async (tx: Database) => {
       await this.authRepository.updateUser(verification.userId, { passwordHash }, tx);
       await this.authRepository.deleteVerificationToken(token, tx);
 
@@ -308,7 +309,7 @@ export class AuthService {
         { userId: verification.userId },
         tx
       );
-    });
+    }, this.authRepository.db);
 
     // Revoke all active sessions for security
     await this.revokeAllOtherSessions(verification.userId, "");
@@ -323,7 +324,7 @@ export class AuthService {
     expiresAt.setDate(expiresAt.getDate() + 1);
 
     let outboxEventId: string | null = null;
-    await withTransaction(async (tx) => {
+    await withTransaction(async (tx: Database) => {
       // Invalidate any previous verification tokens for this user
       await this.authRepository.deleteVerificationTokensByUser(userId, "email_verification", tx);
 
@@ -339,7 +340,7 @@ export class AuthService {
         { userId, email: user.email, token },
         tx
       );
-    });
+    }, this.authRepository.db);
 
     if (outboxEventId) {
       await OutboxProducer.addProcessOutboxJob(outboxEventId);
@@ -353,7 +354,7 @@ export class AuthService {
       throw new BadRequestException("Invalid or expired verification token");
     }
 
-    await withTransaction(async (tx) => {
+    await withTransaction(async (tx: Database) => {
       await this.authRepository.updateUser(verification.userId, { emailVerified: true }, tx);
       await this.authRepository.deleteVerificationToken(token, tx);
 
@@ -362,7 +363,7 @@ export class AuthService {
         { userId: verification.userId },
         tx
       );
-    });
+    }, this.authRepository.db);
   }
 
   async getAuditLogs(userId: string) {
@@ -469,7 +470,7 @@ export class AuthService {
     accessToken: string;
     refreshToken: string;
   }> {
-    return withTransaction(async (tx) => {
+    return withTransaction(async (tx: Database) => {
       const existingLink = await this.authRepository.findOAuthLink(
         profile.provider,
         profile.providerAccountId,
@@ -545,6 +546,6 @@ export class AuthService {
       );
 
       return this.generateTokens(userId, userEmail, sessionId);
-    });
+    }, this.authRepository.db);
   }
 }

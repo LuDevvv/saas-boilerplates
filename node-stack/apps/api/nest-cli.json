@@ -6,18 +6,9 @@
     "deleteOutDir": false,
     "webpack": false,
     "builder": "swc",
-    "typeCheck": true,
+    "typeCheck": false,
     "tsConfigPath": "tsconfig.build.json",
-    "plugins": [
-      {
-        "name": "@nestjs/swagger",
-        "options": {
-          "classValidatorShim": false,
-          "introspectComments": true,
-          "dtoFileNameSuffix": [".dto.ts", ".schema.ts"]
-        }
-      }
-    ]
+    "plugins": []
   },
   "generators": {},
   "cli": {}

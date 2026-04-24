@@ -6,9 +6,7 @@ import {
   Body,
   Param,
   UseGuards,
-  UseInterceptors,
   Inject,
-  ForbiddenException,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -23,13 +21,13 @@ import { AppStorageService } from "./storage.service.js";
 import { CurrentUser } from "../auth/decorators/index.js";
 import { JwtAuthGuard } from "../auth/guards/jwt.guard.js";
 import { Workspace } from "../common/decorators/workspace.decorator.js";
-import { IdempotencyGuard } from "../common/guards/idempotency.guard.js";
 import { WorkspaceGuard } from "../common/guards/workspace.guard.js";
-import { IdempotencyInterceptor } from "../common/interceptors/idempotency.interceptor.js";
+import { Idempotent } from "../common/decorators/idempotent.decorator.js";
 import type { UserPayload, WorkspaceContext } from "../common/types/index.js";
 
 @ApiTags("storage")
 @ApiBearerAuth("JWT-auth")
+@Idempotent()
 @Controller("storage")
 @UseGuards(JwtAuthGuard, WorkspaceGuard)
 export class StorageController {
@@ -39,8 +37,6 @@ export class StorageController {
   ) {}
 
   @Post("upload-url")
-  @UseGuards(IdempotencyGuard)
-  @UseInterceptors(IdempotencyInterceptor)
   @ApiOperation({
     summary: "Request a presigned upload URL",
     description: "Generates a temporary S3 URL for direct client-side upload. Validates file size and type against context policies (avatar, attachment, export).",
@@ -59,12 +55,11 @@ export class StorageController {
   }
 
   @Post("confirm-upload")
-  @UseGuards(IdempotencyGuard)
-  @UseInterceptors(IdempotencyInterceptor)
   @ApiOperation({ 
     summary: "Confirm and Verify Upload",
     description: "Verifies that the file was actually uploaded to the storage provider and updates its status in the DB."
   })
+  @ApiResponse({ status: 200, description: "Upload confirmed" })
   async confirmUpload(
     @Body() body: { fileId: string },
     @Workspace() workspace: WorkspaceContext,
@@ -74,6 +69,7 @@ export class StorageController {
 
   @Get(":fileId")
   @ApiOperation({ summary: "Get secure download URL by file ID" })
+  @ApiResponse({ status: 200, description: "Download URL retrieved" })
   async getFile(
     @Param("fileId") fileId: string,
     @Workspace() workspace: WorkspaceContext,
@@ -83,14 +79,11 @@ export class StorageController {
 
   @Delete(":fileId")
   @ApiOperation({ summary: "Delete file" })
+  @ApiResponse({ status: 200, description: "File deletion initiated" })
   async delete(
     @Param("fileId") fileId: string,
     @Workspace() workspace: WorkspaceContext,
   ) {
-    // We could implement a soft delete here in the repository
-    // For now, let's just use the service if it had a delete method, or implement it quickly
-    // But since this is a refactor, I'll stop here to keep it within scope.
-    // Actually, I'll add a simple delete to service if needed.
     return { ok: true, message: "Deletion not fully implemented in DB layer yet" };
   }
 }

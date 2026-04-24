@@ -1,17 +1,13 @@
-import { Logger, OnModuleDestroy } from '@nestjs/common';
+import { Logger, OnModuleDestroy, Injectable } from '@nestjs/common';
 import { WorkerHost } from '@nestjs/bullmq';
 import { Job, Queue } from 'bullmq';
+import { RequestContextService } from '@node-stack/db';
 
-/**
- * Abstract base worker with built-in:
- * - Structured logging with job context
- * - Graceful shutdown via onModuleDestroy
- * - DLQ forwarding when jobs exhaust retries
- * - Error classification (transient vs permanent)
- *
- * Concrete processors extend this and implement `processJob()`.
- */
+@Injectable()
 export abstract class BaseWorker extends WorkerHost implements OnModuleDestroy {
+  constructor(protected readonly contextService: RequestContextService) {
+    super();
+  }
   protected abstract readonly logger: Logger;
   protected abstract readonly queueName: string;
 
@@ -37,33 +33,38 @@ export abstract class BaseWorker extends WorkerHost implements OnModuleDestroy {
       `[${this.queueName}] Processing job ${job.id} (${job.name}) attempt=${job.attemptsMade + 1}`,
     );
 
-    try {
-      const result = await this.processJob(job);
-      this.logger.log(
-        `[${this.queueName}] Job ${job.id} completed in ${Date.now() - startMs}ms`,
-      );
-      return result;
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      const durationMs = Date.now() - startMs;
+    const workspaceId = job.data?.workspaceId || job.data?.payload?.workspaceId;
+    const userId = job.data?.userId || job.data?.payload?.userId;
 
-      // Check if all retries are exhausted
-      const maxAttempts = job.opts?.attempts ?? 0;
-      const isLastAttempt = job.attemptsMade + 1 >= maxAttempts;
+    return await this.contextService.run({ workspaceId, userId }, async () => {
+      try {
+        const result = await this.processJob(job);
+        this.logger.log(
+          `[${this.queueName}] Job ${job.id} completed in ${Date.now() - startMs}ms`,
+        );
+        return result;
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const durationMs = Date.now() - startMs;
 
-      if (isLastAttempt && maxAttempts > 0) {
-        this.logger.error(
-          `[${this.queueName}] Job ${job.id} PERMANENTLY FAILED after ${job.attemptsMade + 1} attempts (${durationMs}ms): ${errorMessage}`,
-        );
-        await this.forwardToDeadLetterQueue(job, errorMessage);
-      } else {
-        this.logger.warn(
-          `[${this.queueName}] Job ${job.id} failed (attempt ${job.attemptsMade + 1}/${maxAttempts}, ${durationMs}ms): ${errorMessage}`,
-        );
+        // Check if all retries are exhausted
+        const maxAttempts = job.opts?.attempts ?? 0;
+        const isLastAttempt = job.attemptsMade + 1 >= maxAttempts;
+
+        if (isLastAttempt && maxAttempts > 0) {
+          this.logger.error(
+            `[${this.queueName}] Job ${job.id} PERMANENTLY FAILED after ${job.attemptsMade + 1} attempts (${durationMs}ms): ${errorMessage}`,
+          );
+          await this.forwardToDeadLetterQueue(job, errorMessage);
+        } else {
+          this.logger.warn(
+            `[${this.queueName}] Job ${job.id} failed (attempt ${job.attemptsMade + 1}/${maxAttempts}, ${durationMs}ms): ${errorMessage}`,
+          );
+        }
+
+        throw error; // Let BullMQ handle the retry
       }
-
-      throw error; // Let BullMQ handle the retry
-    }
+    });
   }
 
   /**

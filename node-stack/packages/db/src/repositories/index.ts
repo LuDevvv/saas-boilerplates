@@ -12,4 +12,5 @@ export * from "./analytics.repository.js";
 export * from "./inbound-webhook.repository.js";
 export * from "./portability.repository.js";
 export * from "./audit-log.repository.js";
-export * from "./system-config.repository.js";
+export * from "./system-config.repository.js";export * from "./ticket.repository.js";
+export * from "./marketing.repository.js";

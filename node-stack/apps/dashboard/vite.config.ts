@@ -58,6 +58,12 @@ export default defineConfig(() => {
               type: "image/png",
               purpose: "any",
             },
+            {
+              src: "/pwa-512x512.png",
+              sizes: "512x512",
+              type: "image/png",
+              purpose: "maskable",
+            },
           ],
         },
         workbox: {
@@ -65,6 +71,27 @@ export default defineConfig(() => {
           clientsClaim: true,
           skipWaiting: true,
           maximumFileSizeToCacheInBytes: 5000000,
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+              handler: "CacheFirst",
+              options: {
+                cacheName: "google-fonts-cache",
+                expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              },
+            },
+            {
+              urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+              handler: "CacheFirst",
+              options: {
+                cacheName: "gstatic-fonts-cache",
+                expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              },
+            },
+          ],
+        },
+        devOptions: {
+          enabled: true,
         },
       }),
     ],
@@ -73,22 +100,22 @@ export default defineConfig(() => {
       rollupOptions: {
         output: {
           manualChunks(id) {
-            if (id.includes('node_modules')) {
-              if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
-                return 'vendor-react';
+            if (id.includes("node_modules")) {
+              if (id.includes("react") || id.includes("react-dom") || id.includes("react-router-dom")) {
+                return "vendor-react";
               }
-              if (id.includes('lucide-react')) {
-                return 'vendor-icons';
+              if (id.includes("lucide-react")) {
+                return "vendor-icons";
               }
-              if (id.includes('zustand')) {
-                return 'vendor-store';
+              if (id.includes("zustand")) {
+                return "vendor-store";
               }
-              return 'vendor-misc';
+              return "vendor-misc";
             }
             return undefined;
-          }
-        }
-      }
+          },
+        },
+      },
     },
   };
 });

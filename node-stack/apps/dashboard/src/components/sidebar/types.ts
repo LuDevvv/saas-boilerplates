@@ -65,7 +65,7 @@ export interface AccountDropdownProps {
   onClose: () => void;
   onLogout: () => void;
   items: DropdownItem[];
-  triggerRef: React.RefObject<HTMLButtonElement>;
+  triggerRef: React.RefObject<HTMLButtonElement | null>;
   isPremium?: boolean;
   currentPlan?: any;
 }

@@ -1,10 +1,11 @@
 {
-  "compilerOptions": { 
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "target": "ES2021",
     "lib": ["ES2021"],
-    "types": ["node", "jest"],
+    "types": ["node"],
     "declaration": false,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -31,7 +32,7 @@
     "noUnusedParameters": false,
     "composite": false,
     "esModuleInterop": true,
-    "jsx": "react-jsx"
+    "baseUrl": "."
   },
   "include": ["src/**/*"],
   "exclude": [

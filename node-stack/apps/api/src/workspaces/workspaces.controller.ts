@@ -33,12 +33,12 @@ import { RequirePermissions } from "../common/decorators/permissions.decorator.j
 import { Roles } from "../common/decorators/roles.decorator.js";
 import { TenantId } from "../common/decorators/tenant-id.decorator.js";
 import { Workspace } from "../common/decorators/workspace.decorator.js";
-import { IdempotencyGuard } from "../common/guards/idempotency.guard.js";
-import { IdempotencyInterceptor } from "../common/interceptors/idempotency.interceptor.js";
+import { Idempotent } from "../common/decorators/idempotent.decorator.js";
 import type { WorkspaceContext } from "../common/types/index.js";
 
 @ApiTags("workspaces")
 @ApiBearerAuth("JWT-auth")
+@Idempotent()
 @Controller("workspaces")
 export class WorkspacesController {
   constructor(
@@ -88,8 +88,6 @@ export class WorkspacesController {
   }
 
   @Post()
-  @UseGuards(IdempotencyGuard)
-  @UseInterceptors(IdempotencyInterceptor)
   @ApiOperation({ 
     summary: "Create a brand new workspace",
     description: "Initializes a workspace with the current user as the OWNER."
@@ -144,6 +142,7 @@ export class WorkspacesController {
   @Roles(Role.GUEST)
   @RequirePermissions(Permission.WORKSPACE_READ)
   @ApiOperation({ summary: "List workspace members" })
+  @ApiResponse({ status: 200, description: "List of members retrieved" })
   async getMembers(
     @TenantId() workspaceId: string,
     @CurrentUser("id") userId: string,
@@ -155,6 +154,7 @@ export class WorkspacesController {
   @Roles(Role.ADMIN)
   @RequirePermissions(Permission.MEMBER_INVITE)
   @ApiOperation({ summary: "Update member role" })
+  @ApiResponse({ status: 200, description: "Member role updated" })
   async updateMemberRole(
     @TenantId() workspaceId: string,
     @Param("userId", ParseUUIDPipe) targetUserId: string,
@@ -174,6 +174,7 @@ export class WorkspacesController {
   @Roles(Role.ADMIN)
   @RequirePermissions(Permission.MEMBER_REMOVE)
   @ApiOperation({ summary: "Remove member from workspace" })
+  @ApiResponse({ status: 200, description: "Member removed" })
   async removeMember(
     @TenantId() workspaceId: string,
     @Param("userId", ParseUUIDPipe) targetUserId: string,

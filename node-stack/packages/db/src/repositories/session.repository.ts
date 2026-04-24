@@ -13,7 +13,7 @@ export class SessionRepository {
 
   async findActiveByUserId(
     userId: string,
-  ): Promise<any[]> {
+  ): Promise<(typeof schema.sessions.$inferSelect)[]> {
     return this.db
       .select()
       .from(schema.sessions)
@@ -23,7 +23,7 @@ export class SessionRepository {
           gt(schema.sessions.expiresAt, new Date()),
         ),
       )
-      .orderBy(desc(schema.sessions.lastUsedAt ?? schema.sessions.createdAt));
+      .orderBy(desc(schema.sessions.lastUsedAt));
   }
 
   async deleteById(sessionId: string, userId: string): Promise<void> {

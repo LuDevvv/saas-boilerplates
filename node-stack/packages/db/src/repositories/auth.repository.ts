@@ -33,22 +33,26 @@ export class AuthRepository {
   private readonly logger = new Logger(AuthRepository.name);
 
   constructor(
-    @Inject(DB_TOKEN) private readonly db: Tx,
+    @Inject(DB_TOKEN) private readonly _db: Tx,
   ) {
     this.logger.log("[AuthRepository] Initialized and injected");
+  }
+
+  get db(): Tx {
+    return this._db;
   }
 
   // ── User queries ────────────────────────────────────────
 
   async findUserByEmail(email: string, tx?: Tx): Promise<User | undefined> {
-    const database = tx ?? this.db;
+    const database = tx ?? this._db;
     return database.query.users.findFirst({
       where: eq(schema.users.email, email),
     });
   }
 
   async findUserById(id: string, tx?: Tx): Promise<User | undefined> {
-    const database = tx ?? this.db;
+    const database = tx ?? this._db;
     return database.query.users.findFirst({
       where: eq(schema.users.id, id),
     });
@@ -58,7 +62,7 @@ export class AuthRepository {
     data: CreateUserData,
     tx?: Tx,
   ): Promise<User> {
-    const database = tx ?? this.db;
+    const database = tx ?? this._db;
     const [user] = await database
       .insert(schema.users)
       .values(data)
@@ -67,7 +71,7 @@ export class AuthRepository {
   }
 
   async updateUser(id: string, data: Partial<User>, tx?: Tx): Promise<void> {
-    const database = tx ?? this.db;
+    const database = tx ?? this._db;
     await database.update(schema.users).set(data).where(eq(schema.users.id, id));
   }
 
@@ -77,19 +81,19 @@ export class AuthRepository {
     sessionId: string,
     tx?: Tx,
   ): Promise<Session | undefined> {
-    const database = tx ?? this.db;
+    const database = tx ?? this._db;
     return database.query.sessions.findFirst({
       where: eq(schema.sessions.id, sessionId),
     });
   }
 
   async createSession(data: CreateSessionData, tx?: Tx): Promise<void> {
-    const database = tx ?? this.db;
+    const database = tx ?? this._db;
     await database.insert(schema.sessions).values(data);
   }
 
   async deleteSessionById(sessionId: string, tx?: Tx): Promise<void> {
-    const database = tx ?? this.db;
+    const database = tx ?? this._db;
     await database
       .delete(schema.sessions)
       .where(eq(schema.sessions.id, sessionId));
@@ -100,7 +104,7 @@ export class AuthRepository {
     newSession: CreateSessionData,
     tx?: Tx,
   ): Promise<void> {
-    const database = tx ?? this.db;
+    const database = tx ?? this._db;
     await database
       .delete(schema.sessions)
       .where(eq(schema.sessions.id, oldSessionId));
@@ -114,7 +118,7 @@ export class AuthRepository {
     providerAccountId: string,
     tx?: Tx,
   ): Promise<OAuthAccount | undefined> {
-    const database = tx ?? this.db;
+    const database = tx ?? this._db;
     return database.query.oauthAccounts.findFirst({
       where: and(
         eq(schema.oauthAccounts.provider, provider),
@@ -128,7 +132,7 @@ export class AuthRepository {
     accessToken: string,
     tx?: Tx,
   ): Promise<void> {
-    const database = tx ?? this.db;
+    const database = tx ?? this._db;
     await database
       .update(schema.oauthAccounts)
       .set({ accessToken })
@@ -139,7 +143,7 @@ export class AuthRepository {
     data: CreateOAuthAccountData,
     tx?: Tx,
   ): Promise<void> {
-    const database = tx ?? this.db;
+    const database = tx ?? this._db;
     await database.insert(schema.oauthAccounts).values(data);
   }
 
@@ -149,7 +153,7 @@ export class AuthRepository {
     data: { identifier: string; token: string; expiresAt: Date; userId: string },
     tx?: Tx,
   ): Promise<void> {
-    const database = tx ?? this.db;
+    const database = tx ?? this._db;
     await database.insert(schema.verificationTokens).values(data);
   }
 
@@ -158,7 +162,7 @@ export class AuthRepository {
     token: string,
     tx?: Tx,
   ): Promise<VerificationToken | undefined> {
-    const database = tx ?? this.db;
+    const database = tx ?? this._db;
     return database.query.verificationTokens.findFirst({
       where: and(
         eq(schema.verificationTokens.identifier, identifier),
@@ -168,7 +172,7 @@ export class AuthRepository {
   }
 
   async deleteVerificationToken(token: string, tx?: Tx): Promise<void> {
-    const database = tx ?? this.db;
+    const database = tx ?? this._db;
     await database
       .delete(schema.verificationTokens)
       .where(eq(schema.verificationTokens.token, token));
@@ -179,7 +183,7 @@ export class AuthRepository {
     identifier: string,
     tx?: Tx,
   ): Promise<void> {
-    const database = tx ?? this.db;
+    const database = tx ?? this._db;
     await database
       .delete(schema.verificationTokens)
       .where(
@@ -193,7 +197,7 @@ export class AuthRepository {
   // ── Audit Logs ──────────────────────────────────────
 
   async getAuthAuditLogs(userId: string, tx?: Tx) {
-    const database = tx ?? this.db;
+    const database = tx ?? this._db;
     return database.query.auditLogs.findMany({
       where: eq(schema.auditLogs.userId, userId),
       orderBy: (auditLogs, { desc }) => [desc(auditLogs.createdAt)],
@@ -202,7 +206,7 @@ export class AuthRepository {
   }
 
   async findAll(options: { page: number; limit: number; search?: string }, tx?: Tx) {
-    const database = tx ?? this.db;
+    const database = tx ?? this._db;
     const offset = (options.page - 1) * options.limit;
 
     // In a real application, you'd add complex filtering here
@@ -222,7 +226,7 @@ export class AuthRepository {
     payload: Record<string, unknown>,
     tx?: Tx,
   ): Promise<string> {
-    const database = tx ?? this.db;
+    const database = tx ?? this._db;
     const [row] = await database
       .insert(schema.outbox)
       .values({ eventType, payload })

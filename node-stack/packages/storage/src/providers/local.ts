@@ -52,4 +52,13 @@ export class LocalStorageProvider implements IStorageProvider {
     await fs.mkdir(dir, { recursive: true });
     await fs.writeFile(filePath, options.body);
   }
+
+  async ping(): Promise<boolean> {
+    try {
+      await fs.access(this.config.basePath);
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }

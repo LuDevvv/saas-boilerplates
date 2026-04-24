@@ -1,50 +1,58 @@
-import { PostgreSqlContainer, StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { Pool } from 'pg';
 import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import { sql } from 'drizzle-orm';
 import * as schema from '../schema/index.js';
-import * as path from 'path';
 
 export interface TestDb {
   db: NodePgDatabase<typeof schema>;
   pool: Pool;
-  container: StartedPostgreSqlContainer;
   cleanup: () => Promise<void>;
 }
 
-export async function createTestDb(): Promise<TestDb> {
-  // Start PostgreSQL container (pulled once, cached by Docker)
-  const container = await new PostgreSqlContainer('postgres:15-alpine')
-    .withDatabase('test_db')
-    .withUsername('test_user')
-    .withPassword('test_pass')
-    .start();
+/**
+ * Gets a Drizzle database instance connected to the test container.
+ * Assumes DATABASE_URL is set by globalSetup.
+ */
+export function getTestDb(): TestDb {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error('DATABASE_URL is not set. Did globalSetup run?');
+  }
 
-  const pool = new Pool({
-    connectionString: container.getConnectionUri(),
-  });
-
+  const pool = new Pool({ connectionString });
   const db = drizzle(pool, { schema });
 
-  // Run all migrations against this fresh DB
-  await migrate(db, {
-    migrationsFolder: path.resolve(__dirname, '../../migrations'),
-  });
-
-  const cleanup = async (): Promise<void> => {
-    await pool.end();
-    await container.stop();
+  return { 
+    db, 
+    pool,
+    cleanup: async () => {
+      await pool.end();
+    }
   };
-
-  return { db, pool, container, cleanup };
 }
 
-// Truncate all tables between tests (faster than recreating DB)
+// Aliases for compatibility with existing tests
+export const createTestDb = getTestDb;
+
+export const { db, pool } = getTestDb();
+
+/**
+ * Resets the database by truncating all tables in the public schema.
+ * Extremely fast way to clean up between test suites.
+ */
 export async function truncateAll(
   db: NodePgDatabase<typeof schema>
 ): Promise<void> {
-  await db.execute(
-    sql`TRUNCATE TABLE users, workspaces, memberships, sessions, workspace_invitations, subscriptions, outbox, audit_logs, oauth_accounts RESTART IDENTITY CASCADE`
-  );
+  await db.execute(sql`
+    DO $$ DECLARE
+        r RECORD;
+    BEGIN
+        FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename != 'drizzle_migrations') LOOP
+            EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' RESTART IDENTITY CASCADE';
+        END LOOP;
+    END $$;
+  `);
 }
+
+// Alias for compatibility
+export const resetDatabase = truncateAll;

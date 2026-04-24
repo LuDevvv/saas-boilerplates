@@ -1,6 +1,9 @@
 import { BullModule, InjectQueue } from "@nestjs/bullmq";
 import { Module, OnModuleInit } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import { LoggerModule } from 'nestjs-pino';
+import type { IncomingMessage, ServerResponse } from 'http';
+import * as opentelemetry from '@opentelemetry/api';
 import { Queue } from "bullmq";
 
 import { OutboxProcessor } from "./processors/outbox.processor.js";
@@ -22,13 +25,45 @@ import {
 import { CacheModule } from "@node-stack/cache";
 import { DatabaseModule } from "@node-stack/db";
 
+import { validateEnv } from "@node-stack/config";
+
 /**
  * Worker module — registers all BullMQ queues and processors.
  */
 @Module({
   imports: [
+    LoggerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const isProduction = config.get('NODE_ENV') === 'production';
+        return {
+          pinoHttp: {
+            level: isProduction ? 'info' : 'debug',
+            transport: isProduction
+              ? undefined
+              : {
+                  target: 'pino-pretty',
+                  options: {
+                    singleLine: true,
+                    colorize: true,
+                  },
+                },
+            customProps: (req: IncomingMessage, res: ServerResponse) => {
+              const activeSpan = opentelemetry.trace.getSpan(opentelemetry.context.active());
+              if (!activeSpan) return {};
+              const spanContext = activeSpan.spanContext();
+              return {
+                trace_id: spanContext.traceId,
+                span_id: spanContext.spanId,
+              };
+            },
+          },
+        };
+      },
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
+      validate: validateEnv,
     }),
     DatabaseModule,
     CacheModule,
@@ -125,15 +160,27 @@ import { DatabaseModule } from "@node-stack/db";
 export class WorkerModule implements OnModuleInit {
   constructor(
     @InjectQueue("system") private readonly systemQueue: Queue,
+    @InjectQueue("outbox") private readonly outboxQueue: Queue,
   ) {}
 
   async onModuleInit() {
+    // Portability cleanup cron (daily)
     await this.systemQueue.add(
       "cleanup-portability",
       {},
       {
         repeat: { pattern: "0 0 * * *" },
         jobId: "portability-cleanup-cron",
+      },
+    );
+
+    // Outbox relay cron (every 10 seconds)
+    await this.outboxQueue.add(
+      "relay-outbox",
+      {},
+      {
+        repeat: { pattern: "*/10 * * * * *" },
+        jobId: "outbox-relay-cron",
       },
     );
   }

@@ -1,4 +1,5 @@
 import { applyDecorators, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiResponse } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../../auth/guards/jwt.guard.js";
 import { SuperAdminGuard } from "../guards/super-admin.guard.js";
 
@@ -7,5 +8,10 @@ import { SuperAdminGuard } from "../guards/super-admin.guard.js";
  * Restricted to super_admin role only.
  */
 export function AdminOnly() {
-  return applyDecorators(UseGuards(JwtAuthGuard, SuperAdminGuard));
+  return applyDecorators(
+    UseGuards(JwtAuthGuard, SuperAdminGuard),
+    ApiBearerAuth("JWT-auth"),
+    ApiResponse({ status: 401, description: "Unauthorized" }),
+    ApiResponse({ status: 403, description: "Forbidden: Admin access required" }),
+  );
 }

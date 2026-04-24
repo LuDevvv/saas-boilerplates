@@ -1,6 +1,6 @@
 import { Processor } from "@nestjs/bullmq";
 import { Logger, Inject } from "@nestjs/common";
-import { db, schema, eq, and, lt, sql } from "@node-stack/db";
+import { schema, eq, and, lt, RequestContextService, DB_TOKEN, type Database } from "@node-stack/db";
 import { Job } from "bullmq";
 import { BaseWorker } from "../base.worker.js";
 import type { IStorageProvider } from "@node-stack/storage";
@@ -12,8 +12,10 @@ export class SystemProcessor extends BaseWorker {
 
   constructor(
     @Inject("STORAGE_SERVICE") private readonly storage: IStorageProvider,
+    @Inject(DB_TOKEN) private readonly db: Database,
+    protected readonly contextService: RequestContextService,
   ) {
-    super();
+    super(contextService);
   }
 
   async processJob(job: Job): Promise<void> {
@@ -29,7 +31,7 @@ export class SystemProcessor extends BaseWorker {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const expiredRequests = await db.query.portabilityRequests.findMany({
+    const expiredRequests = await this.db.query.portabilityRequests.findMany({
       where: and(
         eq(schema.portabilityRequests.status, 'completed'),
         lt(schema.portabilityRequests.createdAt, sevenDaysAgo)
@@ -46,7 +48,7 @@ export class SystemProcessor extends BaseWorker {
         }
       }
 
-      await db
+      await this.db
         .update(schema.portabilityRequests)
         .set({
           status: 'expired',

@@ -1,26 +1,27 @@
 {
-    "extends":  "../../tsconfig.json",
-    "compilerOptions":  {
-                            "composite":  true,
-                            "types":  [
-                                          "node"
-                                      ],
-                            "outDir":  "./dist",
-                            "rootDir":  "./src",
-                            "baseUrl":  ".",
-                            "paths":  {
-                                          "@node-stack/*":  [
-                                                                "../../packages/*/src/index.ts",
-                                                                "../../packages/*/src"
-                                                            ]
-                                      },
-                            "jsx":  "react-jsx"
-                        },
-    "include":  [
-                    "src/**/*"
-                ],
-    "exclude":  [
-                    "node_modules",
-                    "dist"
-                ]
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "composite": true,
+        "types": [
+            "node"
+        ],
+        "outDir": "./dist",
+        "rootDir": "./src",
+
+
+        "paths": {
+            "@node-stack/*": [
+                "../../packages/*/src/index.ts",
+                "../../packages/*/src"
+            ]
+        },
+        "jsx": "react-jsx"
+    },
+    "include": [
+        "src/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
 }

@@ -125,6 +125,7 @@ services:
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
+      - FORCE_COLOR=1
     depends_on:
       postgres:
         condition: service_healthy
@@ -153,6 +154,7 @@ services:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
+      - FORCE_COLOR=1
     volumes:
       # Bind-mount the full monorepo for live-reload
       - .:/app

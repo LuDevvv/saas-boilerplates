@@ -6,9 +6,11 @@ import { JwtAuthGuard } from '../auth/guards/jwt.guard.js';
 import { WorkspaceGuard } from '../common/guards/workspace.guard.js';
 import { Permissions } from '../common/decorators/permissions.decorator.js';
 import { Permission } from '@node-stack/types';
+import { Idempotent } from '../common/decorators/idempotent.decorator.js';
 
 @ApiTags('api-keys')
 @ApiBearerAuth('JWT-auth')
+@Idempotent()
 @Controller('api-keys')
 @UseGuards(JwtAuthGuard, WorkspaceGuard)
 export class ApiKeysController {

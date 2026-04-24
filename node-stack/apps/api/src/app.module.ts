@@ -1,4 +1,6 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { LoggerModule } from 'nestjs-pino';
+import * as opentelemetry from '@opentelemetry/api';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -21,6 +23,7 @@ import { AiModule } from './ai/ai.module.js';
 import { FeatureFlagGuard } from './common/guards/feature-flag.guard.js';
 import { AnalyticsModule } from './analytics/analytics.module.js';
 import { PortabilityModule } from './portability/portability.module.js';
+import { MarketingModule } from './marketing/marketing.module.js';
 
 import { AdminGuard } from './common/guards/admin.guard.js';
 import { CacheInvalidationInterceptor } from './common/interceptors/cache-invalidation.interceptor.js';
@@ -34,15 +37,53 @@ import { DatabaseModule } from '@node-stack/db';
 import { RealtimeModule } from './realtime/realtime.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { CacheModule } from '@node-stack/cache';
+import { ScheduleModule } from '@nestjs/schedule';
 
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { WebhooksModule } from './webhooks/webhooks.module.js';
 
+import { validateEnv } from '@node-stack/config';
+import { RequestContextMiddleware } from './common/middleware/request-context.middleware.js';
+import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor.js';
+import { IdempotencyService } from './common/services/idempotency.service.js';
+import { MaintenanceModule } from './common/maintenance/maintenance.module.js';
+
 @Module({
   imports: [
+    LoggerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const isProduction = config.get('NODE_ENV') === 'production';
+        return {
+          pinoHttp: {
+            level: isProduction ? 'info' : 'debug',
+            transport: isProduction
+              ? undefined
+              : {
+                  target: 'pino-pretty',
+                  options: {
+                    singleLine: true,
+                    colorize: true,
+                  },
+                },
+            customProps: (req, res) => {
+              const activeSpan = opentelemetry.trace.getSpan(opentelemetry.context.active());
+              if (!activeSpan) return {};
+              const spanContext = activeSpan.spanContext();
+              return {
+                trace_id: spanContext.traceId,
+                span_id: spanContext.spanId,
+              };
+            },
+          },
+        };
+      },
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
+      validate: validateEnv,
     }),
+    ScheduleModule.forRoot(),
     CacheModule,
     CommonModule,
     DatabaseModule,
@@ -60,7 +101,9 @@ import { WebhooksModule } from './webhooks/webhooks.module.js';
     WebhooksModule,
     AnalyticsModule,
     PortabilityModule,
+    MarketingModule,
     AdminModule,
+    MaintenanceModule,
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
@@ -78,6 +121,8 @@ import { WebhooksModule } from './webhooks/webhooks.module.js';
   controllers: [],
   providers: [
     MetricsService,
+    IdempotencyService,
+    { provide: APP_INTERCEPTOR, useClass: IdempotencyInterceptor },
     { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
     { provide: APP_INTERCEPTOR, useClass: MetricsInterceptor },
     { provide: APP_INTERCEPTOR, useClass: CacheInvalidationInterceptor },
@@ -90,4 +135,10 @@ import { WebhooksModule } from './webhooks/webhooks.module.js';
     { provide: APP_GUARD, useClass: PermissionsGuard },
   ],
 })
-export class AppModule { }
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(RequestContextMiddleware)
+      .forRoutes('*');
+  }
+}

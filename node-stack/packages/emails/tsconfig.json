@@ -4,8 +4,9 @@
                             "composite":  true,
                             "outDir":  "./dist",
                             "rootDir":  "./src",
-                            "baseUrl":  ".",
-                            "paths":  {
+
+
+        "paths": {
                                           "@node-stack/*":  [
                                                                 "../../packages/*/src/index.ts",
                                                                 "../../packages/*/src"

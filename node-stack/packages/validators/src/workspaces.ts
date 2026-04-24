@@ -1,5 +1,6 @@
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
+import { ApiProperty } from "@nestjs/swagger";
 
 // ── Workspace Creation ─────────────────────────────────────
 export const CreateWorkspaceSchema = z.object({
@@ -8,7 +9,7 @@ export const CreateWorkspaceSchema = z.object({
     .min(1, "Name is required")
     .max(100, "Name too long")
     .trim()
-    .describe("Name of the workspace (e.g. 'Engineering Team')"),
+    .describe("Name of the workspace"),
   slug: z
     .string()
     .min(1, "Slug is required")
@@ -18,7 +19,10 @@ export const CreateWorkspaceSchema = z.object({
 });
 
 export class CreateWorkspaceDto extends createZodDto(CreateWorkspaceSchema) {
+  @ApiProperty({ example: "Engineering Team", description: "Display name of the workspace" })
   declare name: string;
+
+  @ApiProperty({ example: "engineering-team", description: "URL-friendly unique identifier" })
   declare slug: string;
 }
 
@@ -37,7 +41,10 @@ export const InviteMemberSchema = z.object({
 });
 
 export class InviteMemberDto extends createZodDto(InviteMemberSchema) {
+  @ApiProperty({ example: "new-member@example.com" })
   declare email: string;
+
+  @ApiProperty({ example: "member", enum: ["admin", "member", "guest"] })
   declare role: "admin" | "member" | "guest";
 }
 
@@ -49,6 +56,7 @@ export const UpdateMemberRoleSchema = z.object({
 });
 
 export class UpdateMemberRoleDto extends createZodDto(UpdateMemberRoleSchema) {
+  @ApiProperty({ example: "admin", enum: ["admin", "member", "guest"] })
   declare role: "admin" | "member" | "guest";
 }
 
@@ -60,7 +68,12 @@ export const UpdateWorkspaceSchema = z.object({
 });
 
 export class UpdateWorkspaceDto extends createZodDto(UpdateWorkspaceSchema) {
+  @ApiProperty({ example: "Acme Corp", required: false })
   declare name?: string;
+
+  @ApiProperty({ example: "acme-corp", required: false })
   declare slug?: string;
+
+  @ApiProperty({ example: "https://example.com/logo.png", required: false, nullable: true })
   declare logoUrl?: string | null;
 }

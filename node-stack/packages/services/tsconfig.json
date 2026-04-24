@@ -8,7 +8,7 @@
                                       ],
                             "outDir":  "./dist",
                             "rootDir":  "./src",
-                            "baseUrl":  ".",
+
                             "paths":  {
                                           "@node-stack/*":  [
                                                                 "../../packages/*/src/index.ts",

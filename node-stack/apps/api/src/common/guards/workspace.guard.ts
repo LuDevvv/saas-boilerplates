@@ -9,11 +9,16 @@ import {
 import { CacheService } from "@node-stack/cache";
 import { db, schema, eq, and } from "@node-stack/db";
 
+import { RequestContextService } from "@node-stack/db";
+
 import type { WorkspaceContext } from "../types/index.js";
 
 @Injectable()
 export class WorkspaceGuard implements CanActivate {
-  constructor(private readonly cache: CacheService) {}
+  constructor(
+    private readonly cache: CacheService,
+    private readonly contextService: RequestContextService
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest() as any;
@@ -87,6 +92,10 @@ export class WorkspaceGuard implements CanActivate {
 
     // Attach workspace role to user for downstream RBAC guards
     (req.user as any).workspaceRole = membership.role;
+
+    // Set workspace in request context for RLS
+    this.contextService.workspaceId = ws.id;
+    this.contextService.userId = user.id;
 
     return true;
   }
