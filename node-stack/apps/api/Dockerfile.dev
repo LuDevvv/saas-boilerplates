@@ -15,6 +15,7 @@ COPY packages/cache/package.json ./packages/cache/
 COPY packages/db/package.json ./packages/db/
 COPY packages/billing-adapter/package.json ./packages/billing-adapter/
 COPY packages/ai-adapter/package.json ./packages/ai-adapter/
+COPY packages/api-client/package.json ./packages/api-client/
 COPY packages/config/package.json ./packages/config/
 COPY packages/emails/package.json ./packages/emails/
 COPY packages/notifications/package.json ./packages/notifications/
@@ -23,6 +24,7 @@ COPY packages/queue/package.json ./packages/queue/
 COPY packages/services/package.json ./packages/services/
 COPY packages/storage/package.json ./packages/storage/
 COPY packages/types/package.json ./packages/types/
+COPY packages/ui/package.json ./packages/ui/
 COPY packages/utils/package.json ./packages/utils/
 COPY packages/validators/package.json ./packages/validators/
 COPY packages/webhooks-utils/package.json ./packages/webhooks-utils/
