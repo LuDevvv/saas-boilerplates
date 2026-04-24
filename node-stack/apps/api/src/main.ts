@@ -94,10 +94,6 @@ async function bootstrap() {
     ],
   });
 
-  // Register request-id middleware early (before body parsers)
-  app.use(new RequestIdMiddleware().use);
-  // Register API version middleware
-  app.use(new ApiVersionMiddleware().use);
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalPipes(
     new (createZodValidationPipe({

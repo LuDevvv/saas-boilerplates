@@ -44,6 +44,8 @@ import { WebhooksModule } from './webhooks/webhooks.module.js';
 
 import { validateEnv } from '@node-stack/config';
 import { RequestContextMiddleware } from './common/middleware/request-context.middleware.js';
+import { RequestIdMiddleware } from './common/middleware/request-id.middleware.js';
+import { ApiVersionMiddleware } from './common/middleware/api-version.middleware.js';
 import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor.js';
 import { IdempotencyService } from './common/services/idempotency.service.js';
 import { MaintenanceModule } from './common/maintenance/maintenance.module.js';
@@ -60,12 +62,12 @@ import { MaintenanceModule } from './common/maintenance/maintenance.module.js';
             transport: isProduction
               ? undefined
               : {
-                  target: 'pino-pretty',
-                  options: {
-                    singleLine: true,
-                    colorize: true,
-                  },
+                target: 'pino-pretty',
+                options: {
+                  singleLine: true,
+                  colorize: true,
                 },
+              },
             customProps: (req, res) => {
               const activeSpan = opentelemetry.trace.getSpan(opentelemetry.context.active());
               if (!activeSpan) return {};
@@ -138,7 +140,7 @@ import { MaintenanceModule } from './common/maintenance/maintenance.module.js';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
-      .apply(RequestContextMiddleware)
-      .forRoutes('*');
+      .apply(RequestIdMiddleware, ApiVersionMiddleware, RequestContextMiddleware)
+      .forRoutes('*path');
   }
 }

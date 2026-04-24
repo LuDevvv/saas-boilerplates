@@ -7,6 +7,8 @@ import { OutboxService } from "./services/outbox.service.js";
 import { QueueModule } from "./queues/queue.module.js";
 import { JobsController } from "./controllers/jobs.controller.js";
 import { EncryptionService } from "./services/encryption.service.js";
+import { RequestIdMiddleware } from "./middleware/request-id.middleware.js";
+import { ApiVersionMiddleware } from "./middleware/api-version.middleware.js";
 
 @Global()
 @Module({
@@ -22,6 +24,8 @@ import { EncryptionService } from "./services/encryption.service.js";
     IdempotencyInterceptor,
     OutboxService,
     EncryptionService,
+    RequestIdMiddleware,
+    ApiVersionMiddleware,
   ],
   exports: [
     QueueModule,
@@ -31,6 +35,8 @@ import { EncryptionService } from "./services/encryption.service.js";
     IdempotencyInterceptor,
     OutboxService,
     EncryptionService,
+    RequestIdMiddleware,
+    ApiVersionMiddleware,
   ],
 })
 export class CommonModule {}
