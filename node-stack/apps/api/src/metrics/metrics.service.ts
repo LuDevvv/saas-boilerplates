@@ -1,4 +1,6 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
+import { Pool } from "pg";
+import { POOL_TOKEN } from "@node-stack/db";
 import {
   collectDefaultMetrics,
   Counter,
@@ -17,8 +19,14 @@ export class MetricsService {
   readonly redisConnectionsTotal: Gauge;
   readonly outboxEventsProcessedTotal: Counter;
   readonly emailQueueJobsTotal: Counter<"status">;
+  
+  readonly dbPoolActiveConnections: Gauge;
+  readonly dbPoolIdleConnections: Gauge;
+  readonly dbPoolWaitingRequests: Gauge;
 
-  constructor() {
+  constructor(
+    @Inject(POOL_TOKEN) private readonly pool: Pool,
+  ) {
     this.registry = new Registry();
     collectDefaultMetrics({ register: this.registry });
 
@@ -34,6 +42,24 @@ export class MetricsService {
       help: "HTTP request duration in seconds",
       labelNames: ["method", "path"],
       buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10],
+      registers: [this.registry],
+    });
+
+    this.dbPoolActiveConnections = new Gauge({
+      name: "db_pool_active_connections",
+      help: "Total number of active database connections in the pool",
+      registers: [this.registry],
+    });
+
+    this.dbPoolIdleConnections = new Gauge({
+      name: "db_pool_idle_connections",
+      help: "Total number of idle database connections in the pool",
+      registers: [this.registry],
+    });
+
+    this.dbPoolWaitingRequests = new Gauge({
+      name: "db_pool_waiting_requests",
+      help: "Total number of database requests waiting for a connection",
       registers: [this.registry],
     });
 
@@ -64,6 +90,11 @@ export class MetricsService {
   }
 
   async getMetrics(): Promise<string> {
+    // Update PG Pool metrics before returning
+    this.dbPoolActiveConnections.set(this.pool.totalCount - this.pool.idleCount);
+    this.dbPoolIdleConnections.set(this.pool.idleCount);
+    this.dbPoolWaitingRequests.set(this.pool.waitingCount);
+    
     return this.registry.metrics();
   }
 }
