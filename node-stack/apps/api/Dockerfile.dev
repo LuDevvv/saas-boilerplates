@@ -39,6 +39,11 @@ COPY . .
 # This is critical: apps import @node-stack/* from packages/*/dist/
 RUN pnpm --filter './packages/**' -r build || echo "Package build warnings (non-fatal in dev)"
 
+# Make bootstrap script executable
+RUN chmod +x ./apps/api/scripts/bootstrap.sh
+
 EXPOSE 4000
 
+# Use the bootstrap script as entrypoint to handle pre-start logic
+ENTRYPOINT ["./apps/api/scripts/bootstrap.sh"]
 CMD ["pnpm", "run", "dev"]
