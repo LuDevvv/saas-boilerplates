@@ -125,11 +125,11 @@ export class OutboxProcessor extends BaseWorker {
         // Even though Redis and Postgres aren't in a single transaction, 
         // we can use a DB transaction to ensure consistency if the queue add fails.
         await this.jobQueue.add("process-outbox", { outboxId: event.id });
-        
+
         await this.db
           .update(schema.outbox)
-          .set({ 
-            processed: true, 
+          .set({
+            processed: true,
             processedAt: new Date(),
             lastError: null // Clear any previous errors if it was a retry
           })
