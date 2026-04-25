@@ -37,7 +37,7 @@ Unlike generic boilerplates that focus on UI components, Node Stack focuses on t
 - **Core**: [NestJS](https://nestjs.com/) + [TypeScript](https://www.typescriptlang.org/)
 - **ORM**: [Drizzle](https://orm.drizzle.team/) (PostgreSQL) — Zero overhead, maximum speed.
 - **Cache & Jobs**: [Redis](https://redis.io/) + [BullMQ](https://docs.bullmq.io/).
-- **Docs**: [OpenAPI (Swagger)](http://localhost:3000/api/docs) — Fully decorated for elite DX.
+- **Docs**: [OpenAPI (Swagger)](http://localhost:4000/api/docs) — Fully decorated for elite DX.
 - **Validation**: [Zod](https://zod.dev/) — Single source of truth for runtime and type safety.
 
 ---
@@ -57,16 +57,26 @@ Copy `.env.example` to `.env` and configure your Database/Redis URLs and OAuth s
 ```bash
 pnpm dev
 ```
-- **API**: `http://localhost:3000`
-- **Docs**: `http://localhost:3000/api/docs`
+- **API**: `http://localhost:4000`
+- **Docs**: `http://localhost:4000/api/docs`
 - **Worker**: Runs in the background for your jobs.
+
+---
+
+## 🧪 Testing with Postman
+
+We provide a high-fidelity Postman collection and environment for local development:
+
+1.  **Import**: Import the files from the `./postman` directory into Postman.
+2.  **Environment**: Select the `Node Stack (Local)` environment.
+3.  **Variables**: The collection uses the `{{access_token}}` variable for authentication, which is automatically updated upon a successful login/register request via test scripts.
 
 ---
 
 ## 📚 Technical Documentation
 
 - **[Documentation Index](./docs/README.md)**: Explore the definitive guides for architecture, database, security, docker, and observability.
-- **[OpenAPI / Swagger Specs](http://localhost:3000/api/docs)**: Explore the fully documented API surface.
+- **[OpenAPI / Swagger Specs](http://localhost:4000/api/docs)**: Explore the fully documented API surface.
 
 ---
 
