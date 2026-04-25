@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import './tracing.js';
+import { initTracing } from './tracing.js';
 import { validateEnv } from '@node-stack/config';
 
 // Validate environment variables before anything else
@@ -9,8 +9,6 @@ import { Logger as NestLogger, UnprocessableEntityException } from '@nestjs/comm
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { nestIntegration } from '@sentry/nestjs';
-import * as Sentry from '@sentry/node';
 import compression from 'compression';
 import express from 'express';
 import helmet from 'helmet';
@@ -34,6 +32,7 @@ process.on('uncaughtException', (error) => {
 });
 
 async function bootstrap() {
+  await initTracing();
   const logger = new NestLogger('Bootstrap');
 
   logger.log('Creating NestJS application...');
@@ -50,9 +49,11 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   // WebSocket Redis adapter for horizontal scaling
-  const redisIoAdapter = new RedisIoAdapter(app);
-  await redisIoAdapter.connectToRedis(configService);
-  app.useWebSocketAdapter(redisIoAdapter);
+  if (process.env.GENERATE_OPENAPI !== 'true') {
+    const redisIoAdapter = new RedisIoAdapter(app);
+    await redisIoAdapter.connectToRedis(configService);
+    app.useWebSocketAdapter(redisIoAdapter);
+  }
 
   // Security headers with strict CSP (must be first)
   app.use(helmet({

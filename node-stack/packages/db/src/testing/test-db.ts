@@ -34,7 +34,31 @@ export function getTestDb(): TestDb {
 // Aliases for compatibility with existing tests
 export const createTestDb = getTestDb;
 
-export const { db, pool } = getTestDb();
+// Lazy-initialize the global test db instance to avoid crashes during app bootstrap (e.g. OpenAPI export)
+let _db: any;
+let _pool: any;
+
+export const db = new Proxy({} as any, {
+  get(_, prop) {
+    if (!_db) {
+      const testDb = getTestDb();
+      _db = testDb.db;
+      _pool = testDb.pool;
+    }
+    return _db[prop];
+  }
+});
+
+export const pool = new Proxy({} as any, {
+  get(_, prop) {
+    if (!_pool) {
+      const testDb = getTestDb();
+      _db = testDb.db;
+      _pool = testDb.pool;
+    }
+    return _pool[prop];
+  }
+});
 
 /**
  * Resets the database by truncating all tables in the public schema.

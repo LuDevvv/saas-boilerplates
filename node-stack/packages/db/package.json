@@ -12,6 +12,10 @@
                     "./schema":  {
                                      "types":  "./dist/schema/index.d.ts",
                                      "import":  "./dist/schema/index.js"
+                                 },
+                    "./repositories/*": {
+                                     "types": "./dist/repositories/*.d.ts",
+                                     "import": "./dist/repositories/*.js"
                                  }
                 },
     "publishConfig":  {

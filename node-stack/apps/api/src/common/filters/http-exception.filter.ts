@@ -5,7 +5,6 @@ import {
   HttpException,
   Logger,
 } from "@nestjs/common";
-import * as Sentry from "@sentry/node";
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -29,10 +28,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
         `[${request.method}] ${request.url} [rid=${requestId}]`,
         exception instanceof Error ? exception.stack : exception,
       );
-      Sentry.captureException(exception, {
-        tags: { requestId: request.headers["x-request-id"] },
-        user: { id: request.user?.id },
-      });
+      
+      // Use dynamic import for Sentry to avoid ESM resolution crashes during startup
+      import("@sentry/node").then((Sentry) => {
+        Sentry.captureException(exception, {
+          tags: { requestId: request.headers["x-request-id"] },
+          user: { id: (request as any).user?.id },
+        });
+      }).catch(err => this.logger.warn(`Sentry capture failed: ${err.message}`));
     }
 
     response.status(status).json({

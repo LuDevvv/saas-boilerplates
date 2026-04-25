@@ -1,6 +1,7 @@
 {
   "name": "node-stack",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@9.0.0",
   "scripts": {
     "build": "turbo run build",
@@ -24,6 +25,7 @@
     "db:generate": "pnpm --filter @node-stack/db db:generate",
     "gen:module": "tsx scripts/generate-module.ts",
     "gen:module:help": "tsx scripts/generate-module.ts --help",
+    "postman:sync": "node scripts/sync-postman.js",
     "zod:types": "tsx scripts/zod-types.ts",
     "zod:types:watch": "tsx scripts/zod-types.ts --watch",
     "zod:types:clean": "tsx scripts/zod-types.ts --clean",
@@ -53,6 +55,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "nodemon": "^3.1.14",
+    "openapi-to-postmanv2": "^6.0.1",
     "prettier": "^3.8.1",
     "testcontainers": "^11.13.0",
     "tsx": "^4.21.0",
@@ -70,9 +73,12 @@
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.1",
+    "@opentelemetry/context-async-hooks": "^2.7.0",
     "@polar-sh/sdk": "^0.47.0",
     "@types/pg": "^8.20.0",
-    "drizzle-orm": "^0.45.2"
+    "caniuse-lite": "^1.0.30001790",
+    "drizzle-orm": "^0.45.2",
+    "update-browserslist-db": "^1.2.3"
   },
   "pnpm": {
     "overrides": {

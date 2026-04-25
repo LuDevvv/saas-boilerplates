@@ -3,8 +3,8 @@
 
     "paths": {
       "@node-stack/*": [
-        "./packages/*/dist/index.js",
-        "./packages/*/dist"
+        "./packages/*/src/index.ts",
+        "./packages/*/src"
       ]
     },
     "emitDecoratorMetadata": true,
