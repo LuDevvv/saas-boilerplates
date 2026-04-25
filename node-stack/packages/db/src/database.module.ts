@@ -18,24 +18,35 @@ import { SystemConfigRepository } from './repositories/system-config.repository.
 import { PortabilityRepository } from './repositories/portability.repository.js';
 import { RequestContextService } from './context/request-context.service.js';
 import * as schema from './schema/index.js';
-import { DB_TOKEN } from './tokens.js';
+import { DB_TOKEN, POOL_TOKEN } from './tokens.js';
 
 @Global()
 @Module({
   providers: [
     {
-      provide: DB_TOKEN,
+      provide: POOL_TOKEN,
       useFactory: () => {
         const conn = process.env.DATABASE_URL;
         if (!conn) {
           throw new Error('DATABASE_URL environment variable is not set');
         }
-        const pool = new Pool({ connectionString: conn });
+        return new Pool({ 
+          connectionString: conn,
+          max: parseInt(process.env.DB_POOL_MAX || '10', 10),
+          idleTimeoutMillis: 30000,
+          connectionTimeoutMillis: 2000,
+        });
+      },
+    },
+    {
+      provide: DB_TOKEN,
+      useFactory: (pool: Pool) => {
         return drizzle(pool, {
           schema,
           logger: process.env.NODE_ENV === 'development',
         });
       },
+      inject: [POOL_TOKEN],
     },
     WorkspaceRepository,
     UserRepository,
@@ -55,6 +66,7 @@ import { DB_TOKEN } from './tokens.js';
   ],
   exports: [
     DB_TOKEN,
+    POOL_TOKEN,
     WorkspaceRepository,
     UserRepository,
     InvitationRepository,
