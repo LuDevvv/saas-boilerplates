@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
-import { SystemConfigRepository } from "@node-stack/db";
-import { CacheService } from "@node-stack/cache";
 import { EventEmitter2 } from "@nestjs/event-emitter";
+import { CacheService } from "@node-stack/cache";
+import { SystemConfigRepository } from "@node-stack/db";
 
 @Injectable()
 export class DynamicConfigService implements OnModuleInit {

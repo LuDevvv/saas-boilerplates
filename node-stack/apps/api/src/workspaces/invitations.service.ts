@@ -15,10 +15,10 @@ import {
   schema,
   eq,
 } from "@node-stack/db";
+import type { InviteMemberDto } from "@node-stack/validators";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import type { InviteMemberDto } from "@node-stack/validators";
-import { OutboxService } from "../common/services/outbox.service.js";
+import { OutboxService } from "@/common/services/outbox.service.js";
 
 @Injectable()
 export class InvitationsService {

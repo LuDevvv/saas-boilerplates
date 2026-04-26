@@ -14,10 +14,11 @@ import {
   ApiResponse,
 } from "@nestjs/swagger";
 import { Role, Permission } from "@node-stack/types";
-import { WebhooksService } from "./webhooks.service.js";
-import { Roles } from "../common/decorators/roles.decorator.js";
-import { RequirePermissions } from "../common/decorators/permissions.decorator.js";
-import { TenantId } from "../common/decorators/tenant-id.decorator.js";
+
+import { RequirePermissions } from "@/common/decorators/permissions.decorator.js";
+import { Roles } from "@/common/decorators/roles.decorator.js";
+import { TenantId } from "@/common/decorators/tenant-id.decorator.js";
+import { WebhooksService } from "@/workspaces/webhooks.service.js";
 
 @ApiTags("workspaces")
 @ApiBearerAuth("JWT-auth")

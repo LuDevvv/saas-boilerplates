@@ -7,7 +7,8 @@
 
 import { Controller, Post } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
-import { MaintenanceService } from "./maintenance.service.js";
+
+import { MaintenanceService } from "@/common/maintenance/maintenance.service.js";
 
 @ApiTags("maintenance")
 @Controller("maintenance")

@@ -1,13 +1,15 @@
 import { Module } from "@nestjs/common";
-import { UsersAdminController } from "./controllers/users-admin.controller.js";
-import { ConfigAdminController } from "./controllers/config-admin.controller.js";
-import { SystemStatsController } from "./controllers/system-stats.controller.js";
-import { FeatureFlagsAdminController } from "./feature-flags.controller.js";
-import { ImpersonationService } from "./services/impersonation.service.js";
-import { DynamicConfigService } from "./services/dynamic-config.service.js";
-import { AuthModule } from "../auth/auth.module.js";
-import { DbModule } from "@node-stack/db";
 import { CacheModule } from "@node-stack/cache";
+import { DbModule } from "@node-stack/db";
+
+import { ConfigAdminController } from "@/admin/controllers/config-admin.controller.js";
+import { SystemStatsController } from "@/admin/controllers/system-stats.controller.js";
+import { UsersAdminController } from "@/admin/controllers/users-admin.controller.js";
+import { FeatureFlagsAdminController } from "@/admin/feature-flags.controller.js";
+import { DynamicConfigService } from "@/admin/services/dynamic-config.service.js";
+import { ImpersonationService } from "@/admin/services/impersonation.service.js";
+import { AuthModule } from "@/auth/auth.module.js";
+
 
 @Module({
   imports: [

@@ -1,10 +1,13 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { BillingService } from "./billing.service.js";
+import { BillingService } from "@/billing/billing.service.js";
 import { ConfigService } from "@nestjs/config";
-import { OutboxService } from "../common/services/outbox.service.js";
-import { EncryptionService } from "../common/services/encryption.service.js";
+import { OutboxService } from "@/common/services/outbox.service.js";
+import { EncryptionService } from "@/common/services/encryption.service.js";
 import { BillingRepository } from "@node-stack/db";
+import { CacheService } from "@node-stack/cache";
 import { UnauthorizedException } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { Mocked } from "vitest";
 
 describe("BillingService", () => {
   let service: BillingService;
@@ -12,45 +15,54 @@ describe("BillingService", () => {
   let mockBillingRepo: any;
 
   const mockConfigService = {
-    get: jest.fn().mockImplementation((key: string, fallback?: string) => {
+    get: vi.fn().mockImplementation((key: string, fallback?: string) => {
       const vals: Record<string, string> = {
         POLAR_WEBHOOK_SECRET: "secret",
         POLAR_ACCESS_TOKEN: "token",
       };
       return vals[key] ?? fallback ?? null;
     }),
-    getOrThrow: jest.fn().mockReturnValue("token"),
+    getOrThrow: vi.fn().mockReturnValue("token"),
   };
 
   const mockOutbox = {
-    createEvent: jest.fn(),
-    transaction: jest.fn((cb: (tx: any) => any) => cb({})),
+    createEvent: vi.fn(),
+    transaction: vi.fn((cb: (tx: any) => any) => cb({})),
   };
 
   const mockEncryption = {
-    encrypt: jest.fn((v: string) => `enc_${v}`),
-    decrypt: jest.fn((v: string) => v.replace("enc_", "")),
+    encrypt: vi.fn((v: string) => `enc_${v}`),
+    decrypt: vi.fn((v: string) => v.replace("enc_", "")),
     isEnabled: true,
+  };
+
+  const mockCache = {
+    getOrSet: vi.fn((_k, fn) => fn()),
+    del: vi.fn(),
+  };
+
+  const mockEventEmitter = {
+    emit: vi.fn(),
   };
 
   beforeEach(async () => {
     mockProvider = {
-      createCheckoutSession: jest.fn(),
-      handleWebhook: jest.fn(),
-      createCustomer: jest.fn(),
-      createSubscription: jest.fn(),
-      cancelSubscription: jest.fn(),
-      getSubscription: jest.fn(),
+      createCheckoutSession: vi.fn(),
+      handleWebhook: vi.fn(),
+      createCustomer: vi.fn(),
+      createSubscription: vi.fn(),
+      cancelSubscription: vi.fn(),
+      getSubscription: vi.fn(),
     };
 
     mockBillingRepo = {
-      findCustomerByWorkspaceId: jest.fn().mockResolvedValue(null),
-      findSubscriptionByWorkspaceId: jest.fn().mockResolvedValue(null),
-      upsertCustomer: jest.fn(),
-      upsertSubscription: jest.fn(),
-      isEventProcessed: jest.fn().mockResolvedValue(false),
-      markEventProcessed: jest.fn(),
-      transaction: jest.fn((cb: (tx: any) => any) => cb({})),
+      findCustomerByWorkspaceId: vi.fn().mockResolvedValue(null),
+      findSubscriptionByWorkspaceId: vi.fn().mockResolvedValue(null),
+      upsertCustomer: vi.fn(),
+      upsertSubscription: vi.fn(),
+      isEventProcessed: vi.fn().mockResolvedValue(false),
+      markEventProcessed: vi.fn(),
+      transaction: vi.fn((cb: (tx: any) => any) => cb({})),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -60,19 +72,21 @@ describe("BillingService", () => {
         { provide: OutboxService, useValue: mockOutbox },
         { provide: EncryptionService, useValue: mockEncryption },
         { provide: BillingRepository, useValue: mockBillingRepo },
+        { provide: CacheService, useValue: mockCache },
+        { provide: EventEmitter2, useValue: mockEventEmitter },
         { provide: "PAYMENT_PROVIDER", useValue: mockProvider },
       ],
     }).compile();
 
     service = module.get<BillingService>(BillingService);
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   // ─── Checkout ───────────────────────────────────────────────────────
 
   describe("createCheckout", () => {
     it("calls payment provider and writes outbox event", async () => {
-      mockProvider.createCheckoutSession.mockResolvedValue({
+      (mockProvider.createCheckoutSession as any).mockResolvedValue({
         url: "https://checkout.test",
         expiresAt: new Date("2026-01-01"),
       });
@@ -103,11 +117,11 @@ describe("BillingService", () => {
     });
 
     it("passes existing customer ID when customer exists in DB", async () => {
-      mockBillingRepo.findCustomerByWorkspaceId.mockResolvedValue({
+      (mockBillingRepo.findCustomerByWorkspaceId as any).mockResolvedValue({
         id: "cust-1",
         providerCustomerId: "enc_polar_cus_abc",
       });
-      mockProvider.createCheckoutSession.mockResolvedValue({
+      (mockProvider.createCheckoutSession as any).mockResolvedValue({
         url: "https://checkout.test",
         expiresAt: new Date("2026-01-01"),
       });
@@ -132,7 +146,7 @@ describe("BillingService", () => {
 
   describe("handleWebhook", () => {
     it("throws UnauthorizedException on signature failure", async () => {
-      mockProvider.handleWebhook.mockRejectedValue(
+      (mockProvider.handleWebhook as any).mockRejectedValue(
         new Error("Webhook signature verification failed"),
       );
 
@@ -142,14 +156,14 @@ describe("BillingService", () => {
     });
 
     it("skips duplicate events based on idempotency check", async () => {
-      mockProvider.handleWebhook.mockResolvedValue({
+      (mockProvider.handleWebhook as any).mockResolvedValue({
         id: "evt-1",
         type: "subscription.created",
         timestamp: new Date(),
         data: {},
         processed: true,
       });
-      mockBillingRepo.isEventProcessed.mockResolvedValue(true);
+      (mockBillingRepo.isEventProcessed as any).mockResolvedValue(true);
 
       const result = await service.handleWebhook(
         '{"type":"subscription.created"}',
@@ -161,7 +175,7 @@ describe("BillingService", () => {
     });
 
     it("processes subscription.created and writes to DB + outbox", async () => {
-      mockProvider.handleWebhook.mockResolvedValue({
+      (mockProvider.handleWebhook as any).mockResolvedValue({
         id: "evt-2",
         type: "subscription.created",
         timestamp: new Date(),
@@ -213,7 +227,7 @@ describe("BillingService", () => {
     });
 
     it("returns subscription data when one exists", async () => {
-      mockBillingRepo.findSubscriptionByWorkspaceId.mockResolvedValue({
+      (mockBillingRepo.findSubscriptionByWorkspaceId as any).mockResolvedValue({
         id: "sub-1",
         status: "active",
         planId: "plan-1",
@@ -230,3 +244,4 @@ describe("BillingService", () => {
     });
   });
 });
+

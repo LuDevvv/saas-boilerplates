@@ -10,7 +10,6 @@ import {
   Param,
   Delete,
 } from "@nestjs/common";
-import type { UserPayload } from "../common/types/index.js";
 import { ConfigService } from "@nestjs/config";
 import { AuthGuard } from "@nestjs/passport";
 import {
@@ -24,9 +23,8 @@ import { Throttle, SkipThrottle } from "@nestjs/throttler";
 import type { OAuthProfile } from "@node-stack/types";
 import type { Response } from "express";
 
-import { AuthService, SessionListItem } from "./auth.service.js";
-import { CurrentUser } from "./decorators/index.js";
-import { Public } from "../common/decorators/public.decorator.js";
+import { AuthService, SessionListItem } from "@/auth/auth.service.js";
+import { CurrentUser } from "@/auth/decorators/index.js";
 import {
   RegisterDto,
   LoginDto,
@@ -36,9 +34,11 @@ import {
   RecoveryDto,
   ResetPasswordDto,
   VerifyEmailDto,
-} from "./dto/index.js";
-import { JwtAuthGuard } from "./guards/index.js";
-import { TwoFactorService } from "./two-factor/two-factor.service.js";
+} from "@/auth/dto/index.js";
+import { JwtAuthGuard } from "@/auth/guards/index.js";
+import { TwoFactorService } from "@/auth/two-factor/two-factor.service.js";
+import { Public } from "@/common/decorators/public.decorator.js";
+import type { UserPayload } from "@/common/types/index.js";
 
 
 @ApiTags("auth")

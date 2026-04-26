@@ -1,18 +1,20 @@
 import { Module, Global } from "@nestjs/common";
 import { FeatureFlagService } from "@node-stack/config";
-import { AuditService } from "./services/audit.service.js";
-import { IdempotencyService } from "./services/idempotency.service.js";
-import { IdempotencyInterceptor } from "./interceptors/idempotency.interceptor.js";
-import { OutboxService } from "./services/outbox.service.js";
-import { QueueModule } from "./queues/queue.module.js";
-import { JobsController } from "./controllers/jobs.controller.js";
-import { EncryptionService } from "./services/encryption.service.js";
-import { RequestIdMiddleware } from "./middleware/request-id.middleware.js";
-import { ApiVersionMiddleware } from "./middleware/api-version.middleware.js";
+import { DatabaseModule } from "@node-stack/db";
+
+import { JobsController } from "@/common/controllers/jobs.controller.js";
+import { IdempotencyInterceptor } from "@/common/interceptors/idempotency.interceptor.js";
+import { ApiVersionMiddleware } from "@/common/middleware/api-version.middleware.js";
+import { RequestIdMiddleware } from "@/common/middleware/request-id.middleware.js";
+import { QueueModule } from "@/common/queues/queue.module.js";
+import { AuditService } from "@/common/services/audit.service.js";
+import { EncryptionService } from "@/common/services/encryption.service.js";
+import { IdempotencyService } from "@/common/services/idempotency.service.js";
+import { OutboxService } from "@/common/services/outbox.service.js";
 
 @Global()
 @Module({
-  imports: [QueueModule],
+  imports: [QueueModule, DatabaseModule],
   controllers: [JobsController],
   providers: [
     {

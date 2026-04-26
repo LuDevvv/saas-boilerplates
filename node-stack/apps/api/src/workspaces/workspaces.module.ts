@@ -1,16 +1,16 @@
 import { Module } from "@nestjs/common";
-import { WorkspaceRepository } from "@node-stack/db";
+import { WorkspaceRepository , DatabaseModule } from "@node-stack/db";
 
-import { InvitationsModule } from "./invitations.module.js";
-import { WorkspacesController } from "./workspaces.controller.js";
-import { WorkspacesService } from "./workspaces.service.js";
-import { WebhooksController } from "./webhooks.controller.js";
-import { WebhooksService } from "./webhooks.service.js";
-import { ApiKeysService } from "../api-keys/api-keys.service.js";
-import { IdempotencyService } from "../common/services/idempotency.service.js";
-import { OutboxService } from "../common/services/outbox.service.js";
+import { ApiKeysService } from "@/api-keys/api-keys.service.js";
+import { IdempotencyService } from "@/common/services/idempotency.service.js";
+import { OutboxService } from "@/common/services/outbox.service.js";
+import { InvitationsModule } from "@/workspaces/invitations.module.js";
+import { WebhooksController } from "@/workspaces/webhooks.controller.js";
+import { WebhooksService } from "@/workspaces/webhooks.service.js";
+import { WorkspacesController } from "@/workspaces/workspaces.controller.js";
+import { WorkspacesService } from "@/workspaces/workspaces.service.js";
 
-import { DatabaseModule } from "@node-stack/db";
+
 
 @Module({
   imports: [

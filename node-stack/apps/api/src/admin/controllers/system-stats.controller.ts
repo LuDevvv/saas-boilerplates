@@ -1,7 +1,8 @@
 import { Controller, Get } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
-import { AdminOnly } from "../../common/decorators/admin.decorator.js";
 import { AnalyticsRepository } from "@node-stack/db";
+
+import { AdminOnly } from "@/common/decorators/admin.decorator.js";
 
 @ApiTags("admin-stats")
 @Controller("admin/stats")

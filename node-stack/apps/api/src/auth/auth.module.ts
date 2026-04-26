@@ -2,18 +2,18 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-
-import { AuthController } from './auth.controller.js';
-import { AuthService } from './auth.service.js';
-import { JWT_CONSTANTS } from './constants.js';
-import { JwtStrategy, LocalStrategy, GoogleStrategy, GitHubStrategy } from './strategies/index.js';
-import { ApiKeyStrategy } from './strategies/api-key.strategy.js';
-import { TwoFactorService } from './two-factor/two-factor.service.js';
 import { CacheService } from '@node-stack/cache';
-import { SessionRepository } from '@node-stack/db';
+import { SessionRepository , DatabaseModule } from '@node-stack/db';
 
-import { DatabaseModule } from "@node-stack/db";
-import { ApiKeysModule } from '../api-keys/api-keys.module.js';
+import { ApiKeysModule } from '@/api-keys/api-keys.module.js';
+import { AuthController } from '@/auth/auth.controller.js';
+import { AuthService } from '@/auth/auth.service.js';
+import { JWT_CONSTANTS } from '@/auth/constants.js';
+import { ApiKeyStrategy } from '@/auth/strategies/api-key.strategy.js';
+import { JwtStrategy, LocalStrategy, GoogleStrategy, GitHubStrategy } from '@/auth/strategies/index.js';
+import { TwoFactorService } from '@/auth/two-factor/two-factor.service.js';
+
+
 
 @Module({
   imports: [

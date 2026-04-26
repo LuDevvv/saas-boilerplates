@@ -1,7 +1,8 @@
 import { Module } from "@nestjs/common";
-import { MaintenanceService } from "./maintenance.service.js";
-import { StorageModule } from "../../storage/storage.module.js";
 import { DatabaseModule } from "@node-stack/db";
+
+import { MaintenanceService } from "@/common/maintenance/maintenance.service.js";
+import { StorageModule } from "@/storage/storage.module.js";
 
 @Module({
   imports: [DatabaseModule, StorageModule],

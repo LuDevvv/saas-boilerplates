@@ -10,7 +10,7 @@ import type { Request, Response } from "express";
 import { Observable, of, throwError, from } from "rxjs";
 import { tap, catchError, switchMap } from "rxjs/operators";
 
-import { IdempotencyService } from "../services/idempotency.service.js";
+import { IdempotencyService } from "@/common/services/idempotency.service.js";
 
 @Injectable()
 export class IdempotencyInterceptor implements NestInterceptor {

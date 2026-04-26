@@ -1,8 +1,9 @@
 import { Module, Global } from '@nestjs/common';
 import { NotificationService as SharedNotificationService } from '@node-stack/notifications';
-import { NotificationService } from './notifications.service.js';
-import { NotificationsController } from './notifications.controller.js';
-import { RealtimeModule } from '../realtime/realtime.module.js';
+
+import { NotificationsController } from '@/notifications/notifications.controller.js';
+import { NotificationService } from '@/notifications/notifications.service.js';
+import { RealtimeModule } from '@/realtime/realtime.module.js';
 
 @Global()
 @Module({

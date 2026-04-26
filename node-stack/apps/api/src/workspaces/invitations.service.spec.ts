@@ -1,37 +1,37 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { InvitationsService } from './invitations.service.js';
+import { InvitationsService } from '@/workspaces/invitations.service.js';
 import { WorkspaceRepository, InvitationRepository, UserRepository } from '@node-stack/db';
-import { OutboxService } from '../common/services/outbox.service.js';
-import { NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import { OutboxService } from '@/common/services/outbox.service.js';
+import { NotFoundException, ConflictException, BadRequestException, UnauthorizedException } from '@nestjs/common';
 
 describe('InvitationsService', () => {
   let service: InvitationsService;
 
   const mockWorkspaceRepo = {
-    findById: jest.fn(),
-    findMembership: jest.fn(),
-    createMembership: jest.fn(),
-    transaction: jest.fn(cb => cb({})),
+    findById: vi.fn(),
+    findMembership: vi.fn(),
+    createMembership: vi.fn(),
+    transaction: vi.fn(cb => cb({})),
   };
 
   const mockInvitationRepo = {
-    findPendingByEmailAndWorkspace: jest.fn(),
-    create: jest.fn(),
-    findManyPendingByEmail: jest.fn(),
-    findManyByWorkspace: jest.fn(),
-    findById: jest.fn(),
-    delete: jest.fn(),
-    findByToken: jest.fn(),
-    update: jest.fn(),
+    findPendingByEmailAndWorkspace: vi.fn(),
+    create: vi.fn(),
+    findManyPendingByEmail: vi.fn(),
+    findManyByWorkspace: vi.fn(),
+    findById: vi.fn(),
+    delete: vi.fn(),
+    findByToken: vi.fn(),
+    update: vi.fn(),
   };
 
   const mockUserRepo = {
-    findByEmail: jest.fn(),
-    findById: jest.fn(),
+    findByEmail: vi.fn(),
+    findById: vi.fn(),
   };
 
   const mockOutbox = {
-    createEvent: jest.fn(),
+    createEvent: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -46,7 +46,7 @@ describe('InvitationsService', () => {
     }).compile();
 
     service = module.get<InvitationsService>(InvitationsService);
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('acceptInvitation', () => {
@@ -57,11 +57,23 @@ describe('InvitationsService', () => {
         status: 'pending',
         workspaceId: 'w1',
         role: 'member',
+        email: 'u1@test.com',
         expiresAt: new Date(Date.now() + 1000000),
       };
+
       
-      mockInvitationRepo.findByToken.mockResolvedValue(invitation);
-      mockWorkspaceRepo.findMembership.mockResolvedValue(null);
+      (mockUserRepo.findById as any).mockResolvedValue({ id: 'u1', email: 'u1@test.com' });
+      (mockInvitationRepo.findByToken as any).mockResolvedValue(invitation);
+      (mockWorkspaceRepo.findMembership as any).mockResolvedValue(null);
+      
+      // Mock tx for row lock
+      const mockTx = {
+        select: vi.fn().mockReturnThis(),
+        from: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        for: vi.fn().mockResolvedValue([invitation]),
+      };
+      (mockWorkspaceRepo.transaction as any).mockImplementation(async (cb: any) => cb(mockTx));
       
       const result = await service.acceptInvitation('valid-token', 'u1');
 
@@ -74,19 +86,41 @@ describe('InvitationsService', () => {
     });
 
     it('throws NotFoundException when token not found', async () => {
-      mockInvitationRepo.findByToken.mockResolvedValue(null);
+      (mockUserRepo.findById as any).mockResolvedValue({ id: 'u1', email: 'u1@test.com' });
+      
+      const mockTx = {
+        select: vi.fn().mockReturnThis(),
+        from: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        for: vi.fn().mockResolvedValue([]), // Return empty array
+      };
+      (mockWorkspaceRepo.transaction as any).mockImplementation(async (cb: any) => cb(mockTx));
+
       await expect(service.acceptInvitation('invalid', 'u1')).rejects.toThrow(NotFoundException);
     });
+
 
     it('throws ConflictException if user already a member', async () => {
       const invitation = {
         id: 'i1',
         status: 'pending',
         workspaceId: 'w1',
+        email: 'u@t.com',
         expiresAt: new Date(Date.now() + 1000000),
       };
-      mockInvitationRepo.findByToken.mockResolvedValue(invitation);
-      mockWorkspaceRepo.findMembership.mockResolvedValue({ role: 'member' });
+
+      (mockUserRepo.findById as any).mockResolvedValue({ id: 'u1', email: 'u@t.com' });
+      (mockInvitationRepo.findByToken as any).mockResolvedValue(invitation);
+      (mockWorkspaceRepo.findMembership as any).mockResolvedValue({ role: 'member' });
+
+      // Mock tx for row lock
+      const mockTx = {
+        select: vi.fn().mockReturnThis(),
+        from: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        for: vi.fn().mockResolvedValue([invitation]),
+      };
+      (mockWorkspaceRepo.transaction as any).mockImplementation(async (cb: any) => cb(mockTx));
 
       await expect(service.acceptInvitation('token', 'u1')).rejects.toThrow(ConflictException);
     });
@@ -95,11 +129,24 @@ describe('InvitationsService', () => {
       const invitation = {
         id: 'i1',
         status: 'pending',
+        email: 'u@t.com',
         expiresAt: new Date(Date.now() - 1000000),
       };
-      mockInvitationRepo.findByToken.mockResolvedValue(invitation);
+
+      (mockUserRepo.findById as any).mockResolvedValue({ id: 'u1', email: 'u@t.com' });
+      (mockInvitationRepo.findByToken as any).mockResolvedValue(invitation);
+
+      // Mock tx for row lock
+      const mockTx = {
+        select: vi.fn().mockReturnThis(),
+        from: vi.fn().mockReturnThis(),
+        where: vi.fn().mockReturnThis(),
+        for: vi.fn().mockResolvedValue([invitation]),
+      };
+      (mockWorkspaceRepo.transaction as any).mockImplementation(async (cb: any) => cb(mockTx));
 
       await expect(service.acceptInvitation('token', 'u1')).rejects.toThrow(BadRequestException);
     });
   });
 });
+

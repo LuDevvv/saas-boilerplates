@@ -1,8 +1,9 @@
 import { Injectable, OnModuleInit, Inject, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { NotificationService as SharedNotificationService, NotificationPayload } from '@node-stack/notifications';
 import { db, schema, eq, desc, and } from '@node-stack/db';
-import { RealtimeService } from '../realtime/realtime.service.js';
+import { NotificationService as SharedNotificationService, NotificationPayload } from '@node-stack/notifications';
+
+import { RealtimeService } from '@/realtime/realtime.service.js';
 
 @Injectable()
 export class NotificationService implements OnModuleInit {

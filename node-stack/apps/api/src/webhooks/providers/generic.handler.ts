@@ -1,11 +1,12 @@
+import { createHmac, timingSafeEqual } from "crypto";
+
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { createHmac, timingSafeEqual } from "crypto";
 
 import type {
   InboundWebhookHandler,
   TransformedWebhookEvent,
-} from "../interfaces/webhook-handler.interface.js";
+} from "@/webhooks/interfaces/webhook-handler.interface.js";
 
 /**
  * Generic Webhook Handler.

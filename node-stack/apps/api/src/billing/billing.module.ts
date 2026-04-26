@@ -2,10 +2,10 @@ import { Module } from "@nestjs/common";
 import { ConfigService, ConfigModule } from "@nestjs/config";
 import type { PaymentProvider } from "@node-stack/billing-adapter";
 import { MockProvider } from "@node-stack/billing-adapter";
-
-import { BillingController } from "./billing.controller.js";
-import { BillingService } from "./billing.service.js";
 import { DatabaseModule } from "@node-stack/db";
+
+import { BillingController } from "@/billing/billing.controller.js";
+import { BillingService } from "@/billing/billing.service.js";
 
 @Module({
   imports: [DatabaseModule],

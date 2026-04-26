@@ -19,8 +19,8 @@ import {
 import { SkipThrottle, Throttle } from "@nestjs/throttler";
 import type { Request, Response } from "express";
 
-import { Public } from "../common/decorators/public.decorator.js";
-import { InboundWebhookService } from "./webhooks.service.js";
+import { Public } from "@/common/decorators/public.decorator.js";
+import { InboundWebhookService } from "@/webhooks/webhooks.service.js";
 
 @ApiTags("webhooks")
 @Controller("webhooks")

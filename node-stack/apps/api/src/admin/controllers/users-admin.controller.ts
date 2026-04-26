@@ -1,11 +1,12 @@
 import { Controller, Get, Post, Patch, Body, Param, Query, Request } from "@nestjs/common";
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from "@nestjs/swagger";
-import { AdminOnly } from "../../common/decorators/admin.decorator.js";
-import { ImpersonationService } from "../services/impersonation.service.js";
-import { AuthRepository } from "@node-stack/db";
-import { ZodValidationPipe } from "nestjs-zod";
-import { UpdateUserRoleSchema, UpdateUserRoleDto } from "@node-stack/validators";
 import { EventEmitter2 } from "@nestjs/event-emitter";
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from "@nestjs/swagger";
+import { AuthRepository } from "@node-stack/db";
+import { UpdateUserRoleSchema, UpdateUserRoleDto } from "@node-stack/validators";
+import { ZodValidationPipe } from "nestjs-zod";
+
+import { ImpersonationService } from "@/admin/services/impersonation.service.js";
+import { AdminOnly } from "@/common/decorators/admin.decorator.js";
 
 @ApiTags("admin-users")
 @Controller("admin/users")

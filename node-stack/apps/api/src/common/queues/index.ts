@@ -1,3 +1,3 @@
-export * from './queue.constants.js';
-export * from './queue.module.js';
-export * from './job.service.js';
+export * from '@/common/queues/queue.constants.js';
+export * from '@/common/queues/queue.module.js';
+export * from '@/common/queues/job.service.js';

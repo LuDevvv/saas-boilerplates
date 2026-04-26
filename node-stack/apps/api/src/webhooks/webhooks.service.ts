@@ -9,7 +9,7 @@ import { InboundWebhookRepository } from "@node-stack/db";
 import type {
   InboundWebhookHandler,
   TransformedWebhookEvent,
-} from "./interfaces/webhook-handler.interface.js";
+} from "@/webhooks/interfaces/webhook-handler.interface.js";
 
 /**
  * Orchestrates the full lifecycle of an inbound webhook:

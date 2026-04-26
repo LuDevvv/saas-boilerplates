@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
+import { Injectable, Logger } from '@nestjs/common';
 import { Queue, Job, JobsOptions } from 'bullmq';
+
 import {
   QUEUE_NAMES,
   JOB_TYPES,
@@ -10,7 +11,7 @@ import {
   type WebhookDeliveryPayload,
   type OutboxJobPayload,
   type PortabilityJobPayload,
-} from './queue.constants.js';
+} from '@/common/queues/queue.constants.js';
 
 /**
  * Type-safe job dispatcher.

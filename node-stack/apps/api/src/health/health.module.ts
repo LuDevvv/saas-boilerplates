@@ -1,12 +1,13 @@
 import { Module } from "@nestjs/common";
 import { TerminusModule } from "@nestjs/terminus";
-import { HealthController } from "./health.controller.js";
-import { HealthService } from "./health.service.js";
-import { DrizzleHealthIndicator } from "./indicators/drizzle.health.js";
-import { RedisHealthIndicator } from "./indicators/redis.health.js";
-import { StorageHealthIndicator } from "./indicators/storage.health.js";
 import { CacheModule } from "@node-stack/cache";
-import { StorageModule } from "../storage/storage.module.js";
+
+import { HealthController } from "@/health/health.controller.js";
+import { HealthService } from "@/health/health.service.js";
+import { DrizzleHealthIndicator } from "@/health/indicators/drizzle.health.js";
+import { RedisHealthIndicator } from "@/health/indicators/redis.health.js";
+import { StorageHealthIndicator } from "@/health/indicators/storage.health.js";
+import { StorageModule } from "@/storage/storage.module.js";
 
 @Module({
   imports: [TerminusModule, CacheModule, StorageModule],

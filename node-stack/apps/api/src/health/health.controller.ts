@@ -7,11 +7,11 @@ import {
   DiskHealthIndicator,
 } from "@nestjs/terminus";
 
-import { HealthService } from "./health.service.js";
-import { DrizzleHealthIndicator } from "./indicators/drizzle.health.js";
-import { RedisHealthIndicator } from "./indicators/redis.health.js";
-import { StorageHealthIndicator } from "./indicators/storage.health.js";
-import { Public } from "../common/decorators/public.decorator.js";
+import { Public } from "@/common/decorators/public.decorator.js";
+import { HealthService } from "@/health/health.service.js";
+import { DrizzleHealthIndicator } from "@/health/indicators/drizzle.health.js";
+import { RedisHealthIndicator } from "@/health/indicators/redis.health.js";
+import { StorageHealthIndicator } from "@/health/indicators/storage.health.js";
 
 @ApiTags("health")
 @Controller("health")

@@ -1,55 +1,51 @@
 import 'reflect-metadata';
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { LoggerModule } from 'nestjs-pino';
-import * as opentelemetry from '@opentelemetry/api';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
-import { ThrottlerModule } from '@nestjs/throttler';
-import { ThrottlerStorageRedisService } from 'nestjs-throttler-storage-redis';
-import { Redis } from "ioredis";
-
-import { AdminModule } from './admin/admin.module.js';
-import { AuthModule } from './auth/auth.module.js';
-import { JwtAuthGuard } from './auth/guards/jwt.guard.js';
-import { BillingModule } from './billing/billing.module.js';
-import { AuditInterceptor } from './common/interceptors/audit.interceptor.js';
-import { MetricsModule } from './metrics/metrics.module.js';
-import { MetricsInterceptor } from './metrics/metrics.interceptor.js';
-import { MetricsService } from './metrics/metrics.service.js';
-import { StorageModule } from './storage/storage.module.js';
-import { WorkspacesModule } from './workspaces/workspaces.module.js';
-import { ApiKeysModule } from './api-keys/api-keys.module.js';
-import { HealthModule } from './health/health.module.js';
-import { AiModule } from './ai/ai.module.js';
-import { FeatureFlagGuard } from './common/guards/feature-flag.guard.js';
-import { AnalyticsModule } from './analytics/analytics.module.js';
-import { PortabilityModule } from './portability/portability.module.js';
-import { MarketingModule } from './marketing/marketing.module.js';
-
-import { AdminGuard } from './common/guards/admin.guard.js';
-import { CacheInvalidationInterceptor } from './common/interceptors/cache-invalidation.interceptor.js';
-import { WorkspaceGuard } from './common/guards/workspace.guard.js';
-import { RolesGuard } from './common/guards/roles.guard.js';
-import { PermissionsGuard } from './common/guards/permissions.guard.js';
-import { CustomThrottlerGuard } from './common/guards/throttler.guard.js';
-
-import { CommonModule } from './common/common.module.js';
-import { DatabaseModule } from '@node-stack/db';
-import { RealtimeModule } from './realtime/realtime.module.js';
-import { NotificationsModule } from './notifications/notifications.module.js';
-import { CacheModule } from '@node-stack/cache';
-import { ScheduleModule } from '@nestjs/schedule';
-
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { WebhooksModule } from './webhooks/webhooks.module.js';
-
+import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { CacheModule } from '@node-stack/cache';
 import { validateEnv } from '@node-stack/config';
-import { RequestContextMiddleware } from './common/middleware/request-context.middleware.js';
-import { RequestIdMiddleware } from './common/middleware/request-id.middleware.js';
-import { ApiVersionMiddleware } from './common/middleware/api-version.middleware.js';
-import { IdempotencyInterceptor } from './common/interceptors/idempotency.interceptor.js';
-import { IdempotencyService } from './common/services/idempotency.service.js';
-import { MaintenanceModule } from './common/maintenance/maintenance.module.js';
+import { DatabaseModule } from '@node-stack/db';
+import * as opentelemetry from '@opentelemetry/api';
+import { Redis } from "ioredis";
+import { LoggerModule } from 'nestjs-pino';
+import { ThrottlerStorageRedisService } from 'nestjs-throttler-storage-redis';
+
+import { AdminModule } from '@/admin/admin.module.js';
+import { AiModule } from '@/ai/ai.module.js';
+import { AnalyticsModule } from '@/analytics/analytics.module.js';
+import { ApiKeysModule } from '@/api-keys/api-keys.module.js';
+import { AuthModule } from '@/auth/auth.module.js';
+import { JwtAuthGuard } from '@/auth/guards/jwt.guard.js';
+import { BillingModule } from '@/billing/billing.module.js';
+import { AdminGuard } from '@/common/guards/admin.guard.js';
+import { FeatureFlagGuard } from '@/common/guards/feature-flag.guard.js';
+import { AuditInterceptor } from '@/common/interceptors/audit.interceptor.js';
+import { MetricsModule } from '@/metrics/metrics.module.js';
+import { MetricsInterceptor } from '@/metrics/metrics.interceptor.js';
+import { MetricsService } from '@/metrics/metrics.service.js';
+import { StorageModule } from '@/storage/storage.module.js';
+import { WorkspacesModule } from '@/workspaces/workspaces.module.js';
+import { HealthModule } from '@/health/health.module.js';
+import { PortabilityModule } from '@/portability/portability.module.js';
+import { MarketingModule } from '@/marketing/marketing.module.js';
+import { CacheInvalidationInterceptor } from '@/common/interceptors/cache-invalidation.interceptor.js';
+import { WorkspaceGuard } from '@/common/guards/workspace.guard.js';
+import { RolesGuard } from '@/common/guards/roles.guard.js';
+import { PermissionsGuard } from '@/common/guards/permissions.guard.js';
+import { CustomThrottlerGuard } from '@/common/guards/throttler.guard.js';
+import { CommonModule } from '@/common/common.module.js';
+import { RealtimeModule } from '@/realtime/realtime.module.js';
+import { NotificationsModule } from '@/notifications/notifications.module.js';
+import { WebhooksModule } from '@/webhooks/webhooks.module.js';
+import { RequestContextMiddleware } from '@/common/middleware/request-context.middleware.js';
+import { RequestIdMiddleware } from '@/common/middleware/request-id.middleware.js';
+import { ApiVersionMiddleware } from '@/common/middleware/api-version.middleware.js';
+import { IdempotencyInterceptor } from '@/common/interceptors/idempotency.interceptor.js';
+import { IdempotencyService } from '@/common/services/idempotency.service.js';
+import { MaintenanceModule } from '@/common/maintenance/maintenance.module.js';
 
 @Module({
   imports: [
@@ -117,7 +113,10 @@ import { MaintenanceModule } from './common/maintenance/maintenance.module.js';
         ],
         storage: new ThrottlerStorageRedisService(new Redis(config.get('REDIS_URL') as string)),
         errorMessage: 'Too many requests. Please retry after {ttl} seconds.',
-        skipIf: (ctx) => ctx.switchToHttp().getRequest().ip === '127.0.0.1',
+        skipIf: (ctx) => {
+          const ip = ctx.switchToHttp().getRequest().ip;
+          return ip === '127.0.0.1' || ip === '::ffff:127.0.0.1' || ip === '::1';
+        },
       }),
     }),
   ],

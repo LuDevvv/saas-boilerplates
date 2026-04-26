@@ -1,6 +1,7 @@
 import { applyDecorators, UseInterceptors } from '@nestjs/common';
 import { ApiHeader } from '@nestjs/swagger';
-import { IdempotencyInterceptor } from '../interceptors/idempotency.interceptor.js';
+
+import { IdempotencyInterceptor } from '@/common/interceptors/idempotency.interceptor.js';
 
 /**
  * Decorator that enables idempotency for the endpoint.

@@ -1,9 +1,10 @@
 import { Controller, Get, Post, Body, Request } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
-import { AdminOnly } from "../../common/decorators/admin.decorator.js";
-import { DynamicConfigService } from "../services/dynamic-config.service.js";
 import { SetConfigSchema, SetConfigDto } from "@node-stack/validators";
 import { ZodValidationPipe } from "nestjs-zod";
+
+import { DynamicConfigService } from "@/admin/services/dynamic-config.service.js";
+import { AdminOnly } from "@/common/decorators/admin.decorator.js";
 
 @ApiTags("admin-config")
 @Controller("admin/config")

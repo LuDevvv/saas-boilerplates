@@ -1,9 +1,10 @@
 import { Controller, Post, Body, Get, Param, Patch, Query, UseGuards } from '@nestjs/common';
-import { NotificationService } from './notifications.service.js';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { AdminGuard } from '../common/guards/admin.guard.js';
-import { JwtAuthGuard } from '../auth/guards/jwt.guard.js';
-import { CurrentUser } from '../auth/decorators/current-user.decorator.js';
+
+import { CurrentUser } from '@/auth/decorators/current-user.decorator.js';
+import { JwtAuthGuard } from '@/auth/guards/jwt.guard.js';
+import { AdminGuard } from '@/common/guards/admin.guard.js';
+import { NotificationService } from '@/notifications/notifications.service.js';
 
 @ApiTags('Notifications')
 @Controller('notifications')

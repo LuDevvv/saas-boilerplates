@@ -1,7 +1,8 @@
 import { Injectable, ForbiddenException } from "@nestjs/common";
-import { AnalyticsService } from "./analytics.service.js";
-import { BillingService } from "../billing/billing.service.js";
-import { DEFAULT_LIMITS, PlanType } from "./usage.config.js";
+
+import { AnalyticsService } from "@/analytics/analytics.service.js";
+import { DEFAULT_LIMITS, PlanType } from "@/analytics/usage.config.js";
+import { BillingService } from "@/billing/billing.service.js";
 
 @Injectable()
 export class UsageQuotaService {

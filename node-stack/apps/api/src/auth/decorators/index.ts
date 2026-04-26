@@ -1,2 +1,2 @@
-export * from "./current-user.decorator.js";
-export * from "./workspace-context.decorator.js";
+export * from "@/auth/decorators/current-user.decorator.js";
+export * from "@/auth/decorators/workspace-context.decorator.js";

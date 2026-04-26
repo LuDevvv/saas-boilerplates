@@ -7,7 +7,7 @@ import {
 import { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
 
-import { MetricsService } from "./metrics.service.js";
+import { MetricsService } from "@/metrics/metrics.service.js";
 
 @Injectable()
 export class MetricsInterceptor implements NestInterceptor {

@@ -1,16 +1,23 @@
 import { Injectable, ExecutionContext, Inject } from "@nestjs/common";
 import { ThrottlerGuard, ThrottlerRequest } from "@nestjs/throttler";
 import { CacheService } from "@node-stack/cache";
-import { db, schema, eq } from "@node-stack/db";
+import { schema, eq, DB_TOKEN, type Database } from "@node-stack/db";
 
 @Injectable()
 export class CustomThrottlerGuard extends ThrottlerGuard {
   @Inject(CacheService)
   private readonly cacheService!: CacheService;
 
+  @Inject(DB_TOKEN)
+  private readonly db!: Database;
+
   protected async handleRequest(requestProps: ThrottlerRequest): Promise<boolean> {
     const { context, limit: defaultLimit, ttl: defaultTtl, throttler, blockDuration } = requestProps;
     
+    if (await this.shouldSkip(context)) {
+      return true;
+    }
+
     const response = context.switchToHttp().getResponse();
     const req = context.switchToHttp().getRequest();
     
@@ -32,7 +39,7 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
       const tier = await this.cacheService.getOrSet(
         `ws:${workspaceId}:tier`,
         async () => {
-          const result = await db.query.workspaces.findFirst({
+          const result = await this.db.query.workspaces.findFirst({
             where: eq(schema.workspaces.id, workspaceId),
             columns: { tier: true },
           });

@@ -4,8 +4,9 @@ import {
   ExecutionContext,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ApiKeysService } from '../../api-keys/api-keys.service.js';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+
+import { ApiKeysService } from '@/api-keys/api-keys.service.js';
 
 @Injectable()
 export class ApiKeyGuard implements CanActivate {

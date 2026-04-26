@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
-import { PortabilityController } from "./portability.controller.js";
-import { PortabilityService } from "./portability.service.js";
 import { PortabilityExporter } from "@node-stack/services";
-import { QueueModule } from "../common/queues/queue.module.js";
 
-import { StorageModule } from "../storage/storage.module.js";
+import { QueueModule } from "@/common/queues/queue.module.js";
+import { PortabilityController } from "@/portability/portability.controller.js";
+import { PortabilityService } from "@/portability/portability.service.js";
+import { StorageModule } from "@/storage/storage.module.js";
 
 @Module({
   imports: [QueueModule, StorageModule],

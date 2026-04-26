@@ -1,7 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
-import { db } from "@node-stack/db";
-import { auditLogs } from "@node-stack/db";
+import { AuditLogRepository } from "@node-stack/db";
 
 export interface AuditEventPayload {
   action: string;
@@ -18,15 +17,16 @@ const SENSITIVE_KEYS = ["password", "token", "secret", "apiKey", "credential"];
 
 @Injectable()
 export class AuditService {
-  /**
-   * Listen for 'audit.log' events and persist them to the database.
-   */
+  constructor(
+    private readonly auditLogRepository: AuditLogRepository,
+  ) {}
+
   @OnEvent("audit.log", { async: true })
   async handleAuditLog(payload: AuditEventPayload) {
     const sanitizedMetadata = this.sanitize(payload.metadata || {});
 
     try {
-      await db.insert(auditLogs).values({
+      await this.auditLogRepository.create({
         action: payload.action,
         userId: payload.userId ?? null,
         workspaceId: payload.workspaceId ?? null,
@@ -36,9 +36,8 @@ export class AuditService {
         ipAddress: payload.ipAddress ?? null,
         userAgent: payload.userAgent ?? null,
         createdAt: new Date(),
-      } as typeof auditLogs.$inferInsert);
+      });
     } catch (error) {
-      // Background process: avoid throwing to main request
       console.error("Failed to persist audit log:", error);
     }
   }

@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { AuthService } from "../../auth/auth.service.js";
 import { EventEmitter2 } from "@nestjs/event-emitter";
+
+import { AuthService } from "@/auth/auth.service.js";
 
 @Injectable()
 export class ImpersonationService {

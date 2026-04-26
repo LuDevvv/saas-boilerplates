@@ -1,7 +1,7 @@
-/// <reference types="jest" />
 import { ForbiddenException, ExecutionContext } from "@nestjs/common";
-import { BillingGuard } from "./billing.guard.js";
-import { PLAN_LIMITS, DEFAULT_PLAN } from "../config/plans.config.js";
+import { BillingGuard } from "@/common/guards/billing.guard.js";
+import { PLAN_LIMITS, DEFAULT_PLAN } from "@/common/config/plans.config.js";
+import { Mocked } from "vitest";
 
 describe("BillingGuard", () => {
   let guard: BillingGuard;
@@ -10,10 +10,10 @@ describe("BillingGuard", () => {
 
   beforeEach(() => {
     billingRepo = {
-      findSubscriptionByWorkspaceId: jest.fn(),
+      findSubscriptionByWorkspaceId: vi.fn(),
     };
     aiRepo = {
-      getMonthlyUsage: jest.fn(),
+      getMonthlyUsage: vi.fn(),
     };
     guard = new BillingGuard(billingRepo, aiRepo);
   });
@@ -65,3 +65,4 @@ describe("BillingGuard", () => {
     } as any;
   }
 });
+

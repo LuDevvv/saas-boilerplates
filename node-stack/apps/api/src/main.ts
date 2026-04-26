@@ -1,5 +1,6 @@
 import 'reflect-metadata';
-import { initTracing } from './tracing.js';
+import { initTracing } from '@/tracing.js';
+
 import { validateEnv } from '@node-stack/config';
 
 // Validate environment variables before anything else
@@ -12,15 +13,15 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import compression from 'compression';
 import express from 'express';
 import helmet from 'helmet';
-import { cleanupOpenApiDoc, createZodValidationPipe } from 'nestjs-zod';
 import { Logger } from 'nestjs-pino';
-import { AppModule } from './app.module.js';
+import { cleanupOpenApiDoc, createZodValidationPipe } from 'nestjs-zod';
 
-import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
-import { ApiVersionMiddleware } from './common/middleware/api-version.middleware.js';
-import { RequestIdMiddleware } from './common/middleware/request-id.middleware.js';
-import { setupSwagger } from './common/docs/swagger.config.js';
-import { RedisIoAdapter } from './realtime/redis-io.adapter.js';
+import { AppModule } from '@/app.module.js';
+import { setupSwagger } from '@/common/docs/swagger.config.js';
+import { HttpExceptionFilter } from '@/common/filters/http-exception.filter.js';
+import { ApiVersionMiddleware } from '@/common/middleware/api-version.middleware.js';
+import { RequestIdMiddleware } from '@/common/middleware/request-id.middleware.js';
+import { RedisIoAdapter } from '@/realtime/redis-io.adapter.js';
 
 // Global error handlers — MUST be before bootstrap() to catch silent crashes
 process.on('unhandledRejection', (reason, promise) => {

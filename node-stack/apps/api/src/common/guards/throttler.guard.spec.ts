@@ -1,34 +1,46 @@
 import { Reflector } from "@nestjs/core";
-import { ThrottlerStorageService } from "@nestjs/throttler";
-import { CustomThrottlerGuard } from "./throttler.guard.js";
-import { mockExecutionContext } from "./test-helpers/mock-context.js";
+import { ThrottlerStorage } from "@nestjs/throttler";
+import { CustomThrottlerGuard } from "@/common/guards/throttler.guard.js";
+import { mockExecutionContext } from "@/common/guards/test-helpers/mock-context.js";
+import { Mocked } from "vitest";
 
 describe("CustomThrottlerGuard", () => {
   let guard: CustomThrottlerGuard;
-  let reflector: jest.Mocked<Reflector>;
-  let storageService: jest.Mocked<ThrottlerStorageService>;
+  let reflector: Mocked<Reflector>;
+  let storageService: any;
+  let cacheService: any;
 
   beforeEach(() => {
-    reflector = {} as any;
-    storageService = {
-      increment: jest.fn(),
+    reflector = {
+      getAllAndOverride: vi.fn(),
     } as any;
+    
+    storageService = {
+      increment: vi.fn(),
+    };
+
+    cacheService = {
+      getOrSet: vi.fn(),
+    };
 
     // The @nestjs/throttler guard requires these dependencies.
     // We mock only the parts needed for our test.
     guard = new CustomThrottlerGuard(
       { throttlers: [{ name: "default", limit: 10, ttl: 60000 }] },
-      storageService,
+      storageService as unknown as ThrottlerStorage,
       reflector
     );
+
+    // Inject mocked services
+    Object.assign(guard, { cacheService });
   });
 
   it("sets X-RateLimit headers correctly", async () => {
-    const limit = 10;
+    const limit = 100; // Default for 'jwt' identity in CustomThrottlerGuard
     const ttl = 60000;
     const totalHits = 1;
     
-    storageService.increment.mockResolvedValue({
+    (storageService.increment as any).mockResolvedValue({
       totalHits,
       timeToExpire: ttl,
       isBlocked: false,
@@ -50,24 +62,23 @@ describe("CustomThrottlerGuard", () => {
 
     expect(res.setHeader).toHaveBeenCalledWith("X-RateLimit-Limit", limit);
     expect(res.setHeader).toHaveBeenCalledWith("X-RateLimit-Remaining", limit - totalHits);
-    expect(res.setHeader).toHaveBeenCalledWith("X-RateLimit-Reset", expect.any(String));
+    expect(res.setHeader).toHaveBeenCalledWith("X-RateLimit-Reset", expect.any(String)); // We use toISOString()
   });
 
   it("sets Retry-After header when limit exceeded", async () => {
-    const limit = 10;
+    const limit = 100; // Default for 'jwt' identity
     const ttl = 60000;
-    const totalHits = 11;
+    const totalHits = 101;
     
-    storageService.increment.mockResolvedValue({
+    (storageService.increment as any).mockResolvedValue({
       totalHits,
       timeToExpire: ttl,
       isBlocked: true,
-      timeToBlockExpire: 60000,
+      timeToBlockExpire: 60,
     });
 
     // Mock throwThrottlingException to avoid actual throw during header check
-    // or wrap in try/catch
-    jest.spyOn(guard as any, 'throwThrottlingException').mockImplementation(async () => {});
+    vi.spyOn(guard as any, 'throwThrottlingException').mockImplementation(async () => {});
 
     const ctx = mockExecutionContext();
     const res = ctx.switchToHttp().getResponse();
@@ -80,6 +91,8 @@ describe("CustomThrottlerGuard", () => {
       blockDuration: 0,
     });
 
-    expect(res.setHeader).toHaveBeenCalledWith("Retry-After", Math.ceil(ttl / 1000));
+    expect(res.setHeader).toHaveBeenCalledWith("Retry-After", 60);
   });
 });
+
+

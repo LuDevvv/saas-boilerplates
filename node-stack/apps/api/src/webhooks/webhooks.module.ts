@@ -1,12 +1,12 @@
 import { Module, OnModuleInit, Logger } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-
-import { WebhooksController } from "./webhooks.controller.js";
-import { InboundWebhookService } from "./webhooks.service.js";
 import { DatabaseModule } from "@node-stack/db";
 
+import { GenericWebhookHandler } from "@/webhooks/providers/generic.handler.js";
+import { WebhooksController } from "@/webhooks/webhooks.controller.js";
+import { InboundWebhookService } from "@/webhooks/webhooks.service.js";
+
 // ─── Provider Handlers ──────────────────────────────────────────────────
-import { GenericWebhookHandler } from "./providers/generic.handler.js";
 
 /**
  * Webhooks Module — unified inbound webhook processing.

@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { RealtimeGateway } from './realtime.gateway.js';
+
+import { RealtimeGateway } from '@/realtime/realtime.gateway.js';
 
 export interface RealtimeEventPayload {
   userId: string;

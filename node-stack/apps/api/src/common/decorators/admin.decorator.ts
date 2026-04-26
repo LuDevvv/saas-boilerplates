@@ -1,7 +1,8 @@
 import { applyDecorators, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiResponse } from "@nestjs/swagger";
-import { JwtAuthGuard } from "../../auth/guards/jwt.guard.js";
-import { SuperAdminGuard } from "../guards/super-admin.guard.js";
+
+import { JwtAuthGuard } from "@/auth/guards/jwt.guard.js";
+import { SuperAdminGuard } from "@/common/guards/super-admin.guard.js";
 
 /**
  * Decorator that applies JwtAuthGuard and SuperAdminGuard.

@@ -37,11 +37,17 @@ export class HttpExceptionFilter implements ExceptionFilter {
         });
       }).catch(err => this.logger.warn(`Sentry capture failed: ${err.message}`));
     }
+    
+    let exceptionResponse = exception instanceof HttpException ? exception.getResponse() : {};
+    if (typeof exceptionResponse === 'string') {
+      exceptionResponse = { message: exceptionResponse };
+    }
 
     response.status(status).json({
       statusCode: status,
       error: this.getErrorCode(status, exception),
       message,
+      ...(typeof exceptionResponse === 'object' ? exceptionResponse : {}),
       timestamp: new Date().toISOString(),
       path: request.url,
     });

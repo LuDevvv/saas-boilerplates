@@ -1,6 +1,6 @@
 import { createParamDecorator, ExecutionContext } from "@nestjs/common";
 
-import type { WorkspaceContext } from "../types/index.js";
+import type { WorkspaceContext } from "@/common/types/index.js";
 
 export const Workspace = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext) => {

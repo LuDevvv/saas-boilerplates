@@ -15,17 +15,16 @@ import {
   ApiOperation,
   ApiResponse,
 } from "@nestjs/swagger";
+import { Throttle } from "@nestjs/throttler";
 import { Role, Permission } from "@node-stack/types";
 import { InviteMemberDto } from "@node-stack/validators";
 
-import { Throttle } from "@nestjs/throttler";
-
-import { InvitationsService } from "./invitations.service.js";
-import { CurrentUser } from "../auth/decorators/index.js";
-import { Public } from "../common/decorators/public.decorator.js";
-import { RequirePermissions } from "../common/decorators/permissions.decorator.js";
-import { Roles } from "../common/decorators/roles.decorator.js";
-import type { UserPayload } from "../common/types/index.js";
+import { CurrentUser } from "@/auth/decorators/index.js";
+import { RequirePermissions } from "@/common/decorators/permissions.decorator.js";
+import { Public } from "@/common/decorators/public.decorator.js";
+import { Roles } from "@/common/decorators/roles.decorator.js";
+import type { UserPayload } from "@/common/types/index.js";
+import { InvitationsService } from "@/workspaces/invitations.service.js";
 
 @ApiTags("invitations")
 @ApiBearerAuth("JWT-auth")

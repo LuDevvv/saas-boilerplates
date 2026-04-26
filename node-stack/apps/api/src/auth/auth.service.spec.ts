@@ -1,55 +1,55 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import { UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { AuthService } from './auth.service.js';
-import { TwoFactorService } from './two-factor/two-factor.service.js';
-import { SessionRepository } from '@node-stack/db';
+import { AuthService } from '@/auth/auth.service.js';
+import { TwoFactorService } from '@/auth/two-factor/two-factor.service.js';
+import { SessionRepository, AuthRepository } from '@node-stack/db';
 import { CacheService } from '@node-stack/cache';
 import * as bcrypt from 'bcrypt';
 
-// Mock otplib to avoid ESM export parse errors in jest
-jest.mock('otplib', () => ({
-  generateSecret: jest.fn(),
-  generateURI: jest.fn(),
-  verify: jest.fn(),
+// Mock otplib to avoid ESM export parse errors
+vi.mock('otplib', () => ({
+  generateSecret: vi.fn(),
+  generateURI: vi.fn(),
+  verify: vi.fn(),
 }));
 
 // Mock DB module before anything else
-jest.mock('@node-stack/db', () => {
-  const actual = jest.requireActual('@node-stack/db');
+vi.mock('@node-stack/db', async () => {
+  const actual = await vi.importActual<any>('@node-stack/db');
   return {
     ...actual,
     db: {
       query: {
-        users: { findFirst: jest.fn() },
-        sessions: { findFirst: jest.fn() },
-        oauthAccounts: { findFirst: jest.fn() },
+        users: { findFirst: vi.fn() },
+        sessions: { findFirst: vi.fn() },
+        oauthAccounts: { findFirst: vi.fn() },
       },
-      delete: jest.fn().mockReturnThis(),
-      where: jest.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
     },
-    withTransaction: jest.fn((cb) => cb({
-      insert: jest.fn().mockReturnThis(),
-      values: jest.fn().mockReturnThis(),
-      returning: jest.fn().mockResolvedValue([{ id: 'u123', email: 'test@test.com', name: 'Test' }]),
-      update: jest.fn().mockReturnThis(),
-      set: jest.fn().mockReturnThis(),
-      where: jest.fn().mockReturnThis(),
-      delete: jest.fn().mockReturnThis(),
+    withTransaction: vi.fn((cb) => cb({
+      insert: vi.fn().mockReturnThis(),
+      values: vi.fn().mockReturnThis(),
+      returning: vi.fn().mockResolvedValue([{ id: 'u123', email: 'test@test.com', name: 'Test' }]),
+      update: vi.fn().mockReturnThis(),
+      set: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
       query: {
-        users: { findFirst: jest.fn() },
-        sessions: { findFirst: jest.fn() },
-        oauthAccounts: { findFirst: jest.fn() },
+        users: { findFirst: vi.fn() },
+        sessions: { findFirst: vi.fn() },
+        oauthAccounts: { findFirst: vi.fn() },
       },
     })),
   };
 });
 
 // Mock OutboxProducer
-jest.mock('@node-stack/outbox-queue', () => ({
+vi.mock('@node-stack/outbox-queue', () => ({
   OutboxProducer: {
-    addProcessOutboxJob: jest.fn().mockResolvedValue(undefined),
+    addProcessOutboxJob: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -58,30 +58,46 @@ describe('AuthService', () => {
   let sessionRepo: SessionRepository;
 
   const mockJwtService = {
-    signAsync: jest.fn().mockResolvedValue('token'),
-    sign: jest.fn().mockReturnValue('token'),
-    verify: jest.fn().mockReturnValue({ sub: 'u1', type: 'access', sessionId: 's1' }),
+    signAsync: vi.fn().mockResolvedValue('token'),
+    sign: vi.fn().mockReturnValue('token'),
+    verify: vi.fn().mockReturnValue({ sub: 'u1', type: 'access', sessionId: 's1' }),
   };
 
   const mockConfigService = {
-    get: jest.fn().mockImplementation((key) => {
+    get: vi.fn().mockImplementation((key) => {
       if (key === 'JWT_SECRET') return 'secret';
       return null;
     }),
   };
 
   const mockTwoFactorService = {
-    generateTempToken: jest.fn().mockReturnValue('temp-token'),
+    generateTempToken: vi.fn().mockReturnValue('temp-token'),
   };
 
   const mockSessionRepo = {
-    findActiveByUserId: jest.fn(),
-    deleteById: jest.fn(),
-    deleteAllExcept: jest.fn(),
+    findActiveByUserId: vi.fn(),
+    deleteById: vi.fn(),
+    deleteAllExcept: vi.fn(),
   };
 
   const mockCacheService = {
-    del: jest.fn(),
+    del: vi.fn(),
+  };
+
+  const mockAuthRepo = {
+    findUserByEmail: vi.fn(),
+    findUserById: vi.fn(),
+    createUser: vi.fn(),
+    createSession: vi.fn(),
+    createOutboxEvent: vi.fn(),
+    findOAuthLink: vi.fn(),
+    createOAuthAccount: vi.fn(),
+    updateOAuthAccessToken: vi.fn(),
+    deleteVerificationTokensByUser: vi.fn(),
+    createVerificationToken: vi.fn(),
+    findActiveSessionById: vi.fn(),
+    rotateSession: vi.fn(),
+    db: {},
   };
 
   beforeEach(async () => {
@@ -92,19 +108,23 @@ describe('AuthService', () => {
         { provide: ConfigService, useValue: mockConfigService },
         { provide: TwoFactorService, useValue: mockTwoFactorService },
         { provide: SessionRepository, useValue: mockSessionRepo },
+        { provide: AuthRepository, useValue: mockAuthRepo },
         { provide: CacheService, useValue: mockCacheService },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
     sessionRepo = module.get<SessionRepository>(SessionRepository);
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
+
 
   describe('register', () => {
     it('creates user and returns tokens when email is new', async () => {
-      const { db } = require('@node-stack/db');
-      db.query.users.findFirst.mockResolvedValue(null);
+      mockAuthRepo.findUserByEmail.mockResolvedValue(null);
+      mockAuthRepo.createUser.mockResolvedValue({ id: 'u123', email: 'test@test.com', name: 'Test' });
+      mockAuthRepo.createSession.mockResolvedValue({ id: 's123' });
+      mockAuthRepo.createOutboxEvent.mockResolvedValue('e123');
 
       const result = await service.register({
         email: 'test@test.com',
@@ -118,8 +138,7 @@ describe('AuthService', () => {
     });
 
     it('throws ConflictException when email already exists', async () => {
-      const { db } = require('@node-stack/db');
-      db.query.users.findFirst.mockResolvedValue({ id: 'existing' });
+      mockAuthRepo.findUserByEmail.mockResolvedValue({ id: 'existing' });
 
       await expect(
         service.register({ email: 'taken@test.com', password: 'Pw123!', name: 'X' })
@@ -129,8 +148,7 @@ describe('AuthService', () => {
 
   describe('login', () => {
     it('throws UnauthorizedException for unknown email', async () => {
-      const { db } = require('@node-stack/db');
-      db.query.users.findFirst.mockResolvedValue(null);
+      mockAuthRepo.findUserByEmail.mockResolvedValue(null);
 
       await expect(
         service.login({ email: 'ghost@test.com', password: 'Pw123!' })
@@ -138,9 +156,8 @@ describe('AuthService', () => {
     });
 
     it('throws UnauthorizedException for wrong password', async () => {
-      const { db } = require('@node-stack/db');
       const passwordHash = await bcrypt.hash('correct', 12);
-      db.query.users.findFirst.mockResolvedValue({
+      mockAuthRepo.findUserByEmail.mockResolvedValue({
         id: 'u1', email: 'u@t.com',
         passwordHash,
       });
@@ -151,10 +168,10 @@ describe('AuthService', () => {
     });
 
     it('returns tokens on successful login', async () => {
-      const { db } = require('@node-stack/db');
       const passwordHash = await bcrypt.hash('pass', 12);
-      db.query.users.findFirst.mockResolvedValueOnce({ id: 'u1', email: 'u@t.com', passwordHash });
-      db.query.users.findFirst.mockResolvedValueOnce({ id: 'u1', twoFactorEnabled: false });
+      mockAuthRepo.findUserByEmail.mockResolvedValue({ id: 'u1', email: 'u@t.com', passwordHash });
+      mockAuthRepo.findUserById.mockResolvedValue({ id: 'u1', twoFactorEnabled: false });
+      mockAuthRepo.createSession.mockResolvedValue({ id: 's1' });
 
       const result = await service.login({ email: 'u@t.com', password: 'pass' });
       expect(result).toHaveProperty('accessToken');
@@ -163,7 +180,6 @@ describe('AuthService', () => {
 
   describe('handleOAuthLogin', () => {
     it('links OAuth to existing user when email matches', async () => {
-      const { withTransaction } = require('@node-stack/db');
       const oauthProfile = {
         provider: 'google' as const,
         providerAccountId: 'google-123',
@@ -173,19 +189,11 @@ describe('AuthService', () => {
         refreshToken: null,
       };
 
-      // Mock transaction query for existing user but NO existing link
-      withTransaction.mockImplementationOnce(async (cb: any) => {
-        const tx = {
-          query: {
-            oauthAccounts: { findFirst: jest.fn().mockResolvedValue(null) },
-            users: { findFirst: jest.fn().mockResolvedValue({ id: 'u123', email: 'existing@test.com' }) },
-          },
-          insert: jest.fn().mockReturnThis(),
-          values: jest.fn().mockReturnThis(),
-          returning: jest.fn().mockResolvedValue([{ id: 'u123' }]),
-        };
-        return cb(tx);
-      });
+      mockAuthRepo.findOAuthLink.mockResolvedValue(null);
+      mockAuthRepo.findUserByEmail.mockResolvedValue({ id: 'u123', email: 'existing@test.com' });
+      mockAuthRepo.createOAuthAccount.mockResolvedValue({ id: 'oa1' });
+      mockAuthRepo.createSession.mockResolvedValue({ id: 's1' });
+      mockAuthRepo.findUserById.mockResolvedValue({ id: 'u123' });
 
       const result = await service.handleOAuthLogin(oauthProfile);
       expect(result).toHaveProperty('accessToken');
@@ -194,7 +202,7 @@ describe('AuthService', () => {
 
   describe('getActiveSessions', () => {
     it('marks current session with isCurrent: true', async () => {
-      (sessionRepo.findActiveByUserId as jest.Mock).mockResolvedValue([
+      (sessionRepo.findActiveByUserId as any).mockResolvedValue([
         { id: 'sess-1', userId: 'u1', createdAt: new Date(), expiresAt: new Date(Date.now() + 1000000) },
         { id: 'sess-2', userId: 'u1', createdAt: new Date(), expiresAt: new Date(Date.now() + 1000000) },
       ]);
@@ -208,3 +216,4 @@ describe('AuthService', () => {
     });
   });
 });
+

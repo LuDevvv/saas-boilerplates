@@ -1,6 +1,6 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { Pool } from "pg";
 import { POOL_TOKEN } from "@node-stack/db";
+import { Pool } from "pg";
 import {
   collectDefaultMetrics,
   Counter,

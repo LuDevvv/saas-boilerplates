@@ -7,7 +7,7 @@ import {
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
-import { IdempotencyService } from "../services/idempotency.service.js";
+import { IdempotencyService } from "@/common/services/idempotency.service.js";
 
 export const IDEMPOTENCY_KEY_HEADER = "Idempotency-Key";
 

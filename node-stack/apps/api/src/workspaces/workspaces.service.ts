@@ -2,14 +2,15 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  ConflictException,
 } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { CacheService } from "@node-stack/cache";
 import { WorkspaceRepository, schema } from "@node-stack/db";
+import type { UpdateMemberRoleDto, UpdateWorkspaceDto } from "@node-stack/validators";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import type { UpdateMemberRoleDto, UpdateWorkspaceDto } from "@node-stack/validators";
-import { OutboxService } from "../common/services/outbox.service.js";
+import { OutboxService } from "@/common/services/outbox.service.js";
 
 type WorkspaceRole = "owner" | "admin" | "member" | "guest";
 
@@ -140,6 +141,11 @@ export class WorkspacesService {
   }
 
   async createWorkspace(name: string, slug: string, userId: string) {
+    const existing = await this.workspaceRepo.findBySlug(slug);
+    if (existing) {
+      throw new ConflictException(`Workspace with slug "${slug}" already exists`);
+    }
+
     const workspace = await this.workspaceRepo.transaction(async (tx: NodePgDatabase<typeof schema>) => {
       const ws = await this.workspaceRepo.create({ name, slug }, tx);
 

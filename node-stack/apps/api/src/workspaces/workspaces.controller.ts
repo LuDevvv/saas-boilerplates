@@ -26,15 +26,15 @@ import {
   UpdateWorkspaceDto,
 } from "@node-stack/validators";
 
-import { WorkspacesService } from "./workspaces.service.js";
-import { ApiKeysService } from "../api-keys/api-keys.service.js";
-import { CurrentUser } from "../auth/decorators/index.js";
-import { RequirePermissions } from "../common/decorators/permissions.decorator.js";
-import { Roles } from "../common/decorators/roles.decorator.js";
-import { TenantId } from "../common/decorators/tenant-id.decorator.js";
-import { Workspace } from "../common/decorators/workspace.decorator.js";
-import { Idempotent } from "../common/decorators/idempotent.decorator.js";
-import type { WorkspaceContext } from "../common/types/index.js";
+import { ApiKeysService } from "@/api-keys/api-keys.service.js";
+import { CurrentUser } from "@/auth/decorators/index.js";
+import { Idempotent } from "@/common/decorators/idempotent.decorator.js";
+import { RequirePermissions } from "@/common/decorators/permissions.decorator.js";
+import { Roles } from "@/common/decorators/roles.decorator.js";
+import { TenantId } from "@/common/decorators/tenant-id.decorator.js";
+import { Workspace } from "@/common/decorators/workspace.decorator.js";
+import type { WorkspaceContext } from "@/common/types/index.js";
+import { WorkspacesService } from "@/workspaces/workspaces.service.js";
 
 @ApiTags("workspaces")
 @ApiBearerAuth("JWT-auth")

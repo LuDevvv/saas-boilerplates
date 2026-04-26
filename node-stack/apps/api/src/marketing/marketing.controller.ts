@@ -11,9 +11,10 @@ import {
   ApiOperation,
   ApiResponse,
 } from "@nestjs/swagger";
-import { Public } from "../common/decorators/public.decorator.js";
 import { JoinWaitlistDto } from "@node-stack/validators";
-import { MarketingService } from "./marketing.service.js";
+
+import { Public } from "@/common/decorators/public.decorator.js";
+import { MarketingService } from "@/marketing/marketing.service.js";
 
 @ApiTags("marketing")
 @Controller("marketing")

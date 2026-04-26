@@ -3,13 +3,12 @@ import {
   InvitationRepository, 
   WorkspaceRepository, 
   UserRepository 
-} from "@node-stack/db";
+, DatabaseModule } from "@node-stack/db";
 
-import { InvitationsController } from "./invitations.controller.js";
-import { InvitationsService } from "./invitations.service.js";
-import { OutboxService } from "../common/services/outbox.service.js";
+import { OutboxService } from "@/common/services/outbox.service.js";
+import { InvitationsController } from "@/workspaces/invitations.controller.js";
+import { InvitationsService } from "@/workspaces/invitations.service.js";
 
-import { DatabaseModule } from "@node-stack/db";
 
 @Module({
   imports: [DatabaseModule],

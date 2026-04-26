@@ -6,23 +6,23 @@ import {
   ConflictException,
   BadRequestException,
 } from "@nestjs/common";
-import { CacheService } from "@node-stack/cache";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
+import { CacheService } from "@node-stack/cache";
 import {
   withTransaction,
   AuthRepository,
   SessionRepository,
 } from "@node-stack/db";
-import * as schema from "@node-stack/db/schema";
 import type { Database } from "@node-stack/db";
+import * as schema from "@node-stack/db/schema";
 import { OutboxProducer } from "@node-stack/outbox-queue";
 import type { OAuthProfile } from "@node-stack/types";
 import * as bcrypt from "bcrypt";
 
-import { TOKEN_TYPE, AUTH_ERRORS, JWT_CONSTANTS } from "./constants.js";
-import type { RegisterDto, LoginDto, RefreshDto } from "./dto/index.js";
-import { TwoFactorService } from "./two-factor/two-factor.service.js";
+import { TOKEN_TYPE, AUTH_ERRORS, JWT_CONSTANTS } from "@/auth/constants.js";
+import type { RegisterDto, LoginDto, RefreshDto } from "@/auth/dto/index.js";
+import { TwoFactorService } from "@/auth/two-factor/two-factor.service.js";
 
 export interface TokenPair {
   accessToken: string;

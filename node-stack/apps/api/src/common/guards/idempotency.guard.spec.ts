@@ -1,16 +1,17 @@
 import { ConflictException } from "@nestjs/common";
-import { IdempotencyGuard, IDEMPOTENCY_KEY_HEADER } from "./idempotency.guard.js";
-import { IdempotencyService } from "../services/idempotency.service.js";
-import { mockExecutionContext } from "./test-helpers/mock-context.js";
+import { IdempotencyGuard, IDEMPOTENCY_KEY_HEADER } from "@/common/guards/idempotency.guard.js";
+import { IdempotencyService } from "@/common/services/idempotency.service.js";
+import { mockExecutionContext } from "@/common/guards/test-helpers/mock-context.js";
+import { Mocked } from "vitest";
 
 describe("IdempotencyGuard", () => {
   let guard: IdempotencyGuard;
-  let service: jest.Mocked<IdempotencyService>;
+  let service: Mocked<IdempotencyService>;
 
   beforeEach(() => {
     service = {
-      get: jest.fn(),
-      setWithLock: jest.fn(),
+      get: vi.fn(),
+      setWithLock: vi.fn(),
     } as any;
     guard = new IdempotencyGuard(service);
   });
@@ -23,8 +24,8 @@ describe("IdempotencyGuard", () => {
   });
 
   it("returns cached response if key found in storage", async () => {
-    const cached = { status: 200, body: { data: "cached" } };
-    service.get.mockResolvedValue(cached);
+    const cached = { statusCode: 200, data: "cached" };
+    (service.get as any).mockResolvedValue(cached);
 
     const ctx = mockExecutionContext({
       headers: { [IDEMPOTENCY_KEY_HEADER.toLowerCase()]: "test-key" },
@@ -39,8 +40,8 @@ describe("IdempotencyGuard", () => {
   });
 
   it("sets lock and proceeds for a new key", async () => {
-    service.get.mockResolvedValue(null);
-    service.setWithLock.mockResolvedValue(true);
+    (service.get as any).mockResolvedValue(null);
+    (service.setWithLock as any).mockResolvedValue(true);
 
     const ctx = mockExecutionContext({
       headers: { [IDEMPOTENCY_KEY_HEADER.toLowerCase()]: "new-key" },
@@ -55,8 +56,8 @@ describe("IdempotencyGuard", () => {
   });
 
   it("throws ConflictException if lock acquisition fails", async () => {
-    service.get.mockResolvedValue(null);
-    service.setWithLock.mockResolvedValue(false);
+    (service.get as any).mockResolvedValue(null);
+    (service.setWithLock as any).mockResolvedValue(false);
 
     const ctx = mockExecutionContext({
       headers: { [IDEMPOTENCY_KEY_HEADER.toLowerCase()]: "locked-key" },
@@ -65,3 +66,4 @@ describe("IdempotencyGuard", () => {
     await expect(guard.canActivate(ctx)).rejects.toThrow(ConflictException);
   });
 });
+
