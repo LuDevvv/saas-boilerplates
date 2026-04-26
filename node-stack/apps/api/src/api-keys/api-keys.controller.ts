@@ -1,15 +1,22 @@
 import { Controller, Post, Get, Delete, Body, Param, UseGuards, Request } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
-import { ApiKeysService } from './api-keys.service.js';
-import { CreateApiKeyDto } from '@node-stack/validators';
-import { JwtAuthGuard } from '../auth/guards/jwt.guard.js';
-import { WorkspaceGuard } from '../common/guards/workspace.guard.js';
-import { Permissions } from '../common/decorators/permissions.decorator.js';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiHeader } from '@nestjs/swagger';
 import { Permission } from '@node-stack/types';
-import { Idempotent } from '../common/decorators/idempotent.decorator.js';
+import { CreateApiKeyDto } from '@node-stack/validators';
+
+import { ApiKeysService } from '@/api-keys/api-keys.service.js';
+import { JwtAuthGuard } from '@/auth/guards/jwt.guard.js';
+import { Idempotent } from '@/common/decorators/idempotent.decorator.js';
+import { Permissions } from '@/common/decorators/permissions.decorator.js';
+import { WorkspaceGuard } from '@/common/guards/workspace.guard.js';
+
 
 @ApiTags('api-keys')
 @ApiBearerAuth('JWT-auth')
+@ApiHeader({
+  name: 'x-workspace-id',
+  description: 'The ID of the workspace context',
+  required: true,
+})
 @Idempotent()
 @Controller('api-keys')
 @UseGuards(JwtAuthGuard, WorkspaceGuard)

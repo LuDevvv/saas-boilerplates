@@ -13,20 +13,26 @@ import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
+  ApiHeader,
 } from "@nestjs/swagger";
 import type { IStorageProvider } from "@node-stack/storage";
 import { GetPresignedUrlDto } from "@node-stack/validators";
 
-import { AppStorageService } from "./storage.service.js";
-import { CurrentUser } from "../auth/decorators/index.js";
-import { JwtAuthGuard } from "../auth/guards/jwt.guard.js";
-import { Workspace } from "../common/decorators/workspace.decorator.js";
-import { WorkspaceGuard } from "../common/guards/workspace.guard.js";
-import { Idempotent } from "../common/decorators/idempotent.decorator.js";
-import type { UserPayload, WorkspaceContext } from "../common/types/index.js";
+import { CurrentUser } from "@/auth/decorators/index.js";
+import { JwtAuthGuard } from "@/auth/guards/jwt.guard.js";
+import { Idempotent } from "@/common/decorators/idempotent.decorator.js";
+import { Workspace } from "@/common/decorators/workspace.decorator.js";
+import { WorkspaceGuard } from "@/common/guards/workspace.guard.js";
+import type { UserPayload, WorkspaceContext } from "@/common/types/index.js";
+import { AppStorageService } from "@/storage/storage.service.js";
 
 @ApiTags("storage")
 @ApiBearerAuth("JWT-auth")
+@ApiHeader({
+  name: "x-workspace-id",
+  description: "The ID of the workspace context",
+  required: true,
+})
 @Idempotent()
 @Controller("storage")
 @UseGuards(JwtAuthGuard, WorkspaceGuard)

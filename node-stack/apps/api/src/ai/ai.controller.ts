@@ -8,28 +8,35 @@ import {
   UseGuards,
   Res,
 } from "@nestjs/common";
-import type { Response } from "express";
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiHeader,
 } from "@nestjs/swagger";
-import { JwtAuthGuard } from "../auth/guards/jwt.guard.js";
-import { WorkspaceGuard } from "../common/guards/workspace.guard.js";
-import { CurrentUser } from "../auth/decorators/current-user.decorator.js";
-import { Workspace } from "../common/decorators/workspace.decorator.js";
-import { Idempotent } from "../common/decorators/idempotent.decorator.js";
-import type { UserPayload, WorkspaceContext } from "../common/types/index.js";
-import { SubmitAIJobDto, ChatCompletionDto } from "@node-stack/validators";
 import { CacheService } from "@node-stack/cache";
-import { AiService } from "./ai.service.js";
-import { JobService } from "../common/queues/job.service.js";
-import { QUEUE_NAMES } from "../common/queues/queue.constants.js";
-import { BillingGuard } from "../common/guards/billing.guard.js";
+import { SubmitAIJobDto, ChatCompletionDto } from "@node-stack/validators";
+import type { Response } from "express";
+
+import { AiService } from "@/ai/ai.service.js";
+import { CurrentUser } from "@/auth/decorators/current-user.decorator.js";
+import { JwtAuthGuard } from "@/auth/guards/jwt.guard.js";
+import { Idempotent } from "@/common/decorators/idempotent.decorator.js";
+import { Workspace } from "@/common/decorators/workspace.decorator.js";
+import { BillingGuard } from "@/common/guards/billing.guard.js";
+import { WorkspaceGuard } from "@/common/guards/workspace.guard.js";
+import { JobService } from "@/common/queues/job.service.js";
+import { QUEUE_NAMES } from "@/common/queues/queue.constants.js";
+import type { UserPayload, WorkspaceContext } from "@/common/types/index.js";
 
 @ApiTags("ai")
 @ApiBearerAuth("JWT-auth")
+@ApiHeader({
+  name: "x-workspace-id",
+  description: "The ID of the workspace context",
+  required: true,
+})
 @Idempotent()
 @Controller("ai")
 @UseGuards(JwtAuthGuard, WorkspaceGuard, BillingGuard)

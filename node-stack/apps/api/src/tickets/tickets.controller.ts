@@ -19,18 +19,9 @@ import {
   ApiBearerAuth,
   ApiParam,
   ApiQuery,
+  ApiHeader,
 } from "@nestjs/swagger";
 import { Role } from "@node-stack/types";
-
-import { JwtAuthGuard } from "../auth/guards/jwt.guard.js";
-import { WorkspaceGuard } from "../common/guards/workspace.guard.js";
-import { RolesGuard } from "../common/guards/roles.guard.js";
-import { Roles } from "../common/decorators/roles.decorator.js";
-import { CurrentUser } from "../auth/decorators/current-user.decorator.js";
-import { TenantId } from "../common/decorators/tenant-id.decorator.js";
-import { Workspace } from "../common/decorators/workspace.decorator.js";
-import type { WorkspaceContext } from "../common/types/index.js";
-
 import {
   CreateTicketDto,
   UpdateTicketDto,
@@ -38,10 +29,23 @@ import {
   TicketResponseDto,
 } from "@node-stack/validators";
 
-import { TicketService } from "./tickets.service.js";
+import { CurrentUser } from "@/auth/decorators/current-user.decorator.js";
+import { JwtAuthGuard } from "@/auth/guards/jwt.guard.js";
+import { Roles } from "@/common/decorators/roles.decorator.js";
+import { TenantId } from "@/common/decorators/tenant-id.decorator.js";
+import { Workspace } from "@/common/decorators/workspace.decorator.js";
+import { RolesGuard } from "@/common/guards/roles.guard.js";
+import { WorkspaceGuard } from "@/common/guards/workspace.guard.js";
+import type { WorkspaceContext } from "@/common/types/index.js";
+import { TicketService } from "@/tickets/tickets.service.js";
 
 @ApiTags("ticket")
 @ApiBearerAuth("JWT-auth")
+@ApiHeader({
+  name: "x-workspace-id",
+  description: "The ID of the workspace context",
+  required: true,
+})
 @Controller("ticket")
 @UseGuards(JwtAuthGuard, WorkspaceGuard, RolesGuard)
 export class TicketController {

@@ -13,22 +13,28 @@ import {
   ApiBearerAuth,
   ApiOperation,
   ApiResponse,
+  ApiHeader,
 } from "@nestjs/swagger";
 import { Throttle, SkipThrottle } from "@nestjs/throttler";
 import { Permission } from "@node-stack/types";
+import { CreateCheckoutDto } from "@node-stack/validators";
 import type { Request } from "express";
 
-import { BillingService } from "./billing.service.js";
-import { CreateCheckoutDto } from "@node-stack/validators";
-import { CurrentUser } from "../auth/decorators/index.js";
-import { RequirePermissions } from "../common/decorators/permissions.decorator.js";
-import { Public } from "../common/decorators/public.decorator.js";
-import { Workspace } from "../common/decorators/workspace.decorator.js";
-import { Idempotent } from "../common/decorators/idempotent.decorator.js";
-import type { UserPayload, WorkspaceContext } from "../common/types/index.js";
+import { CurrentUser } from "@/auth/decorators/index.js";
+import { BillingService } from "@/billing/billing.service.js";
+import { Idempotent } from "@/common/decorators/idempotent.decorator.js";
+import { RequirePermissions } from "@/common/decorators/permissions.decorator.js";
+import { Public } from "@/common/decorators/public.decorator.js";
+import { Workspace } from "@/common/decorators/workspace.decorator.js";
+import type { UserPayload, WorkspaceContext } from "@/common/types/index.js";
 
 @ApiTags("billing")
 @ApiBearerAuth("JWT-auth")
+@ApiHeader({
+  name: "x-workspace-id",
+  description: "The ID of the workspace context",
+  required: true,
+})
 @Idempotent()
 @Controller("billing")
 export class BillingController {
