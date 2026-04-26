@@ -1,4 +1,5 @@
 import { ExecutionContext } from "@nestjs/common";
+import { vi } from "vitest";
 
 export function mockExecutionContext(
   overrides: {
@@ -19,9 +20,9 @@ export function mockExecutionContext(
   };
 
   const response = {
-    setHeader: jest.fn(),
-    status: jest.fn().mockReturnThis(),
-    json: jest.fn().mockReturnThis(),
+    setHeader: vi.fn(),
+    status: vi.fn().mockReturnThis(),
+    json: vi.fn().mockReturnThis(),
   };
 
   return {
@@ -37,3 +38,4 @@ export function mockExecutionContext(
     }),
   } as unknown as ExecutionContext;
 }
+

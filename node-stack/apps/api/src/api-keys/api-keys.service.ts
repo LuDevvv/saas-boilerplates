@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OnEvent } from '@nestjs/event-emitter';
+import { CacheService } from '@node-stack/cache';
 import {
   ApiKeyRepository,
   withTransaction,
@@ -13,12 +14,13 @@ import {
   DB_TOKEN,
   type Database,
 } from '@node-stack/db';
-import { CacheService } from '@node-stack/cache';
+import { CreateApiKeyDto } from '@node-stack/validators';
+
 import {
   ApiKeyResponseDto,
   CreateApiKeyResponseDto,
-} from '../workspaces/dto/api-key.dto.js';
-import { CreateApiKeyDto } from '@node-stack/validators';
+} from '@/workspaces/dto/api-key.dto.js';
+
 
 @Injectable()
 export class ApiKeysService {
@@ -71,7 +73,7 @@ export class ApiKeysService {
 
     return {
       ...this.mapToDto(record),
-      plainKey, // ONLY RETURNED ONCE!
+      plainKey: plainKey, // ONLY RETURNED ONCE!
     };
   }
 

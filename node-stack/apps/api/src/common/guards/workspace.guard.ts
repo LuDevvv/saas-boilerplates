@@ -4,42 +4,51 @@ import {
   ExecutionContext,
   ForbiddenException,
   NotFoundException,
-  BadRequestException,
+  Inject,
 } from "@nestjs/common";
 import { CacheService } from "@node-stack/cache";
-import { db, schema, eq, and } from "@node-stack/db";
+import { schema, eq, and, DB_TOKEN, Database , RequestContextService } from "@node-stack/db";
 
-import { RequestContextService } from "@node-stack/db";
-
-import type { WorkspaceContext } from "../types/index.js";
+import type { WorkspaceContext } from "@/common/types/index.js";
 
 @Injectable()
 export class WorkspaceGuard implements CanActivate {
   constructor(
     private readonly cache: CacheService,
-    private readonly contextService: RequestContextService
+    private readonly contextService: RequestContextService,
+    @Inject(DB_TOKEN) private readonly db: Database,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest() as any;
+    
     // Extract workspace ID: Look for explicit workspaceId param first,
-    // otherwise fallback to id only if the request concerns workspaces context.
-    const workspaceId: string =
-      req?.params?.workspaceId ||
-      (req?.params?.id &&
-        (req?.url?.includes("/workspaces") ||
-          req?.url?.includes("/api-keys") ||
-          req?.url?.includes("/storage") ||
-          req?.url?.includes("/ai"))
-        ? req.params.id
+    // then headers (x-workspace-id or x-tenant-id), then fallback to id
+    // only if the request context suggests a workspace-related resource.
+    const params = req.params || {};
+    const headers = req.headers || {};
+    
+    const workspaceId: string | undefined =
+      params.workspaceId ||
+      headers["x-workspace-id"] ||
+      headers["x-tenant-id"] ||
+      (params.id &&
+        (req.url.includes("/workspaces") ||
+          req.url.includes("/api-keys") ||
+          req.url.includes("/storage") ||
+          req.url.includes("/ai") ||
+          req.url.includes("/billing") ||
+          req.url.includes("/portability"))
+        ? params.id
         : undefined);
 
     const user = req?.user;
 
-    // Skip workspace check if no relevant workspaceId param is found
+    // Skip workspace check if no workspaceId is found (allows public/non-workspace routes)
     if (!workspaceId) {
       return true;
     }
+
     if (!user?.id) {
       throw new ForbiddenException("Authentication required");
     }
@@ -48,7 +57,7 @@ export class WorkspaceGuard implements CanActivate {
     const ws = await this.cache.getOrSet(
       `ws:${workspaceId}:exists`,
       async () => {
-        const result = await db.query.workspaces.findFirst({
+        const result = await this.db.query.workspaces.findFirst({
           where: eq(schema.workspaces.id, workspaceId),
         });
         return result ?? null;
@@ -60,11 +69,11 @@ export class WorkspaceGuard implements CanActivate {
       throw new NotFoundException("Workspace not found");
     }
 
-    // Cache membership lookup (60s TTL — short to reflect role changes quickly)
+    // Cache membership lookup (60s TTL)
     const membership = await this.cache.getOrSet(
       `ws:${workspaceId}:u:${user.id}:member`,
       async () => {
-        const result = await db.query.memberships.findFirst({
+        const result = await this.db.query.memberships.findFirst({
           where: and(
             eq(schema.memberships.workspaceId, workspaceId),
             eq(schema.memberships.userId, user.id),
@@ -80,7 +89,7 @@ export class WorkspaceGuard implements CanActivate {
     }
 
     if (membership.status !== "active") {
-      throw new ForbiddenException("Your membership is not active (pending approval)");
+      throw new ForbiddenException("Your membership is not active");
     }
 
     req.workspace = {
@@ -90,12 +99,13 @@ export class WorkspaceGuard implements CanActivate {
       status: membership.status,
     } as WorkspaceContext;
 
-    // Attach workspace role to user for downstream RBAC guards
+    // Attach workspace role to user for downstream RBAC
     (req.user as any).workspaceRole = membership.role;
 
     // Set workspace in request context for RLS
     this.contextService.workspaceId = ws.id;
     this.contextService.userId = user.id;
+    req.tenantId = ws.id;
 
     return true;
   }
