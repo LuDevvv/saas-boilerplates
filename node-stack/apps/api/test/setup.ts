@@ -6,7 +6,13 @@ import * as request from 'supertest';
 import { HttpExceptionFilter } from '../src/common/filters/http-exception.filter.js';
 
 // Mock Redis at the module level since services create their own instances via `new Redis()`
-jest.mock('ioredis', () => require('ioredis-mock'));
+vi.mock('ioredis', async () => {
+  const { default: Redis } = await import('ioredis-mock');
+  return {
+    default: Redis,
+    Redis,
+  };
+});
 
 let app: INestApplication;
 

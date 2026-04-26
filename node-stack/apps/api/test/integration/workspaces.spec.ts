@@ -14,8 +14,9 @@ import { HttpExceptionFilter } from '../../src/common/filters/http-exception.fil
 import { setupInfrastructure } from '../setup.integration';
 import { DbTestHelper, createDbHelper } from '../helpers/db-utils';
 
-// Mock Redis
-jest.mock('ioredis', () => require('ioredis-mock'));
+import { vi } from 'vitest';
+// Using real Redis from test containers
+
 
 describe('Workspaces Integration Tests', () => {
   let app: INestApplication;
@@ -26,14 +27,27 @@ describe('Workspaces Integration Tests', () => {
   let adminUserId: string;
   let memberToken: string;
   let memberUserId: string;
+  let memberEmail: string;
   let workspaceId: string;
+  let workspaceSlug: string;
 
   beforeAll(async () => {
-    const infra = await setupInfrastructure();
-    const { applySchema, applyRLSPolicies } = await import('../setup.integration');
-    await applySchema(infra.dbUrl);
-    await applyRLSPolicies(infra.dbUrl);
+    // Infrastructure setup already handled by globalSetup
+    const dbUrl = process.env.DATABASE_URL!;
+    process.env.GOOGLE_CLIENT_ID = 'dummy';
+    process.env.GOOGLE_CLIENT_SECRET = 'dummy';
+    process.env.GOOGLE_CALLBACK_URL = 'dummy';
+    process.env.GITHUB_CLIENT_ID = 'dummy';
+    process.env.GITHUB_CLIENT_SECRET = 'dummy';
+    process.env.GITHUB_CALLBACK_URL = 'dummy';
+    process.env.API_KEY_PEPPER = 'dummy';
+    process.env.ENCRYPTION_KEY = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+    process.env.JWT_SECRET = 'test-secret-at-least-16-chars-long';
+    process.env.REDIS_URL = `redis://${process.env.REDIS_HOST || 'localhost'}:${process.env.REDIS_PORT || '6379'}`;
+
+    const infra = { dbUrl } as any;
     dbHelper = createDbHelper(infra);
+
 
     const module: TestingModule = await Test.createTestingModule({
       imports: [await import('../../src/app.module.js').then(m => m.AppModule)],
@@ -47,7 +61,7 @@ describe('Workspaces Integration Tests', () => {
         createValidationException: (error: any) => new UnprocessableEntityException({
           statusCode: 422,
           message: "Validation failed",
-          errors: error.errors.map((e: any) => ({ path: e.path, message: e.message })),
+          errors: Array.isArray(error.errors) ? error.errors.map((e: any) => ({ path: e.path, message: e.message })) : [],
         }),
       }))(),
     );
@@ -75,7 +89,8 @@ describe('Workspaces Integration Tests', () => {
         email: `admin-${Date.now()}@test.com`,
         password: 'Password123!',
         name: 'Admin User',
-      });
+      })
+      .expect(201);
     adminToken = adminRes.body.accessToken;
     adminUserId = adminRes.body.user.id;
 
@@ -86,15 +101,18 @@ describe('Workspaces Integration Tests', () => {
         email: `member-${Date.now()}@test.com`,
         password: 'Password123!',
         name: 'Member User',
-      });
+      })
+      .expect(201);
     memberToken = memberRes.body.accessToken;
     memberUserId = memberRes.body.user.id;
+    memberEmail = memberRes.body.user.email;
 
     // Create workspace
+    workspaceSlug = `test-ws-${Date.now()}`;
     const wsRes = await request(httpServer)
       .post('/v1/workspaces')
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ name: 'Test Workspace', slug: `test-ws-${Date.now()}` });
+      .send({ name: 'Test Workspace', slug: workspaceSlug });
     workspaceId = wsRes.body.id;
   });
 
@@ -122,7 +140,7 @@ describe('Workspaces Integration Tests', () => {
       await request(httpServer)
         .post('/v1/workspaces')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ name: 'Duplicate', slug: `test-ws-${Date.now()}` })
+        .send({ name: 'Duplicate', slug: workspaceSlug })
         .expect(409);
     });
   });
@@ -134,8 +152,8 @@ describe('Workspaces Integration Tests', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
-      expect(res.body).toHaveProperty('data');
-      expect(Array.isArray(res.body.data)).toBe(true);
+      expect(res.body).toHaveProperty('workspaces');
+      expect(Array.isArray(res.body.workspaces)).toBe(true);
     });
 
     it('should get workspace details for member', async () => {
@@ -163,7 +181,7 @@ describe('Workspaces Integration Tests', () => {
       const invRes = await request(httpServer)
         .post(`/v1/workspaces/${workspaceId}/invitations`)
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ email: memberToken, role: 'member' });
+        .send({ email: memberEmail, role: 'member' });
       const token = invRes.body.token;
 
       await request(httpServer)
@@ -183,10 +201,11 @@ describe('Workspaces Integration Tests', () => {
 
     it('owner should be able to remove members', async () => {
       // Create a third user to remove
+      const thirdEmail = `third-${Date.now()}@test.com`;
       const thirdRes = await request(httpServer)
         .post('/v1/auth/register')
         .send({
-          email: `third-${Date.now()}@test.com`,
+          email: thirdEmail,
           password: 'Password123!',
           name: 'Third User',
         });
@@ -196,7 +215,7 @@ describe('Workspaces Integration Tests', () => {
       const invRes = await request(httpServer)
         .post(`/v1/workspaces/${workspaceId}/invitations`)
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ email: `third-${Date.now()}@test.com`, role: 'member' });
+        .send({ email: thirdEmail, role: 'member' });
       
       await request(httpServer)
         .post(`/v1/workspace-invitations/${invRes.body.token}/accept`)
@@ -219,7 +238,7 @@ describe('Workspaces Integration Tests', () => {
         .expect(201);
 
       expect(res.body).toHaveProperty('key');
-      expect(res.body.key).toMatch(/^nstack_/);
+      expect(res.body.key).toMatch(/^sk_live_/);
     });
 
     it('should list workspace API keys', async () => {

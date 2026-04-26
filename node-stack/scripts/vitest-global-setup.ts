@@ -34,11 +34,27 @@ export async function setup() {
   try {
     const { Pool } = await import('pg');
     const pool = new Pool({ connectionString: dbUrl });
-    await pool.query('DROP SCHEMA public CASCADE; CREATE SCHEMA public;');
     
-    // Create non-superuser for RLS testing
-    await pool.query('DROP ROLE IF EXISTS app_user');
-    await pool.query('CREATE ROLE app_user WITH LOGIN PASSWORD \'app_pass\'');
+    // Atomically reset schema
+    await pool.query('DROP SCHEMA IF EXISTS public CASCADE');
+    await pool.query('CREATE SCHEMA public');
+    await pool.query('GRANT ALL ON SCHEMA public TO public');
+    
+    // Create non-superuser for RLS testing with robust cleanup
+    console.log('Managing app_user role...');
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'app_user') THEN
+          -- Aggressively clear all dependencies
+          DROP OWNED BY app_user CASCADE;
+          DROP ROLE app_user;
+        END IF;
+      END
+      $$;
+    `);
+    
+    await pool.query("CREATE ROLE app_user WITH LOGIN PASSWORD 'app_pass'");
     await pool.query('GRANT ALL ON SCHEMA public TO app_user');
     await pool.query('ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO app_user');
     await pool.query('ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO app_user');
@@ -47,13 +63,19 @@ export async function setup() {
     console.log('✅ Database cleaned and app_user created.');
   } catch (error) {
     console.error('❌ Failed to clean database:', error);
+    // Don't throw here to allow testcontainers to potentially be reused if some parts succeeded
   }
 
   // Sync schema using push (fast and matches current code)
   console.log('Syncing schema with drizzle-kit push...');
+  const rootDir = process.cwd().includes('node-stack') 
+    ? process.cwd().split('node-stack')[0] + 'node-stack'
+    : process.cwd();
+    
   try {
     execSync('pnpm --filter @node-stack/db db:push', {
-      env: { ...process.env, DATABASE_URL: dbUrl },
+      env: { ...process.env, DATABASE_URL: dbUrl, NODE_ENV: 'test' },
+      cwd: rootDir,
       stdio: 'inherit'
     });
     console.log('✅ Schema pushed.');
@@ -69,26 +91,26 @@ export async function setup() {
     const pool = new Pool({ connectionString: dbUrl });
     const fs = await import('fs');
     const path = await import('path');
-    const rootDir = process.cwd().includes('node-stack') 
-      ? process.cwd().split('node-stack')[0] + 'node-stack'
-      : process.cwd();
-    const migrationPath = path.join(rootDir, 'packages/db/migrations/0012_enable_rls.sql');
-    console.log(`Loading migration from: ${migrationPath}`);
-    const rlsSql = fs.readFileSync(migrationPath, 'utf8');
     
-    // Split by statement if needed or just run the whole thing if pg supports it
-    await pool.query(rlsSql);
+    const migrationPath = path.join(rootDir, 'packages/db/migrations/0012_enable_rls.sql');
+    if (fs.existsSync(migrationPath)) {
+      console.log(`Loading migration from: ${migrationPath}`);
+      const rlsSql = fs.readFileSync(migrationPath, 'utf8');
+      await pool.query(rlsSql);
+      console.log('✅ RLS policies applied.');
+    } else {
+      console.warn('⚠️ RLS migration file not found at:', migrationPath);
+    }
     await pool.end();
-    console.log('✅ RLS policies applied.');
   } catch (error) {
-    console.error('❌ Failed to apply RLS policies:', error);
-    // Not throwing here as some policies might already exist or fail gracefully
+    console.warn('⚠️ Failed to apply RLS policies (may already exist):', error.message);
   }
 
   return async () => {
     console.log('\n🛑 Tearing down infrastructure...');
-    // Only stop if NOT in local reuse mode or if in CI
     if (process.env.CI) {
+      const { RedisContainer } = await import('@testcontainers/redis');
+      const { PostgreSqlContainer } = await import('@testcontainers/postgresql');
       await postgres.stop();
       await redis.stop();
       console.log('✅ Infrastructure stopped.');
@@ -97,3 +119,4 @@ export async function setup() {
     }
   };
 }
+
