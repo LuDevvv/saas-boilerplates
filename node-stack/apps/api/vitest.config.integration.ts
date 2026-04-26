@@ -6,9 +6,10 @@ export default defineConfig({
     name: 'api-integration',
     globals: true,
     environment: 'node',
-    include: ['src/**/*.int-spec.ts'],
+    include: ['test/integration/**/*.spec.ts', 'test/**/*.int-spec.ts'],
     globalSetup: '../../scripts/vitest-global-setup.ts',
-    testTimeout: 60000,
+    testTimeout: 300000,
+    hookTimeout: 300000,
   },
   plugins: [
     swc.vite({

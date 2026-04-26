@@ -31,9 +31,19 @@ describe('Auth (e2e)', () => {
       expect(res.body.email).toBe(user.email.toLowerCase());
     });
 
+    it('POST /v1/auth/login works for registered user', async () => {
+      const res = await getRequest()
+        .post('/v1/auth/login')
+        .send({ email: user.email, password: user.password })
+        .expect(200);
+
+      expect(res.body).toHaveProperty('accessToken');
+    });
+
     it('GET /v1/auth/me returns 401 with no token', async () => {
       await getRequest().get('/v1/auth/me').expect(401);
     });
+
   });
 
   // Flow 2: invalid payload returns 422 (Zod)

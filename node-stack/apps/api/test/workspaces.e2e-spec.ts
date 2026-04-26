@@ -93,5 +93,25 @@ describe('Workspaces (e2e)', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
     });
+
+    it('MEMBER role cannot delete workspace (RBAC)', async () => {
+      // Re-add the member first since we just removed them
+      const resInvite = await getRequest()
+        .post(`/v1/workspaces/${workspaceId}/invitations`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ email: `re-invited-${Date.now()}@test.com`, role: 'member' })
+        .expect(201);
+      
+      await getRequest()
+        .post(`/v1/workspace-invitations/${resInvite.body.token}/accept`)
+        .set('Authorization', `Bearer ${memberToken}`)
+        .expect(200);
+
+      await getRequest()
+        .delete(`/v1/workspaces/${workspaceId}`)
+        .set('Authorization', `Bearer ${memberToken}`)
+        .expect(403);
+    });
+
   });
 });

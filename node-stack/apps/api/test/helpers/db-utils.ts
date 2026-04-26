@@ -26,13 +26,15 @@ const TRUNCATE_ORDER = [
   'api_keys',
   'subscriptions',
   'customers',
-  'inbound_webhooks',
+  'billing_events',
+  'inbound_webhook_logs',
   'notifications',
-  'ai_chat_history',
-  'portability_exports',
-  'system_configs',
+  'ai_logs',
+  'portability_requests',
+  'system_config',
   'workspace_invitations',
   'memberships',
+  'oauth_accounts',
   'accounts',
   'sessions',
   'verification_tokens',
@@ -47,12 +49,20 @@ export type TruncatableTable = typeof TRUNCATE_ORDER[number];
  */
 export class DbTestHelper {
   private pool: Pool;
+  private appUserPool: Pool;
   private drizzleDb: ReturnType<typeof drizzle>;
+  private appUserDb: ReturnType<typeof drizzle>;
   private requestContext: RequestContextService;
 
   constructor(dbUrl: string) {
     this.pool = new Pool({ connectionString: dbUrl });
     this.drizzleDb = drizzle(this.pool, { schema });
+
+    // Connection for RLS testing as non-owner
+    const appUserUrl = dbUrl.replace(/\/\/[^@]+@/, '//app_user:app_pass@');
+    this.appUserPool = new Pool({ connectionString: appUserUrl });
+    this.appUserDb = drizzle(this.appUserPool, { schema });
+
     this.requestContext = new RequestContextService();
   }
 
@@ -240,6 +250,21 @@ export class DbTestHelper {
   }
 
   /**
+   * Get Drizzle DB instance connected as app_user
+   */
+  getAppUserDb() {
+    return this.appUserDb;
+  }
+
+  /**
+   * Execute raw SQL as app_user (RLS enforced)
+   */
+  async queryAsAppUser<T = any>(sql: string, params?: any[]): Promise<T[]> {
+    const result = await this.appUserPool.query(sql, params);
+    return result.rows as T[];
+  }
+
+  /**
    * Execute raw SQL for custom test scenarios
    */
   async query<T = any>(sql: string, params?: any[]): Promise<T[]> {
@@ -252,6 +277,7 @@ export class DbTestHelper {
    */
   async close(): Promise<void> {
     await this.pool.end();
+    await this.appUserPool.end();
   }
 }
 
