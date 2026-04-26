@@ -32,7 +32,10 @@
     "noUnusedParameters": false,
     "composite": false,
     "esModuleInterop": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   },
   "include": ["src/**/*", "scripts/**/*"],
   "exclude": [
