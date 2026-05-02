@@ -62,15 +62,13 @@ export function RecentUsersTable({ users, className }: { users: any[]; className
           <TableBody>
             {users.map((user) => (
               <TableRow key={user.id}>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-3">
+                <TableCell className="font-label">                  <div className="flex items-center gap-3">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={user.avatarUrl} />
                       <AvatarFallback>{user.name?.charAt(0) || "U"}</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
-                      <span className="text-sm font-semibold">{user.name}</span>
-                      <span className="text-xs text-muted-foreground">{user.email}</span>
+                      <span className="text-sm font-label">{user.name}</span>                      <span className="text-xs text-muted-foreground">{user.email}</span>
                     </div>
                   </div>
                 </TableCell>

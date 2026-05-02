@@ -40,7 +40,7 @@ export default function LandingPage() {
 
       <section id="waitlist" className="bg-gray-50 py-20">
         <div className="container flex flex-col items-center text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+          <h2 className="text-3xl font-heading  text-gray-900 sm:text-4xl">
             Early Access
           </h2>
           <p className="mt-4 text-lg text-gray-600">
@@ -55,7 +55,7 @@ export default function LandingPage() {
       <section id="pricing" className="py-24">
         <div className="container">
           <div className="mb-16 text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+            <h2 className="text-3xl font-heading  text-gray-900 sm:text-4xl">
               Transparent Pricing
             </h2>
             <p className="mt-4 text-lg text-gray-600">
@@ -68,7 +68,7 @@ export default function LandingPage() {
 
       <footer className="border-t border-gray-100 py-12">
         <div className="container flex flex-col items-center justify-between gap-6 sm:flex-row">
-          <div className="text-xl font-bold text-gray-900">Node Stack</div>
+          <div className="text-xl font-heading text-gray-900">Node Stack</div>
           <div className="flex gap-8 text-sm text-gray-500">
             <a href="/terms" className="hover:text-primary-500 transition-colors">Terms</a>
             <a href="/privacy" className="hover:text-primary-500 transition-colors">Privacy</a>

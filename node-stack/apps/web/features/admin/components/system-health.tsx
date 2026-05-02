@@ -18,8 +18,7 @@ export function SystemHealth({ poolStats, className }: { poolStats: any; classNa
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span>DB Pool Usage</span>
-            <span className="font-medium">{usagePercent}%</span>
-          </div>
+            <span className="font-kpi">{usagePercent}%</span>          </div>
           <Progress value={usagePercent} className="h-2" />
           <div className="flex justify-between text-xs text-muted-foreground pt-1">
             <span>Idle: {idle}</span>
@@ -31,11 +30,11 @@ export function SystemHealth({ poolStats, className }: { poolStats: any; classNa
         <div className="grid grid-cols-2 gap-4 pt-4">
           <div className="rounded-lg bg-muted p-3">
             <div className="text-xs text-muted-foreground">API Latency</div>
-            <div className="text-lg font-bold">42ms</div>
+            <div className="text-lg font-kpi">42ms</div>
           </div>
           <div className="rounded-lg bg-muted p-3">
             <div className="text-xs text-muted-foreground">Uptime</div>
-            <div className="text-lg font-bold">99.9%</div>
+            <div className="text-lg font-kpi">99.9%</div>
           </div>
         </div>
       </CardContent>
