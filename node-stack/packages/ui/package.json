@@ -1,36 +1,50 @@
 {
-    "name":  "@node-stack/ui",
-    "version":  "1.0.0",
-    "private":  true,
-    "main":  "./dist/index.js",
-    "types":  "./dist/index.d.ts",
-    "license":  "MIT",
+    "name": "@node-stack/ui",
+    "version": "1.0.0",
+    "private": true,
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "license": "MIT",
     "type": "module",
     "scripts": {
         "lint": "eslint src --ext .ts,.tsx",
         "typecheck": "tsc --noEmit",
         "build": "tsc -b --clean && tsc -b"
     },
-    "dependencies":  {
-                         "@types/gsap":  "^3.0.0",
-                         "clsx":  "^2.1.1",
-                         "gsap":  "^3.14.2",
-                         "lucide-react":  "^0.469.0",
-                         "tailwind-merge":  "^3.0.0",
-                         "tailwindcss-animate":  "^1.0.7"
-                     },
-    "devDependencies":  {
-                            "@types/react":  "^19.0.0",
-                            "@types/react-dom":  "^19.0.0",
-                            "autoprefixer":  "^10.4.13",
-                            "postcss":  "^8.5.2",
-                            "react":  "^19.0.0",
-                            "react-dom":  "^19.0.0",
-                            "tailwindcss":  "^3.4.1",
-                            "typescript":  "5.7.3"
-                        },
-    "peerDependencies":  {
-                             "react":  "^18.0.0 || ^19.0.0",
-                             "react-dom":  "^18.0.0 || ^19.0.0"
-                         }
+    "dependencies": {
+        "@radix-ui/react-checkbox": "^1.3.3",
+        "@radix-ui/react-collapsible": "^1.1.3",
+        "@radix-ui/react-dialog": "^1.1.6",
+        "@radix-ui/react-avatar": "^1.1.3",
+        "@radix-ui/react-dropdown-menu": "^2.1.6",
+        "@radix-ui/react-label": "^2.1.8",
+        "@radix-ui/react-progress": "^1.1.2",
+        "react-phone-number-input": "^3.4.16",
+        "@tanstack/react-table": "^8.21.3",
+        "@radix-ui/react-scroll-area": "^1.2.3",
+        "@radix-ui/react-separator": "^1.1.8",
+        "@radix-ui/react-tabs": "^1.1.3",
+        "@radix-ui/react-tooltip": "^1.1.8",
+        "@types/gsap": "^3.0.0",
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "gsap": "^3.14.2",
+        "lucide-react": "^0.469.0",
+        "tailwind-merge": "^3.0.0",
+        "tailwindcss-animate": "^1.0.7"
+    },
+    "devDependencies": {
+        "@types/react": "^19.0.0",
+        "@types/react-dom": "^19.0.0",
+        "autoprefixer": "^10.4.13",
+        "postcss": "^8.5.2",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
+        "tailwindcss": "^3.4.1",
+        "typescript": "5.7.3"
+    },
+    "peerDependencies": {
+        "react": "^18.0.0 || ^19.0.0",
+        "react-dom": "^18.0.0 || ^19.0.0"
+    }
 }

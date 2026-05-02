@@ -38,12 +38,11 @@ export function PricingTable({ tiers, className }: PricingTableProps) {
           )}
         >
           <div className="mb-8">
-            <h3 className="text-xl font-bold">{tier.name}</h3>
+            <h3 className="text-xl font-heading">{tier.name}</h3>
             <p className="mt-2 text-sm text-muted-foreground">{tier.description}</p>
             <div className="mt-6 flex items-baseline gap-1">
-              <span className="text-4xl font-extrabold">{tier.price}</span>
-              {tier.price !== "Free" && <span className="text-base font-medium text-muted-foreground">/mo</span>}
-            </div>
+              <span className="text-4xl font-kpi">{tier.price}</span>
+              {tier.price !== "Free" && <span className="text-base font-label text-muted-foreground">/mo</span>}            </div>
           </div>
           <ul className="mb-8 flex-1 space-y-4">
             {tier.features.map((feature) => (
@@ -64,10 +63,9 @@ export function PricingTable({ tiers, className }: PricingTableProps) {
             ))}
           </ul>
           <Button
-            variant={tier.highlighted ? "default" : "outline"}
+            variant={tier.highlighted ? "primary" : "outline"}
             className="w-full"
             size="lg"
-            magnetic
           >
             {tier.cta}
           </Button>

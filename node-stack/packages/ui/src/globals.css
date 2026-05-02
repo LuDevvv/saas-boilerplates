@@ -33,6 +33,14 @@
     --ring: 262.1 83.3% 57.8%;
 
     --radius: 0.75rem;
+
+    /* Typography Weights */
+    --font-weight-label: 600;
+    --font-weight-heading: 800;
+    --font-weight-body: 400;
+    --font-weight-medium: 500;
+    --font-weight-kpi: 700;
+    --font-weight-black: 900;
   }
 
   .dark {
