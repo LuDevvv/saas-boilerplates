@@ -1,0 +1,61 @@
+{
+  "common": {
+    "logout": "Cerrar sesión",
+    "settings": "Configuración",
+    "profile": "Perfil",
+    "expand": "Expandir",
+    "collapse": "Colapsar",
+    "search": "Buscar",
+    "search_placeholder": "Buscar acciones o espacios..."
+  },
+  "navigation": {
+    "main": "Principal",
+    "overview": "Resumen",
+    "workspaces": "Espacios de trabajo",
+    "files": "Archivos",
+    "ai_playground": "Playground de IA",
+    "notifications": "Notificaciones",
+    "support": "Soporte",
+    "organization": "Organización",
+    "security": "Seguridad",
+    "audit_logs": "Registros de auditoría",
+    "personal": "Personal",
+    "billing": "Facturación",
+    "profile": "Perfil",
+    "settings": "Configuración",
+    "admin": "Admin",
+    "admin_overview": "Resumen de Admin",
+    "manage_users": "Gestionar Usuarios"
+  },
+  "dashboard": {
+    "overview": {
+      "title": "Resumen",
+      "subtitle": "¡Bienvenido de nuevo! Esto es lo que está pasando hoy en tu espacio de trabajo.",
+      "metrics": {
+        "total_visits": "Visitas Totales",
+        "active_sessions": "Sesiones Activas",
+        "bounce_rate": "Tasa de Rebote"
+      },
+      "recent_activity": {
+        "title": "Actividad Reciente",
+        "login_detected": "Inicio de sesión Detectado"
+      },
+      "quick_actions": {
+        "title": "Acciones Rápidas",
+        "view_team": "Ver Equipo",
+        "view_team_desc": "Gestiona los miembros de tu organización",
+        "notification_settings": "Configuración de Notificaciones",
+        "notification_settings_desc": "Configura cómo recibes alertas",
+        "security_audit": "Auditoría de Seguridad",
+        "security_audit_desc": "Revisa los últimos registros de acceso",
+        "activity_history": "Historial de Actividad",
+        "activity_history_desc": "Rastrea cambios en el espacio de trabajo"
+      },
+      "promo": {
+        "title": "Construye algo increíble",
+        "description": "Este boilerplate está diseñado para ser totalmente personalizable. Consulta la documentación para empezar.",
+        "button": "Ver Specs"
+      }
+    }
+  }
+}

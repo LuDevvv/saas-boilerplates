@@ -58,7 +58,7 @@ export const ConnectivityBanner = () => {
   if (!isOnline) {
     return (
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-amber-500/95 text-white px-4 py-2 backdrop-blur-sm shadow-lg">
-        <div className="container mx-auto flex items-center justify-center gap-2 text-sm font-medium">
+        <div className="container mx-auto flex items-center justify-center gap-2 text-sm font-label">
           <WifiOff className="w-4 h-4" />
           <span>You are working offline. Changes will sync when connection is restored.</span>
         </div>
@@ -74,7 +74,7 @@ export const ConnectivityBanner = () => {
           <span>A new version is available.</span>
           <button
             onClick={handleReload}
-            className="font-semibold underline underline-offset-2 hover:no-underline"
+            className="font-label underline underline-offset-2 hover:no-underline"
           >
             Reload to update
           </button>

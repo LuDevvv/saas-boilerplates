@@ -17,7 +17,7 @@ export type LoginFormData = z.infer<typeof loginSchema>;
 
 export const signupSchema = z
   .object({
-    name: z.string().min(1, { message: "El nombre es obligatorio" }),
+    firstName: z.string().min(1, { message: "El nombre es obligatorio" }),
     lastName: z.string().min(1, { message: "El apellido es obligatorio" }),
     email: z
       .string()
@@ -36,7 +36,7 @@ export const signupSchema = z
       }),
     confirmPassword: z.string(),
     acceptedTerms: z.literal(true, {
-      message: "Debes aceptar los términos y condiciones",
+      message: "Debes aceptar los términos y condiciones"
     }),
   })
   .refine((data) => data.password === data.confirmPassword, {

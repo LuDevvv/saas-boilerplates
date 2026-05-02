@@ -49,7 +49,7 @@ export const UploadProgressIndicator = ({
         <div className="flex items-center gap-3">
           {getIcon()}
           <div>
-            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+            <p className="text-sm font-label text-gray-900 dark:text-gray-100">
               {getStageLabel()}
             </p>
             {filename && progress.stage === "idle" && (

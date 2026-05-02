@@ -1,0 +1,61 @@
+{
+  "common": {
+    "logout": "Log out",
+    "settings": "Settings",
+    "profile": "Profile",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "search": "Search",
+    "search_placeholder": "Search actions or workspaces..."
+  },
+  "navigation": {
+    "main": "Main",
+    "overview": "Overview",
+    "workspaces": "Workspaces",
+    "files": "Files",
+    "ai_playground": "AI Playground",
+    "notifications": "Notifications",
+    "support": "Support",
+    "organization": "Organization",
+    "security": "Security",
+    "audit_logs": "Audit Logs",
+    "personal": "Personal",
+    "billing": "Billing",
+    "profile": "Profile",
+    "settings": "Settings",
+    "admin": "Admin",
+    "admin_overview": "Admin Overview",
+    "manage_users": "Manage Users"
+  },
+  "dashboard": {
+    "overview": {
+      "title": "Overview",
+      "subtitle": "Welcome back! Here's what's happening in your workspace today.",
+      "metrics": {
+        "total_visits": "Total Visits",
+        "active_sessions": "Active Sessions",
+        "bounce_rate": "Bounce Rate"
+      },
+      "recent_activity": {
+        "title": "Recent Activity",
+        "login_detected": "User Login Detected"
+      },
+      "quick_actions": {
+        "title": "Quick Actions",
+        "view_team": "View Team",
+        "view_team_desc": "Manage your organizational members",
+        "notification_settings": "Notification Settings",
+        "notification_settings_desc": "Configure how you receive alerts",
+        "security_audit": "Security Audit",
+        "security_audit_desc": "Review latest access logs",
+        "activity_history": "Activity History",
+        "activity_history_desc": "Track changes across the workspace"
+      },
+      "promo": {
+        "title": "Build something great",
+        "description": "This boilerplate is designed to be fully customizable. Check the documentation to get started.",
+        "button": "View Specs"
+      }
+    }
+  }
+}
