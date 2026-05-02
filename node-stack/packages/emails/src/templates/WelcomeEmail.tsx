@@ -26,7 +26,7 @@ export const WelcomeEmail = ({ name, loginUrl }: WelcomeEmailProps) => {
       <Tailwind>
         <Body className="bg-slate-50 font-sans">
           <Container className="mx-auto my-10 max-w-[580px] rounded-xl border border-solid border-slate-200 bg-white p-10 shadow-sm">
-            <Heading className="mb-6 text-2xl font-bold text-slate-900">
+            <Heading className="mb-6 text-2xl font-heading text-slate-900">
               Welcome to NodeStack
             </Heading>
             <Section className="mb-6">
@@ -41,8 +41,7 @@ export const WelcomeEmail = ({ name, loginUrl }: WelcomeEmailProps) => {
             <Section className="mb-8">
               <Link
                 href={loginUrl}
-                className="rounded-lg bg-indigo-600 px-6 py-3 text-center text-sm font-semibold text-white no-underline shadow-md transition-all hover:bg-indigo-700"
-              >
+                className="rounded-lg bg-indigo-600 px-6 py-3 text-center text-sm font-label text-white no-underline shadow-md transition-all hover:bg-indigo-700"              >
                 Go to Dashboard
               </Link>
             </Section>

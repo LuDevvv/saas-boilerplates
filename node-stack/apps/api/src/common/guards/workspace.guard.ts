@@ -7,7 +7,8 @@ import {
   Inject,
 } from "@nestjs/common";
 import { CacheService } from "@node-stack/cache";
-import { schema, eq, and, DB_TOKEN, Database , RequestContextService } from "@node-stack/db";
+import { schema, eq, and, DB_TOKEN, RequestContextService } from "@node-stack/db";
+import type { Database } from "@node-stack/db";
 
 import type { WorkspaceContext } from "@/common/types/index.js";
 
