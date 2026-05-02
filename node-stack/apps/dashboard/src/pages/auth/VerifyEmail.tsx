@@ -1,58 +1,159 @@
-import { Mail, ArrowLeft } from "lucide-react";
-import { useVerifyEmail } from "@/hooks/useVerifyEmail";
-import { OTPInput } from "@/components/ui/form/OTPInput";
-import { Button } from "@/components/ui/form/Button";
+import React, { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { OTPInput, Button } from "@node-stack/ui";
+import { appToast } from "@/components/alerts/Toasts";
+import { useAuth } from "@/hooks/stores/useAuth";
+import { useVerifyEmail, useResendVerification } from "@/features/auth/hooks";
+import { AuthSidebar } from "./components/AuthSidebar";
 
-export const VerifyEmail: React.FC = () => {
-  const {
-    code,
-    email,
-    loading,
-    resendCooldown,
-    canResend,
-    inputRefs,
-    handleChange,
-    handleKeyDown,
-    handlePaste,
-    handleVerify,
-    handleResend,
-    handleLogout,
-    formatTime,
-  } = useVerifyEmail();
+const VerifyEmail: React.FC = () => {
+  const [code, setCode] = useState<string[]>(new Array(6).fill(""));
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
+  
+  const queryParams = new URLSearchParams(location.search);
+  const email = queryParams.get("email") || "";
+
+  const { mutate: verifyEmail, isPending: loading } = useVerifyEmail();
+  const { mutate: resendCode } = useResendVerification();
+
+  useEffect(() => {
+    if (!email) {
+      navigate("/auth/sign-in");
+    }
+  }, [email, navigate]);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (resendCooldown > 0) {
+      timer = setInterval(() => {
+        setResendCooldown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
+  const handleChange = (index: number, value: string) => {
+    const newCode = [...code];
+    newCode[index] = value.slice(-1);
+    setCode(newCode);
+
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Backspace" && !code[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasteData = e.clipboardData.getData("text").slice(0, 6).split("");
+    const newCode = [...code];
+    pasteData.forEach((char, i) => {
+      newCode[i] = char;
+      if (inputRefs.current[i]) {
+        inputRefs.current[i]!.value = char;
+      }
+    });
+    setCode(newCode);
+    const nextIndex = Math.min(pasteData.length, 5);
+    inputRefs.current[nextIndex]?.focus();
+  };
+
+  const handleVerify = async () => {
+    const fullCode = code.join("");
+    if (fullCode.length !== 6) return;
+
+    verifyEmail(
+      { email, code: fullCode },
+      {
+        onSuccess: () => {
+          appToast.success({
+            title: "¡Email verificado!",
+            description: "Tu cuenta ha sido activada correctamente.",
+          });
+          navigate("/auth/sign-in");
+        },
+        onError: (error: any) => {
+          appToast.error({
+            title: "Error de verificación",
+            description: error.response?.data?.message || "El código es incorrecto o ha expirado.",
+          });
+        }
+      }
+    );
+  };
+
+  const handleResend = async () => {
+    if (resendCooldown > 0) return;
+
+    resendCode(email, {
+      onSuccess: () => {
+        appToast.success({
+          title: "Código enviado",
+          description: "Revisa tu bandeja de entrada.",
+        });
+        setResendCooldown(60);
+      },
+      onError: (error: any) => {
+        appToast.error({
+          title: "Error al reenviar",
+          description: error.response?.data?.message || "Inténtalo de nuevo más tarde.",
+        });
+      }
+    });
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-950 p-4 transition-colors duration-500">
-      <div className="w-full max-w-md">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleLogout}
-          icon={ArrowLeft}
-          className="mb-6 text-gray-500 hover:text-gray-900 dark:hover:text-white font-medium"
-        >
-          Cerrar sesión y volver
-        </Button>
+    <div className="flex h-screen bg-white dark:bg-[#0A0A0A] overflow-hidden">
+      {/* Left side: Form */}
+      <div className="flex w-full lg:w-1/2 flex-col p-8 lg:p-12 xl:p-16 h-full overflow-y-auto relative">
+        <div className="absolute top-8 left-8 lg:top-12 lg:left-12">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => logout()}
+            icon={ArrowLeft}
+            className="text-gray-500 hover:text-gray-900 dark:hover:text-white font-medium"
+          >
+            Volver al inicio
+          </Button>
+        </div>
 
-        <div className="space-y-6 rounded-2xl border border-gray-100 dark:border-white/10 bg-white dark:bg-white/5 p-6 md:p-8 shadow-xl dark:shadow-none backdrop-blur-sm">
-          <div className="flex justify-center">
-            <div className="flex size-16 items-center justify-center rounded-full bg-purple-100 dark:bg-primary-500/10 transition-colors duration-300">
-              <Mail className="size-8 text-[#7144F9] dark:text-primary-400" />
+        <div className="mx-auto w-full max-w-md flex-1 flex flex-col justify-center animate-slide-up-fade" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
+          {/* Logo */}
+          <div className="flex items-center gap-3 mb-10 mt-16 lg:mt-0">
+            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
+              <div className="w-5 h-5 bg-white rounded-sm transform rotate-45"></div>
             </div>
+            <span className="text-xl font-heading tracking-tight text-gray-900 dark:text-white">NodeStack</span>
           </div>
 
-          {/* Header */}
-          <div className="space-y-2 text-center">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <div className="mb-8">
+            <h1 className="text-3xl font-heading text-gray-900 dark:text-white">
               Verifica tu email
-            </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Hemos enviado un código de 6 dígitos a
+            </h1>
+            <p className="mt-2 text-gray-500 dark:text-gray-400">
+              Hemos enviado un código de 6 dígitos a <span className="font-medium text-gray-900 dark:text-white">{email}</span>
             </p>
-            <p className="font-semibold text-gray-900 dark:text-gray-200">{email}</p>
           </div>
 
-          {/* Code Input */}
-          <div className="space-y-4">
+          <div className="space-y-8">
             <OTPInput
               length={6}
               code={code}
@@ -64,49 +165,51 @@ export const VerifyEmail: React.FC = () => {
             />
 
             <div className="h-5 text-center">
-              {!canResend && resendCooldown > 0 && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+              {resendCooldown > 0 && (
+                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
                   Podrás reenviar el código en:{" "}
-                  <span className="font-mono font-semibold text-gray-900 dark:text-primary-400">
+                  <span className="font-mono font-bold text-gray-900 dark:text-primary-400">
                     {formatTime(resendCooldown)}
                   </span>
                 </p>
               )}
             </div>
-          </div>
 
-          <Button
-            onClick={() => handleVerify()}
-            loading={loading}
-            disabled={code.some((d) => d === "")}
-            fullWidth
-            size="lg"
-            className="py-4 shadow-[0_10px_30px_-10px_rgba(113,68,249,0.4)] transition-all duration-300 transform hover:-translate-y-0.5"
-          >
-            Verificar código
-          </Button>
-
-          <div className="space-y-2 text-center border-t border-gray-100 dark:border-white/5 pt-6">
-            <p className="text-sm text-gray-600 dark:text-gray-400">¿No recibiste el código?</p>
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleResend}
-              disabled={loading || !canResend}
-              className="text-[#7144F9] hover:text-[#6134e9] font-bold dark:text-primary-400 dark:hover:text-primary-300"
+              onClick={handleVerify}
+              loading={loading}
+              disabled={code.some((d) => d === "")}
+              fullWidth
+              size="lg"
+              className="h-12 rounded-xl shadow-lg shadow-primary/25 text-base font-bold tracking-tight mt-4"
             >
-              {canResend ? "Reenviar código" : "Espera para reenviar"}
+              Verificar código
             </Button>
-          </div>
-
-          <div className="rounded-xl border border-purple-100 dark:border-primary-500/20 bg-purple-50 dark:bg-primary-500/5 p-4 transition-all duration-300">
-            <p className="text-xs text-[#7144F9] dark:text-primary-400 leading-relaxed">
-              <strong className="font-bold">💡 Consejo:</strong> Revisa tu carpeta de spam si no ves
-              el correo. El código expira en 15 minutos.
-            </p>
+            
+            <div className="mt-6 text-center text-sm">
+              <p className="text-gray-500 dark:text-gray-400">¿No recibiste el código?</p>
+              <button
+                onClick={handleResend}
+                disabled={loading || resendCooldown > 0}
+                className="mt-1 font-bold text-primary-600 transition-colors duration-200 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {resendCooldown > 0 ? "Espera para reenviar" : "Reenviar código"}
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Footer */}
+        <div className="mt-8 pb-8 lg:pb-0 text-[11px] font-medium text-gray-400 text-center">
+          2026 NodeStack, All rights Reserved
+        </div>
       </div>
+
+      <AuthSidebar 
+        titleMain="Verifica tu" 
+        titleAccent="identidad" 
+        subtitle="Ingresa el código que enviamos a tu correo para activar tu cuenta y acceder al panel." 
+      />
     </div>
   );
 };

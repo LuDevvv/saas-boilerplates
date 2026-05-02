@@ -1,4 +1,71 @@
-@import "./styles/player.css";
+@import "@fontsource/geist-sans";
+:root {
+  /* Design System Tokens: Delightful Premium */
+  --primary: #004080;
+  --primary-light: #4D94DB;
+  --secondary: #00E6E6;
+  --accent: #4D94DB;
+  --canvas: #F8FAFC;
+  --surface: #FFFFFF;
+  --border: #F1F5F9;
+  /* Softer, cleaner border */
+
+  /* Functional Status Colors */
+  --status-success: #10B981;
+  --status-warning: #F59E0B;
+  --status-error: #EF4444;
+  --status-info: #3B82F6;
+
+  /* Hyper-Rounded Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  /* Perfect for buttons and inputs */
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  /* Standard Bento Box */
+  --radius-3xl: 32px;
+  --radius-hero: 40px;
+
+  /* Typography Weights */
+  --font-weight-label: 600;
+  --font-weight-heading: 800;
+  --font-weight-body: 400;
+  --font-weight-medium: 500;
+  --font-weight-kpi: 700;
+  --font-weight-black: 900;
+
+  /* Sidebar Tokens */
+  --sidebar-bg: var(--canvas);
+  /* Blends with canvas for modern feel */
+  --sidebar-border: var(--border);
+  --sidebar-text: #64748B;
+  --sidebar-text-active: var(--primary);
+  --sidebar-bg-active: rgba(0, 64, 128, 0.04);
+}
+
+.dark {
+  --primary: #4D94DB;
+  --primary-light: #00E6E6;
+  --canvas: #0A0A0A;
+  /* Extremely deep dark canvas */
+  --surface: #121212;
+  /* Distinct surface for bento cards */
+  --border: rgba(255, 255, 255, 0.05);
+  /* Barely visible border */
+
+  /* Sidebar Tokens Dark */
+  --sidebar-bg: #0A0A0A;
+  --sidebar-border: rgba(255, 255, 255, 0.05);
+  --sidebar-text: #94A3B8;
+  --sidebar-text-active: #FFFFFF;
+  --sidebar-bg-active: rgba(255, 255, 255, 0.05);
+
+  /* Tooltip Tokens */
+  --tooltip-bg: #1A1A1A;
+  --tooltip-border: rgba(255, 255, 255, 0.08);
+  --tooltip-text: #FFFFFF;
+}
 
 @tailwind base;
 @tailwind components;
@@ -6,24 +73,38 @@
 
 @layer base {
   body {
-    @apply bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased;
+    @apply bg-[var(--canvas)] text-gray-900 dark:text-gray-100 antialiased selection:bg-blue-200 selection:text-blue-900 dark:selection:bg-blue-900/50 dark:selection:text-blue-100;
+  }
+
+  /* Global interaction stability fix - Target outlines and Tailwind rings only */
+  *:focus:not(:focus-visible) {
+    outline: none !important;
+    box-shadow: none !important;
+    --tw-ring-offset-width: 0px !important;
+    --tw-ring-width: 0px !important;
+    --tw-ring-color: transparent !important;
+    --tw-ring-shadow: none !important;
+    --tw-ring-offset-shadow: none !important;
+  }
+
+  /* Specific fix for buttons and inputs to prevent any flicker during active/focus transitions */
+  button,
+  input,
+  textarea,
+  [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Remove default tap highlight on mobile */
+  * {
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
 @layer utilities {
+
+  /* Fluid bouncing for contextual doodles or floating elements */
   @keyframes bounce-subtle {
-
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-
-    50% {
-      transform: translateY(-10px);
-    }
-  }
-
-  @keyframes bounce-subtle-delayed {
 
     0%,
     100% {
@@ -35,83 +116,120 @@
     }
   }
 
+  @keyframes bounce-subtle-delayed {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+
   .animate-bounce-subtle {
-    animation: bounce-subtle 3s ease-in-out infinite;
+    animation: bounce-subtle 4s ease-in-out infinite;
   }
 
   .animate-bounce-subtle-delayed {
-    animation: bounce-subtle-delayed 3.5s ease-in-out infinite;
+    animation: bounce-subtle-delayed 4.5s ease-in-out infinite;
     animation-delay: 1s;
+  }
+
+  /* Bento Card Entrance Animation */
+  @keyframes slideUpFade {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.98);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .animate-slide-up-fade {
+    animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 }
 
 @layer components {
   /* Design System - Premium Components */
 
+  /* Base button: Natural easing and elegant scale down on click */
   .btn-base {
-    @apply flex items-center justify-center gap-2 px-4 py-2 font-bold transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply flex items-center justify-center gap-2 px-4 py-2 font-medium transition-all duration-300 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
   }
 
-  /* Primary Button - Linear Gradient Premium */
+  /* Primary Button - Fintech Blue with tinted shadow */
   .btn-primary {
-    @apply btn-base bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 hover:scale-[1.02] rounded-2xl;
+    @apply btn-base bg-primary text-white rounded-[16px] shadow-[0_4px_14px_0_rgba(0,64,128,0.2)] hover:shadow-[0_6px_20px_rgba(0,64,128,0.3)] hover:-translate-y-[1px];
   }
 
-  /* Secondary Button - Glassmorphism style */
+  /* Secondary Button - Glass/Clean style */
   .btn-secondary {
-    @apply btn-base bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-700 rounded-2xl;
+    @apply btn-base bg-white dark:bg-[#121212] text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-white/10 rounded-[16px] hover:bg-gray-50 dark:hover:bg-white/5 hover:border-gray-300 dark:hover:border-white/20 shadow-sm;
   }
 
   /* Danger Button - Red accented */
   .btn-danger {
-    @apply btn-base bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/20 hover:bg-red-500 hover:text-white dark:hover:bg-red-600 rounded-2xl shadow-sm hover:shadow-red-500/20 transition-all;
+    @apply btn-base bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/30 rounded-[16px] hover:bg-red-500 hover:text-white dark:hover:bg-red-600 dark:hover:text-white transition-colors;
   }
 
   /* Ghost Button */
   .btn-ghost {
-    @apply btn-base text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-2xl;
+    @apply btn-base text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-[16px];
   }
 
-  /* Premium Card Implementation */
-  .card-premium {
-    @apply bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm transition-all duration-500 overflow-hidden;
+  /* Bento Card Implementation (Replaces card-premium) */
+  .card-bento {
+    @apply bg-white dark:bg-[#121212] rounded-[24px] border border-[var(--border)] shadow-[0_4px_20px_-4px_rgba(0,64,128,0.03)] dark:shadow-none transition-all duration-300 overflow-hidden hover:shadow-[0_8px_30px_-4px_rgba(0,64,128,0.06)];
   }
 
-  /* Standard Input field */
+  /* Standard Input field - Custom ring, no default outline */
   .input-standard {
-    @apply w-full px-5 py-4 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-300;
+    @apply w-full bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 rounded-[16px] px-4 py-3 text-gray-900 dark:text-white placeholder:text-[#64748B]/60 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 dark:focus:ring-blue-400/20 dark:focus:border-blue-400 shadow-sm transition-all duration-200;
   }
 
-  /* Badges */
-  .badge-premium {
-    @apply px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider backdrop-blur-md;
-  }
-}
-
-.shadow-glow {
-  box-shadow: 0 0 5px 1px rgba(52, 211, 153, 0.8);
-}
-
-.main__content {
-  animation: scaleMainContent 0.35s;
-}
-
-@keyframes scaleMainContent {
-  0% {
-    transform: scale(0.97);
-    opacity: 0.5;
+  /* Pill Badges */
+  .badge-pill {
+    @apply px-3 py-1 rounded-full text-[12px] font-medium backdrop-blur-md inline-flex items-center gap-1.5;
   }
 
-  100% {
-    transform: scale(1);
-    opacity: 1;
+  /* Layout Shell */
+  .layout-inset-container {
+    @apply flex flex-1 flex-col bg-[var(--canvas)] lg:rounded-tl-[32px] border-t lg:border-l border-[var(--border)] overflow-hidden transition-all duration-500;
   }
 }
 
-@keyframes fadeIn {
+/* ═══════════════════════════════════════════════
+   Premium Loading Screen
+   Orbital spinner with dual arcs and pulsing dot.
+   Zero dependencies — pure CSS animations.
+   ═══════════════════════════════════════════════ */
+
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  height: 100dvh;
+  background: var(--surface);
+  animation: loading-entrance 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.dark .loading-screen {
+  background: var(--canvas);
+}
+
+/* Entrance fade */
+@keyframes loading-entrance {
   from {
     opacity: 0;
-    transform: scale(0.5);
+    transform: scale(0.98);
   }
 
   to {
@@ -120,13 +238,115 @@
   }
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-out forwards;
+/* ── Spinner Container ── */
+.loading-spinner {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 24px;
+}
+
+/* Static background track */
+.loading-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 3px solid var(--border);
+}
+
+/* ── Arc animations ── */
+.loading-arc {
+  position: absolute;
+  border-radius: 9999px;
+  border-style: solid;
+  border-color: transparent;
+}
+
+/* Primary arc — outer ring, clockwise */
+.loading-arc--primary {
+  inset: 0;
+  border-width: 3px;
+  border-top-color: var(--primary);
+  border-right-color: var(--primary);
+  animation: loading-spin 1.2s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+}
+
+/* Secondary arc — inner ring, counter-clockwise */
+.loading-arc--secondary {
+  inset: 7px;
+  border-width: 2.5px;
+  border-bottom-color: var(--secondary);
+  animation: loading-spin-reverse 1.8s cubic-bezier(0.42, 0, 0.58, 1) infinite;
+}
+
+/* Pulsing center dot */
+.loading-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 9999px;
+  background: var(--primary);
+  animation: loading-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  box-shadow: 0 0 12px rgba(0, 64, 128, 0.3);
+}
+
+.dark .loading-dot {
+  background: var(--secondary);
+  box-shadow: 0 0 12px rgba(0, 230, 230, 0.25);
+}
+
+/* Micro-label */
+.loading-label {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #94A3B8;
+  animation: loading-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  user-select: none;
+}
+
+/* ── Keyframes ── */
+@keyframes loading-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loading-spin-reverse {
+  0% {
+    transform: rotate(360deg);
+  }
+
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes loading-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 /* Custom Scrollbar Premium */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -134,87 +354,68 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  @apply bg-gray-200 dark:bg-gray-800 rounded-full hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors;
+  @apply bg-gray-200 dark:bg-white/10 rounded-full hover:bg-gray-300 dark:hover:bg-white/20 transition-colors;
 }
 
-@media (min-width: 1024px) {
-  main {
-    flex-direction: row;
-  }
-
-  main>section:first-child {
-    order: 1;
-  }
-
-  main>section:last-child {
-    order: 2;
-  }
-}
-
-/* ===== Fix: Force primary color border on ALL focus states ===== */
-/* Prevents browser default orange/amber focus ring */
-input:focus,
-select:focus,
-textarea:focus,
-button:focus {
-  outline: none !important;
-}
-
-input:focus-visible {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.5s ease-out forwards;
+/* Cmdk Menu Group Header */
+[cmdk-group-heading] {
+  @apply px-4 text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2 mt-4;
 }
 
 /* ===== Flag Icons (Phone + Currency) ===== */
 .currency-flag {
   width: 22px;
   height: 16px;
-  border-radius: 2px;
+  border-radius: 3px;
   overflow: hidden;
-  box-shadow: 0 0 1px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   flex-shrink: 0;
   object-fit: cover;
 }
 
 /* Toast Custom Entrance Animation */
 @keyframes toastEntrance {
-  0% { opacity: 0; transform: translateY(-0.5rem) scale(0.98); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
+  0% {
+    opacity: 0;
+    transform: translateY(-1rem) scale(0.95);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .animate-toast-enter {
-  animation: toastEntrance 0.2s ease-out forwards;
+  animation: toastEntrance 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes toastExit {
-  0% { opacity: 1; transform: translateX(0); }
-  100% { opacity: 0; transform: translateX(1rem); }
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(1rem) scale(0.95);
+  }
 }
 
 .animate-toast-exit {
-  animation: toastExit 0.2s ease-in forwards;
+  animation: toastExit 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
 }
 
 @keyframes toastProgress {
-  /* Hold at 100% during entrance (200ms of 5000ms = 4%) */
-  0%, 4% { transform: scaleX(1); }
-  100% { transform: scaleX(0); }
+
+  0%,
+  4% {
+    transform: scaleX(1);
+  }
+
+  100% {
+    transform: scaleX(0);
+  }
 }
 
 .animate-toast-progress {
@@ -224,24 +425,8 @@ input:focus-visible {
 
 /* Theme Toggle View Transitions (Polygon) */
 :root {
-  --expo-in: linear(
-    0 0%, 0.0085 31.26%, 0.0167 40.94%,
-    0.0289 48.86%, 0.0471 55.92%,
-    0.0717 61.99%, 0.1038 67.32%,
-    0.1443 72.07%, 0.1989 76.7%,
-    0.2659 80.89%, 0.3465 84.71%,
-    0.4419 88.22%, 0.554 91.48%,
-    0.6835 94.51%, 0.8316 97.34%, 1 100%
-  );
-  --expo-out: linear(
-    0 0%, 0.1684 2.66%, 0.3165 5.49%,
-    0.446 8.52%, 0.5581 11.78%,
-    0.6535 15.29%, 0.7341 19.11%,
-    0.8011 23.3%, 0.8557 27.93%,
-    0.8962 32.68%, 0.9283 38.01%,
-    0.9529 44.08%, 0.9711 51.14%,
-    0.9833 59.06%, 0.9915 68.74%, 1 100%
-  );
+  --expo-in: linear(0 0%, 0.0085 31.26%, 0.0167 40.94%, 0.0289 48.86%, 0.0471 55.92%, 0.0717 61.99%, 0.1038 67.32%, 0.1443 72.07%, 0.1989 76.7%, 0.2659 80.89%, 0.3465 84.71%, 0.4419 88.22%, 0.554 91.48%, 0.6835 94.51%, 0.8316 97.34%, 1 100%);
+  --expo-out: linear(0 0%, 0.1684 2.66%, 0.3165 5.49%, 0.446 8.52%, 0.5581 11.78%, 0.6535 15.29%, 0.7341 19.11%, 0.8011 23.3%, 0.8557 27.93%, 0.8962 32.68%, 0.9283 38.01%, 0.9529 44.08%, 0.9711 51.14%, 0.9833 59.06%, 0.9915 68.74%, 1 100%);
 }
 
 .theme-toggling::view-transition-group(root) {
@@ -265,6 +450,7 @@ input:focus-visible {
   from {
     clip-path: circle(0% at var(--x) var(--y));
   }
+
   to {
     clip-path: circle(150% at var(--x) var(--y));
   }

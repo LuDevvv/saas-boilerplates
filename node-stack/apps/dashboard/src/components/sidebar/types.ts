@@ -1,28 +1,6 @@
-import { User } from "@/types/auth";
+import { User as UserType } from "@node-stack/types";
 import { LucideIcon } from "lucide-react";
-import { ReactNode } from "react";
-
-export interface SubMenuItem {
-  id?: string;
-  icon?: LucideIcon;
-  label: string;
-  path: string;
-  subItems?: SubMenuItem[];
-}
-
-export interface MenuItem {
-  id?: string;
-  icon: LucideIcon;
-  label: string;
-  path?: string;
-  badge?: string;
-  subItems?: SubMenuItem[];
-}
-
-export interface MenuSection {
-  title: string;
-  items: MenuItem[];
-}
+import React from "react";
 
 export interface SidebarProps {
   isOpen: boolean;
@@ -35,44 +13,61 @@ export interface SidebarProps {
 
 export interface SidebarItemProps {
   id?: string;
+  level?: number;
   icon?: LucideIcon;
   label: string;
   path?: string;
-  badge?: string;
-  isActive: boolean;
-  isCollapsed: boolean;
+  badge?: string | number;
   subItems?: SubMenuItem[];
-  level?: number;
+  isCollapsed?: boolean;
+  isActive?: boolean;
+  onClick?: () => void;
 }
 
-export interface AccountSectionProps {
-  isCollapsed: boolean;
-  user: User | null;
-  onLogout: () => void;
-  dropdownItems: DropdownItem[];
-  isPremium?: boolean;
-  currentPlan?: any;
+export interface SubMenuItem {
+  id: string;
+  label: string;
+  path: string;
+  icon?: LucideIcon;
+  subItems?: SubMenuItem[];
+}
+
+export interface MenuSection {
+  title?: string;
+  items: SidebarItemProps[];
+  isCollapsed?: boolean;
 }
 
 export interface SidebarSectionProps {
-  title: string;
-  children: ReactNode;
-  isCollapsed: boolean;
+  title?: string;
+  isCollapsed?: boolean;
+  children: React.ReactNode;
 }
 
 export interface AccountDropdownProps {
   isOpen: boolean;
   onClose: () => void;
+  isPremium: boolean;
+  currentPlan: any | null;
   onLogout: () => void;
   items: DropdownItem[];
   triggerRef: React.RefObject<HTMLButtonElement | null>;
-  isPremium?: boolean;
-  currentPlan?: any;
+}
+
+export interface AccountSectionProps {
+  isCollapsed: boolean;
+  isPremium: boolean;
+  user: UserType | null | undefined;
+  currentPlan: any | null;
+  onLogout: () => void;
+  dropdownItems: DropdownItem[];
 }
 
 export interface DropdownItem {
-  icon: LucideIcon;
+  icon?: LucideIcon;
   label: string;
   path: string;
+  showOnlyForFree?: boolean;
+  showOnlyForPremium?: boolean;
   highlight?: boolean;
 }

@@ -22,7 +22,6 @@ A high-performance, standalone dashboard boilerplate built with **React 18**, **
    Create a `.env` file:
    ```env
    VITE_SERVER_URL=http://your-api.com/v1
-   VITE_USE_MOCKS=true
    ```
 
 3. **Run development server**:

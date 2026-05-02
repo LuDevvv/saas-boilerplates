@@ -24,6 +24,8 @@ interface ModalLayoutProps {
   footer?: ReactNode;
   className?: string;
   zIndex?: number;
+  variant?: "modal" | "drawer";
+  drawerPlacement?: "right" | "bottom";
 }
 
 const maxWidthClasses = {
@@ -50,11 +52,15 @@ export const ModalLayout: FC<ModalLayoutProps> = ({
   footer,
   className,
   zIndex = 100,
+  variant = "modal",
+  drawerPlacement = "right",
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const [isHeaderSticky, setIsHeaderSticky] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  const isDrawer = variant === "drawer";
 
   // Animation lifecycle
   useEffect(() => {
@@ -91,7 +97,7 @@ export const ModalLayout: FC<ModalLayoutProps> = ({
     return () => document.removeEventListener("keydown", handleEscape);
   }, [isVisible, onClose]);
 
-  // Scroll detection for header/footer depth
+  // Scroll detection
   useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
@@ -110,59 +116,83 @@ export const ModalLayout: FC<ModalLayoutProps> = ({
     if (e.target === e.currentTarget) onClose();
   };
 
-  return createPortal(
-    <div
-      className={cn(
-        "fixed inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden touch-none",
+  // Positioning and Animation classes
+  const getContainerClasses = () => {
+    if (isDrawer) {
+      if (drawerPlacement === "right") {
+        return cn(
+          "fixed inset-0 flex justify-end overflow-hidden",
+          isVisible ? "pointer-events-auto" : "pointer-events-none"
+        );
+      }
+      return cn(
+        "fixed inset-0 flex items-end justify-center overflow-hidden",
         isVisible ? "pointer-events-auto" : "pointer-events-none"
-      )}
-      style={{ zIndex }}
-    >
+      );
+    }
+    return cn(
+      "fixed inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden",
+      isVisible ? "pointer-events-auto" : "pointer-events-none"
+    );
+  };
+
+  const getSurfaceClasses = () => {
+    const base = "relative flex flex-col bg-white dark:bg-[#121212] shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) border-[var(--border)]";
+    
+    if (isDrawer) {
+      if (drawerPlacement === "right") {
+        return cn(
+          base,
+          "h-full w-full sm:w-[480px] border-l",
+          isVisible ? "translate-x-0" : "translate-x-full"
+        );
+      }
+      return cn(
+        base,
+        "w-full sm:max-w-2xl h-[85dvh] rounded-t-[2rem] border-t",
+        isVisible ? "translate-y-0" : "translate-y-full"
+      );
+    }
+
+    return cn(
+      base,
+      maxWidthClasses[maxWidth],
+      "w-full rounded-t-[2rem] sm:rounded-[2rem] border",
+      isVisible 
+        ? "translate-y-0 opacity-100 scale-100" 
+        : "translate-y-full sm:translate-y-12 opacity-0 sm:scale-[0.95]",
+      "h-[92dvh] sm:h-auto sm:max-h-[85dvh]"
+    );
+  };
+
+  return createPortal(
+    <div className={getContainerClasses()} style={{ zIndex }}>
       {/* Premium Backdrop */}
       <div
         className={cn(
-          "absolute inset-0 bg-gray-900/60 transition-opacity duration-300 ease-out touch-none",
-          isVisible
-            ? "opacity-100 backdrop-blur-md"
-            : "opacity-0 backdrop-blur-none"
+          "absolute inset-0 bg-gray-900/20 transition-opacity duration-300 ease-out",
+          isVisible ? "opacity-100 backdrop-blur-[2px]" : "opacity-0 backdrop-blur-none"
         )}
         onClick={handleBackdropClick}
       />
 
-      {/* Modal Surface */}
-      <div
-        className={cn(
-          "relative w-full flex flex-col bg-white dark:bg-gray-950 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.4)] transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) overflow-hidden",
-          maxWidthClasses[maxWidth],
-          // Mobile: slide up from bottom | Desktop: scale and fade
-          isVisible
-            ? "translate-y-0 opacity-100 scale-100"
-            : "translate-y-full sm:translate-y-12 opacity-0 sm:scale-[0.98]",
-          "rounded-t-3xl sm:rounded-3xl",
-          "h-[92dvh] sm:h-auto sm:max-h-[85dvh]",
-          "border border-white/20 dark:border-gray-800",
-          className
-        )}
-        onClick={(e) => e.stopPropagation()}
-      >
+      {/* Modal/Drawer Surface */}
+      <div className={cn(getSurfaceClasses(), className)} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <header
           className={cn(
-            "relative flex items-center justify-between px-4 sm:px-8 pt-7 pb-5 sm:pt-8 sm:pb-6 transition-all duration-300",
+            "relative flex items-center justify-between px-8 py-6 transition-all duration-300 border-b",
             isHeaderSticky
-              ? "bg-white/95 dark:bg-gray-950/95 backdrop-blur-xl border-b border-white/5 dark:border-white/5 shadow-[0_4px_20px_-5px_rgba(0,0,0,0.08)]"
-              : "bg-transparent border-b border-transparent"
+              ? "bg-white/80 dark:bg-[#121212]/80 backdrop-blur-xl border-[var(--border)] shadow-sm"
+              : "bg-transparent border-transparent"
           )}
         >
-          <div className="flex flex-col gap-0.5">
-            <h2
-              id="modal-title"
-              className="text-[1.3rem] sm:text-2xl font-bold text-gray-900 dark:text-gray-50 tracking-tight"
-            >
+          <div className="flex flex-col gap-1">
+            <h2 id="modal-title" className="text-lg sm:text-xl font-heading text-gray-950 dark:text-white leading-tight">
               {title}
             </h2>
             {subtitle && (
-              <p className="text-sm text-gray-500 dark:text-gray-400 font-medium tracking-wide leading-none pt-1 pl-1">
+              <p className="text-[13px] font-label text-gray-500">
                 {subtitle}
               </p>
             )}
@@ -171,30 +201,25 @@ export const ModalLayout: FC<ModalLayoutProps> = ({
           {showCloseButton && (
             <button
               onClick={onClose}
-              className="group p-2.5 rounded-full bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-900 dark:text-gray-500 dark:hover:text-white transition-all active:scale-90"
-              aria-label="Cerrar modal"
+              className="group p-2.5 rounded-full border border-gray-100 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-400 hover:text-gray-950 dark:hover:text-white transition-all active:scale-95 shadow-sm"
+              aria-label="Cerrar"
             >
-              <X className="w-5 h-5 transition-transform" />
+              <X className="w-5 h-5" />
             </button>
           )}
         </header>
 
-        {/* Scrollable Content */}
+        {/* Content */}
         <div
           ref={contentRef}
-          className="flex-1 overflow-y-auto px-3 sm:px-8 py-4 overscroll-contain custom-scrollbar scroll-smooth"
+          className="flex-1 overflow-y-auto px-8 py-8 custom-scrollbar"
         >
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <footer
-            className={cn(
-              "px-4 sm:px-8 py-4 sm:py-6 bg-gray-50/50 dark:bg-white/[0.02] border-t border-transparent transition-all",
-              "flex items-center justify-end gap-3"
-            )}
-          >
+          <footer className="sticky bottom-0 mt-auto px-8 py-6 border-t border-gray-100 dark:border-white/5 flex items-center justify-end gap-4 bg-white/80 dark:bg-[#121212]/80 backdrop-blur-xl z-20">
             {footer}
           </footer>
         )}

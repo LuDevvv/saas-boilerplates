@@ -6,6 +6,7 @@ export interface User {
   role: string;
   createdAt: string;
   isEmailVerified?: boolean;
+  isTwoFactorEnabled?: boolean;
 }
 
 export interface Workspace {
@@ -16,15 +17,20 @@ export interface Workspace {
 }
 
 export interface Session {
-  user: User;
-  workspace?: Workspace;
-  token: string;
+  id: string;
+  userId: string;
+  device: string;
+  ip: string;
+  lastActive: string;
+  isCurrent?: boolean;
 }
 
 export interface AuthResponse {
-  user: User;
-  token: string;
+  user?: User; // Optional if 2FA is required
+  token?: string;
   refreshToken?: string;
+  requires2fa?: boolean;
+  tempToken?: string;
 }
 
 export interface LoginDto {
@@ -33,8 +39,20 @@ export interface LoginDto {
   rememberMe?: boolean;
 }
 
-export interface RegisterDto extends LoginDto {
-  name: string;
+export interface RegisterDto {
+  email: string;
+  password?: string;
+  name?: string;
+  rememberMe?: boolean;
+}
+
+export interface Verify2faDto {
+  token: string;
+}
+
+export interface Login2faDto {
+  tempToken: string;
+  token: string;
 }
 
 export interface MessageResponse {

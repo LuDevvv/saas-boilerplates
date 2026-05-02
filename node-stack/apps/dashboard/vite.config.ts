@@ -8,26 +8,35 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(() => {
   return {
-    resolve: {
+resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
+
+        // FSD Layer Aliases
+        "@app": path.resolve(__dirname, "./src/app"),
+        "@features": path.resolve(__dirname, "./src/features"),
+        "@entities": path.resolve(__dirname, "./src/entities"),
+        "@shared": path.resolve(__dirname, "./src/shared"),
+        "@pages": path.resolve(__dirname, "./src/pages"),
+        "@stores": path.resolve(__dirname, "./src/stores"),
+        "@layouts": path.resolve(__dirname, "./src/layouts"),
+
+        // Legacy aliases (gradually migrate)
         "@assets": path.resolve(__dirname, "./assets"),
         "@components": path.resolve(__dirname, "./src/components"),
         "@common": path.resolve(__dirname, "./src/components/common"),
-        "@stores": path.resolve(__dirname, "./src/stores"),
         "@context": path.resolve(__dirname, "./src/context"),
         "@routes": path.resolve(__dirname, "./src/routes"),
-        "@helpers": path.resolve(__dirname, "./src/helpers"),
         "@hooks": path.resolve(__dirname, "./src/hooks"),
-        "@pages": path.resolve(__dirname, "./src/pages"),
         "@styles": path.resolve(__dirname, "./src/styles"),
         "@api": path.resolve(__dirname, "./src/api"),
         "@utils": path.resolve(__dirname, "./src/utils"),
         "@services": path.resolve(__dirname, "./src/services"),
-        "@layouts": path.resolve(__dirname, "./src/layouts"),
         "@ui": path.resolve(__dirname, "./src/components/ui"),
         "@elements": path.resolve(__dirname, "./src/components/elements"),
         "@lib": path.resolve(__dirname, "./src/lib"),
+        "@data": path.resolve(__dirname, "./src/data"),
+        "@node-stack/ui": path.resolve(__dirname, "../../packages/ui/src/index.ts"),
       },
     },
     plugins: [
@@ -36,10 +45,10 @@ export default defineConfig(() => {
         registerType: "autoUpdate",
         includeAssets: ["favicon.ico", "robots.txt"],
         manifest: {
-          name: "Premium Dashboard Boilerplate",
-          short_name: "Dashboard",
-          description: "A premium boilerplate for building high-end dashboards.",
-          theme_color: "#3b82f6",
+          name: "NodeStack - Dashboard",
+          short_name: "NodeStack",
+          description: "Panel de administración de NodeStack",
+          theme_color: "#7144F9",
           background_color: "#ffffff",
           display: "standalone",
           orientation: "portrait",
@@ -58,40 +67,18 @@ export default defineConfig(() => {
               type: "image/png",
               purpose: "any",
             },
-            {
-              src: "/pwa-512x512.png",
-              sizes: "512x512",
-              type: "image/png",
-              purpose: "maskable",
-            },
           ],
         },
         workbox: {
           cleanupOutdatedCaches: true,
           clientsClaim: true,
           skipWaiting: true,
+          globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
           maximumFileSizeToCacheInBytes: 5000000,
-          runtimeCaching: [
-            {
-              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-              handler: "CacheFirst",
-              options: {
-                cacheName: "google-fonts-cache",
-                expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              },
-            },
-            {
-              urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-              handler: "CacheFirst",
-              options: {
-                cacheName: "gstatic-fonts-cache",
-                expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              },
-            },
-          ],
+          sourcemap: true,
         },
         devOptions: {
-          enabled: true,
+          enabled: false,
         },
       }),
     ],
@@ -99,23 +86,21 @@ export default defineConfig(() => {
       emptyOutDir: true,
       rollupOptions: {
         output: {
-          manualChunks(id) {
-            if (id.includes("node_modules")) {
-              if (id.includes("react") || id.includes("react-dom") || id.includes("react-router-dom")) {
-                return "vendor-react";
-              }
-              if (id.includes("lucide-react")) {
-                return "vendor-icons";
-              }
-              if (id.includes("zustand")) {
-                return "vendor-store";
-              }
-              return "vendor-misc";
-            }
-            return undefined;
+          manualChunks: {
+            "vendor-react": ["react", "react-dom", "react-router-dom"],
+            "vendor-query": ["@tanstack/react-query"],
+            "vendor-ui": ["@node-stack/ui"],
+            "vendor-charts": ["recharts"],
+            "vendor-state": ["zustand"],
+            "vendor-forms": ["react-hook-form", "zod"],
           },
         },
       },
+      chunkSizeWarningLimit: 500,
     },
+    server: {
+      host: true,
+      port: 5173,
+    }
   };
 });

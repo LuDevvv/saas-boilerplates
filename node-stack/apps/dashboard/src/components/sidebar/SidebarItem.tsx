@@ -1,9 +1,14 @@
 import { ChevronDown } from "lucide-react";
-import { FC, useRef, useState } from "react";
+import { FC, useRef } from "react";
 import { useLocation } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/utils/classNames";
 import LinkTransition from "../utils/LinkTransition.js";
-import { Tooltip } from "../ui/Tooltip.js";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent
+} from "@node-stack/ui";
 import { SidebarItemProps } from "./types.js";
 import { useSidebarStore } from "@/stores/sidebarStore";
 
@@ -18,8 +23,6 @@ export const SidebarItem: FC<SidebarItemProps> = ({
   subItems,
   level = 0,
 }) => {
-  const [showTooltip, setShowTooltip] = useState(false);
-  const [tooltipPosition, setTooltipPosition] = useState({ top: 0, left: 0 });
   const itemRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
 
@@ -35,21 +38,6 @@ export const SidebarItem: FC<SidebarItemProps> = ({
     (isCollapsed && subItems && subItems.length > 0
       ? subItems[0]?.path
       : undefined);
-
-  const handleMouseEnter = () => {
-    if (isCollapsed && itemRef.current) {
-      const rect = itemRef.current.getBoundingClientRect();
-      setTooltipPosition({
-        top: rect.top + rect.height / 2,
-        left: rect.right + 8,
-      });
-      setShowTooltip(true);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    setShowTooltip(false);
-  };
 
   const handleChevronClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -70,8 +58,8 @@ export const SidebarItem: FC<SidebarItemProps> = ({
   const isDescendantActive = (items: typeof subItems): boolean => {
     if (!items) return false;
     return items.some((item) => {
-      const match = !!(item.path === '/' 
-        ? location.pathname === '/' 
+      const match = !!(item.path === '/'
+        ? location.pathname === '/'
         : item.path && location.pathname.startsWith(item.path));
       if (match) return true;
       if (item.subItems) return isDescendantActive(item.subItems);
@@ -87,73 +75,68 @@ export const SidebarItem: FC<SidebarItemProps> = ({
   const ItemContent = (
     <div
       ref={itemRef}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
       className={cn(
-        "group relative flex items-center transition-all duration-200 cursor-pointer w-full",
+        "group relative flex items-center transition-all duration-200 cursor-pointer pl-[10px] pr-2 py-2 border border-transparent outline-none",
+        isCollapsed ? "w-10 h-10 justify-center pl-0 pr-0 rounded-full" : "w-full rounded-lg",
         isVisuallyActive
-          ? "bg-primary-50 text-primary-700 dark:bg-primary-500/10 dark:text-primary-400 font-bold"
-          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white",
-        isCollapsed
-          ? "justify-center px-2 py-3 rounded-xl"
-          : "gap-3 px-3 py-2.5 rounded-xl",
-        level > 0 && !isCollapsed && "ml-2"
+          ? "bg-sidebar-active text-primary font-heading shadow-sm"
+          : "text-sidebar-text/70 hover:bg-sidebar-active/50 hover:text-sidebar-text-active",
+        "gap-3",
+        level > 0 && !isCollapsed && "ml-4"
       )}
       onClick={handleMainClick}
     >
-      {/* Active Accent Bar */}
-      {isVisuallyActive && !isCollapsed && (
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 bg-primary-600 rounded-r-full" />
-      )}
-
-      {/* Hover Glow Effect */}
-      {!isVisuallyActive && (
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-100/0 to-transparent dark:via-gray-700/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-      )}
 
       {Icon && (
         <div
           className={cn(
-            "flex-shrink-0 transition-all duration-200",
-            isVisuallyActive && "scale-105"
+            "flex-shrink-0 transition-all duration-200 relative"
           )}
         >
           <Icon
             className={cn(
               "h-5 w-5",
               isVisuallyActive
-                ? "text-primary-600 dark:text-primary-400"
-                : "text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300 transition-colors duration-200"
+                ? "text-primary"
+                : "text-sidebar-text/60 group-hover:text-sidebar-text-active transition-colors duration-200"
             )}
           />
+          {isCollapsed && badge && badge !== "Nuevo" && (
+            <div className="absolute -right-3 -top-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-label text-white shadow-md ring-2 ring-white dark:ring-[#0A0A0A] z-10">
+              {badge}
+            </div>
+          )}
         </div>
       )}
 
       {!isCollapsed && (
-        <>
-          <span className="flex-1 truncate text-sm tracking-tight">
+        <div className="flex flex-1 items-center gap-3 animate-fade-in-fast overflow-hidden">
+          <span className={cn(
+            "flex-1 truncate text-sm",
+            isVisuallyActive ? "text-primary" : "text-inherit"
+          )}>
             {label}
           </span>
           {badge && (
-            <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-primary-100/80 px-2 text-[10px] font-bold text-primary-700 dark:bg-primary-900/50 dark:text-primary-300 uppercase tracking-wider shadow-sm">
+            <span className={cn(
+              "flex h-5 min-w-[20px] items-center justify-center rounded-lg px-1.5 text-[9px] font-label shadow-sm transition-colors uppercase ",
+              badge === "Nuevo"
+                ? "bg-primary text-white"
+                : "bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300"
+            )}>
               {badge}
             </span>
           )}
           {hasSubItems && (
-            <div
-              role="button"
+            <ChevronDown
               onClick={handleChevronClick}
-              className="p-1 rounded-lg hover:bg-white/80 dark:hover:bg-white/5 transition-colors duration-200 group-hover:shadow-sm"
-            >
-              <ChevronDown
-                className={cn(
-                  "h-3.5 w-3.5 flex-shrink-0 transition-transform duration-200 text-gray-400",
-                  isExpanded && "rotate-180"
-                )}
-              />
-            </div>
+              className={cn(
+                "h-4 w-4 flex-shrink-0 transition-all duration-200 text-sidebar-text/40 hover:text-primary cursor-pointer",
+                isExpanded && "rotate-180"
+              )}
+            />
           )}
-        </>
+        </div>
       )}
     </div>
   );
@@ -163,8 +146,8 @@ export const SidebarItem: FC<SidebarItemProps> = ({
     if (!items) return null;
 
     return items.map((subItem) => {
-      const isSubItemActive = !!(subItem.path === '/' 
-        ? location.pathname === '/' 
+      const isSubItemActive = !!(subItem.path === '/'
+        ? location.pathname === '/'
         : subItem.path && typeof subItem.path === 'string' && location.pathname.startsWith(subItem.path));
       const hasNestedItems = subItem.subItems && subItem.subItems.length > 0;
 
@@ -194,33 +177,23 @@ export const SidebarItem: FC<SidebarItemProps> = ({
           <div
             id={subItem.id}
             className={cn(
-              "flex items-center gap-3 px-3 py-2.5 transition-all duration-200 relative group cursor-pointer",
+              "flex items-center gap-3 px-3 py-1.5 transition-all duration-200 relative group cursor-pointer border border-transparent rounded-lg",
               isSubItemActive
-                ? "bg-gradient-to-r from-primary-50/40 to-transparent text-primary-700 dark:from-primary-500/5 dark:to-transparent dark:text-primary-400 font-bold rounded-xl"
-                : "text-gray-500 hover:bg-gradient-to-r hover:from-gray-50 hover:to-transparent hover:text-gray-900 dark:text-gray-500 dark:hover:from-white/5 dark:hover:to-transparent dark:hover:text-white rounded-xl"
+                ? "bg-sidebar-active/80 text-sidebar-text-active font-heading"
+                : "text-sidebar-text hover:bg-sidebar-active/50 hover:text-gray-900 dark:hover:text-white"
             )}
           >
-            {/* Indentation line or dot */}
-            <div
-              className={cn(
-                "w-1 h-1 rounded-full transition-all duration-200",
-                isSubItemActive
-                  ? "bg-primary-600 scale-125 shadow-[0_0_8px] shadow-primary-500/50"
-                  : "bg-gray-300 dark:bg-white/10 group-hover:bg-gray-400 dark:group-hover:bg-white/20"
-              )}
-            />
-
             {subItem.icon && (
               <subItem.icon
                 className={cn(
                   "h-4 w-4 flex-shrink-0 transition-colors duration-200",
                   isSubItemActive
-                    ? "text-primary-600 dark:text-primary-400"
-                    : "text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300"
+                    ? "text-sidebar-text-active"
+                    : "text-sidebar-text group-hover:text-gray-600 dark:group-hover:text-gray-300"
                 )}
               />
             )}
-            <span className="flex-1 truncate text-sm tracking-tight">
+            <span className="flex-1 truncate text-sm">
               {subItem.label}
             </span>
           </div>
@@ -230,71 +203,96 @@ export const SidebarItem: FC<SidebarItemProps> = ({
   };
 
   const renderMainItem = () => {
-    if (isCollapsed) {
-      if (collapsedPath) {
-        return (
-          <LinkTransition
-            href={collapsedPath}
-            className="w-full text-left"
-            callBack={closeMobile}
-          >
-            {ItemContent}
-          </LinkTransition>
-        );
-      }
-      return <div>{ItemContent}</div>;
-    }
+    const content = (
+      <div className="w-full">
+        {isCollapsed ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {collapsedPath ? (
+                <LinkTransition
+                  href={collapsedPath}
+                  className="w-full text-left block"
+                  callBack={closeMobile}
+                >
+                  {ItemContent}
+                </LinkTransition>
+              ) : (
+                <div>{ItemContent}</div>
+              )}
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {label}
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          path ? (
+            <LinkTransition
+              href={path}
+              className="w-full text-left block"
+              callBack={closeMobile}
+            >
+              {ItemContent}
+            </LinkTransition>
+          ) : (
+            <div>{ItemContent}</div>
+          )
+        )}
+      </div>
+    );
 
-    // Expandido: Enlace si existe ruta
-    if (path) {
-      return (
-        <LinkTransition
-          href={path}
-          className="w-full text-left"
-          callBack={closeMobile}
-        >
-          {ItemContent}
-        </LinkTransition>
-      );
-    }
-
-    return <div>{ItemContent}</div>;
+    return content;
   };
 
   return (
     <>
       {hasSubItems && !isCollapsed ? (
-        <div
-          className={cn(
-            "transition-all duration-200 rounded-xl",
-            isExpanded &&
-            "bg-gradient-to-b from-gray-50/50 to-transparent dark:from-gray-800/30 dark:to-transparent"
-          )}
-        >
+        <div className="transition-all duration-300">
           {renderMainItem()}
 
-          <div
-            className={cn(
-              "grid transition-[grid-template-rows] duration-200 ease-out",
-              isExpanded ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-            )}
-          >
-            <div className="overflow-hidden">
-              <div
-                className="mt-1 space-y-1 px-2 pb-2"
-                onClick={(e) => e.stopPropagation()}
+          <AnimatePresence initial={false}>
+            {isExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0, filter: "blur(4px)" }}
+                animate={{
+                  height: "auto",
+                  opacity: 1,
+                  filter: "blur(0px)",
+                  transition: {
+                    height: {
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 30
+                    },
+                    opacity: { duration: 0.25 },
+                    filter: { duration: 0.2 }
+                  }
+                }}
+                exit={{
+                  height: 0,
+                  opacity: 0,
+                  filter: "blur(4px)",
+                  transition: {
+                    height: { duration: 0.25 },
+                    opacity: { duration: 0.15 },
+                    filter: { duration: 0.1 }
+                  }
+                }}
+                className="overflow-hidden"
               >
-                {renderSubItems(subItems, level)}
-              </div>
-            </div>
-          </div>
+                <div
+                  className="mt-1 space-y-0.5 px-6 pb-2 relative"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {/* Main vertical line for the whole group */}
+                  <div className="absolute left-[25px] top-0 bottom-4 w-px bg-sidebar-border opacity-50" />
+                  {renderSubItems(subItems, level)}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       ) : (
         renderMainItem()
-      )}
-
-      {isCollapsed && showTooltip && (
-        <Tooltip content={label} badge={badge} position={tooltipPosition} />
       )}
     </>
   );

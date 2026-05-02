@@ -1,17 +1,16 @@
 import { useEffect } from "react";
 import { useSidebarStore } from "@/stores/sidebarStore";
+import { useShallow } from "zustand/react/shallow";
 
 export const useSidebarState = () => {
-  const {
-    isCollapsed,
-    isMobileOpen,
-    toggleCollapse,
-    toggleMobile,
-    closeMobile,
-    openMobile,
-    setCollapsed,
-    setMobileOpen,
-  } = useSidebarStore();
+  const isCollapsed = useSidebarStore(useShallow((state) => state.isCollapsed));
+  const isMobileOpen = useSidebarStore(useShallow((state) => state.isMobileOpen));
+  const toggleCollapse = useSidebarStore(useShallow((state) => state.toggleCollapse));
+  const toggleMobile = useSidebarStore(useShallow((state) => state.toggleMobile));
+  const closeMobile = useSidebarStore(useShallow((state) => state.closeMobile));
+  const openMobile = useSidebarStore(useShallow((state) => state.openMobile));
+  const setCollapsed = useSidebarStore(useShallow((state) => state.setCollapsed));
+  const setMobileOpen = useSidebarStore(useShallow((state) => state.setMobileOpen));
 
   // Cerrar sidebar móvil al cambiar de ruta
   useEffect(() => {

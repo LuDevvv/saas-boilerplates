@@ -41,8 +41,27 @@
       "@/*": [
         "src/*"
       ],
+
+      // FSD Layer Paths
+      "@app/*": [
+        "src/app/*"
+      ],
+      "@features/*": [
+        "src/features/*"
+      ],
+      "@entities/*": [
+        "src/entities/*"
+      ],
+      "@shared/*": [
+        "src/shared/*"
+      ],
+      "@pages/*": [
+        "src/pages/*"
+      ],
+
+      // Legacy paths (gradually migrate)
       "@assets/*": [
-        "assets/*"
+        "src/assets/*"
       ],
       "@components/*": [
         "src/components/*"
@@ -63,13 +82,10 @@
         "src/routes/*"
       ],
       "@helpers/*": [
-        "src/helpers/*"
+        "src/utils/*"
       ],
       "@hooks/*": [
         "src/hooks/*"
-      ],
-      "@pages/*": [
-        "src/pages/*"
       ],
       "@styles/*": [
         "src/styles/*"
@@ -90,10 +106,13 @@
         "src/services/*"
       ],
       "@data/*": [
-        "src/data/*"
+        "src/lib/data/*"
       ],
       "@elements/*": [
         "src/components/elements*"
+      ],
+      "@node-stack/ui": [
+        "../../packages/ui/src/index.ts"
       ]
     },
     "outDir": "./dist",
@@ -107,9 +126,13 @@
   "include": [
     "**/*.ts",
     "**/*.tsx",
-    "**/*.json"
+    "**/*.json",
+    "../../packages/ui/src/**/*"
   ],
   "references": [
+    {
+      "path": "../../packages/ui"
+    },
     {
       "path": "../../packages/api-client"
     },

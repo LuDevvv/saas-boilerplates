@@ -15,7 +15,7 @@ const PrivacyPage = () => {
           </Link>
         </div>
 
-        <h1 className="text-3xl font-bold leading-tight text-black sm:text-4xl mb-6">
+        <h1 className="text-3xl font-heading leading-tight text-black sm:text-4xl mb-6">
           Política de Privacidad
         </h1>
 
@@ -23,7 +23,7 @@ const PrivacyPage = () => {
           <p>Última actualización: 28 de febrero de 2025</p>
 
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-black">
+            <h2 className="text-xl font-heading text-black">
               1. Introducción
             </h2>
             <p>
@@ -36,27 +36,27 @@ const PrivacyPage = () => {
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-black">
+            <h2 className="text-xl font-heading text-black">
               2. Información que Recopilamos
             </h2>
             <p>Recopilamos varios tipos de información, incluyendo:</p>
             <ul className="list-disc pl-6 space-y-2">
               <li>
-                <span className="font-medium text-gray-800">
+                <span className="font-label text-gray-800">
                   Información de registro:
                 </span>{" "}
                 Nombre, apellido, dirección de correo electrónico y contraseña
                 cuando creas una cuenta.
               </li>
               <li>
-                <span className="font-medium text-gray-800">
+                <span className="font-label text-gray-800">
                   Información de perfil:
                 </span>{" "}
                 Información adicional que proporcionas al completar tu perfil,
                 como tu cargo, empresa y foto de perfil.
               </li>
               <li>
-                <span className="font-medium text-gray-800">
+                <span className="font-label text-gray-800">
                   Información de uso:
                 </span>{" "}
                 Datos sobre cómo interactúas con nuestro Servicio, incluyendo
@@ -64,7 +64,7 @@ const PrivacyPage = () => {
                 utilizadas.
               </li>
               <li>
-                <span className="font-medium text-gray-800">
+                <span className="font-label text-gray-800">
                   Información técnica:
                 </span>{" "}
                 Dirección IP, tipo de navegador, proveedor de servicios de
@@ -72,7 +72,7 @@ const PrivacyPage = () => {
                 general.
               </li>
               <li>
-                <span className="font-medium text-gray-800">
+                <span className="font-label text-gray-800">
                   Datos empresariales:
                 </span>{" "}
                 Información que ingresas sobre tu empresa, clientes, proveedores
@@ -82,7 +82,7 @@ const PrivacyPage = () => {
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-black">
+            <h2 className="text-xl font-heading text-black">
               3. Cómo Usamos tu Información
             </h2>
             <p>Utilizamos la información que recopilamos para:</p>
@@ -106,7 +106,7 @@ const PrivacyPage = () => {
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-black">
+            <h2 className="text-xl font-heading text-black">
               4. Compartición de Información
             </h2>
             <p>
@@ -115,7 +115,7 @@ const PrivacyPage = () => {
             </p>
             <ul className="list-disc pl-6 space-y-2">
               <li>
-                <span className="font-medium text-gray-800">
+                <span className="font-label text-gray-800">
                   Con proveedores de servicios:
                 </span>{" "}
                 Compartimos información con terceros que nos ayudan a operar,
@@ -123,7 +123,7 @@ const PrivacyPage = () => {
                 pago, servicios de alojamiento y análisis).
               </li>
               <li>
-                <span className="font-medium text-gray-800">
+                <span className="font-label text-gray-800">
                   Para cumplir con la ley:
                 </span>{" "}
                 Podemos divulgar información si creemos de buena fe que es
@@ -131,7 +131,7 @@ const PrivacyPage = () => {
                 o solicitudes gubernamentales.
               </li>
               <li>
-                <span className="font-medium text-gray-800">
+                <span className="font-label text-gray-800">
                   En caso de reorganización empresarial:
                 </span>{" "}
                 Si nos involucramos en una fusión, adquisición o venta de
@@ -139,7 +139,7 @@ const PrivacyPage = () => {
                 transacción.
               </li>
               <li>
-                <span className="font-medium text-gray-800">
+                <span className="font-label text-gray-800">
                   Con tu consentimiento:
                 </span>{" "}
                 Podemos compartir información con terceros cuando nos das tu
@@ -149,7 +149,7 @@ const PrivacyPage = () => {
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-black">
+            <h2 className="text-xl font-heading text-black">
               5. Seguridad de Datos
             </h2>
             <p>
@@ -162,7 +162,7 @@ const PrivacyPage = () => {
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-black">
+            <h2 className="text-xl font-heading text-black">
               6. Retención de Datos
             </h2>
             <p>
@@ -174,7 +174,7 @@ const PrivacyPage = () => {
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-black">
+            <h2 className="text-xl font-heading text-black">
               7. Tus Derechos
             </h2>
             <p>
@@ -199,7 +199,7 @@ const PrivacyPage = () => {
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-black">
+            <h2 className="text-xl font-heading text-black">
               8. Cookies y Tecnologías Similares
             </h2>
             <p>
@@ -213,7 +213,7 @@ const PrivacyPage = () => {
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-black">
+            <h2 className="text-xl font-heading text-black">
               9. Cambios a esta Política de Privacidad
             </h2>
             <p>
@@ -226,7 +226,7 @@ const PrivacyPage = () => {
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-black">10. Contacto</h2>
+            <h2 className="text-xl font-heading text-black">10. Contacto</h2>
             <p>
               Si tienes preguntas sobre esta Política de Privacidad, por favor
               contáctanos a través de [dirección de correo electrónico].
@@ -237,7 +237,7 @@ const PrivacyPage = () => {
         <div className="mt-8 border-t border-gray-200 pt-6">
           <Link
             to="/auth/sign-up"
-            className="inline-flex items-center justify-center px-4 py-3 text-base font-semibold text-white transition-all duration-200 border border-transparent rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 focus:outline-none hover:opacity-90 focus:opacity-90"
+            className="inline-flex items-center justify-center px-4 py-3 text-base font-heading text-white transition-all duration-200 border border-transparent rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 focus:outline-none hover:opacity-90 focus:opacity-90"
           >
             Volver al registro
           </Link>

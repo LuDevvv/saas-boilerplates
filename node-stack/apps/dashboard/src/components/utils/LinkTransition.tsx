@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { useNavigate } from "react-router-dom";
+import { cn } from "@/utils/classNames";
 
 interface LinkTransitionProps {
   href: string;
@@ -44,7 +45,7 @@ export const LinkTransition: FC<LinkTransitionProps> = ({
   };
 
   return (
-    <button type="button" onClick={handleClick} className={className}>
+    <button type="button" onClick={handleClick} className={cn("outline-none focus:outline-none focus-visible:outline-none", className)}>
       {children}
     </button>
   );

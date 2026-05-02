@@ -9,8 +9,8 @@ export const SidebarSection: FC<SidebarSectionProps> = ({
   return (
     <div className="relative">
       {!isCollapsed && (
-        <div className="flex items-center gap-2 mt-4 mb-2 px-3 relative">
-          <h3 className="relative text-[10px] sm:text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500 z-10">
+        <div className="flex items-center gap-[6px] mt-6 mb-2 pl-[10px] relative">
+          <h3 className="relative text-[10px] font-label uppercase text-sidebar-text/40 z-10">
             {title}
           </h3>
         </div>

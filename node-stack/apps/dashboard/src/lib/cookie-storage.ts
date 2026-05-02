@@ -19,3 +19,9 @@ export class CookieTokenStorage {
   }
 }
 
+export const cookieTokenStorage = new CookieTokenStorage("token", {
+  secure: window.location.protocol === "https:",
+  sameSite: "lax",
+  expires: 7,
+  path: "/",
+});

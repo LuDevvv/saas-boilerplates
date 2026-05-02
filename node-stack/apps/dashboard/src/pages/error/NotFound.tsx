@@ -1,56 +1,67 @@
 import { useNavigate } from "react-router";
-import { SearchX, Home, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Home } from "lucide-react";
+import { Button } from "@node-stack/ui";
 
 const NotFound = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="relative min-h-screen bg-gray-50 dark:bg-[#050505] overflow-hidden flex items-center justify-center p-4">
-      {/* High-End Atmospheric Background similar to Pricing */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary-50/10 via-white to-white dark:from-primary-950/10 dark:via-gray-950 dark:to-gray-950" />
+    <div className="relative min-h-screen bg-white dark:bg-[#0A0A0A] overflow-hidden flex flex-col items-center justify-center p-6 select-none">
+      {/* Cinematic Background Atmosphere */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 dark:bg-primary/10 rounded-full blur-[120px] animate-pulse" />
         <div 
-          className="absolute inset-0 opacity-[0.02] dark:opacity-[0.04]" 
-          style={{ backgroundImage: `radial-gradient(circle at 1px 1px, #000 1px, transparent 0)`, backgroundSize: '24px 24px' }} 
+          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.07]" 
+          style={{ backgroundImage: `radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)`, backgroundSize: '40px 40px' }} 
         />
-        <div className="absolute top-[20%] right-[-10%] w-[80%] h-[80%] bg-primary-500/5 rounded-full blur-[140px]" />
       </div>
 
-      <div className="relative z-10 w-full max-w-lg">
-        <div className="bg-white dark:bg-gray-900 rounded-[3rem] shadow-premium p-12 text-center border border-gray-100 dark:border-gray-800 backdrop-blur-sm">
-          <div className="w-24 h-24 bg-gray-50 dark:bg-gray-800/50 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-gray-100 dark:border-gray-800/50 shadow-inner">
-            <SearchX className="w-12 h-12 text-gray-400 dark:text-gray-500" />
-          </div>
-          
-          <div className="inline-block px-4 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-extrabold text-xs uppercase tracking-widest mb-6 border border-gray-200 dark:border-gray-700">
-            Error 404
-          </div>
-          
-          <h1 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4 tracking-tight">
-            Página no encontrada
+      <div className="relative z-10 flex flex-col items-center text-center">
+        {/* Large Minimalist Hero 404 */}
+        <div className="relative mb-4">
+          <h1 className="text-[12rem] md:text-[18rem] font-black leading-none tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-gray-900 to-gray-200 dark:from-white dark:to-white/5 opacity-10 dark:opacity-20 select-none">
+            404
           </h1>
-          
-          <p className="text-gray-500 dark:text-gray-400 mb-10 leading-relaxed font-medium">
-            La ruta a la que intentas acceder no existe o fue movida. Verifica la dirección web.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="flex-1 flex items-center justify-center gap-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-6 py-4 rounded-2xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700 active:scale-95"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              Regresar
-            </button>
-            <button
-              onClick={() => navigate("/")}
-              className="flex-1 flex items-center justify-center gap-2 bg-primary-500 text-white px-6 py-4 rounded-2xl font-bold hover:bg-primary-600 transition-all shadow-lg shadow-primary-500/20 active:scale-95 border border-primary-400"
-            >
-              <Home className="w-5 h-5" />
-              Ir al Inicio
-            </button>
+          <div className="absolute inset-0 flex flex-col items-center justify-center translate-y-8 md:translate-y-12">
+            <h2 className="text-3xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
+              Perdido en el <span className="text-primary">Vacio</span>
+            </h2>
           </div>
         </div>
+
+        <p className="text-gray-400 dark:text-gray-500 font-label uppercase tracking-[0.3em] text-[10px] mb-12">
+          La página solicitada no pudo ser encontrada
+        </p>
+
+        {/* Minimalist Action Controls */}
+        <div className="flex flex-col sm:flex-row items-center gap-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="group flex items-center gap-3 text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all font-label text-xs uppercase tracking-widest px-4 py-2"
+          >
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            Regresar
+          </button>
+          
+          <div className="w-px h-8 bg-gray-200 dark:bg-white/10 hidden sm:block" />
+
+          <Button
+            onClick={() => navigate("/")}
+            className="h-14 px-10 rounded-full bg-primary text-white hover:bg-primary-600 shadow-2xl shadow-primary/40 hover:shadow-primary/60 transition-all font-heading uppercase text-[11px] tracking-widest active:scale-95"
+          >
+            <Home className="w-4 h-4 mr-2" />
+            Panel de Control
+          </Button>
+        </div>
+      </div>
+
+      {/* Footer Branding */}
+      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4">
+        <div className="h-px w-8 bg-gray-200 dark:bg-white/10" />
+        <span className="text-[9px] font-label text-gray-300 dark:text-gray-600 uppercase tracking-[0.4em]">
+          Elora Systems v4.0
+        </span>
+        <div className="h-px w-8 bg-gray-200 dark:bg-white/10" />
       </div>
     </div>
   );

@@ -164,7 +164,7 @@ export const SimpleLineChart: FC<{
                 return (
                   <div
                     key={i}
-                    className={`absolute left-0 font-bold text-right transform -translate-y-1/2 z-10 
+                    className={`absolute left-0 font-label text-right transform -translate-y-1/2 z-10 
                                             ${
                                               isMobile
                                                 ? "text-[9px] min-w-[20px] px-0.5 rounded backdrop-blur-sm"

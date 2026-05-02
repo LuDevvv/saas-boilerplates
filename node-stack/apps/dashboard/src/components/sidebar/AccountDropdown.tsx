@@ -48,11 +48,11 @@ export const AccountDropdown: FC<AccountDropdownProps> = ({
   return (
     <div
       ref={dropdownRef}
-      className="absolute top-full right-0 mt-2 w-64 rounded-xl border border-transparent bg-white shadow-2xl shadow-gray-200/50 dark:bg-gray-800/95 dark:shadow-none dark:backdrop-blur-xl overflow-hidden"
+      className="absolute top-full right-0 mt-3 w-64 rounded-2xl border border-gray-100 bg-white shadow-2xl shadow-gray-900/10 dark:border-white/10 dark:bg-[#0A0A0A] dark:shadow-black/50 z-[100] animate-in fade-in slide-in-from-top-2 duration-300 overflow-hidden"
     >
-      <div className="flex flex-col p-1">
-        <div className="px-3 py-2">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+      <div className="flex flex-col p-2">
+        <div className="px-3 py-2 mb-1">
+          <p className="text-[10px] font-label text-gray-400 uppercase ">
             Mi Cuenta
           </p>
         </div>
@@ -64,22 +64,26 @@ export const AccountDropdown: FC<AccountDropdownProps> = ({
             className="w-full"
             callBack={handleItemClick}
           >
-            <div className="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+            <div className="group flex w-full items-center gap-3 px-3 py-2 rounded-xl text-left text-sm font-label text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-all duration-200 active:scale-[0.98]">
               <div
                 className={cn(
-                  "p-1.5 rounded-md",
+                  "p-2 rounded-xl transition-all duration-200",
                   item.highlight
-                    ? "bg-violet-50 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400"
-                    : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+                    ? "bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white"
+                    : "bg-gray-100/50 text-gray-500 dark:bg-white/5 dark:text-gray-400 group-hover:bg-primary group-hover:text-white"
                 )}
               >
-                <item.icon className="h-4 w-4" />
+                {item.icon && (() => {
+                  const Icon = item.icon;
+                  return <Icon className="h-4 w-4" />;
+                })()}
               </div>
               <span
                 className={cn(
+                  "transition-colors duration-200",
                   item.highlight
-                    ? "text-violet-700 dark:text-violet-300 font-semibold"
-                    : "text-gray-700 dark:text-gray-300"
+                    ? "text-primary font-heading"
+                    : "text-gray-700 dark:text-gray-300 group-hover:text-gray-950 dark:group-hover:text-white"
                 )}
               >
                 {item.label}
@@ -88,16 +92,16 @@ export const AccountDropdown: FC<AccountDropdownProps> = ({
           </LinkTransition>
         ))}
 
-        <div className="my-1 border-t border-transparent" />
+        <div className="my-1.5 border-t border-gray-100 dark:border-white/5 mx-2" />
 
         <button
           onClick={onLogout}
-          className="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 cursor-pointer"
+          className="group flex w-full items-center gap-3 px-3 py-2 rounded-xl text-left text-sm font-label text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20 cursor-pointer transition-all duration-200 active:scale-[0.98]"
         >
-          <div className="p-1.5 rounded-md bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+          <div className="p-2 rounded-xl bg-red-50 text-red-600 dark:bg-red-950/30 dark:text-red-400 group-hover:bg-red-600 group-hover:text-white transition-all duration-200">
             <LogOut className="h-4 w-4" />
           </div>
-          <span>Cerrar sesión</span>
+          <span className="group-hover:font-heading transition-all">Cerrar sesión</span>
         </button>
       </div>
     </div>

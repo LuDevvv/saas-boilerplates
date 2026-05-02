@@ -114,15 +114,15 @@ const Pagination: React.FC<PaginationProps> = ({
     <div
       className={`flex flex-col sm:flex-row justify-between items-center gap-4 w-full py-4 ${className}`}
     >
-      <div className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-        Mostrando <span className="text-gray-900 dark:text-white font-bold">{startItem}</span> a <span className="text-gray-900 dark:text-white font-bold">{endItem}</span> de <span className="text-gray-900 dark:text-white font-bold">{totalItems}</span>
+      <div className="text-sm text-gray-500 dark:text-gray-400 font-label">
+        Mostrando <span className="text-gray-900 dark:text-white font-heading">{startItem}</span> a <span className="text-gray-900 dark:text-white font-heading">{endItem}</span> de <span className="text-gray-900 dark:text-white font-heading">{totalItems}</span>
       </div>
 
       <div className="flex items-center gap-2 bg-white dark:bg-gray-900 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-x-auto max-w-full">
         <button
           onClick={handlePrevious}
           disabled={currentPage === 1}
-          className={`flex flex-shrink-0 items-center justify-center min-w-[36px] h-9 px-3 rounded-xl font-bold text-sm transition-all
+          className={`flex flex-shrink-0 items-center justify-center min-w-[36px] h-9 px-3 rounded-xl font-heading text-sm transition-all
             ${currentPage === 1
               ? "text-gray-300 dark:text-gray-600 bg-transparent cursor-not-allowed"
               : "text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800 active:scale-95 cursor-pointer"
@@ -137,8 +137,7 @@ const Pagination: React.FC<PaginationProps> = ({
           {getVisiblePages().map((page, index) => {
             if (page === '...') {
               return (
-                <span key={`ellipsis-${index}`} className="flex items-center justify-center w-8 h-9 text-gray-400 dark:text-gray-600 font-medium">
-                  •••
+                <span key={`ellipsis-${index}`} className="flex items-center justify-center w-8 h-9 text-gray-400 dark:text-gray-600 font-label">                  •••
                 </span>
               );
             }
@@ -147,9 +146,9 @@ const Pagination: React.FC<PaginationProps> = ({
               <button
                 key={page}
                 onClick={() => onPageChange(page as number)}
-                className={`flex flex-shrink-0 items-center justify-center min-w-[36px] h-9 px-2 text-sm font-bold rounded-xl transition-all
+                className={`flex flex-shrink-0 items-center justify-center min-w-[36px] h-9 px-2 text-sm font-heading rounded-xl transition-all
                   ${currentPage === page
-                    ? "bg-primary-500 text-white shadow-md shadow-primary-500/20"
+                    ? "bg-primary-500 text-white shadow-md shadow-blue-900/20"
                     : "text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800 active:scale-95 cursor-pointer"
                   }`}
                 aria-label={`Página ${page}`}
@@ -164,7 +163,7 @@ const Pagination: React.FC<PaginationProps> = ({
         <button
           onClick={handleNext}
           disabled={currentPage === totalPages}
-          className={`flex flex-shrink-0 items-center justify-center min-w-[36px] h-9 px-3 rounded-xl font-bold text-sm transition-all
+          className={`flex flex-shrink-0 items-center justify-center min-w-[36px] h-9 px-3 rounded-xl font-heading text-sm transition-all
             ${currentPage === totalPages
               ? "text-gray-300 dark:text-gray-600 bg-transparent cursor-not-allowed"
               : "text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800 active:scale-95 cursor-pointer"

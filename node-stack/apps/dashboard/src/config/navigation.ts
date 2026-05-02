@@ -1,15 +1,14 @@
 import {
+  Building2,
+  CreditCard,
+  Crown,
   Home,
-  User,
+  PieChart,
   Settings,
-  Shield,
-  ShieldCheck,
-  Bell,
-  CheckCircle,
-  Clock,
-  Layout,
-  FileText,
-  Sparkles
+  User,
+  Users,
+  Webhook,
+  Key,
 } from "lucide-react";
 import {
   DropdownItem,
@@ -17,45 +16,67 @@ import {
 } from "@/components/sidebar/types";
 
 /**
- * Generates the menu sections for the Dashboard Boilerplate.
+ * Genera la estructura de secciones y menús para el Dashboard de NodeStack.
  */
 export const getMenuSections = (): MenuSection[] => {
   return [
     {
-      title: "Main",
+      title: "Principal",
       items: [
-        { icon: Home, label: "Overview", path: "/" },
-        { icon: Layout, label: "Workspaces", path: "/workspaces" },
-        { icon: Sparkles, label: "AI Playground", path: "/ai-playground" },
-        { icon: Bell, label: "Notifications", path: "/notifications" },
+        { icon: Home, label: "Inicio", path: "/" },
+        {
+          icon: PieChart,
+          label: "Analíticas",
+          path: "/analytics",
+          badge: "Nuevo",
+        },
+        {
+          icon: Building2,
+          label: "Almacenamiento",
+          path: "/storage",
+        },
       ],
     },
     {
-      title: "Settings",
+      title: "Cuenta",
       items: [
+        {
+          icon: CreditCard,
+          label: "Pagos",
+          path: "/payments",
+          badge: "3",
+        },
         {
           icon: Settings,
-          label: "Organization",
+          label: "Configuración",
           subItems: [
-            { icon: Shield, label: "Security", path: "/organization/security" },
-            { icon: Clock, label: "Audit Logs", path: "/organization/logs" },
+            { id: "personal-profile", icon: User, label: "Perfil Personal", path: "/profile/personal" },
+            {
+              id: "company-profile",
+              icon: Building2,
+              label: "Perfil Empresarial",
+              path: "/profile/company",
+            },
+            {
+              id: "workspace-members",
+              icon: Users,
+              label: "Miembros",
+              path: "/settings/members",
+            },
+            {
+              id: "workspace-api-keys",
+              icon: Key,
+              label: "Claves API",
+              path: "/settings/api-keys",
+            },
+            {
+              id: "workspace-webhooks",
+              icon: Webhook,
+              label: "Webhooks",
+              path: "/settings/webhooks",
+            },
           ],
         },
-        {
-          icon: User,
-          label: "Profile",
-          subItems: [
-            { icon: User, label: "Personal", path: "/profile/personal" },
-            { icon: FileText, label: "Billing", path: "/profile/billing" },
-          ],
-        },
-      ],
-    },
-    {
-      title: "Admin",
-      items: [
-        { icon: ShieldCheck, label: "Admin Overview", path: "/admin" },
-        { icon: User, label: "Manage Users", path: "/admin/users" },
       ],
     },
   ];
@@ -63,14 +84,20 @@ export const getMenuSections = (): MenuSection[] => {
 
 export const accountDropdownItems: DropdownItem[] = [
   {
+    icon: Crown,
+    label: "Mejorar a Pro",
+    path: "/pricing",
+    showOnlyForFree: true,
+    highlight: true,
+  },
+  {
     icon: User,
-    label: "My Profile",
+    label: "Mi perfil",
     path: "/profile/personal",
   },
   {
-    icon: CheckCircle,
-    label: "Upgrade Plan",
-    path: "/pricing",
-    highlight: true,
+    icon: Users,
+    label: "Equipo",
+    path: "/settings/members",
   },
 ];
