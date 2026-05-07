@@ -84,26 +84,49 @@ export async function setup() {
     throw error;
   }
 
-  // Manually apply RLS policies from migration 0012
-  console.log('Applying RLS policies...');
+  // Manually apply post-push migrations that drizzle-kit push doesn't
+  // emit (RLS policy changes, soft-delete partial indexes). Phase 3
+  // hand-wrote these because db:generate is TTY-blocked in CI; they
+  // need to be replayed in order on top of the pushed schema.
+  console.log('Applying post-push migrations...');
   try {
     const { Pool } = await import('pg');
     const pool = new Pool({ connectionString: dbUrl });
     const fs = await import('fs');
     const path = await import('path');
-    
-    const migrationPath = path.join(rootDir, 'packages/db/migrations/0012_enable_rls.sql');
-    if (fs.existsSync(migrationPath)) {
-      console.log(`Loading migration from: ${migrationPath}`);
-      const rlsSql = fs.readFileSync(migrationPath, 'utf8');
-      await pool.query(rlsSql);
-      console.log('✅ RLS policies applied.');
-    } else {
-      console.warn('⚠️ RLS migration file not found at:', migrationPath);
+
+    const migrations = [
+      '0012_enable_rls.sql',
+      '0016_rls_system_bypass.sql',
+      '0017_enable_rls_tickets.sql',
+      // 0013-0015 are pure schema and 0018's soft-delete columns are
+      // covered by db:push above; only the RLS policy migrations need
+      // explicit replay because push doesn't manage policies.
+    ];
+
+    for (const migration of migrations) {
+      const migrationPath = path.join(rootDir, 'packages/db/migrations', migration);
+      if (fs.existsSync(migrationPath)) {
+        console.log(`Loading migration: ${migration}`);
+        const sqlText = fs.readFileSync(migrationPath, 'utf8');
+        try {
+          await pool.query(sqlText);
+        } catch (err: any) {
+          // Idempotent re-run: policies/columns may already exist on a
+          // reused container.
+          if (!/already exists/i.test(err.message)) {
+            throw err;
+          }
+          console.warn(`  ⚠️ ${migration}: ${err.message}`);
+        }
+      } else {
+        console.warn(`⚠️ Migration file not found: ${migrationPath}`);
+      }
     }
     await pool.end();
+    console.log('✅ Post-push migrations applied.');
   } catch (error) {
-    console.warn('⚠️ Failed to apply RLS policies (may already exist):', error.message);
+    console.warn('⚠️ Failed to apply post-push migrations:', (error as Error).message);
   }
 
   return async () => {
