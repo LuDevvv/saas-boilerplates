@@ -13,6 +13,7 @@ import { ApiKeyStrategy } from '@/auth/strategies/api-key.strategy.js';
 import { JwtStrategy, LocalStrategy, GoogleStrategy, GitHubStrategy } from '@/auth/strategies/index.js';
 import { TotpSecretCipher } from '@/auth/two-factor/totp-secret-cipher.js';
 import { TwoFactorService } from '@/auth/two-factor/two-factor.service.js';
+import { AccountService } from '@/users/account.service.js';
 
 
 
@@ -35,6 +36,7 @@ import { TwoFactorService } from '@/auth/two-factor/two-factor.service.js';
   controllers: [AuthController],
   providers: [
     AuthService,
+    AccountService,
     TwoFactorService,
     TotpSecretCipher,
     JwtStrategy,

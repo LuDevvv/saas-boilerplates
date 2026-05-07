@@ -1,5 +1,5 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { eq, and, gt } from "drizzle-orm";
+import { eq, and, gt, isNull, lt } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { DB_TOKEN } from "../tokens.js";
@@ -64,17 +64,29 @@ export class WorkspaceRepository {
     return { workspaces, nextCursor };
   }
 
-  async findById(id: string, tx?: NodePgDatabase<typeof schema>) {
+  async findById(
+    id: string,
+    tx?: NodePgDatabase<typeof schema>,
+    opts: { includeDeleted?: boolean } = {},
+  ) {
     const database = tx ?? this.db;
     return database.query.workspaces.findFirst({
-      where: eq(schema.workspaces.id, id),
+      where: opts.includeDeleted
+        ? eq(schema.workspaces.id, id)
+        : and(eq(schema.workspaces.id, id), isNull(schema.workspaces.deletedAt)),
     });
   }
 
-  async findBySlug(slug: string, tx?: NodePgDatabase<typeof schema>) {
+  async findBySlug(
+    slug: string,
+    tx?: NodePgDatabase<typeof schema>,
+    opts: { includeDeleted?: boolean } = {},
+  ) {
     const database = tx ?? this.db;
     return database.query.workspaces.findFirst({
-      where: eq(schema.workspaces.slug, slug),
+      where: opts.includeDeleted
+        ? eq(schema.workspaces.slug, slug)
+        : and(eq(schema.workspaces.slug, slug), isNull(schema.workspaces.deletedAt)),
     });
   }
 
@@ -162,5 +174,51 @@ export class WorkspaceRepository {
           eq(schema.memberships.userId, userId),
         ),
       );
+  }
+
+  // ── Soft-delete (per ADR 0003) ──────────────────────────
+
+  /**
+   * Soft-delete the workspace and cascade:
+   *   - mark all memberships as 'removed' (preserves audit trail)
+   * api_keys revocation and invitation soft-delete are caller-driven
+   * to keep this method narrow.
+   *
+   * After 30 days the cron will call `hardDeleteWorkspace`.
+   */
+  async softDeleteWorkspace(
+    workspaceId: string,
+    deletedBy: string | null,
+    reason: string | null,
+    tx?: NodePgDatabase<typeof schema>,
+  ) {
+    const db = tx ?? this.db;
+    await db
+      .update(schema.workspaces)
+      .set({
+        deletedAt: new Date(),
+        deletedBy: deletedBy ?? undefined,
+        deletionReason: reason ?? undefined,
+      })
+      .where(eq(schema.workspaces.id, workspaceId));
+    await db
+      .update(schema.memberships)
+      .set({ status: "removed" })
+      .where(eq(schema.memberships.workspaceId, workspaceId));
+  }
+
+  async hardDeleteWorkspace(workspaceId: string, tx?: NodePgDatabase<typeof schema>) {
+    const db = tx ?? this.db;
+    await db.delete(schema.workspaces).where(eq(schema.workspaces.id, workspaceId));
+  }
+
+  async findWorkspacesExpiredForHardDelete(
+    cutoff: Date,
+    tx?: NodePgDatabase<typeof schema>,
+  ) {
+    const db = tx ?? this.db;
+    return db.query.workspaces.findMany({
+      where: lt(schema.workspaces.deletedAt, cutoff),
+    });
   }
 }

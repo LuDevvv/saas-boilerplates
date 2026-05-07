@@ -26,6 +26,7 @@ import type { OAuthProfile } from "@node-stack/types";
 import type { Request, Response } from "express";
 
 import { AuthService, SessionListItem } from "@/auth/auth.service.js";
+import { AccountService } from "@/users/account.service.js";
 import { CurrentUser } from "@/auth/decorators/index.js";
 import {
   RegisterDto,
@@ -62,6 +63,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly twoFactorService: TwoFactorService,
     private readonly configService: ConfigService,
+    private readonly accountService: AccountService,
   ) { }
 
   @Throttle({ short: { ttl: 3600000, limit: 10 } })
@@ -138,6 +140,28 @@ export class AuthController {
   @ApiResponse({ status: 401, description: "Unauthorized" })
   async me(@CurrentUser("id") userId: string) {
     return this.authService.getUserById(userId);
+  }
+
+  @Delete("me")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth("JWT-auth")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: "Close current user account",
+    description:
+      "Soft-deletes the current user. Re-authentication via password is required. Sessions are revoked immediately. After 30 days the cron anonymizes PII.",
+  })
+  @ApiResponse({ status: 204, description: "Account closed" })
+  @ApiResponse({ status: 401, description: "Wrong password or no token" })
+  async closeAccount(
+    @CurrentUser("id") userId: string,
+    @Body() dto: { password: string; reason?: string },
+    @Req() req: Request,
+  ): Promise<void> {
+    await this.accountService.closeAccount(userId, dto.password, dto.reason ?? null, {
+      ipAddress: extractClientIp(req) ?? null,
+      userAgent: req.headers["user-agent"] ?? null,
+    });
   }
 
   @Patch("profile")
