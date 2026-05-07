@@ -59,6 +59,6 @@ export class ApiKeysController {
   @ApiResponse({ status: 200, description: 'API Key revoked successfully' })
   @ApiResponse({ status: 404, description: 'API Key not found or does not belong to workspace' })
   async revoke(@Param('id') id: string, @Request() req: any) {
-    return this.service.revoke(req.workspace.id, id);
+    return this.service.revoke(req.workspace.id, id, req.user?.id ?? null);
   }
 }

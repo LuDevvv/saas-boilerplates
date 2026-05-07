@@ -27,11 +27,12 @@ export class ImpersonationService {
 
     // Track the impersonation in audit logs via unified Event Emitter
     this.eventEmitter.emit("audit.log", {
-      action: "user.impersonated",
+      action: "admin.user_impersonated",
       userId: adminId,
       entityType: "user",
       entityId: targetUserId,
       metadata: {
+        targetUserId,
         reason: "Admin support/troubleshooting",
         timestamp: new Date().toISOString(),
       },

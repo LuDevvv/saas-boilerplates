@@ -133,7 +133,11 @@ export class ApiKeysService {
     return keys.map((k) => this.mapToDto(k));
   }
 
-  async revoke(workspaceId: string, id: string): Promise<void> {
+  async revoke(
+    workspaceId: string,
+    id: string,
+    actorUserId: string | null = null,
+  ): Promise<void> {
     const apiKey = await this.repo.findByIdWithTenant(workspaceId, id);
     if (!apiKey) {
       throw new NotFoundException('API Key not found');
@@ -152,10 +156,7 @@ export class ApiKeysService {
       await this.auditLog.create(
         {
           workspaceId,
-          // The revoke endpoint does not currently receive the actor
-          // userId; once the controller threads it through, populate
-          // here. Until then the row records null.
-          userId: null,
+          userId: actorUserId,
           action: 'auth.api_key_revoked',
           entityType: 'api_key',
           entityId: id,

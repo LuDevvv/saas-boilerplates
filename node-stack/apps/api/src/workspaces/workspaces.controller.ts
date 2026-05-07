@@ -83,8 +83,9 @@ export class WorkspacesController {
   async revokeApiKey(
     @TenantId() workspaceId: string,
     @Param("keyId", ParseUUIDPipe) keyId: string,
+    @CurrentUser("id") userId: string,
   ) {
-    return this.apiKeysService.revoke(workspaceId, keyId);
+    return this.apiKeysService.revoke(workspaceId, keyId, userId);
   }
 
   @Post()

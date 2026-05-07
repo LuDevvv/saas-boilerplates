@@ -52,7 +52,7 @@ export class UsersAdminController {
 
     // Audit the high-privilege change
     this.eventEmitter.emit("audit.log", {
-      action: "user.role_updated",
+      action: "admin.user_role_changed",
       userId: adminId,
       entityType: "user",
       entityId: id,
