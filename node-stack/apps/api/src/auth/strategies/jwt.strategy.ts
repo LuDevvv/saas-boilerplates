@@ -19,14 +19,10 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
     configService: ConfigService,
     @Inject(DB_TOKEN) private readonly db: Database,
   ) {
-    const jwtSecret = configService.get("JWT_SECRET");
-    if (!jwtSecret) {
-      throw new Error("JWT_SECRET environment variable is required");
-    }
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: jwtSecret,
+      secretOrKey: configService.getOrThrow<string>("JWT_SECRET"),
     });
   }
 

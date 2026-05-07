@@ -7,7 +7,10 @@ export const envSchema = z.object({
   REDIS_URL: z.string().url("A valid Redis URL is required").optional().or(z.literal('')),
   REDIS_HOST: z.string().optional(),
   REDIS_PORT: z.coerce.number().optional(),
-  JWT_SECRET: z.string().min(16, "JWT Secret must be at least 16 characters long"),
+  JWT_SECRET: z.string().min(32, "JWT_SECRET must be ≥32 chars"),
+  JWT_REFRESH_SECRET: z.string().min(32, "JWT_REFRESH_SECRET must be ≥32 chars"),
+  ENCRYPTION_KEY: z.string().regex(/^[0-9a-f]{64}$/i, "ENCRYPTION_KEY must be 32 bytes (64 hex chars)"),
+  TRUST_PROXY: z.coerce.number().int().min(0).max(10).default(1),
   CORS_ORIGINS: z.string().optional(),
   SENTRY_DSN: z.string().url().optional().or(z.literal('')),
   OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional().or(z.literal('')),
@@ -16,6 +19,13 @@ export const envSchema = z.object({
   MINIO_ROOT_PASSWORD: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
 }).superRefine((data, ctx) => {
+  if (data.JWT_REFRESH_SECRET === data.JWT_SECRET) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['JWT_REFRESH_SECRET'],
+      message: 'JWT_REFRESH_SECRET must differ from JWT_SECRET',
+    });
+  }
   if (data.NODE_ENV === 'production') {
     if (!data.SENTRY_DSN) {
       ctx.addIssue({

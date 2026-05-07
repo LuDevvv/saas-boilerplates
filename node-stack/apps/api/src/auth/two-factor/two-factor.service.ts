@@ -151,10 +151,10 @@ export class TwoFactorService {
       });
     }
 
-    const accessSecret = this.configService.get("JWT_SECRET");
-    const refreshSecret =
-      this.configService.get("JWT_REFRESH_SECRET") ||
-      this.configService.get("JWT_SECRET");
+    const accessSecret = this.configService.getOrThrow<string>("JWT_SECRET");
+    const refreshSecret = this.configService.getOrThrow<string>(
+      "JWT_REFRESH_SECRET",
+    );
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
