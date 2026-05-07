@@ -8,6 +8,7 @@ import { InvitationsModule } from "@/workspaces/invitations.module.js";
 import { WebhooksController } from "@/workspaces/webhooks.controller.js";
 import { WebhooksService } from "@/workspaces/webhooks.service.js";
 import { WorkspacesController } from "@/workspaces/workspaces.controller.js";
+import { WorkspaceDeletionService } from "@/workspaces/workspace-deletion.service.js";
 import { WorkspacesService } from "@/workspaces/workspaces.service.js";
 
 
@@ -20,6 +21,7 @@ import { WorkspacesService } from "@/workspaces/workspaces.service.js";
   controllers: [WorkspacesController, WebhooksController],
   providers: [
     WorkspacesService,
+    WorkspaceDeletionService,
     WebhooksService,
     ApiKeysService,
     OutboxService,
