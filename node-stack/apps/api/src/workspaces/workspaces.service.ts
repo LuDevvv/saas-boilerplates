@@ -200,6 +200,18 @@ export class WorkspacesService {
 
       await this.outbox.createEvent("workspace.created", { workspaceId: ws.id, userId, name }, tx);
 
+      await this.auditLog.create(
+        {
+          workspaceId: ws.id,
+          userId,
+          action: "workspace.created",
+          entityType: "workspace",
+          entityId: ws.id,
+          metadata: { name, slug },
+        },
+        tx,
+      );
+
       return ws;
     }, this.db);
 
@@ -225,6 +237,18 @@ export class WorkspacesService {
 
       await this.workspaceRepo.createMembership({ workspaceId, userId: newUserId, role }, tx);
       await this.outbox.createEvent("membership.added", { workspaceId, userId: newUserId, role }, tx);
+
+      await this.auditLog.create(
+        {
+          workspaceId,
+          userId: currentUserId,
+          action: "workspace.member_added",
+          entityType: "user",
+          entityId: newUserId,
+          metadata: { role },
+        },
+        tx,
+      );
     }, this.db);
 
     this.eventEmitter.emit("membership.added", {

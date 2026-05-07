@@ -88,39 +88,15 @@ export class AuditService {
   }
 
   // ─── Domain Event Listeners ──────────────────────────────────────────
-
-  @OnEvent("workspace.created", { async: true })
-  async onWorkspaceCreated(payload: any) {
-    await this.handleAuditLog({
-      action: "workspace.created",
-      userId: payload.userId,
-      workspaceId: payload.workspaceId,
-      entityType: "workspace",
-      entityId: payload.workspaceId,
-      metadata: payload,
-    });
-  }
-
-  @OnEvent("membership.added", { async: true })
-  async onMembershipAdded(payload: any) {
-    await this.handleAuditLog({
-      action: "workspace.member_added",
-      userId: payload.actorId,
-      workspaceId: payload.workspaceId,
-      entityType: "user",
-      entityId: payload.userId,
-      metadata: payload,
-    });
-  }
-
-  // membership.removed, membership.updated, and billing.subscription.*
-  // listeners were removed in Phase 3b. The originating services
-  // (workspaces.service, billing.service) write the audit row
-  // directly inside their withTenantTx blocks with the
-  // taxonomy-correct action strings (workspace.member_removed,
-  // workspace.member_role_changed, billing.subscription_created |
-  // _updated | _canceled). Keeping both produced duplicate
-  // audit_logs rows per event.
+  //
+  // Phase 3b removed the membership.removed / membership.updated /
+  // billing.subscription.* listeners. Phase 3c removes the last two
+  // (workspace.created and membership.added); both are now written
+  // directly inside the originating service's withTenantTx block.
+  // No domain-event listeners remain — the audit.log fan-in handler
+  // above is the single entry point for ad-hoc and interceptor-emitted
+  // events. New events added in future PRs MUST use the direct-write
+  // pattern, not @OnEvent listeners.
 
   /**
    * Legacy method for backward compatibility.
