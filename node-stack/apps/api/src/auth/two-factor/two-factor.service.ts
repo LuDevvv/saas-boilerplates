@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
+import { CacheService } from "@node-stack/cache";
 import { schema, eq, DB_TOKEN, AuthRepository } from "@node-stack/db";
 import type { Database } from "@node-stack/db";
 import { OTP } from "otplib";
@@ -13,6 +14,11 @@ import * as QRCode from "qrcode";
 
 import { TOKEN_TYPE, JWT_EXPIRY } from "@/auth/constants.js";
 import { EncryptionService } from "@/common/services/encryption.service.js";
+
+// Replay window: a TOTP code is valid for 30s ±30s (epochTolerance), so we
+// hold the "used" marker for 95s — long enough that the attacker cannot
+// replay a sniffed code while it is still inside its real validity window.
+const TOTP_REPLAY_TTL_SECONDS = 95;
 
 @Injectable()
 export class TwoFactorService {
@@ -24,6 +30,7 @@ export class TwoFactorService {
     @Inject(DB_TOKEN) private readonly db: Database,
     private readonly authRepository: AuthRepository,
     private readonly encryption: EncryptionService,
+    private readonly cache: CacheService,
   ) { }
 
   async generateSecret(
@@ -56,15 +63,31 @@ export class TwoFactorService {
     return { qrCodeUrl, secret, otpAuthUrl };
   }
 
-  async verifyToken(secret: string, token: string): Promise<boolean> {
+  async verifyToken(
+    userId: string,
+    secret: string,
+    token: string,
+  ): Promise<boolean> {
     try {
       const cleanToken = String(token).replace(/\s+/g, "");
+      const replayKey = `2fa:used:${userId}:${cleanToken}`;
+
+      // Fail closed if the same code was already accepted within its
+      // validity window — prevents shoulder-surf replay attacks.
+      const alreadyUsed = await this.cache.get(replayKey);
+      if (alreadyUsed !== null) {
+        return false;
+      }
 
       const result = await this.otp.verify({
         secret,
         token: cleanToken,
         epochTolerance: 30, // Account for clock drift
       });
+
+      if (result.valid) {
+        await this.cache.set(replayKey, 1, TOTP_REPLAY_TTL_SECONDS);
+      }
 
       return result.valid;
     } catch (error) {
@@ -84,6 +107,7 @@ export class TwoFactorService {
     }
 
     const isValid = await this.verifyToken(
+      userId,
       this.encryption.decrypt(user.twoFactorSecret),
       token,
     );
@@ -121,6 +145,7 @@ export class TwoFactorService {
     }
 
     const isValid = await this.verifyToken(
+      user.id,
       this.encryption.decrypt(user.twoFactorSecret),
       token,
     );
