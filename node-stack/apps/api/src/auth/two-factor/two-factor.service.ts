@@ -12,6 +12,7 @@ import { OTP } from "otplib";
 import * as QRCode from "qrcode";
 
 import { TOKEN_TYPE, JWT_EXPIRY } from "@/auth/constants.js";
+import { EncryptionService } from "@/common/services/encryption.service.js";
 
 @Injectable()
 export class TwoFactorService {
@@ -22,6 +23,7 @@ export class TwoFactorService {
     private configService: ConfigService,
     @Inject(DB_TOKEN) private readonly db: Database,
     private readonly authRepository: AuthRepository,
+    private readonly encryption: EncryptionService,
   ) { }
 
   async generateSecret(
@@ -48,7 +50,7 @@ export class TwoFactorService {
 
     await this.db
       .update(schema.users)
-      .set({ twoFactorSecret: secret })
+      .set({ twoFactorSecret: this.encryption.encrypt(secret) })
       .where(eq(schema.users.id, userId));
 
     return { qrCodeUrl, secret, otpAuthUrl };
@@ -81,7 +83,10 @@ export class TwoFactorService {
       );
     }
 
-    const isValid = await this.verifyToken(user.twoFactorSecret, token);
+    const isValid = await this.verifyToken(
+      this.encryption.decrypt(user.twoFactorSecret),
+      token,
+    );
 
     if (!isValid) {
       throw new UnauthorizedException("Invalid 2FA token");
@@ -115,7 +120,10 @@ export class TwoFactorService {
       throw new UnauthorizedException("2FA is not enabled for this user");
     }
 
-    const isValid = await this.verifyToken(user.twoFactorSecret, token);
+    const isValid = await this.verifyToken(
+      this.encryption.decrypt(user.twoFactorSecret),
+      token,
+    );
 
     if (!isValid) {
       throw new UnauthorizedException("Invalid 2FA token");
@@ -179,7 +187,7 @@ export class TwoFactorService {
     return this.jwtService.sign(
       { sub: userId, type: "2fa_pending" },
       {
-        secret: this.configService.get("JWT_SECRET"),
+        secret: this.configService.getOrThrow<string>("JWT_SECRET"),
         expiresIn: "5m",
       },
     );
@@ -188,7 +196,7 @@ export class TwoFactorService {
   verifyTempToken(token: string): string {
     try {
       const payload = this.jwtService.verify(token, {
-        secret: this.configService.get("JWT_SECRET"),
+        secret: this.configService.getOrThrow<string>("JWT_SECRET"),
       });
 
       if (payload.type !== "2fa_pending") {
