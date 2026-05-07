@@ -91,8 +91,12 @@ async function bootstrap() {
     next();
   });
 
-  // Set global API prefix (v1) with exclusions
-  app.setGlobalPrefix('v1', {
+  // Set global API prefix (api/v1) with exclusions. The prefix matches
+  // the convention used by the dashboard's axiosInstance baseURL, the
+  // Google/GitHub OAuth callback URLs in .env.example, and the
+  // /api/docs* exclusions below — using bare 'v1' would push docs to
+  // /v1/api/docs and break the dashboard's auth/me etc. requests.
+  app.setGlobalPrefix('api/v1', {
     exclude: [
       '/api/docs',
       '/api/docs-json',
