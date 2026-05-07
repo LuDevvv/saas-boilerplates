@@ -113,6 +113,18 @@
       ],
       "@node-stack/ui": [
         "../../packages/ui/src/index.ts"
+      ],
+      "@node-stack/api-client": [
+        "../../packages/api-client/src/index.ts"
+      ],
+      "@node-stack/types": [
+        "../../packages/types/src/index.ts"
+      ],
+      "@node-stack/validators": [
+        "../../packages/validators/src/index.ts"
+      ],
+      "@node-stack/utils": [
+        "../../packages/utils/src/index.ts"
       ]
     },
     "outDir": "./dist",
@@ -127,7 +139,8 @@
     "**/*.ts",
     "**/*.tsx",
     "**/*.json",
-    "../../packages/ui/src/**/*"
+    "../../packages/ui/src/**/*",
+    "../../packages/utils/src/**/*"
   ],
   "references": [
     {
@@ -141,6 +154,9 @@
     },
     {
       "path": "../../packages/validators"
+    },
+    {
+      "path": "../../packages/utils"
     }
   ],
   "extends": "../../tsconfig.json"

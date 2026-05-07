@@ -4,18 +4,20 @@ name: Modern Premium SaaS Design System
 description: A high-fidelity, secure yet delightful design system. It balances deep trust-blue tones and hyper-rounded bento surfaces with engaging micro-interactions, natural motion, and friendly copy to eradicate sterile corporate UI.
 colors:
   primary: "#004080"
+  primary-dark: "#5BA8E5" # brighter, desaturated for charcoal canvas pop
   secondary: "#00E6E6"
   accent: "#4D94DB"
-  canvas-light: "#F8FAFC"
-  canvas-dark: "#0F172A"
+  canvas-light: "#FFFFFF" # flat white — sidebar/canvas/cards share tone
+  canvas-dark: "#0D1014" # neutral charcoal, NOT warm, NOT pure black
   surface-light: "#FFFFFF"
-  surface-dark: "#1E293B"
-  border-light: "#F1F5F9" # Softer border for a cleaner look
-  border-dark: "rgba(255, 255, 255, 0.05)"
-  text-primary-light: "#0F172A"
-  text-primary-dark: "#F8FAFC"
-  text-secondary-light: "#64748B"
-  text-secondary-dark: "#94A3B8"
+  surface-dark: "#14181E" # subtle elevation step from canvas
+  surface-elevated-dark: "#1B2028" # modals/dropdowns
+  border-light: "#E5E8EE"
+  border-dark: "rgba(180, 195, 215, 0.09)" # neutral slate at low opacity
+  text-primary-light: "#0E1117"
+  text-primary-dark: "#ECEEF2" # cool off-white
+  text-secondary-light: "#475160"
+  text-secondary-dark: "#9BA3AE"
   # New: Functional Status Colors (Inspired by reference images)
   status-success: "#10B981"
   status-warning: "#F59E0B"
@@ -159,3 +161,51 @@ The layout logic maximizes readability and modern aesthetics.
 - **DON'T** use heavy, dark drop shadows. Use large spread, low opacity, tinted shadows (e.g., `shadow-blue-900/5`).
 - **DON'T** clutter the edges. Keep padding generous (`p-5` or `p-6` inside cards) so the content breathes.
 - **DON'T** use default browser outlines. Implement custom `focus-visible:ring-2` with an offset that matches the brand colors.
+
+## 8. Tokens — single source of truth
+
+**Mandatory:** every component MUST consume the design tokens defined in `index.css` and exposed by `tailwind.config.cjs`. Hex literals and `rgba(...)` inline values are forbidden in component code.
+
+### Surface hierarchy (use this exact ladder)
+
+| Token                 | Light     | Dark        | When to use                                 |
+|-----------------------|-----------|-------------|---------------------------------------------|
+| `bg-canvas`           | `#FFFFFF` | `#0D1014`   | Page background, sidebar (unified flat)     |
+| `bg-surface`          | `#FFFFFF` | `#14181E`   | Cards, panels resting on canvas             |
+| `bg-surface-elevated` | `#FFFFFF` | `#1B2028`   | Modals, dropdowns, popovers (above surface) |
+| `bg-surface-hover`    | `#F4F6F9` | `#232A33`   | Hover state on interactive surfaces         |
+| `bg-surface-muted`    | `#F8F9FB` | `#11141A`   | Subtle insets (e.g. nested rows)            |
+
+In light mode, **canvas, surface and elevated all share `#FFFFFF`** — cards are distinguished by `border` and `--shadow-card`, not by tint. The sidebar matches this white tone. This gives the flat, premium look (Linear, Notion).
+
+### Borders / text / ring
+
+- `border-DEFAULT` (subtle slate), `border-strong` (visible), `border-subtle` (barely there)
+- **Foreground (text) tokens:** `text-fg` (primary text), `text-fg-secondary`, `text-fg-muted`, `text-fg-disabled`
+  - Note: `text-primary` resolves to the **brand blue** (legacy Tailwind behavior). Always use `text-fg-*` for body copy.
+- `ring-DEFAULT` is the brand-tinted focus-visible ring (auto-applied to buttons/inputs by `index.css`)
+
+### Dark mode philosophy — *Neutral Charcoal Premium*
+
+The dark mode is **neutral charcoal, slightly cool, never warm-brown, never pure black, never saturated navy**. Inspiration: Linear, Vercel, GitHub. The brand blue is the only saturated element on the page — that's what makes it pop and read premium.
+
+- **Canvas is `#0D1014`** — neutral charcoal. NOT `#000`, NOT warm brown `#1C1A19`, NOT navy `#0F172A`.
+- **Cards are `#14181E`** — one luminance step above canvas, distinguishable without harsh contrast.
+- **Modals are `#1B2028`** — one further step above cards.
+- **Borders are `rgba(180, 195, 215, 0.09)`** — slate-tinted whites at very low opacity. Visible enough to delineate, never harsh.
+- **Text is `#ECEEF2`** (primary), `#9BA3AE` (secondary), `#6A7280` (muted) — cool off-whites, harmonize with the charcoal.
+- **Primary stays `#5BA8E5`** in dark mode — slightly desaturated brand blue, pops against neutral charcoal.
+  Don't use `bg-[#004080]` on dark surfaces — it becomes a black hole. Use `bg-primary`.
+- **Sidebar matches canvas** (`#0D1014`) — flat unified look. Active items use `bg-primary/10`.
+- **Status colors stay vivid** for data (success-green, warning-amber, error-rose) but
+  paired with `bg-status/10` to soften.
+- **Gradients on dark surfaces** must drop opacity to ~`from-primary/15 to-primary/5` —
+  never full saturation, never `from-[#004080] to-[#002D5A]` literals.
+
+### Forbidden patterns
+
+- `bg-[#XXXXXX]` literal hex in component className (only allowed inside `tailwind.config.cjs` and `index.css`)
+- `dark:bg-[#121212]` — use `dark:bg-surface` instead
+- `border-white/10` / `border-slate-100` — use `border-border` (alias of `--border`)
+- Custom `box-shadow` literals — use the `shadow-*` tokens
+- Default browser focus outlines — already killed globally; do not re-enable

@@ -37,10 +37,39 @@ resolve: {
         "@lib": path.resolve(__dirname, "./src/lib"),
         "@data": path.resolve(__dirname, "./src/data"),
         "@node-stack/ui": path.resolve(__dirname, "../../packages/ui/src/index.ts"),
+        "@node-stack/api-client": path.resolve(__dirname, "../../packages/api-client/src/index.ts"),
+        "@node-stack/types": path.resolve(__dirname, "../../packages/types/src/index.ts"),
+        "@node-stack/validators": path.resolve(__dirname, "../../packages/validators/src/index.ts"),
+        "@node-stack/utils": path.resolve(__dirname, "../../packages/utils/src/index.ts"),
       },
+    },
+    define: {
+      'process.env': {},
+    },
+    optimizeDeps: {
+      exclude: ['nestjs-zod', '@nestjs/common', '@nestjs/core', '@nestjs/swagger'],
     },
     plugins: [
       react(),
+      {
+        name: 'mock-nestjs',
+        enforce: 'pre',
+        resolveId(id) {
+          if (['nestjs-zod', '@nestjs/common', '@nestjs/core', '@nestjs/swagger', 'node:module'].includes(id) || id.startsWith('@nestjs/')) {
+            return id;
+          }
+          return null;
+        },
+        load(id) {
+          if (id === 'node:module') {
+            return 'export const createRequire = () => ({}); export default { createRequire };';
+          }
+          if (['nestjs-zod', '@nestjs/common', '@nestjs/core', '@nestjs/swagger'].includes(id) || id.startsWith('@nestjs/')) {
+            return 'export const createZodDto = (s) => s; export const ApiProperty = () => (() => {}); export const ApiPropertyOptional = () => (() => {}); export const Injectable = () => (() => {}); export const Module = () => (() => {}); export const Controller = () => (() => {}); export const HttpStatus = { OK: 200, CREATED: 201 }; export const BadRequestException = class extends Error {}; export const InternalServerErrorException = class extends Error {}; export const HttpCode = () => (() => {}); export const Optional = () => (() => {}); export const SetMetadata = () => (() => {});';
+          }
+          return null;
+        }
+      },
       VitePWA({
         registerType: "autoUpdate",
         includeAssets: ["favicon.ico", "robots.txt"],
@@ -85,6 +114,7 @@ resolve: {
     build: {
       emptyOutDir: true,
       rollupOptions: {
+        external: ['node:module'],
         output: {
           manualChunks: {
             "vendor-react": ["react", "react-dom", "react-router-dom"],

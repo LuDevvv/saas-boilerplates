@@ -24,6 +24,7 @@
     "@formkit/auto-animate": "^0.9.0",
     "@hookform/resolvers": "^3.10.0",
     "@iconify/react": "^6.0.2",
+    "@motionone/dom": "^10.18.0",
     "@node-stack/api-client": "workspace:*",
     "@node-stack/types": "workspace:*",
     "@node-stack/ui": "workspace:^",
@@ -43,28 +44,25 @@
     "@tanstack/react-table": "^8.21.3",
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
-    "classnames": "^2.3.2",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "country-flag-icons": "^1.6.15",
-    "framer-motion": "^12.38.0",
-    "gsap": "^3.14.2",
+    "date-fns": "^4.1.0",
     "i18next": "^26.0.8",
     "i18next-browser-languagedetector": "^8.2.1",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.469.0",
+    "qrcode.react": "^4.2.0",
     "react-hook-form": "^7.54.2",
     "react-hot-toast": "^2.5.2",
     "react-i18next": "^17.0.4",
     "react-loading-skeleton": "^3.5.0",
-    "react-phone-input-2": "^2.15.1",
-    "react-phone-number-input": "^3.4.16",
     "recharts": "2.15.4",
     "sass": "^1.83.1",
     "simplebar-react": "^3.3.2",
     "socket.io-client": "^4.8.3",
     "tailwind-merge": "^3.4.0",
-    "zod": "^4.3.6",
+    "zod": "^3.24.1",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
@@ -132,7 +130,9 @@
         "error",
         {
           "callees": [
-            "classnames"
+            "cn",
+            "clsx",
+            "cva"
           ],
           "config": "tailwind.config.cjs"
         }

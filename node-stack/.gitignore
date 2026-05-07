@@ -80,3 +80,14 @@ meta.json
 
 # SDD
 openspec/
+
+#AI
+.agent/
+.agents/
+.claude/
+.gemini/
+.codex/
+.github/
+.gitkeep
+.prompt/
+.docs/
