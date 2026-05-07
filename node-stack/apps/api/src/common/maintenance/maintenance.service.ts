@@ -2,8 +2,11 @@ import { Injectable, Logger, Inject } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { CacheService } from "@node-stack/cache";
 import {
+  AuditLogRepository,
+  AuthRepository,
   DB_TOKEN,
   SessionRepository,
+  WorkspaceRepository,
   schema,
   withSystemTx,
 } from "@node-stack/db";
@@ -17,6 +20,7 @@ import { withRedisLock } from "@/common/maintenance/redis-lock.helper.js";
 // holder's lock expires before the next tick fires.
 const HOURLY_LOCK_TTL_SECONDS = 55 * 60;
 const DAILY_LOCK_TTL_SECONDS = 23 * 60 * 60;
+const SOFT_DELETE_GRACE_DAYS = 30;
 
 @Injectable()
 export class MaintenanceService {
@@ -26,6 +30,9 @@ export class MaintenanceService {
     @Inject(DB_TOKEN) private readonly db: NodePgDatabase<typeof schema>,
     @Inject("STORAGE_SERVICE") private readonly storage: IStorageProvider,
     private readonly sessionRepository: SessionRepository,
+    private readonly authRepository: AuthRepository,
+    private readonly workspaceRepository: WorkspaceRepository,
+    private readonly auditLog: AuditLogRepository,
     private readonly cache: CacheService,
   ) {}
 
@@ -155,6 +162,130 @@ export class MaintenanceService {
 
     if (result === null) {
       this.logger.debug("purgeExpiredSessions skipped: lock held by peer instance");
+    }
+  }
+
+  /**
+   * Cron Job 4: Account anonymization (per ADR 0003).
+   * Every day at 03:00, find users whose deleted_at is older than the
+   * grace window and have not yet been anonymized; replace their PII
+   * with deterministic placeholders. Users remain in the table for
+   * referential integrity (audit_logs, etc.) but are no longer
+   * identifiable.
+   */
+  @Cron("0 3 * * *")
+  async anonymizeExpiredAccounts() {
+    const result = await withRedisLock(
+      this.cache,
+      "cron:anonymize_expired_accounts",
+      DAILY_LOCK_TTL_SECONDS,
+      async () => {
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - SOFT_DELETE_GRACE_DAYS);
+        this.logger.log(
+          `Running account anonymization (cutoff=${cutoff.toISOString()})`,
+        );
+
+        return withSystemTx(async (tx) => {
+          const users =
+            await this.authRepository.findUsersExpiredForAnonymization(cutoff, tx);
+          for (const user of users) {
+            try {
+              await this.authRepository.anonymizeUser(user.id, tx);
+              await this.auditLog.create(
+                {
+                  workspaceId: null,
+                  userId: user.id,
+                  action: "auth.account_anonymized",
+                  entityType: "user",
+                  entityId: user.id,
+                  metadata: {
+                    deletedAt: user.deletedAt?.toISOString() ?? null,
+                    deletionReason: user.deletionReason ?? null,
+                  },
+                },
+                tx,
+              );
+            } catch (err) {
+              this.logger.error(`Failed to anonymize user ${user.id}:`, err);
+            }
+          }
+          if (users.length > 0) {
+            this.logger.log(`Anonymized ${users.length} expired accounts.`);
+          }
+          return users.length;
+        }, this.db);
+      },
+    );
+
+    if (result === null) {
+      this.logger.debug(
+        "anonymizeExpiredAccounts skipped: lock held by peer instance",
+      );
+    }
+  }
+
+  /**
+   * Cron Job 5: Workspace hard-delete (per ADR 0003).
+   * Every day at 04:00, find workspaces whose deleted_at is older than
+   * the grace window and permanently delete the row. Audit row is
+   * written BEFORE the delete because workspace_id becomes invalid
+   * immediately after.
+   */
+  @Cron("0 4 * * *")
+  async hardDeleteExpiredWorkspaces() {
+    const result = await withRedisLock(
+      this.cache,
+      "cron:hard_delete_workspaces",
+      DAILY_LOCK_TTL_SECONDS,
+      async () => {
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - SOFT_DELETE_GRACE_DAYS);
+        this.logger.log(
+          `Running workspace hard-delete (cutoff=${cutoff.toISOString()})`,
+        );
+
+        return withSystemTx(async (tx) => {
+          const workspaces =
+            await this.workspaceRepository.findWorkspacesExpiredForHardDelete(
+              cutoff,
+              tx,
+            );
+          for (const ws of workspaces) {
+            try {
+              await this.auditLog.create(
+                {
+                  workspaceId: ws.id,
+                  userId: ws.deletedBy ?? null,
+                  action: "workspace.workspace_hard_deleted",
+                  entityType: "workspace",
+                  entityId: ws.id,
+                  metadata: {
+                    slug: ws.slug,
+                    name: ws.name,
+                    deletedAt: ws.deletedAt?.toISOString() ?? null,
+                    deletionReason: ws.deletionReason ?? null,
+                  },
+                },
+                tx,
+              );
+              await this.workspaceRepository.hardDeleteWorkspace(ws.id, tx);
+            } catch (err) {
+              this.logger.error(`Failed to hard-delete workspace ${ws.id}:`, err);
+            }
+          }
+          if (workspaces.length > 0) {
+            this.logger.log(`Hard-deleted ${workspaces.length} workspaces.`);
+          }
+          return workspaces.length;
+        }, this.db);
+      },
+    );
+
+    if (result === null) {
+      this.logger.debug(
+        "hardDeleteExpiredWorkspaces skipped: lock held by peer instance",
+      );
     }
   }
 }
