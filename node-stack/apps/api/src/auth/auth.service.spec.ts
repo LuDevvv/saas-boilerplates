@@ -96,7 +96,6 @@ describe('AuthService', () => {
     deleteVerificationTokensByUser: vi.fn(),
     createVerificationToken: vi.fn(),
     findActiveSessionById: vi.fn(),
-    rotateSession: vi.fn(),
     db: {},
   };
 

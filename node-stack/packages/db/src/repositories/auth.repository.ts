@@ -140,18 +140,6 @@ export class AuthRepository {
       .where(eq(schema.sessions.id, sessionId));
   }
 
-  async rotateSession(
-    oldSessionId: string,
-    newSession: CreateSessionData,
-    tx?: Tx,
-  ): Promise<void> {
-    const database = tx ?? this._db;
-    await database
-      .delete(schema.sessions)
-      .where(eq(schema.sessions.id, oldSessionId));
-    await database.insert(schema.sessions).values(newSession);
-  }
-
   // ── OAuth queries ───────────────────────────────────────
 
   async findOAuthLink(
