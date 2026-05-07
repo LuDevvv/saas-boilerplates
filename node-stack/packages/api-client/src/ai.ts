@@ -1,43 +1,78 @@
 import { AxiosInstance } from "axios";
-import { createClient } from "./client.js";
-import { z } from "zod";
-
-export type AIJobStatus = "pending" | "processing" | "completed" | "failed";
-
-export interface AIJob {
-  id: string;
-  type: string;
-  status: AIJobStatus;
-  input: Record<string, unknown>;
-  output: Record<string, unknown> | null;
-  error: string | null;
-  createdAt: string;
-  completedAt: string | null;
-}
-
-const GenerateRequestSchema = z.object({
-  type: z.enum(["description", "seo", "social", "image"]),
-  context: z.record(z.string(), z.unknown()),
-});
+import { 
+  SubmitAIJobDto, 
+  ChatCompletionDto,
+  AIJob,
+  AIJobStatus
+} from "@node-stack/types";
 
 export const ai = (client: AxiosInstance) => ({
-  generate: async (body: { type: string; context: Record<string, unknown> }) => {
-    return await client.post<{ jobId: string }>("/ai/generate", GenerateRequestSchema.parse(body));
+  submitJob: async (data: SubmitAIJobDto) => {
+    const { data: response } = await client.post<{ jobId: string; status: string }>("/ai/jobs", data);
+    return response;
+  },
+
+  chat: async (data: ChatCompletionDto) => {
+    const { data: response } = await client.post<any>("/ai/chat", data);
+    return response;
+  },
+
+  streamChat: async function* (data: ChatCompletionDto) {
+    // We use fetch for streaming because it has better browser support for ReadableStreams
+    const token = client.defaults.headers.common["Authorization"];
+    const workspaceId = client.defaults.headers.common["X-Workspace-ID"];
+    const baseURL = client.defaults.baseURL;
+
+    const response = await fetch(`${baseURL}/ai/chat/stream`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { "Authorization": token as string } : {}),
+        ...(workspaceId ? { "X-Workspace-ID": workspaceId as string } : {}),
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) throw new Error("No reader available");
+
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        if (line.trim() && line.startsWith("data: ")) {
+          try {
+            const jsonStr = line.substring(6).trim();
+            if (jsonStr === "[DONE]") return;
+            const chunk = JSON.parse(jsonStr);
+            yield chunk;
+          } catch (e) {
+            console.error("Error parsing stream chunk", e);
+          }
+        }
+      }
+    }
   },
 
   getJobStatus: async (jobId: string) => {
-    return await client.get<{ data: AIJob }>(`/ai/jobs/${jobId}`);
+    const { data } = await client.get<any>(`/ai/jobs/${jobId}`);
+    return data;
   },
 
-  listJobs: async (params?: { status?: AIJobStatus; page?: number; limit?: number }) => {
-    return await client.get<{ data: AIJob[]; meta: { page: number; limit: number; total: number } }>("/ai/jobs", { params });
-  },
-
-  cancelJob: async (jobId: string) => {
-    return await client.post<{ success: boolean }>(`/ai/jobs/${jobId}/cancel`);
-  },
-
-  deleteJob: async (jobId: string) => {
-    return await client.delete<{ success: boolean }>(`/ai/jobs/${jobId}`);
+  getUsage: async () => {
+    const { data } = await client.get<{ usage: number }>("/ai/usage");
+    return data;
   },
 });

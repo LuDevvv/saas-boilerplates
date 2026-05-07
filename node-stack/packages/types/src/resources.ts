@@ -1,0 +1,16 @@
+export type CreateBranchDto = any;
+export type UpdateBranchDto = any;
+export type CreateProductDto = any;
+export type UpdateProductDto = any;
+export type CreateFoodVariantDto = any;
+export type UpdateFoodVariantDto = any;
+export type CreateCategoryDto = any;
+export type UpdateCategoryDto = any;
+export type CreateExtraDto = any;
+export type UpdateExtraDto = any;
+export type CreateMealTimeDto = any;
+export type UpdateMealTimeDto = any;
+export type CreateAdvertisementDto = any;
+export type UpdateAdvertisementDto = any;
+export type CreateQrDto = any;
+export type UpdateQrDto = any;

@@ -20,7 +20,9 @@ export class AppError extends Error {
     message: string,
     public code: string,
     public statusCode: number,
-    public fieldErrors?: Record<string, string[]>
+    public fieldErrors?: Record<string, string[]>,
+    public config?: InternalAxiosRequestConfig,
+    public originalError?: AxiosError
   ) {
     super(message);
     this.name = "AppError";
@@ -28,37 +30,41 @@ export class AppError extends Error {
 
   static fromAxios(error: AxiosError): AppError {
     const response = error.response;
-    const data = response?.data as Record<string, unknown> | undefined;
+    const data = response?.data as Record<string, any> | undefined;
     
-    let message = "An error occurred";
-    let code = "UNKNOWN_ERROR";
+    // Prioritize message from server response (handles both raw and wrapped patterns)
+    const serverMessage = data?.message || data?.data?.message || data?.error || data?.data?.error;
+    let message = serverMessage || error.message || "Ha ocurrido un error";
+    
+    let code = (data?.code as string) || (data?.data?.code as string) || (data?.error as string) || "ERROR_DESCONOCIDO";
     let statusCode = response?.status || 500;
     let fieldErrors: Record<string, string[]> | undefined;
 
     if (response?.status === 401) {
-      message = "Unauthorized";
-      code = "UNAUTHORIZED";
+      if (!serverMessage) message = "No autorizado";
+      if (code === "ERROR_DESCONOCIDO" || code === "Unauthorized") code = "UNAUTHORIZED";
     } else if (response?.status === 403) {
-      message = "Forbidden";
-      code = "FORBIDDEN";
+      if (!serverMessage) message = "Acceso prohibido";
+      if (code === "ERROR_DESCONOCIDO" || code === "Forbidden") code = "FORBIDDEN";
     } else if (response?.status === 404) {
-      message = "Not found";
-      code = "NOT_FOUND";
+      if (!serverMessage) message = "Recurso no encontrado";
+      if (code === "ERROR_DESCONOCIDO" || code === "Not Found") code = "NOT_FOUND";
     } else if (response?.status === 422) {
-      message = "Validation failed";
+      message = serverMessage || "Error de validación";
       code = "VALIDATION_ERROR";
-      if (data?.errors) {
-        fieldErrors = data.errors as Record<string, string[]>;
+      const errors = data?.errors || data?.data?.errors;
+      if (errors) {
+        fieldErrors = errors as Record<string, string[]>;
       }
     } else if (response?.status && response.status >= 500) {
-      message = "Internal server error";
+      if (!serverMessage) message = "Error interno del servidor";
       code = "SERVER_ERROR";
     } else if (!response) {
-      message = "Network error";
+      message = "Error de red o conexión";
       code = "NETWORK_ERROR";
     }
 
-    return new AppError(message, code, statusCode, fieldErrors);
+    return new AppError(message, code, statusCode, fieldErrors, error.config, error);
   }
 }
 
@@ -110,7 +116,17 @@ export function createClient(config: ClientConfig): AxiosInstance {
   );
 
   axiosInstance.interceptors.response.use(
-    (response: AxiosResponse) => response,
+    (response: AxiosResponse) => {
+      // Handle professional pattern { data, meta }
+      if (response.data && response.data.data !== undefined && response.data.meta !== undefined) {
+        return response.data.data;
+      }
+      // Handle { data } wrapping
+      if (response.data && response.data.data !== undefined && Object.keys(response.data).length === 1) {
+        return response.data.data;
+      }
+      return response.data;
+    },
     async (error: AxiosError) => {
       const response = error.response;
 

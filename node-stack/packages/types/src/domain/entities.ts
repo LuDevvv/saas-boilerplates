@@ -1,9 +1,12 @@
 export interface User {
   id: string;
   email: string;
+  name?: string | null;
   firstName?: string;
   lastName?: string;
+  phone?: string | null;
   avatar?: string;
+  avatarUrl?: string | null;
   role?: string;
   emailVerified: boolean;
   createdAt: Date;
@@ -64,35 +67,6 @@ export interface Branch {
   updatedAt: string;
 }
 
-export interface CreateBranchDto {
-  companyId: string;
-  name: string;
-  description?: string;
-  street?: string;
-  city?: string;
-  state?: string;
-  country?: string;
-  postalCode?: string;
-  postal_code?: string;
-  latitude?: number;
-  longitude?: number;
-  phone?: string;
-  email?: string;
-  website?: string;
-  domain?: string;
-  currencyId?: string;
-  openingHours?: Record<string, { open: string; close: string; closed?: boolean }>;
-  deliveryCost?: number;
-  minimumOrder?: number;
-  shoppingCart?: boolean;
-  hasDeliveries?: boolean;
-  facebook?: string;
-  twitter?: string;
-  instagram?: string;
-  tiktok?: string;
-  googleMaps?: string;
-}
-
 export interface Product {
   id: string;
   branchId: string;
@@ -112,24 +86,6 @@ export interface Product {
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface CreateProductDto {
-  branchId: string;
-  categoryId: string;
-  name: string;
-  description?: string;
-  price: number;
-  image?: string;
-  isAvailable?: boolean;
-  preparationTime?: number;
-  calories?: number;
-  allergens?: string[];
-  tags?: string[];
-}
-
-export interface UpdateProductDto extends Partial<CreateProductDto> {
-  isDeleted?: boolean;
 }
 
 export interface Category {
@@ -158,18 +114,6 @@ export interface FoodVariant {
   updatedAt: string;
 }
 
-export interface CreateFoodVariantDto {
-  productId: string;
-  name: string;
-  price: number;
-  image?: string;
-  isAvailable?: boolean;
-}
-
-export interface UpdateFoodVariantDto extends Partial<CreateFoodVariantDto> {
-  isDeleted?: boolean;
-}
-
 export interface Extra {
   id: string;
   companyId: string;
@@ -183,19 +127,6 @@ export interface Extra {
   updatedAt: string;
 }
 
-export interface CreateExtraDto {
-  companyId: string;
-  categoryId?: string;
-  name: string;
-  description?: string;
-  price: number;
-  isAvailable?: boolean;
-}
-
-export interface UpdateExtraDto extends Partial<CreateExtraDto> {
-  isDeleted?: boolean;
-}
-
 export interface MealTime {
   id: string;
   companyId: string;
@@ -206,18 +137,6 @@ export interface MealTime {
   isDeleted: boolean;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface CreateMealTimeDto {
-  companyId: string;
-  branchId?: string;
-  name: string;
-  startTime: string;
-  endTime: string;
-}
-
-export interface UpdateMealTimeDto extends Partial<CreateMealTimeDto> {
-  isDeleted?: boolean;
 }
 
 export interface UnitsOfMeasurement {
@@ -255,17 +174,6 @@ export interface Qr {
   updatedAt: string;
 }
 
-export interface CreateQrDto {
-  branchId: string;
-  name: string;
-  design?: Record<string, unknown>;
-  type: 'menu' | 'payment' | 'landing';
-}
-
-export interface UpdateQrDto extends Partial<CreateQrDto> {
-  isActive?: boolean;
-}
-
 export interface Advertisement {
   id: string;
   branchId?: string;
@@ -282,21 +190,6 @@ export interface Advertisement {
   createdAt: string;
   updatedAt: string;
 }
-
-export interface CreateAdvertisementDto {
-  branchId?: string;
-  companyId: string;
-  title: string;
-  description?: string;
-  image?: string;
-  link?: string;
-  isActive?: boolean;
-  position?: number;
-  startDate?: string;
-  endDate?: string;
-}
-
-export interface UpdateAdvertisementDto extends Partial<CreateAdvertisementDto> {}
 
 export enum SubscriptionStatus {
   ACTIVE = 'active',
@@ -371,18 +264,6 @@ export interface PaginatedResponse<T> {
     total: number;
     totalPages: number;
   };
-}
-
-export interface LoginDto {
-  email: string;
-  password: string;
-}
-
-export interface RegisterDto {
-  email: string;
-  password: string;
-  firstName: string;
-  lastName?: string;
 }
 
 export interface TopProduct {

@@ -1,49 +1,34 @@
 import { AxiosInstance } from "axios";
-import { createClient } from "./client.js";
-import { GetPresignedUrlSchema, sanitizeFilename } from "@node-stack/validators";
-
-export interface PresignedUrlResponse {
-  uploadUrl: string;
-  fileUrl: string;
-  expiresIn: number;
-}
-
-export interface VerifyUploadResponse {
-  success: boolean;
-  fileUrl: string;
-}
-
-export interface FileInfo {
-  key: string;
-  url: string;
-  size: number;
-  mimeType: string;
-  uploadedAt: string;
-}
+import { 
+  GetPresignedUrlDto,
+  PresignedUrlResponse,
+  VerifyUploadResponse,
+  FileInfo
+} from "@node-stack/types";
 
 export const storage = (client: AxiosInstance) => ({
-  getPresignedUrl: async (body: {
-    filename: string;
-    mimeType: string;
-    folder?: string;
-  }) => {
-    const parsed = GetPresignedUrlSchema.parse({
-      ...body,
-      filename: sanitizeFilename(body.filename),
-    });
-    
-    return await client.post<{ data: PresignedUrlResponse }>("/storage/presigned-url", parsed);
+  getUploadUrl: async (data: GetPresignedUrlDto) => {
+    const { data: response } = await client.post<{ data: PresignedUrlResponse }>("/storage/upload-url", data);
+    return response.data;
   },
 
-  verifyUpload: async (body: { uploadId: string; fileKey: string }) => {
-    return await client.post<{ data: VerifyUploadResponse }>("/storage/verify-upload", body);
+  confirmUpload: async (fileId: string) => {
+    const { data: response } = await client.post<{ data: VerifyUploadResponse }>("/storage/confirm-upload", { fileId });
+    return response.data;
   },
 
-  deleteFile: async (fileKey: string) => {
-    return await client.delete<{ success: boolean }>(`/storage/files/${encodeURIComponent(fileKey)}`);
+  getDownloadUrl: async (fileId: string) => {
+    const { data: response } = await client.get<{ data: { downloadUrl: string } }>(`/storage/${fileId}`);
+    return response.data;
   },
 
-  listFiles: async (params?: { folder?: string; page?: number; limit?: number }) => {
-    return await client.get<{ data: FileInfo[]; meta: { page: number; limit: number; total: number } }>("/storage/files", { params });
+  deleteFile: async (fileId: string) => {
+    const { data } = await client.delete<{ success: boolean }>(`/storage/${fileId}`);
+    return data.success;
+  },
+
+  listFiles: async (workspaceId: string) => {
+    const { data } = await client.get<{ data: FileInfo[] }>(`/storage/workspaces/${workspaceId}`);
+    return data.data;
   },
 });

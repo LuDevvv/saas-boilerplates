@@ -1,80 +1,89 @@
 import { AxiosInstance } from "axios";
-import { createClient, AuthTokens } from "./client.js";
-import { LoginSchema, RegisterSchema, RefreshSchema, Verify2faSchema, Login2faSchema, ForgotPasswordSchema, ResetPasswordSchema } from "@node-stack/validators";
-
-export interface LoginResponse extends AuthTokens {
-  user: {
-    id: string;
-    email: string;
-    name: string | null;
-  };
-  requiresTwoFactor?: boolean;
-  tempToken?: string;
-}
-
-export interface RegisterResponse extends AuthTokens {
-  user: {
-    id: string;
-    email: string;
-    name: string | null;
-  };
-}
-
-export interface VerifyEmailResponse {
-  verified: boolean;
-  message: string;
-}
-
-export interface ForgotPasswordResponse {
-  sent: boolean;
-  message: string;
-}
-
-export interface ResetPasswordResponse {
-  success: boolean;
-  message: string;
-}
-
-export interface RefreshResponse extends AuthTokens {}
-
-export interface LogoutResponse {
-  success: boolean;
-}
+import { 
+  LoginDto, 
+  RegisterDto, 
+  ForgotPasswordDto, 
+  ResetPasswordDto,
+  VerifyEmailDto,
+  AuthResponse,
+  AuthTokens,
+  RefreshDto,
+  Login2faDto,
+  Verify2faDto,
+  UpdateProfileDto,
+  UserEntity
+} from "@node-stack/types";
 
 export const auth = (client: AxiosInstance) => ({
-  login: async (body: { email: string; password: string }) => {
-    return await client.post<LoginResponse>("/auth/login", LoginSchema.parse(body));
+  me: async () => {
+    return client.get<UserEntity>("/auth/me") as unknown as Promise<UserEntity>;
   },
 
-  register: async (body: { email: string; password: string; name?: string }) => {
-    return await client.post<RegisterResponse>("/auth/register", RegisterSchema.parse(body));
+  updateProfile: async (data: UpdateProfileDto) => {
+    return client.patch<UserEntity>("/auth/profile", data) as unknown as Promise<UserEntity>;
   },
 
-  verifyEmail: async (body: { token: string }) => {
-    return await client.post<VerifyEmailResponse>("/auth/verify-email", { token: body.token });
+  getSessions: async () => {
+    return client.get<any[]>("/auth/sessions") as unknown as Promise<any[]>;
   },
 
-  forgotPassword: async (body: { email: string }) => {
-    return await client.post<ForgotPasswordResponse>("/auth/forgot-password", ForgotPasswordSchema.parse(body));
+  revokeSession: async (sessionId: string) => {
+    await client.delete(`/auth/sessions/${sessionId}`);
   },
 
-  resetPassword: async (body: { token: string; password: string }) => {
-    return await client.post<ResetPasswordResponse>("/auth/reset-password", ResetPasswordSchema.parse(body));
+  revokeAllSessions: async () => {
+    return client.delete<{ count: number }>("/auth/sessions") as unknown as Promise<{ count: number }>;
   },
 
-  verify2fa: async (body: { token: string }) => {
-    return await client.post<LoginResponse>("/auth/verify-2fa", Verify2faSchema.parse(body));
+  enable2fa: async () => {
+    return client.post<{ secret: string; otpauthUrl: string }>("/auth/2fa/enable") as unknown as Promise<{ secret: string; otpauthUrl: string }>;
   },
 
-  login2fa: async (body: { tempToken: string; token: string }) => {
-    return await client.post<LoginResponse>("/auth/login-2fa", Login2faSchema.parse(body));
+  verify2fa: async (data: Verify2faDto) => {
+    return client.post<{ enabled: boolean }>("/auth/2fa/verify", data) as unknown as Promise<{ enabled: boolean }>;
   },
 
-  refresh: async (body: { refreshToken: string }) => {
-    return await client.post<RefreshResponse>("/auth/refresh", RefreshSchema.parse(body));
+  disable2fa: async () => {
+    return client.post<{ disabled: boolean }>("/auth/2fa/disable") as unknown as Promise<{ disabled: boolean }>;
+  },
+
+  login2fa: async (data: Login2faDto) => {
+    return client.post<AuthResponse>("/auth/2fa/login", data) as unknown as Promise<AuthResponse>;
+  },
+
+  login: async (data: LoginDto) => {
+    return client.post<AuthResponse>("/auth/login", data) as unknown as Promise<AuthResponse>;
+  },
+
+  register: async (data: RegisterDto) => {
+    return client.post<AuthResponse>("/auth/register", data) as unknown as Promise<AuthResponse>;
+  },
+
+  sendVerificationEmail: async () => {
+    return client.post<{ message: string }>("/auth/email/verification-link") as unknown as Promise<{ message: string }>;
+  },
+
+  verifyEmail: async (data: VerifyEmailDto) => {
+    return client.post<{ message: string }>("/auth/email/verify", data) as unknown as Promise<{ message: string }>;
+  },
+
+  forgotPassword: async (data: { email: string }) => {
+    return client.post<{ message: string }>("/auth/forgot-password", data) as unknown as Promise<{ message: string }>;
+  },
+
+  resetPassword: async (data: ResetPasswordDto) => {
+    return client.post<{ message: string }>("/auth/reset-password", data) as unknown as Promise<{ message: string }>;
   },
 
   logout: async () => {
-    return await client.post<LogoutResponse>("/auth/logout");
+    return client.post<{ message: string }>("/auth/logout") as unknown as Promise<{ message: string }>;
+  },
+
+  refresh: async (data: RefreshDto) => {
+    return client.post<AuthTokens>("/auth/refresh", data) as unknown as Promise<AuthTokens>;
+  },
+
+  getAuditLogs: async () => {
+    return client.get<any[]>("/auth/audit-logs") as unknown as Promise<any[]>;
   },
 });

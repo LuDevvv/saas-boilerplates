@@ -1,95 +1,111 @@
 import { AxiosInstance } from "axios";
-import { createClient } from "./client.js";
-import { z } from "zod";
-
-export interface Workspace {
-  id: string;
-  name: string;
-  slug: string;
-  logo: string | null;
-  domain: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface WorkspaceMember {
-  id: string;
-  userId: string;
-  workspaceId: string;
-  role: "owner" | "admin" | "member" | "guest";
-  user: {
-    id: string;
-    email: string;
-    name: string | null;
-  };
-  createdAt: string;
-}
-
-export interface InviteMemberRequest {
-  email: string;
-  role: "admin" | "member" | "guest";
-  message?: string;
-}
-
-export interface InviteMemberResponse {
-  id: string;
-  email: string;
-  role: string;
-  token: string;
-  expiresAt: string;
-}
-
-const CreateWorkspaceSchema = z.object({
-  name: z.string().min(1).max(100),
-  slug: z.string().min(1).max(50).regex(/^[a-z0-9-]+$/),
-});
-
-const UpdateWorkspaceSchema = z.object({
-  name: z.string().min(1).max(100).optional(),
-  logo: z.string().nullable().optional(),
-  domain: z.string().nullable().optional(),
-});
-
-const InviteMemberSchema = z.object({
-  email: z.string().email(),
-  role: z.enum(["admin", "member", "guest"]),
-  message: z.string().optional(),
-});
+import { 
+  Workspace, 
+  CreateWorkspaceDto, 
+  UpdateWorkspaceDto, 
+  InviteMemberDto, 
+  UpdateMemberRoleDto,
+  PaginatedResponse,
+  WorkspaceMember,
+  InviteMemberResponse
+} from "@node-stack/types";
 
 export const workspace = (client: AxiosInstance) => ({
   list: async (params?: { page?: number; limit?: number }) => {
-    return await client.get<{ data: Workspace[]; meta: { page: number; limit: number; total: number } }>("/workspaces", { params });
+    return client.get<PaginatedResponse<Workspace>>("/workspaces", { params });
   },
 
   get: async (workspaceId: string) => {
-    return await client.get<{ data: Workspace }>(`/workspaces/${workspaceId}`);
+    return client.get<Workspace>(`/workspaces/${workspaceId}`);
   },
 
-  create: async (body: { name: string; slug: string }) => {
-    return await client.post<{ data: Workspace }>("/workspaces", CreateWorkspaceSchema.parse(body));
+  create: async (data: CreateWorkspaceDto) => {
+    return client.post<Workspace>("/workspaces", data);
   },
 
-  update: async (workspaceId: string, body: { name?: string; logo?: string | null; domain?: string | null }) => {
-    return await client.patch<{ data: Workspace }>(`/workspaces/${workspaceId}`, UpdateWorkspaceSchema.parse(body));
+  update: async (workspaceId: string, data: UpdateWorkspaceDto) => {
+    return client.patch<Workspace>(`/workspaces/${workspaceId}`, data);
   },
 
   delete: async (workspaceId: string) => {
-    return await client.delete<{ success: boolean }>(`/workspaces/${workspaceId}`);
+    return client.delete<{ success: boolean }>(`/workspaces/${workspaceId}`);
   },
 
   listMembers: async (workspaceId: string, params?: { page?: number; limit?: number }) => {
-    return await client.get<{ data: WorkspaceMember[]; meta: { page: number; limit: number; total: number } }>(`/workspaces/${workspaceId}/members`, { params });
+    return client.get<PaginatedResponse<WorkspaceMember>>(`/workspaces/${workspaceId}/members`, { params });
   },
 
-  inviteMember: async (workspaceId: string, body: { email: string; role: "admin" | "member" | "guest"; message?: string }) => {
-    return await client.post<{ data: InviteMemberResponse }>(`/workspaces/${workspaceId}/members/invite`, InviteMemberSchema.parse(body));
+  inviteMember: async (workspaceId: string, data: InviteMemberDto) => {
+    return client.post<InviteMemberResponse>(`/workspaces/${workspaceId}/invitations`, data);
+  },
+
+  listPendingInvitations: async () => {
+    return client.get<any[]>("/workspace-invitations/pending");
+  },
+
+  listWorkspaceInvitations: async (workspaceId: string) => {
+    return client.get<any[]>(`/workspaces/${workspaceId}/invitations`);
+  },
+
+  cancelInvitation: async (workspaceId: string, invitationId: string) => {
+    return client.delete<{ message: string }>(`/workspaces/${workspaceId}/invitations/${invitationId}`);
+  },
+
+  acceptInvitation: async (token: string) => {
+    return client.post<any>(`/workspace-invitations/${token}/accept`);
+  },
+
+  getInvitationDetails: async (token: string) => {
+    return client.get<any>(`/workspace-invitations/${token}`);
   },
 
   removeMember: async (workspaceId: string, memberId: string) => {
-    return await client.delete<{ success: boolean }>(`/workspaces/${workspaceId}/members/${memberId}`);
+    return client.delete<{ success: boolean }>(`/workspaces/${workspaceId}/members/${memberId}`);
   },
 
-  updateMemberRole: async (workspaceId: string, memberId: string, body: { role: "admin" | "member" | "guest" }) => {
-    return await client.patch<{ data: WorkspaceMember }>(`/workspaces/${workspaceId}/members/${memberId}`, body);
+  updateMemberRole: async (workspaceId: string, memberId: string, data: UpdateMemberRoleDto) => {
+    return client.patch<WorkspaceMember>(`/workspaces/${workspaceId}/members/${memberId}`, data);
+  },
+
+  // API Keys
+  listApiKeys: async (workspaceId: string) => {
+    return client.get<any[]>(`/workspaces/${workspaceId}/api-keys`);
+  },
+
+  createApiKey: async (workspaceId: string, data: { name: string; expiresAt?: string }) => {
+    return client.post<any>(`/workspaces/${workspaceId}/api-keys`, data);
+  },
+
+  revokeApiKey: async (workspaceId: string, keyId: string) => {
+    return client.delete<{ success: boolean }>(`/workspaces/${workspaceId}/api-keys/${keyId}`);
+  },
+
+  // Webhooks
+  listWebhooks: async (workspaceId: string) => {
+    return client.get<any[]>(`/workspaces/${workspaceId}/webhooks`);
+  },
+
+  createWebhook: async (workspaceId: string, data: { url: string; eventTypes: string[] }) => {
+    return client.post<any>(`/workspaces/${workspaceId}/webhooks`, data);
+  },
+
+  deleteWebhook: async (workspaceId: string, webhookId: string) => {
+    return client.delete<{ success: boolean }>(`/workspaces/${workspaceId}/webhooks/${webhookId}`);
+  },
+
+  updateWebhook: async (workspaceId: string, webhookId: string, data: { url?: string; eventTypes?: string[]; enabled?: boolean }) => {
+    return client.patch<any>(`/workspaces/${workspaceId}/webhooks/${webhookId}`, data);
+  },
+
+  getWebhookDeliveries: async (workspaceId: string, webhookId: string) => {
+    return client.get<any[]>(`/workspaces/${workspaceId}/webhooks/${webhookId}/deliveries`);
+  },
+
+  testWebhook: async (workspaceId: string, webhookId: string) => {
+    return client.post<any>(`/workspaces/${workspaceId}/webhooks/${webhookId}/test`);
+  },
+
+  rotateWebhookSecret: async (workspaceId: string, webhookId: string) => {
+    return client.post<any>(`/workspaces/${workspaceId}/webhooks/${webhookId}/rotate-secret`);
   },
 });
