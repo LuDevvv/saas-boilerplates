@@ -1,5 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { schema, DB_TOKEN, type Database } from '@node-stack/db';
+import { schema, DB_TOKEN } from '@node-stack/db';
+import type { Database } from '@node-stack/db';
 
 @Injectable()
 export class OutboxService {

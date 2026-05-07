@@ -1,5 +1,6 @@
 import { Injectable, Logger, NotFoundException, Inject, ForbiddenException } from "@nestjs/common";
-import { schema, eq, and, desc, DB_TOKEN, type Database } from "@node-stack/db";
+import { schema, eq, and, desc, DB_TOKEN } from "@node-stack/db";
+import type { Database } from "@node-stack/db";
 import type { IStorageProvider } from "@node-stack/storage";
 import { v4 as uuidv4 } from 'uuid';
 

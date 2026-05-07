@@ -1,7 +1,8 @@
 import { Injectable, ExecutionContext, Inject } from "@nestjs/common";
 import { ThrottlerGuard, ThrottlerRequest } from "@nestjs/throttler";
 import { CacheService } from "@node-stack/cache";
-import { schema, eq, DB_TOKEN, type Database } from "@node-stack/db";
+import { schema, eq, DB_TOKEN } from "@node-stack/db";
+import type { Database } from "@node-stack/db";
 
 @Injectable()
 export class CustomThrottlerGuard extends ThrottlerGuard {

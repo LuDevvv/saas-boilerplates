@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit, Inject, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { db, schema, eq, desc, and } from '@node-stack/db';
+import { schema, eq, desc, and, DB_TOKEN, type Database } from '@node-stack/db';
 import { NotificationService as SharedNotificationService, NotificationPayload } from '@node-stack/notifications';
 
 import { RealtimeService } from '@/realtime/realtime.service.js';
@@ -10,6 +10,7 @@ export class NotificationService implements OnModuleInit {
   private readonly logger = new Logger(NotificationService.name);
 
   constructor(
+    @Inject(DB_TOKEN) private readonly db: Database,
     private readonly sharedNotificationService: SharedNotificationService,
     private readonly realtimeService: RealtimeService,
   ) {}
@@ -45,7 +46,7 @@ export class NotificationService implements OnModuleInit {
     this.logger.log(`Handling IN_APP notification for user ${userId}`);
 
     // 1. Persist to DB
-    const [notification] = await db.insert(schema.notifications).values({
+    const [notification] = await this.db.insert(schema.notifications).values({
       userId,
       workspaceId,
       type: template.name,
@@ -80,7 +81,7 @@ export class NotificationService implements OnModuleInit {
   }
 
   async listNotifications(userId: string, workspaceId?: string) {
-    return db.query.notifications.findMany({
+    return this.db.query.notifications.findMany({
       where: and(
         eq(schema.notifications.userId, userId),
         workspaceId ? eq(schema.notifications.workspaceId, workspaceId) : undefined
@@ -91,9 +92,28 @@ export class NotificationService implements OnModuleInit {
   }
 
   async markAsRead(notificationId: string, userId: string) {
-    return db
+    return this.db
       .update(schema.notifications)
       .set({ readAt: new Date() })
+      .where(and(
+        eq(schema.notifications.id, notificationId),
+        eq(schema.notifications.userId, userId)
+      ));
+  }
+
+  async markAllAsRead(userId: string, workspaceId?: string) {
+    return this.db
+      .update(schema.notifications)
+      .set({ readAt: new Date() })
+      .where(and(
+        eq(schema.notifications.userId, userId),
+        workspaceId ? eq(schema.notifications.workspaceId, workspaceId) : undefined
+      ));
+  }
+
+  async deleteNotification(notificationId: string, userId: string) {
+    return this.db
+      .delete(schema.notifications)
       .where(and(
         eq(schema.notifications.id, notificationId),
         eq(schema.notifications.userId, userId)
