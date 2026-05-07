@@ -20,7 +20,7 @@ import { OutboxProducer } from "@node-stack/outbox-queue";
 import type { OAuthProfile } from "@node-stack/types";
 import * as bcrypt from "bcrypt";
 
-import { TOKEN_TYPE, AUTH_ERRORS, JWT_CONSTANTS } from "@/auth/constants.js";
+import { TOKEN_TYPE, AUTH_ERRORS, JWT_EXPIRY } from "@/auth/constants.js";
 import type { RegisterDto, LoginDto, RefreshDto } from "@/auth/dto/index.js";
 import { TwoFactorService } from "@/auth/two-factor/two-factor.service.js";
 
@@ -109,8 +109,10 @@ export class AuthService {
 
   async register(
     dto: RegisterDto,
+    userAgent?: string,
+    ipAddress?: string,
   ): Promise<
-    TokenPair & { user: { id: string; email: string; name: string | null } }
+    TokenPair & { token: string; user: { id: string; email: string; firstName: string | null; lastName: string | null; phone: string | null } }
   > {
     const passwordHash = await bcrypt.hash(dto.password, 12);
     const sessionId = crypto.randomUUID();
@@ -130,15 +132,22 @@ export class AuthService {
         {
           email: dto.email.toLowerCase(),
           passwordHash,
-          name: dto.name,
+          name: dto.firstName,
+          lastName: dto.lastName,
         },
         tx,
       );
 
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7);
+      const expiresAt = this.getSessionExpiry(false);
       await this.authRepository.createSession(
-        { id: sessionId, userId: newUser.id, expiresAt },
+        {
+          id: sessionId,
+          userId: newUser.id,
+          expiresAt,
+          rememberMe: false,
+          userAgent,
+          ipAddress,
+        },
         tx,
       );
 
@@ -159,18 +168,23 @@ export class AuthService {
 
     return {
       ...tokens,
+      token: tokens.accessToken,
       user: {
         id: user.id,
         email: user.email,
-        name: user.name,
+        firstName: user.name,
+        lastName: user.lastName,
+        phone: user.phone,
       },
     };
   }
 
   async login(
     dto: LoginDto,
+    userAgent?: string,
+    ipAddress?: string,
   ): Promise<
-    | (TokenPair & { user: { id: string; email: string; name: string | null } })
+    | (TokenPair & { token: string; user: { id: string; email: string; firstName: string | null; lastName: string | null; phone: string | null } })
     | { requires2FA: true; tempToken: string }
   > {
     const user = await this.validateUser(dto.email.toLowerCase(), dto.password);
@@ -182,32 +196,52 @@ export class AuthService {
       return { requires2FA: true, tempToken };
     }
 
-    const sessionId = crypto.randomUUID();
-    const tokens = await this.generateTokens(user.id, user.email, sessionId);
+    const expiresAt = this.getSessionExpiry(dto.rememberMe);
 
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
-    await this.authRepository.createSession({
-      id: sessionId,
-      userId: user.id,
-      expiresAt,
-    });
+    // Reuse an active session for the same device (matched by exact userAgent)
+    // to prevent session proliferation when users log in repeatedly from the
+    // same browser. An empty/missing userAgent is treated as a new device.
+    const existingSession = userAgent
+      ? await this.authRepository.findActiveSessionByUserAgent(user.id, userAgent)
+      : undefined;
+
+    let sessionId: string;
+    if (existingSession) {
+      sessionId = existingSession.id;
+      await this.authRepository.updateSessionActivity(sessionId, {
+        lastUsedAt: new Date(),
+        expiresAt,
+        ipAddress,
+      });
+    } else {
+      sessionId = crypto.randomUUID();
+      await this.authRepository.createSession({
+        id: sessionId,
+        userId: user.id,
+        expiresAt,
+        rememberMe: dto.rememberMe ?? false,
+        userAgent,
+        ipAddress,
+      });
+    }
+
+    const tokens = await this.generateTokens(user.id, user.email, sessionId);
 
     return {
       ...tokens,
+      token: tokens.accessToken,
       user: {
         id: user.id,
         email: user.email,
-        name: fullUser?.name ?? null,
+        firstName: fullUser?.name ?? null,
+        lastName: fullUser?.lastName ?? null,
+        phone: fullUser?.phone ?? null,
       },
     };
   }
 
   async refresh(dto: RefreshDto): Promise<TokenPair> {
-    const refreshSecret =
-      this.configService.get("JWT_REFRESH_SECRET") ||
-      this.configService.get("JWT_SECRET") ||
-      JWT_CONSTANTS.REFRESH_SECRET;
+    const refreshSecret = this.configService.getOrThrow<string>("JWT_REFRESH_SECRET");
 
     try {
       const payload = this.jwtService.verify(dto.refreshToken, {
@@ -232,23 +266,22 @@ export class AuthService {
         throw new UnauthorizedException(AUTH_ERRORS.USER_NOT_FOUND);
       }
 
-      const newSessionId = crypto.randomUUID();
+      // Refresh updates the session in-place rather than rotating the ID:
+      // rotating caused race conditions across tabs (one tab deletes the row
+      // while another still holds the old refresh token) and orphaned rows
+      // when transactions failed mid-rotation.
+      const expiresAt = this.getSessionExpiry(session.rememberMe);
+
+      await this.authRepository.updateSessionActivity(payload.sessionId, {
+        lastUsedAt: new Date(),
+        expiresAt,
+      });
+
       const tokens = await this.generateTokens(
         user.id,
         user.email,
-        newSessionId,
+        payload.sessionId,
       );
-
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7);
-
-      await withTransaction(async (tx: Database) => {
-        await this.authRepository.rotateSession(
-          payload.sessionId,
-          { id: newSessionId, userId: user.id, expiresAt },
-          tx,
-        );
-      }, this.authRepository.db);
 
       return tokens;
     } catch (error) {
@@ -347,8 +380,23 @@ export class AuthService {
     }
   }
 
-  async verifyEmail(token: string): Promise<void> {
-    const verification = await this.authRepository.findVerificationToken("email_verification", token);
+  async verifyEmail(token?: string, email?: string, code?: string): Promise<void> {
+    let verificationToken = token;
+
+    if (!verificationToken && email && code) {
+      // In a real app, you would find the code in the DB.
+      // For now, let's just use the same verification table but with 'code' as token.
+      // Or we can just throw if not implemented yet.
+      throw new BadRequestException("Verification by code not implemented yet in service");
+    }
+
+    const finalToken = verificationToken;
+
+    if (!finalToken) {
+      throw new BadRequestException("Verification token is required");
+    }
+
+    const verification = await this.authRepository.findVerificationToken("email_verification", finalToken);
 
     if (!verification || verification.expiresAt < new Date()) {
       throw new BadRequestException("Invalid or expired verification token");
@@ -356,7 +404,7 @@ export class AuthService {
 
     await withTransaction(async (tx: Database) => {
       await this.authRepository.updateUser(verification.userId, { emailVerified: true }, tx);
-      await this.authRepository.deleteVerificationToken(token, tx);
+      await this.authRepository.deleteVerificationToken(finalToken, tx);
 
       await this.authRepository.createOutboxEvent(
         "user.email_verified",
@@ -406,10 +454,49 @@ export class AuthService {
     return {
       id: user.id,
       email: user.email,
-      name: user.name,
+      firstName: user.name,
+      lastName: user.lastName,
+      phone: user.phone,
       avatarUrl: user.avatarUrl,
       role: user.role,
       createdAt: user.createdAt,
+      twoFactorEnabled: user.twoFactorEnabled,
+      emailVerified: user.emailVerified,
+    };
+  }
+
+  async updateProfile(userId: string, data: { firstName?: string; lastName?: string; phone?: string; avatarUrl?: string }) {
+    const updateData: Partial<schema.User> = {};
+    if (data.firstName) {
+      updateData.name = data.firstName;
+    }
+    if (data.lastName !== undefined) {
+      updateData.lastName = data.lastName;
+    }
+    if (data.phone) {
+      updateData.phone = data.phone;
+    }
+    if (data.avatarUrl) {
+      updateData.avatarUrl = data.avatarUrl;
+    }
+
+    // Update user profile in repository
+    const user: schema.User = await this.authRepository.updateUser(userId, updateData);
+    if (!user) {
+      throw new UnauthorizedException(AUTH_ERRORS.USER_NOT_FOUND);
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.name,
+      lastName: user.lastName,
+      phone: user.phone,
+      avatarUrl: user.avatarUrl,
+      role: user.role,
+      createdAt: user.createdAt,
+      twoFactorEnabled: user.twoFactorEnabled,
+      emailVerified: user.emailVerified,
     };
   }
 
@@ -433,32 +520,27 @@ export class AuthService {
   }
 
   private async generateTokens(
-
     userId: string,
     email: string,
     sessionId?: string,
   ): Promise<TokenPair> {
     const sid = sessionId || crypto.randomUUID();
-    const accessSecret =
-      this.configService.get("JWT_SECRET") || JWT_CONSTANTS.ACCESS_SECRET;
-    const refreshSecret =
-      this.configService.get("JWT_REFRESH_SECRET") ||
-      this.configService.get("JWT_SECRET") ||
-      JWT_CONSTANTS.REFRESH_SECRET;
+    const accessSecret = this.configService.getOrThrow<string>("JWT_SECRET");
+    const refreshSecret = this.configService.getOrThrow<string>("JWT_REFRESH_SECRET");
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         { sub: userId, email, type: TOKEN_TYPE.ACCESS, sessionId: sid },
         {
           secret: accessSecret,
-          expiresIn: JWT_CONSTANTS.ACCESS_EXPIRY,
+          expiresIn: JWT_EXPIRY.ACCESS,
         },
       ),
       this.jwtService.signAsync(
         { sub: userId, email, type: TOKEN_TYPE.REFRESH, sessionId: sid },
         {
           secret: refreshSecret,
-          expiresIn: JWT_CONSTANTS.REFRESH_EXPIRY,
+          expiresIn: JWT_EXPIRY.REFRESH,
         },
       ),
     ]);
@@ -511,7 +593,7 @@ export class AuthService {
           const newUser = await this.authRepository.createUser(
             {
               email: profile.email,
-              name: profile.name,
+              name: profile.name, // OAuth still uses 'name' as a single string usually
               emailVerified: true,
             },
             tx,
@@ -538,14 +620,20 @@ export class AuthService {
 
       // Create session inside the transaction
       const sessionId = crypto.randomUUID();
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7);
+      const expiresAt = this.getSessionExpiry(true); // Default OAuth to remember for UX
       await this.authRepository.createSession(
-        { id: sessionId, userId, expiresAt },
+        { id: sessionId, userId, expiresAt, rememberMe: true },
         tx,
       );
 
       return this.generateTokens(userId, userEmail, sessionId);
     }, this.authRepository.db);
+  }
+
+  private getSessionExpiry(rememberMe?: boolean): Date {
+    const days = rememberMe ? 90 : 30;
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + days);
+    return expiresAt;
   }
 }

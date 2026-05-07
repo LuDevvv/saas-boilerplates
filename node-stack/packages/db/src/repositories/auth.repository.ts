@@ -1,5 +1,5 @@
 import { Injectable, Inject, Logger } from "@nestjs/common";
-import { eq, and } from "drizzle-orm";
+import { eq, and, gt, desc } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { DB_TOKEN } from "../tokens.js";
@@ -18,6 +18,7 @@ export interface CreateSessionData {
   expiresAt: Date;
   userAgent?: string;
   ipAddress?: string;
+  rememberMe?: boolean;
 }
 
 export interface CreateOAuthAccountData {
@@ -70,9 +71,14 @@ export class AuthRepository {
     return user;
   }
 
-  async updateUser(id: string, data: Partial<User>, tx?: Tx): Promise<void> {
+  async updateUser(id: string, data: Partial<User>, tx?: Tx): Promise<User> {
     const database = tx ?? this._db;
-    await database.update(schema.users).set(data).where(eq(schema.users.id, id));
+    const [user] = await database
+      .update(schema.users)
+      .set(data)
+      .where(eq(schema.users.id, id))
+      .returning();
+    return user;
   }
 
   // ── Session queries ─────────────────────────────────────
@@ -87,9 +93,44 @@ export class AuthRepository {
     });
   }
 
+  async findActiveSessionByUserAgent(
+    userId: string,
+    userAgent: string,
+    tx?: Tx,
+  ): Promise<Session | undefined> {
+    const database = tx ?? this._db;
+    return database.query.sessions.findFirst({
+      where: and(
+        eq(schema.sessions.userId, userId),
+        eq(schema.sessions.userAgent, userAgent),
+        gt(schema.sessions.expiresAt, new Date()),
+      ),
+      orderBy: [desc(schema.sessions.lastUsedAt)],
+    });
+  }
+
   async createSession(data: CreateSessionData, tx?: Tx): Promise<void> {
     const database = tx ?? this._db;
     await database.insert(schema.sessions).values(data);
+  }
+
+  async updateSessionActivity(
+    sessionId: string,
+    data: { lastUsedAt: Date; expiresAt: Date; ipAddress?: string },
+    tx?: Tx,
+  ): Promise<void> {
+    const database = tx ?? this._db;
+    const updateData: { lastUsedAt: Date; expiresAt: Date; ipAddress?: string } = {
+      lastUsedAt: data.lastUsedAt,
+      expiresAt: data.expiresAt,
+    };
+    if (data.ipAddress !== undefined) {
+      updateData.ipAddress = data.ipAddress;
+    }
+    await database
+      .update(schema.sessions)
+      .set(updateData)
+      .where(eq(schema.sessions.id, sessionId));
   }
 
   async deleteSessionById(sessionId: string, tx?: Tx): Promise<void> {

@@ -1,6 +1,6 @@
 import { Injectable, Logger, Inject } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
-import { DB_TOKEN } from "@node-stack/db";
+import { DB_TOKEN, SessionRepository } from "@node-stack/db";
 import * as schema from "@node-stack/db";
 import type { IStorageProvider } from "@node-stack/storage";
 import { eq, lt, and } from "drizzle-orm";
@@ -13,6 +13,7 @@ export class MaintenanceService {
   constructor(
     @Inject(DB_TOKEN) private readonly db: NodePgDatabase<typeof schema>,
     @Inject("STORAGE_SERVICE") private readonly storage: IStorageProvider,
+    private readonly sessionRepository: SessionRepository,
   ) {}
 
   /**
@@ -93,15 +94,11 @@ export class MaintenanceService {
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async purgeExpiredSessions() {
     this.logger.log("Running Expired Sessions purge...");
-    const now = new Date();
 
-    const result = await this.db
-      .delete(schema.sessions)
-      .where(lt(schema.sessions.expiresAt, now))
-      .returning({ id: schema.sessions.id });
+    const count = await this.sessionRepository.deleteExpired();
 
-    if (result.length > 0) {
-      this.logger.log(`Purged ${result.length} expired sessions.`);
+    if (count > 0) {
+      this.logger.log(`Purged ${count} expired sessions.`);
     }
   }
 }

@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, index, varchar, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, index, varchar, uniqueIndex, boolean } from "drizzle-orm/pg-core";
 
 import { users } from "./users.js";
 
@@ -12,6 +12,7 @@ export const sessions = pgTable(
     expiresAt: timestamp("expires_at").notNull(),
     userAgent: text("user_agent"),
     ipAddress: varchar("ip_address", { length: 45 }),
+    rememberMe: boolean("remember_me").default(false).notNull(),
     lastUsedAt: timestamp("last_used_at").defaultNow(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },

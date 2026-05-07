@@ -6,3 +6,4 @@ export * from "@/auth/dto/login-2fa.dto.js";
 export * from "@/auth/dto/recovery.dto.js";
 export * from "@/auth/dto/reset-password.dto.js";
 export * from "@/auth/dto/verify-email.dto.js";
+export * from "@/auth/dto/update-profile.dto.js";

@@ -8,7 +8,7 @@ import { SessionRepository , DatabaseModule } from '@node-stack/db';
 import { ApiKeysModule } from '@/api-keys/api-keys.module.js';
 import { AuthController } from '@/auth/auth.controller.js';
 import { AuthService } from '@/auth/auth.service.js';
-import { JWT_CONSTANTS } from '@/auth/constants.js';
+import { JWT_EXPIRY } from '@/auth/constants.js';
 import { ApiKeyStrategy } from '@/auth/strategies/api-key.strategy.js';
 import { JwtStrategy, LocalStrategy, GoogleStrategy, GitHubStrategy } from '@/auth/strategies/index.js';
 import { TwoFactorService } from '@/auth/two-factor/two-factor.service.js';
@@ -24,9 +24,9 @@ import { TwoFactorService } from '@/auth/two-factor/two-factor.service.js';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get('JWT_SECRET') || JWT_CONSTANTS.ACCESS_SECRET,
+        secret: configService.getOrThrow<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: JWT_CONSTANTS.ACCESS_EXPIRY,
+          expiresIn: JWT_EXPIRY.ACCESS,
         },
       }),
     }),

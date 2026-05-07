@@ -6,9 +6,11 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Req,
   Res,
   Param,
   Delete,
+  Patch,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { AuthGuard } from "@nestjs/passport";
@@ -21,7 +23,7 @@ import {
 } from "@nestjs/swagger";
 import { Throttle, SkipThrottle } from "@nestjs/throttler";
 import type { OAuthProfile } from "@node-stack/types";
-import type { Response } from "express";
+import type { Request, Response } from "express";
 
 import { AuthService, SessionListItem } from "@/auth/auth.service.js";
 import { CurrentUser } from "@/auth/decorators/index.js";
@@ -34,12 +36,24 @@ import {
   RecoveryDto,
   ResetPasswordDto,
   VerifyEmailDto,
+  UpdateProfileDto,
 } from "@/auth/dto/index.js";
 import { JwtAuthGuard } from "@/auth/guards/index.js";
 import { TwoFactorService } from "@/auth/two-factor/two-factor.service.js";
 import { Public } from "@/common/decorators/public.decorator.js";
 import type { UserPayload } from "@/common/types/index.js";
 
+
+function extractClientIp(req: Request): string | undefined {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (typeof forwarded === "string" && forwarded.length > 0) {
+    return forwarded.split(",")[0].trim();
+  }
+  if (Array.isArray(forwarded) && forwarded.length > 0) {
+    return forwarded[0];
+  }
+  return req.ip;
+}
 
 @ApiTags("auth")
 @Controller("auth")
@@ -59,8 +73,10 @@ export class AuthController {
   })
   @ApiResponse({ status: 201, description: "User registered successfully" })
   @ApiResponse({ status: 400, description: "Email already in use or validation failed" })
-  async register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
+  async register(@Body() dto: RegisterDto, @Req() req: Request) {
+    const userAgent = req.headers["user-agent"];
+    const ipAddress = extractClientIp(req);
+    return this.authService.register(dto, userAgent, ipAddress);
   }
 
   @Throttle({ short: { ttl: 60000, limit: 5 } })
@@ -77,8 +93,10 @@ export class AuthController {
     description: "Login successful. May return a tempToken if 2FA is required.",
   })
   @ApiResponse({ status: 401, description: "Invalid credentials" })
-  async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  async login(@Body() dto: LoginDto, @Req() req: Request) {
+    const userAgent = req.headers["user-agent"];
+    const ipAddress = extractClientIp(req);
+    return this.authService.login(dto, userAgent, ipAddress);
   }
 
   @Public()
@@ -120,6 +138,22 @@ export class AuthController {
   @ApiResponse({ status: 401, description: "Unauthorized" })
   async me(@CurrentUser("id") userId: string) {
     return this.authService.getUserById(userId);
+  }
+
+  @Patch("profile")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth("JWT-auth")
+  @ApiOperation({
+    summary: "Update current user profile",
+    description: "Updates the profile information for the currently authenticated user.",
+  })
+  @ApiResponse({ status: 200, description: "User profile updated" })
+  @ApiResponse({ status: 401, description: "Unauthorized" })
+  async updateProfile(
+    @CurrentUser("id") userId: string,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    return this.authService.updateProfile(userId, dto);
   }
 
   @Get("sessions")
@@ -217,9 +251,17 @@ export class AuthController {
   })
   @ApiResponse({ status: 200, description: "Login successful" })
   @ApiResponse({ status: 401, description: "Invalid or expired temp token / TOTP code" })
-  async login2fa(@Body() dto: Login2faDto) {
+  async login2fa(@Body() dto: Login2faDto, @Req() req: Request) {
     const userId = this.twoFactorService.verifyTempToken(dto.tempToken);
-    return this.twoFactorService.verifyLoginToken(userId, dto.token);
+    const userAgent = req.headers["user-agent"];
+    const ipAddress = extractClientIp(req);
+    return this.twoFactorService.verifyLoginToken(
+      userId,
+      dto.token,
+      dto.rememberMe,
+      userAgent,
+      ipAddress,
+    );
   }
 
   @Public()
@@ -271,7 +313,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 200, description: "Email verified successfully." })
   async verifyEmail(@Body() dto: VerifyEmailDto) {
-    await this.authService.verifyEmail(dto.token);
+    await this.authService.verifyEmail(dto.token, dto.email, dto.code);
     return { message: "Email verified successfully." };
   }
 

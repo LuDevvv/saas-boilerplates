@@ -85,6 +85,27 @@
       "when": 1776297271375,
       "tag": "0011_solid_black_crow",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1776461400000,
+      "tag": "0012_enable_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1778421572000,
+      "tag": "0013_add_remember_me",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1778421573000,
+      "tag": "0014_add_user_profile_fields",
+      "breakpoints": true
     }
   ]
 }

@@ -4,18 +4,15 @@ export const TOKEN_TYPE = {
 } as const;
 
 export const AUTH_ERRORS = {
-  INVALID_CREDENTIALS: "Invalid email or password",
-  USER_EXISTS: "User already exists",
-  USER_NOT_FOUND: "User not found",
-  INVALID_TOKEN: "Invalid or expired token",
-  TOKEN_EXPIRED: "Token has expired",
-  SESSION_NOT_FOUND: "Session not found",
+  INVALID_CREDENTIALS: "Correo o contraseña incorrectos",
+  USER_EXISTS: "Este correo electrónico ya está registrado",
+  USER_NOT_FOUND: "Usuario no encontrado",
+  INVALID_TOKEN: "Token inválido o expirado",
+  TOKEN_EXPIRED: "Tu sesión ha expirado",
+  SESSION_NOT_FOUND: "Sesión no encontrada",
 } as const;
 
-export const JWT_CONSTANTS = {
-  ACCESS_SECRET: process.env.JWT_SECRET || "",
-  REFRESH_SECRET:
-    process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET || "",
-  ACCESS_EXPIRY: "15m",
-  REFRESH_EXPIRY: "7d",
+export const JWT_EXPIRY = {
+  ACCESS: "15m",
+  REFRESH: "90d",
 } as const;

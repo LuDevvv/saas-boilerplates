@@ -1,5 +1,5 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { and, eq, gt, ne, desc } from "drizzle-orm";
+import { and, eq, gt, lt, ne, desc } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { DB_TOKEN } from "../tokens.js";
@@ -53,5 +53,13 @@ export class SessionRepository {
     await this.db
       .delete(schema.sessions)
       .where(eq(schema.sessions.userId, userId));
+  }
+
+  async deleteExpired(): Promise<number> {
+    const result = await this.db
+      .delete(schema.sessions)
+      .where(lt(schema.sessions.expiresAt, new Date()))
+      .returning({ id: schema.sessions.id });
+    return result.length;
   }
 }
