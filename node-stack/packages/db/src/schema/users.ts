@@ -38,9 +38,18 @@ export const users = pgTable(
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql`now()`),
+    deletedAt: timestamp("deleted_at"),
+    deletedBy: uuid("deleted_by"),
+    deletionReason: text("deletion_reason"),
+    anonymizedAt: timestamp("anonymized_at"),
   },
   (table) => ({
     emailIdx: index("idx_users_email").on(table.email),
+    // Partial index — the cron's only consumer scans for non-null
+    // deleted_at to find rows past the 30-day grace window.
+    deletedAtIdx: index("idx_users_deleted_at")
+      .on(table.deletedAt)
+      .where(sql`${table.deletedAt} IS NOT NULL`),
   }),
 );
 

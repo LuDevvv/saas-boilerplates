@@ -21,6 +21,7 @@ export const workspaceRoleEnum = pgEnum("workspace_role", [
 export const membershipStatusEnum = pgEnum("membership_status", [
   "active",
   "pending",
+  "removed",
 ]);
 
 export const workspaceTierEnum = pgEnum("workspace_tier", [
@@ -42,9 +43,15 @@ export const workspaces = pgTable(
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql`now()`),
+    deletedAt: timestamp("deleted_at"),
+    deletedBy: uuid("deleted_by"),
+    deletionReason: text("deletion_reason"),
   },
   (table) => ({
     slugIdx: index("idx_workspaces_slug").on(table.slug),
+    deletedAtIdx: index("idx_workspaces_deleted_at")
+      .on(table.deletedAt)
+      .where(sql`${table.deletedAt} IS NOT NULL`),
   }),
 );
 
