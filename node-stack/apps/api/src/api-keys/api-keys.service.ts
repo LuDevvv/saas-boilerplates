@@ -4,6 +4,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { CacheService } from '@node-stack/cache';
 import {
   ApiKeyRepository,
+  AuditLogRepository,
   withTenantTx,
   schema,
   generateApiKey,
@@ -28,6 +29,7 @@ export class ApiKeysService {
 
   constructor(
     private readonly repo: ApiKeyRepository,
+    private readonly auditLog: AuditLogRepository,
     private readonly cache: CacheService,
     private readonly config: ConfigService,
     @Inject(DB_TOKEN) private readonly db: Database,
@@ -67,6 +69,18 @@ export class ApiKeysService {
         })
         .returning();
       outboxEventId = outboxRecord.id;
+
+      await this.auditLog.create(
+        {
+          workspaceId,
+          userId,
+          action: 'auth.api_key_created',
+          entityType: 'api_key',
+          entityId: key.id,
+          metadata: { name: key.name, prefix: key.prefix },
+        },
+        tx as any,
+      );
 
       return key;
     }, this.db);
@@ -134,6 +148,21 @@ export class ApiKeysService {
           eventType: 'api_key.revoked',
           payload: { apiKeyId: id, workspaceId },
         });
+
+      await this.auditLog.create(
+        {
+          workspaceId,
+          // The revoke endpoint does not currently receive the actor
+          // userId; once the controller threads it through, populate
+          // here. Until then the row records null.
+          userId: null,
+          action: 'auth.api_key_revoked',
+          entityType: 'api_key',
+          entityId: id,
+          metadata: { name: apiKey.name, prefix: apiKey.prefix },
+        },
+        tx as any,
+      );
     }, this.db);
 
     // IMMEDIATELY invalidate Redis cache

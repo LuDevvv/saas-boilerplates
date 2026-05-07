@@ -3,10 +3,18 @@ import {
   NotFoundException,
   ForbiddenException,
   ConflictException,
+  Inject,
 } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { CacheService } from "@node-stack/cache";
-import { WorkspaceRepository, schema } from "@node-stack/db";
+import {
+  AuditLogRepository,
+  DB_TOKEN,
+  WorkspaceRepository,
+  schema,
+  withTenantTx,
+} from "@node-stack/db";
+import type { Database } from "@node-stack/db";
 import type { UpdateMemberRoleDto, UpdateWorkspaceDto } from "@node-stack/validators";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
@@ -30,9 +38,11 @@ interface MemberWithUser {
 export class WorkspacesService {
   constructor(
     private readonly workspaceRepo: WorkspaceRepository,
+    private readonly auditLog: AuditLogRepository,
     private readonly cache: CacheService,
     private readonly outbox: OutboxService,
     private readonly eventEmitter: EventEmitter2,
+    @Inject(DB_TOKEN) private readonly db: Database,
   ) {}
 
   async getMembers(
@@ -68,7 +78,7 @@ export class WorkspacesService {
     newRole: UpdateMemberRoleDto["role"],
     currentUserId: string,
   ): Promise<void> {
-    await this.workspaceRepo.transaction(async (tx: NodePgDatabase<typeof schema>) => {
+    await withTenantTx(workspaceId, async (tx: NodePgDatabase<typeof schema>) => {
       const currentMembership = await this.validateMembership(workspaceId, currentUserId);
 
       const targetMembership = await this.workspaceRepo.findMembership(workspaceId, targetUserId, tx);
@@ -83,13 +93,25 @@ export class WorkspacesService {
       }
 
       await this.workspaceRepo.updateMembership(workspaceId, targetUserId, { role: newRole }, tx);
-      
+
       await this.outbox.createEvent("membership.updated", {
         workspaceId,
         userId: targetUserId,
         role: newRole,
       }, tx);
-    });
+
+      await this.auditLog.create(
+        {
+          workspaceId,
+          userId: currentUserId,
+          action: "workspace.member_role_changed",
+          entityType: "membership",
+          entityId: targetUserId,
+          metadata: { newRole, previousRole: targetRole },
+        },
+        tx,
+      );
+    }, this.db);
 
     this.eventEmitter.emit("membership.updated", {
       workspaceId,
@@ -106,7 +128,7 @@ export class WorkspacesService {
     targetUserId: string,
     currentUserId: string,
   ): Promise<void> {
-    await this.workspaceRepo.transaction(async (tx: NodePgDatabase<typeof schema>) => {
+    await withTenantTx(workspaceId, async (tx: NodePgDatabase<typeof schema>) => {
       const currentMembership = await this.workspaceRepo.findMembership(workspaceId, currentUserId, tx);
       if (!currentMembership) throw new ForbiddenException("Not a member of this workspace");
 
@@ -123,7 +145,19 @@ export class WorkspacesService {
 
       await this.workspaceRepo.deleteMembership(workspaceId, targetUserId, tx);
       await this.outbox.createEvent("membership.removed", { workspaceId, userId: targetUserId }, tx);
-    });
+
+      await this.auditLog.create(
+        {
+          workspaceId,
+          userId: currentUserId,
+          action: "workspace.member_removed",
+          entityType: "membership",
+          entityId: targetUserId,
+          metadata: { role: targetRole },
+        },
+        tx,
+      );
+    }, this.db);
 
     this.eventEmitter.emit("membership.removed", {
       workspaceId,
