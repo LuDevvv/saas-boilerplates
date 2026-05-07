@@ -13,7 +13,7 @@ import { OTP } from "otplib";
 import * as QRCode from "qrcode";
 
 import { TOKEN_TYPE, JWT_EXPIRY } from "@/auth/constants.js";
-import { EncryptionService } from "@/common/services/encryption.service.js";
+import { TotpSecretCipher } from "@/auth/two-factor/totp-secret-cipher.js";
 
 // Replay window: a TOTP code is valid for 30s ±30s (epochTolerance), so we
 // hold the "used" marker for 95s — long enough that the attacker cannot
@@ -29,7 +29,7 @@ export class TwoFactorService {
     private configService: ConfigService,
     @Inject(DB_TOKEN) private readonly db: Database,
     private readonly authRepository: AuthRepository,
-    private readonly encryption: EncryptionService,
+    private readonly totpCipher: TotpSecretCipher,
     private readonly cache: CacheService,
   ) { }
 
@@ -57,7 +57,7 @@ export class TwoFactorService {
 
     await this.db
       .update(schema.users)
-      .set({ twoFactorSecret: this.encryption.encrypt(secret) })
+      .set({ twoFactorSecret: this.totpCipher.encrypt(secret) })
       .where(eq(schema.users.id, userId));
 
     return { qrCodeUrl, secret, otpAuthUrl };
@@ -108,7 +108,7 @@ export class TwoFactorService {
 
     const isValid = await this.verifyToken(
       userId,
-      this.encryption.decrypt(user.twoFactorSecret),
+      this.totpCipher.decrypt(user.twoFactorSecret),
       token,
     );
 
@@ -146,7 +146,7 @@ export class TwoFactorService {
 
     const isValid = await this.verifyToken(
       user.id,
-      this.encryption.decrypt(user.twoFactorSecret),
+      this.totpCipher.decrypt(user.twoFactorSecret),
       token,
     );
 
