@@ -80,40 +80,14 @@ export class AuditService {
     });
   }
 
-  @OnEvent("membership.removed", { async: true })
-  async onMembershipRemoved(payload: any) {
-    await this.handleAuditLog({
-      action: "membership.removed",
-      userId: payload.actorId,
-      workspaceId: payload.workspaceId,
-      entityType: "user",
-      entityId: payload.userId,
-      metadata: payload,
-    });
-  }
-
-  @OnEvent("membership.updated", { async: true })
-  async onMembershipUpdated(payload: any) {
-    await this.handleAuditLog({
-      action: "membership.updated",
-      userId: payload.actorId,
-      workspaceId: payload.workspaceId,
-      entityType: "user",
-      entityId: payload.userId,
-      metadata: payload,
-    });
-  }
-
-  @OnEvent("billing.subscription.*", { async: true })
-  async onSubscriptionEvent(payload: any) {
-    await this.handleAuditLog({
-      action: "billing.subscription.update",
-      workspaceId: payload.workspaceId,
-      entityType: "subscription",
-      entityId: payload.subscriptionId,
-      metadata: payload,
-    });
-  }
+  // membership.removed, membership.updated, and billing.subscription.*
+  // listeners were removed in Phase 3b. The originating services
+  // (workspaces.service, billing.service) write the audit row
+  // directly inside their withTenantTx blocks with the
+  // taxonomy-correct action strings (workspace.member_removed,
+  // workspace.member_role_changed, billing.subscription_created |
+  // _updated | _canceled). Keeping both produced duplicate
+  // audit_logs rows per event.
 
   /**
    * Legacy method for backward compatibility.
