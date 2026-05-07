@@ -1,0 +1,125 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: node-stack
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: node-stack/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+        continue-on-error: true
+        # Lint currently has many pre-existing warnings flagged by the
+        # backend rule set; keep informational until Phase 3 cleans them.
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: node-stack/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: typecheck apps/api with workspace deps
+        working-directory: node-stack/apps/api
+        run: npx tsc -b --noEmit
+      - name: typecheck apps/worker with workspace deps
+        working-directory: node-stack/apps/worker
+        run: npx tsc -b --noEmit
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: node-stack/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: build apps/api with workspace deps
+        working-directory: node-stack/apps/api
+        run: npx tsc -b
+      - name: build apps/worker with workspace deps
+        working-directory: node-stack/apps/worker
+        run: npx tsc -b
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgres://test:test@localhost:5432/test
+      MIGRATION_DATABASE_URL: postgres://test:test@localhost:5432/test
+      REDIS_URL: redis://localhost:6379
+      NODE_ENV: test
+      JWT_SECRET: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcd
+      JWT_REFRESH_SECRET: fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210
+      ENCRYPTION_KEY: '1111111111111111111111111111111111111111111111111111111111111111'
+      TRUST_PROXY: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: node-stack/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @node-stack/db db:migrate:full
+      - run: pnpm -r test --if-present
+        continue-on-error: true
+        # Test job is informational until Phase 3 lands real test suites;
+        # the migrate step is what proves CI can talk to a fresh database.
