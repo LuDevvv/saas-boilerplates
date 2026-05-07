@@ -1,7 +1,8 @@
 import { randomUUID } from "crypto";
 
 import { Injectable, Inject, BadRequestException, NotFoundException } from "@nestjs/common";
-import { FileRepository } from "@node-stack/db";
+import { DB_TOKEN, FileRepository, withTenantTx } from "@node-stack/db";
+import type { Database } from "@node-stack/db";
 import type { IStorageProvider } from "@node-stack/storage";
 import {
   UPLOAD_POLICIES,
@@ -22,6 +23,7 @@ export class AppStorageService {
     @Inject("STORAGE_SERVICE") private readonly storage: IStorageProvider,
     private readonly fileRepo: FileRepository,
     private readonly usageQuotaService: UsageQuotaService,
+    @Inject(DB_TOKEN) private readonly db: Database,
   ) {}
 
 
@@ -68,17 +70,24 @@ export class AppStorageService {
     // Get URL from provider
     const url = await this.storage.getUploadUrl(key, dto.mimeType, 300);
 
-    // Create record in DB
-    const fileRecord = await this.fileRepo.create({
+    const fileRecord = await withTenantTx(
       workspaceId,
-      userId: userId,
-      name: safeName,
-      size: dto.fileSize,
-      mimeType: dto.mimeType,
-      key,
-      provider: "s3", // Or config based
-      status: "pending",
-    });
+      (tx) =>
+        this.fileRepo.create(
+          {
+            workspaceId,
+            userId: userId,
+            name: safeName,
+            size: dto.fileSize,
+            mimeType: dto.mimeType,
+            key,
+            provider: "s3",
+            status: "pending",
+          },
+          tx,
+        ),
+      this.db,
+    );
 
     return {
       url,
@@ -89,29 +98,35 @@ export class AppStorageService {
   }
 
   async completeUpload(fileId: string, workspaceId: string): Promise<any> {
-    const file = await this.fileRepo.findById(fileId);
-
-    if (!file || file.workspaceId !== workspaceId) {
-      throw new NotFoundException("File not found");
-    }
-
-    // Verify file exists on storage
-    try {
-      const metadata = await this.storage.headObject(file.key);
-      // Update status to uploaded
-      return await this.fileRepo.updateStatus(fileId, "uploaded");
-    } catch (error) {
-      throw new BadRequestException("File not found on storage provider. Please upload first.");
-    }
+    return withTenantTx(
+      workspaceId,
+      async (tx) => {
+        const file = await this.fileRepo.findById(fileId, tx);
+        if (!file || file.workspaceId !== workspaceId) {
+          throw new NotFoundException("File not found");
+        }
+        try {
+          await this.storage.headObject(file.key);
+          return await this.fileRepo.updateStatus(fileId, "uploaded", tx);
+        } catch (error) {
+          throw new BadRequestException(
+            "File not found on storage provider. Please upload first.",
+          );
+        }
+      },
+      this.db,
+    );
   }
 
   async getDownloadUrl(fileId: string, workspaceId: string): Promise<{ url: string }> {
-    const file = await this.fileRepo.findById(fileId);
-
+    const file = await withTenantTx(
+      workspaceId,
+      (tx) => this.fileRepo.findById(fileId, tx),
+      this.db,
+    );
     if (!file || file.workspaceId !== workspaceId || file.status !== "uploaded") {
       throw new NotFoundException("File not found or not uploaded yet");
     }
-
     const url = await this.storage.getDownloadUrl(file.key);
     return { url };
   }

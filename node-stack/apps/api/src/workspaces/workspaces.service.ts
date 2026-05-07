@@ -12,6 +12,7 @@ import {
   DB_TOKEN,
   WorkspaceRepository,
   schema,
+  withSystemTx,
   withTenantTx,
 } from "@node-stack/db";
 import type { Database } from "@node-stack/db";
@@ -49,27 +50,29 @@ export class WorkspacesService {
     workspaceId: string,
     currentUserId: string,
   ): Promise<MemberWithUser[]> {
-    await this.validateMembership(workspaceId, currentUserId);
-
-    const members = await this.workspaceRepo.findMembersByWorkspaceId(workspaceId);
-
-    return members.map((m: any) => ({
-      userId: m.userId,
-      role: m.role as WorkspaceRole,
-      createdAt: m.createdAt,
-      user: {
-        id: m.id,
-        email: m.email,
-        name: m.name,
-        avatarUrl: m.avatarUrl,
-      },
-    }));
+    return withTenantTx(workspaceId, async (tx: NodePgDatabase<typeof schema>) => {
+      await this.validateMembership(workspaceId, currentUserId, tx);
+      const members = await this.workspaceRepo.findMembersByWorkspaceId(workspaceId, tx);
+      return members.map((m: any) => ({
+        userId: m.userId,
+        role: m.role as WorkspaceRole,
+        createdAt: m.createdAt,
+        user: {
+          id: m.id,
+          email: m.email,
+          name: m.name,
+          avatarUrl: m.avatarUrl,
+        },
+      }));
+    }, this.db);
   }
 
   async getMyMembership(workspaceId: string, userId: string) {
-    const membership = await this.workspaceRepo.findMembership(workspaceId, userId);
-    if (!membership) throw new NotFoundException("Membership not found");
-    return membership;
+    return withTenantTx(workspaceId, async (tx: NodePgDatabase<typeof schema>) => {
+      const membership = await this.workspaceRepo.findMembership(workspaceId, userId, tx);
+      if (!membership) throw new NotFoundException("Membership not found");
+      return membership;
+    }, this.db);
   }
 
   async updateMemberRole(
@@ -79,7 +82,7 @@ export class WorkspacesService {
     currentUserId: string,
   ): Promise<void> {
     await withTenantTx(workspaceId, async (tx: NodePgDatabase<typeof schema>) => {
-      const currentMembership = await this.validateMembership(workspaceId, currentUserId);
+      const currentMembership = await this.validateMembership(workspaceId, currentUserId, tx);
 
       const targetMembership = await this.workspaceRepo.findMembership(workspaceId, targetUserId, tx);
       if (!targetMembership) throw new NotFoundException("Member not found in workspace");
@@ -168,19 +171,25 @@ export class WorkspacesService {
     await this.cache.invalidate(`workspaces:${workspaceId}:members`);
   }
 
-  async validateMembership(workspaceId: string, userId: string) {
-    const membership = await this.workspaceRepo.findMembership(workspaceId, userId);
+  async validateMembership(
+    workspaceId: string,
+    userId: string,
+    tx?: NodePgDatabase<typeof schema>,
+  ) {
+    const membership = await this.workspaceRepo.findMembership(workspaceId, userId, tx);
     if (!membership) throw new ForbiddenException("Not a member of this workspace");
     return membership;
   }
 
   async createWorkspace(name: string, slug: string, userId: string) {
-    const existing = await this.workspaceRepo.findBySlug(slug);
-    if (existing) {
-      throw new ConflictException(`Workspace with slug "${slug}" already exists`);
-    }
+    // No workspaceId yet — withSystemTx so the inserts into workspaces +
+    // memberships + outbox satisfy the system-bypass RLS policy.
+    const workspace = await withSystemTx(async (tx: NodePgDatabase<typeof schema>) => {
+      const existing = await this.workspaceRepo.findBySlug(slug, tx);
+      if (existing) {
+        throw new ConflictException(`Workspace with slug "${slug}" already exists`);
+      }
 
-    const workspace = await this.workspaceRepo.transaction(async (tx: NodePgDatabase<typeof schema>) => {
       const ws = await this.workspaceRepo.create({ name, slug }, tx);
 
       await this.workspaceRepo.createMembership({
@@ -192,7 +201,7 @@ export class WorkspacesService {
       await this.outbox.createEvent("workspace.created", { workspaceId: ws.id, userId, name }, tx);
 
       return ws;
-    });
+    }, this.db);
 
     this.eventEmitter.emit("workspace.created", {
       workspaceId: workspace.id,
@@ -210,13 +219,13 @@ export class WorkspacesService {
     currentUserId: string,
     role: WorkspaceRole = "member",
   ): Promise<void> {
-    await this.workspaceRepo.transaction(async (tx: NodePgDatabase<typeof schema>) => {
+    await withTenantTx(workspaceId, async (tx: NodePgDatabase<typeof schema>) => {
       const currentMembership = await this.workspaceRepo.findMembership(workspaceId, currentUserId, tx);
       if (!currentMembership) throw new ForbiddenException("Not a member of this workspace");
 
       await this.workspaceRepo.createMembership({ workspaceId, userId: newUserId, role }, tx);
       await this.outbox.createEvent("membership.added", { workspaceId, userId: newUserId, role }, tx);
-    });
+    }, this.db);
 
     this.eventEmitter.emit("membership.added", {
       workspaceId,
@@ -229,21 +238,21 @@ export class WorkspacesService {
   }
 
   async updateWorkspace(workspaceId: string, data: UpdateWorkspaceDto, currentUserId: string) {
-    const currentMembership = await this.validateMembership(workspaceId, currentUserId);
-    if (currentMembership.role !== "owner" && currentMembership.role !== "admin") {
-      throw new ForbiddenException("Only owners and admins can update the workspace");
-    }
+    const updated = await withTenantTx(workspaceId, async (tx: NodePgDatabase<typeof schema>) => {
+      const currentMembership = await this.validateMembership(workspaceId, currentUserId, tx);
+      if (currentMembership.role !== "owner" && currentMembership.role !== "admin") {
+        throw new ForbiddenException("Only owners and admins can update the workspace");
+      }
 
-    const updated = await this.workspaceRepo.transaction(async (tx: NodePgDatabase<typeof schema>) => {
       const workspace = await this.workspaceRepo.update(workspaceId, data, tx);
-      
+
       await this.outbox.createEvent("workspace.updated", {
         workspaceId,
         ...data,
       }, tx);
 
       return workspace;
-    });
+    }, this.db);
 
     this.eventEmitter.emit("workspace.updated", {
       workspaceId,
@@ -255,11 +264,23 @@ export class WorkspacesService {
   }
 
   async listWorkspaces(userId: string, cursor?: string, limit?: number) {
-    return this.workspaceRepo.findAllByUserId(userId, cursor, limit);
+    // Cross-tenant query (a user's workspaces span multiple tenants);
+    // withSystemTx so the JOIN against memberships+workspaces is not
+    // filtered by a single workspace GUC. The existing user_id WHERE
+    // filter is the security boundary here, not RLS.
+    return withSystemTx(
+      (tx: NodePgDatabase<typeof schema>) =>
+        this.workspaceRepo.findAllByUserId(userId, cursor, limit, tx),
+      this.db,
+    );
   }
 
   async getUserWorkspaces(userId: string) {
-    const { workspaces } = await this.workspaceRepo.findAllByUserId(userId);
+    const { workspaces } = await withSystemTx(
+      (tx: NodePgDatabase<typeof schema>) =>
+        this.workspaceRepo.findAllByUserId(userId, undefined, undefined, tx),
+      this.db,
+    );
     return workspaces;
   }
 }

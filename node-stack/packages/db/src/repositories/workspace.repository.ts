@@ -19,9 +19,15 @@ export class WorkspaceRepository {
     @Inject(DB_TOKEN) private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
-  async findAllByUserId(userId: string, cursor?: string, limit: number = 20) {
+  async findAllByUserId(
+    userId: string,
+    cursor?: string,
+    limit: number = 20,
+    tx?: NodePgDatabase<typeof schema>,
+  ) {
+    const database = tx ?? this.db;
     const conditions = [eq(schema.memberships.userId, userId)];
-    
+
     if (cursor) {
       try {
         const decoded = JSON.parse(Buffer.from(cursor, "base64").toString("utf-8"));
@@ -33,7 +39,7 @@ export class WorkspaceRepository {
       }
     }
 
-    const workspaces = await this.db
+    const workspaces = await database
       .select({
         id: schema.workspaces.id,
         name: schema.workspaces.name,
@@ -51,21 +57,23 @@ export class WorkspaceRepository {
       .orderBy(schema.workspaces.id)
       .limit(limit);
 
-    const nextCursor = workspaces.length === limit 
+    const nextCursor = workspaces.length === limit
       ? Buffer.from(JSON.stringify({ id: workspaces[workspaces.length - 1].id })).toString("base64")
       : null;
 
     return { workspaces, nextCursor };
   }
 
-  async findById(id: string) {
-    return this.db.query.workspaces.findFirst({
+  async findById(id: string, tx?: NodePgDatabase<typeof schema>) {
+    const database = tx ?? this.db;
+    return database.query.workspaces.findFirst({
       where: eq(schema.workspaces.id, id),
     });
   }
 
-  async findBySlug(slug: string) {
-    return this.db.query.workspaces.findFirst({
+  async findBySlug(slug: string, tx?: NodePgDatabase<typeof schema>) {
+    const database = tx ?? this.db;
+    return database.query.workspaces.findFirst({
       where: eq(schema.workspaces.slug, slug),
     });
   }
@@ -96,8 +104,12 @@ export class WorkspaceRepository {
       .where(eq(schema.workspaces.id, id));
   }
 
-  async findMembersByWorkspaceId(workspaceId: string) {
-    return this.db
+  async findMembersByWorkspaceId(
+    workspaceId: string,
+    tx?: NodePgDatabase<typeof schema>,
+  ) {
+    const database = tx ?? this.db;
+    return database
       .select({
         userId: schema.memberships.userId,
         role: schema.memberships.role,

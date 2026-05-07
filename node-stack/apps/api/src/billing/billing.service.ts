@@ -14,7 +14,13 @@ import type {
   Subscription as ProviderSubscription,
 } from "@node-stack/billing-adapter";
 import { CacheService } from "@node-stack/cache";
-import { BillingRepository, type Subscription } from "@node-stack/db";
+import {
+  BillingRepository,
+  DB_TOKEN,
+  withTenantTx,
+  type Subscription,
+} from "@node-stack/db";
+import type { Database } from "@node-stack/db";
 import { CreateCheckoutDto } from "@node-stack/validators";
 
 import { EncryptionService } from "@/common/services/encryption.service.js";
@@ -43,6 +49,7 @@ export class BillingService {
     private readonly eventEmitter: EventEmitter2,
     private readonly cache: CacheService,
     @Inject("PAYMENT_PROVIDER") private readonly provider: PaymentProvider,
+    @Inject(DB_TOKEN) private readonly db: Database,
   ) {}
 
   // ─── Checkout ─────────────────────────────────────────────────────────
@@ -50,9 +57,12 @@ export class BillingService {
   async createCheckout(
     data: CreateCheckoutDto & { workspaceId: string; userId: string },
   ): Promise<CheckoutUrl> {
-    // Resolve or create the provider-side customer for this workspace
-    const existingCustomer = await this.billingRepo.findCustomerByWorkspaceId(
+    // customers is RLS-protected; the read must run inside a tenant tx so
+    // current_workspace_id matches the policy.
+    const existingCustomer = await withTenantTx(
       data.workspaceId,
+      (tx) => this.billingRepo.findCustomerByWorkspaceId(data.workspaceId, tx),
+      this.db,
     );
 
     const checkout = await this.provider.createCheckoutSession({
@@ -174,12 +184,17 @@ export class BillingService {
       return;
     }
 
-    await this.billingRepo.transaction(async (tx) => {
-      // Ensure customer record exists
-      if (sub.customerId && sub.workspaceId) {
+    if (!sub.workspaceId) {
+      this.logger.error(
+        `subscription.created: cannot persist without workspaceId (eventId=${eventId}, subscriptionId=${sub.subscriptionId})`,
+      );
+      return;
+    }
+    await withTenantTx(sub.workspaceId, async (tx) => {
+      if (sub.customerId) {
         await this.billingRepo.upsertCustomer(
           {
-            workspaceId: sub.workspaceId,
+            workspaceId: sub.workspaceId!,
             providerCustomerId: this.encryption.encrypt(sub.customerId),
           },
           tx,
@@ -210,7 +225,7 @@ export class BillingService {
         { subscriptionId: sub.subscriptionId, workspaceId: sub.workspaceId },
         tx,
       );
-    });
+    }, this.db);
 
     // Invalidate subscription cache
     if (sub.workspaceId) {
@@ -230,8 +245,14 @@ export class BillingService {
   ): Promise<void> {
     const sub = this.extractSubscriptionData(data);
     if (!sub) return;
+    if (!sub.workspaceId) {
+      this.logger.error(
+        `subscription.updated: cannot persist without workspaceId (eventId=${eventId})`,
+      );
+      return;
+    }
 
-    await this.billingRepo.transaction(async (tx) => {
+    await withTenantTx(sub.workspaceId, async (tx) => {
       await this.billingRepo.upsertSubscription(
         {
           workspaceId: sub.workspaceId!,
@@ -260,7 +281,7 @@ export class BillingService {
         },
         tx,
       );
-    });
+    }, this.db);
 
     // Invalidate subscription cache
     if (sub.workspaceId) {
@@ -280,8 +301,14 @@ export class BillingService {
   ): Promise<void> {
     const sub = this.extractSubscriptionData(data);
     if (!sub) return;
+    if (!sub.workspaceId) {
+      this.logger.error(
+        `subscription.canceled: cannot persist without workspaceId (eventId=${eventId})`,
+      );
+      return;
+    }
 
-    await this.billingRepo.transaction(async (tx) => {
+    await withTenantTx(sub.workspaceId, async (tx) => {
       await this.billingRepo.upsertSubscription(
         {
           workspaceId: sub.workspaceId!,
@@ -305,7 +332,7 @@ export class BillingService {
         { subscriptionId: sub.subscriptionId, workspaceId: sub.workspaceId },
         tx,
       );
-    });
+    }, this.db);
 
     // Invalidate subscription cache
     if (sub.workspaceId) {
@@ -337,7 +364,7 @@ export class BillingService {
       return;
     }
 
-    await this.billingRepo.transaction(async (tx) => {
+    await withTenantTx(workspaceId, async (tx) => {
       await this.billingRepo.upsertCustomer(
         {
           workspaceId,
@@ -350,7 +377,7 @@ export class BillingService {
         { providerEventId: eventId, eventType: "customer.created" },
         tx,
       );
-    });
+    }, this.db);
   }
 
   // ─── Read Operations ──────────────────────────────────────────────────
@@ -363,7 +390,11 @@ export class BillingService {
     return this.cache.getOrSet(
       `billing:ws:${workspaceId}:subscription`,
       async () => {
-        const sub = await this.billingRepo.findSubscriptionByWorkspaceId(workspaceId);
+        const sub = await withTenantTx(
+          workspaceId,
+          (tx) => this.billingRepo.findSubscriptionByWorkspaceId(workspaceId, tx),
+          this.db,
+        );
 
         if (!sub) {
           return { status: "none" as const, workspaceId };
@@ -386,8 +417,11 @@ export class BillingService {
   }
 
   async portal(workspaceId: string) {
-    const customer =
-      await this.billingRepo.findCustomerByWorkspaceId(workspaceId);
+    const customer = await withTenantTx(
+      workspaceId,
+      (tx) => this.billingRepo.findCustomerByWorkspaceId(workspaceId, tx),
+      this.db,
+    );
     if (!customer) {
       return { url: null };
     }
