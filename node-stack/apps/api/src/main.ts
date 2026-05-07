@@ -144,8 +144,12 @@ async function bootstrap() {
     maxAge: 86400,
   });
 
-  // Enable JSON parsing for all routes except webhook (which uses raw body)
-  app.use(express.json());
+  // Enable JSON parsing for all routes except webhook (which uses raw body).
+  // Cap at 100kb to bound abuse via giant payloads; specific endpoints that
+  // need larger bodies should opt in with their own raw body parser rather
+  // than raising this default.
+  app.use(express.json({ limit: '100kb' }));
+  app.use(express.urlencoded({ limit: '100kb', extended: true }));
   // Compress responses > 1KB
   app.use(compression({ threshold: 1024 }));
   await app.listen(port);
