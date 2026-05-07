@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "motion": {
+      "source": "hairyf/skills",
+      "sourceType": "github",
+      "skillPath": "skills/motion/SKILL.md",
+      "computedHash": "a4315de5710fa67fbbe66eba991f1bac1fc1e41e6d6d74f10d4cd1702377b580"
+    },
+    "motion-design": {
+      "source": "lottiefiles/motion-design-skill",
+      "sourceType": "github",
+      "skillPath": "skills/motion-design/SKILL.md",
+      "computedHash": "4f16f46c81f25a2a25b7a4720b7ea001e65f384b31b5b7f4b455fef87fbc9016"
+    }
+  }
+}
