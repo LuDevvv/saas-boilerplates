@@ -10,7 +10,7 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { CacheService } from "@node-stack/cache";
 import {
-  withTransaction,
+  withSystemTx,
   AuthRepository,
   SessionRepository,
 } from "@node-stack/db";
@@ -118,7 +118,7 @@ export class AuthService {
     const sessionId = crypto.randomUUID();
 
     let outboxEventId: string | null = null;
-    const user = await withTransaction(async (tx: Database) => {
+    const user = await withSystemTx(async (tx: Database) => {
       const existingUser = await this.authRepository.findUserByEmail(
         dto.email.toLowerCase(),
         tx,
@@ -301,7 +301,7 @@ export class AuthService {
     expiresAt.setHours(expiresAt.getHours() + 1);
 
     let outboxEventId: string | null = null;
-    await withTransaction(async (tx: Database) => {
+    await withSystemTx(async (tx: Database) => {
       // Invalidate any previous reset tokens for this user
       await this.authRepository.deleteVerificationTokensByUser(user.id, "password_reset", tx);
 
@@ -333,7 +333,7 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(newPassword, 12);
 
-    await withTransaction(async (tx: Database) => {
+    await withSystemTx(async (tx: Database) => {
       await this.authRepository.updateUser(verification.userId, { passwordHash }, tx);
       await this.authRepository.deleteVerificationToken(token, tx);
 
@@ -357,7 +357,7 @@ export class AuthService {
     expiresAt.setDate(expiresAt.getDate() + 1);
 
     let outboxEventId: string | null = null;
-    await withTransaction(async (tx: Database) => {
+    await withSystemTx(async (tx: Database) => {
       // Invalidate any previous verification tokens for this user
       await this.authRepository.deleteVerificationTokensByUser(userId, "email_verification", tx);
 
@@ -402,7 +402,7 @@ export class AuthService {
       throw new BadRequestException("Invalid or expired verification token");
     }
 
-    await withTransaction(async (tx: Database) => {
+    await withSystemTx(async (tx: Database) => {
       await this.authRepository.updateUser(verification.userId, { emailVerified: true }, tx);
       await this.authRepository.deleteVerificationToken(finalToken, tx);
 
@@ -552,7 +552,7 @@ export class AuthService {
     accessToken: string;
     refreshToken: string;
   }> {
-    return withTransaction(async (tx: Database) => {
+    return withSystemTx(async (tx: Database) => {
       const existingLink = await this.authRepository.findOAuthLink(
         profile.provider,
         profile.providerAccountId,

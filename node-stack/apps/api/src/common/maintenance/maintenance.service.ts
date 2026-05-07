@@ -1,7 +1,11 @@
 import { Injectable, Logger, Inject } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
-import { DB_TOKEN, SessionRepository } from "@node-stack/db";
-import * as schema from "@node-stack/db";
+import {
+  DB_TOKEN,
+  SessionRepository,
+  schema,
+  withSystemTx,
+} from "@node-stack/db";
 import type { IStorageProvider } from "@node-stack/storage";
 import { eq, lt, and } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
@@ -27,15 +31,20 @@ export class MaintenanceService {
     const fortyEightHoursAgo = new Date();
     fortyEightHoursAgo.setHours(fortyEightHoursAgo.getHours() - 48);
 
-    const result = await this.db
-      .delete(schema.outbox)
-      .where(
-        and(
-          eq(schema.outbox.processed, true),
-          lt(schema.outbox.createdAt, fortyEightHoursAgo)
+    // outbox is RLS-protected; cross-tenant cleanup runs under the
+    // system bypass policy added in migration 0016.
+    const result = await withSystemTx(async (tx) =>
+      tx
+        .delete(schema.outbox)
+        .where(
+          and(
+            eq(schema.outbox.processed, true),
+            lt(schema.outbox.createdAt, fortyEightHoursAgo)
+          )
         )
-      )
-      .returning({ id: schema.outbox.id });
+        .returning({ id: schema.outbox.id }),
+      this.db,
+    );
 
     if (result.length > 0) {
       this.logger.log(`Cleaned up ${result.length} processed outbox events.`);
@@ -53,15 +62,20 @@ export class MaintenanceService {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const abandonedFiles = await this.db
-      .select()
-      .from(schema.files)
-      .where(
-        and(
-          eq(schema.files.status, "pending"),
-          lt(schema.files.createdAt, sevenDaysAgo)
-        )
-      );
+    // files is RLS-protected; cross-tenant scan runs under the system
+    // bypass policy added in migration 0016.
+    const abandonedFiles = await withSystemTx(async (tx) =>
+      tx
+        .select()
+        .from(schema.files)
+        .where(
+          and(
+            eq(schema.files.status, "pending"),
+            lt(schema.files.createdAt, sevenDaysAgo)
+          )
+        ),
+      this.db,
+    );
 
     if (abandonedFiles.length === 0) {
       return;
@@ -71,12 +85,12 @@ export class MaintenanceService {
 
     for (const file of abandonedFiles) {
       try {
-        // Delete from storage
         await this.storage.delete(file.key);
-        
-        // Delete from DB
-        await this.db.delete(schema.files).where(eq(schema.files.id, file.id));
-        
+        await withSystemTx(
+          async (tx) =>
+            tx.delete(schema.files).where(eq(schema.files.id, file.id)),
+          this.db,
+        );
         this.logger.debug(`Deleted abandoned file ${file.id} (${file.key})`);
       } catch (err) {
         this.logger.error(`Failed to cleanup abandoned file ${file.id}:`, err);

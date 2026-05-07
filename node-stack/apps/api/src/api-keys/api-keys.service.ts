@@ -4,7 +4,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { CacheService } from '@node-stack/cache';
 import {
   ApiKeyRepository,
-  withTransaction,
+  withTenantTx,
   schema,
   generateApiKey,
   hashKey,
@@ -12,8 +12,8 @@ import {
   extractPrefix,
   verifyApiKey,
   DB_TOKEN,
-  type Database,
 } from '@node-stack/db';
+import type { Database } from '@node-stack/db';
 import { CreateApiKeyDto } from '@node-stack/validators';
 
 import {
@@ -47,7 +47,7 @@ export class ApiKeysService {
     const expiresAt = dto.expiresAt ? new Date(dto.expiresAt) : null;
 
     let outboxEventId: string | null = null;
-    const record = await withTransaction(async (tx) => {
+    const record = await withTenantTx(workspaceId, async (tx) => {
       const key = await this.repo.create({
         workspaceId,
         userId,
@@ -67,7 +67,7 @@ export class ApiKeysService {
         })
         .returning();
       outboxEventId = outboxRecord.id;
-      
+
       return key;
     }, this.db);
 
@@ -125,7 +125,7 @@ export class ApiKeysService {
       throw new NotFoundException('API Key not found');
     }
 
-    await withTransaction(async (tx) => {
+    await withTenantTx(workspaceId, async (tx) => {
       await this.repo.revoke(id, workspaceId, tx as any);
 
       await tx
