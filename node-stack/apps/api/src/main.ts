@@ -42,7 +42,14 @@ async function bootstrap() {
     abortOnError: true,
   });
   app.useLogger(app.get(Logger));
-  
+
+  // Honor X-Forwarded-* from the configured number of upstream proxies so
+  // req.ip reflects the real client. Without this the throttler skip-list
+  // (127.0.0.1, ::1) silently disables rate limiting in any deployment
+  // sitting behind nginx, a load balancer, or PgBouncer's connection
+  // forwarder. Default 1 covers a single proxy in front of the app.
+  app.getHttpAdapter().getInstance().set('trust proxy', Number(process.env.TRUST_PROXY ?? 1));
+
   // Enable NestJS shutdown hooks (OnModuleDestroy, etc.)
   app.enableShutdownHooks();
   
