@@ -60,13 +60,13 @@ export const SocialButton: React.FC<SocialButtonProps> = ({
     <Button
       variant="outline"
       className={cn(
-        "h-12 w-full border-gray-200 shadow-sm hover:bg-gray-50 dark:border-white/10 dark:hover:bg-white/5",
+        "h-12 w-full border-gray-100 shadow-sm hover:bg-gray-50 dark:border-white/10 dark:hover:bg-surface-hover rounded-2xl",
         className
       )}
       icon={selected.icon}
       {...props}
     >
-      <span className="font-medium text-gray-700 dark:text-gray-300">{children || `Continuar con ${selected.label}`}</span>
+      <span className="font-medium text-fg-secondary">{children || `Continuar con ${selected.label}`}</span>
     </Button>
   );
 };

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import gsap from "gsap";
+import { animate } from "@motionone/dom";
 
 interface PremiumLoaderProps {
   logoSrc?: string;
@@ -17,39 +17,56 @@ export const PremiumLoader: React.FC<PremiumLoaderProps> = ({
   const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !logoRef.current || !barRef.current) return;
 
-    const ctx = gsap.context(() => {
-      // 1. Premium Mask Reveal for Logo
-      gsap.fromTo(
-        logoRef.current,
-        { y: 80, scale: 0.95 },
-        {
-          y: 0,
-          scale: 1,
-          duration: 1.2,
-          ease: "expo.out",
-          force3D: true, // Hardware acceleration
-        }
-      );
+    // Premium Mask Reveal for Logo — hardware-accelerated transform
+    const logoAnim = animate(
+      logoRef.current,
+      { transform: ["translateY(80px) scale(0.95)", "translateY(0px) scale(1)"] },
+      {
+        duration: 1.2,
+        easing: [0.16, 1, 0.3, 1], // expo.out equivalent
+      }
+    );
 
-      // 3. Snappy Progress Line
-      const tlBar = gsap.timeline({ repeat: -1 });
+    // Snappy Progress Line — infinite loop with WAAPI
+    const barEl = barRef.current;
+    let cancelled = false;
 
-      tlBar.fromTo(
-        barRef.current,
-        { scaleX: 0, transformOrigin: "left" },
-        { scaleX: 1, duration: 1, ease: "power3.inOut", force3D: true }
-      )
-        .to(
-          barRef.current,
-          { scaleX: 0, transformOrigin: "right", duration: 1, ease: "power3.inOut", force3D: true },
-          "+=0.2" // tiny pause before shrinking
-        );
+    const runBarLoop = async () => {
+      while (!cancelled) {
+        // Expand from left
+        barEl.style.transformOrigin = "left";
+        await animate(
+          barEl,
+          { transform: ["scaleX(0)", "scaleX(1)"] },
+          { duration: 1, easing: [0.22, 1, 0.36, 1] } // power3.inOut equivalent
+        ).finished;
 
-    }, containerRef);
+        if (cancelled) break;
 
-    return () => ctx.revert();
+        // Tiny pause
+        await new Promise(r => setTimeout(r, 200));
+        if (cancelled) break;
+
+        // Shrink from right
+        barEl.style.transformOrigin = "right";
+        await animate(
+          barEl,
+          { transform: ["scaleX(1)", "scaleX(0)"] },
+          { duration: 1, easing: [0.22, 1, 0.36, 1] }
+        ).finished;
+
+        if (cancelled) break;
+      }
+    };
+
+    runBarLoop();
+
+    return () => {
+      cancelled = true;
+      logoAnim.cancel();
+    };
   }, []);
 
   return (
@@ -64,7 +81,6 @@ export const PremiumLoader: React.FC<PremiumLoaderProps> = ({
           ref={logoRef}
           src={logoSrc}
           alt="Elora Logo"
-          // Removed drop-shadow as it's the #1 cause of CSS rendering lag when animating transforms
           className="relative w-16 h-16 object-contain z-10"
           style={{ willChange: "transform" }}
         />

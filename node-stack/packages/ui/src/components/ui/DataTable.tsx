@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import {
   useReactTable,
@@ -89,12 +91,12 @@ export function DataTable<T>({
       </div>
 
       {/* 2. Table Container */}
-      <div className="relative overflow-hidden rounded-2xl border border-gray-100 dark:border-white/5 bg-[var(--surface)] shadow-sm shadow-black/5 transition-all duration-500">
+      <div className="relative overflow-hidden rounded-2xl border border-border-subtle bg-[var(--surface)] shadow-sm shadow-black/5 transition-all duration-500">
         <div className="overflow-x-auto custom-scrollbar">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="bg-[var(--canvas)] border-b border-gray-100 dark:border-white/5">
+                <TableRow key={headerGroup.id} className="bg-[var(--canvas)] border-b border-border-subtle">
                   {headerGroup.headers.map((header) => (
                     <TableHead key={header.id}>
                       {header.isPlaceholder ? null : (
@@ -119,7 +121,7 @@ export function DataTable<T>({
             <TableBody>
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i} className="border-b border-[#E2E8F0] dark:border-[#FFFFFF]/5">
+                  <TableRow key={i} className="border-b border-border-subtle">
                     {columns.map((_, j) => (
                       <TableCell key={j}>
                         <Skeleton className="h-4 w-full" />
@@ -133,7 +135,7 @@ export function DataTable<T>({
                     key={row.id}
                     onClick={() => onRowClick?.(row.original)}
                     className={cn(
-                      "group transition-all duration-300 hover:bg-gray-50 dark:hover:bg-white/[0.02] active:bg-gray-100/50 dark:active:bg-white/[0.04] border-b border-gray-100 dark:border-white/5",
+                      "group transition-all duration-300 hover:bg-gray-50 dark:hover:bg-white/[0.02] active:bg-gray-100/50 dark:active:bg-white/[0.04] border-b border-border-subtle",
                       onRowClick && "cursor-pointer"
                     )}
                   >
@@ -148,12 +150,12 @@ export function DataTable<T>({
                 <TableRow>
                   <TableCell colSpan={columns.length} className="h-72 text-center">
                     <div className="flex flex-col items-center justify-center gap-4 text-gray-400">
-                      <div className="rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 p-6">
+                      <div className="rounded-2xl bg-gray-50 dark:bg-white/[0.02] border border-border-subtle p-6">
                         <Inbox className="h-10 w-10 opacity-20" />
                       </div>
                       <div className="space-y-1">
-                        <p className="font-heading text-gray-900 dark:text-white text-[14px]">Sin resultados</p>
-                        <p className="text-xs font-label text-gray-500 dark:text-gray-400">No encontramos registros que coincidan con tu búsqueda.</p>                      </div>
+                        <p className="font-heading text-fg text-[14px]">Sin resultados</p>
+                        <p className="text-xs font-label text-fg-secondary">No encontramos registros que coincidan con tu búsqueda.</p>                      </div>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -163,8 +165,8 @@ export function DataTable<T>({
         </div>
 
         {/* 3. Pagination */}
-        <div className="flex items-center justify-between px-8 py-5 border-t border-gray-100 dark:border-white/5 bg-[var(--canvas)]">
-          <div className="hidden sm:block text-[11px] font-label uppercase tracking-widest text-gray-500 dark:text-gray-400">
+        <div className="flex items-center justify-between px-8 py-5 border-t border-border-subtle bg-[var(--canvas)]">
+          <div className="hidden sm:block text-[11px] font-label uppercase  text-fg-secondary">
             Página {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
           </div>
 
@@ -189,7 +191,7 @@ export function DataTable<T>({
                 size="icon"
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
-                className="h-10 w-10 border border-gray-100 dark:border-white/5"
+                className="h-10 w-10 border border-border-subtle"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
@@ -198,7 +200,7 @@ export function DataTable<T>({
                 size="icon"
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
-                className="h-10 w-10 border border-gray-100 dark:border-white/5"
+                className="h-10 w-10 border border-border-subtle"
               >
                 <ChevronRight className="h-4 w-4" />
               </Button>

@@ -45,7 +45,7 @@ export const OTPInput: React.FC<OTPInputProps> = ({
           disabled={disabled}
           className={cn(
             "w-12 h-14 md:w-14 md:h-16 text-center text-xl md:text-2xl font-heading",
-            "text-gray-900 dark:text-white bg-white dark:bg-gray-800/50",
+            "text-fg bg-white dark:bg-gray-800/50",
             "border-2 border-gray-100 dark:border-gray-700/50 rounded-2xl",
             "transition-all duration-300 ease-out-expo shadow-sm",
             "focus:outline-none focus:border-primary-500 hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-md",

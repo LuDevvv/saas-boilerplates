@@ -1,25 +1,22 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useEffect, useRef, type RefObject } from "react";
+import { animate, inView } from "@motionone/dom";
 
 /**
- * Hook to create a reveal animation on scroll using GSAP ScrollTrigger.
+ * Hook to create a reveal animation on scroll using Motion's inView API.
+ * Replaces the legacy useGsapReveal hook with WAAPI-backed animations.
  */
-export const useGsapReveal = (options: {
+export const useGsapReveal = <T extends HTMLElement = HTMLElement>(options: {
   direction?: "up" | "down" | "left" | "right";
   delay?: number;
   duration?: number;
   distance?: number;
-} = {}) => {
-  const elementRef = useRef<any>(null);
+} = {}): RefObject<T | null> => {
+  const elementRef = useRef<T | null>(null);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-
-    // Register ScrollTrigger
-    gsap.registerPlugin(ScrollTrigger);
 
     const {
       direction = "up",
@@ -31,32 +28,34 @@ export const useGsapReveal = (options: {
     const element = elementRef.current;
     if (!element) return;
 
-    // Initial state
-    const vars: gsap.TweenVars = {
-      opacity: 0,
-      duration,
-      delay,
-      ease: "power3.out",
-      scrollTrigger: {
-        trigger: element,
-        start: "top 85%", // Starts when top of element is 85% from top of viewport
-        toggleActions: "play none none reverse",
-      },
-    };
+    // Build initial offset
+    const from: Record<string, number> = {};
+    if (direction === "up") from.y = distance;
+    if (direction === "down") from.y = -distance;
+    if (direction === "left") from.x = distance;
+    if (direction === "right") from.x = -distance;
 
-    if (direction === "up") vars.y = distance;
-    if (direction === "down") vars.y = -distance;
-    if (direction === "left") vars.x = distance;
-    if (direction === "right") vars.x = -distance;
+    // Apply initial state instantly
+    element.style.opacity = "0";
+    if (from.y !== undefined) element.style.transform = `translateY(${from.y}px)`;
+    if (from.x !== undefined) element.style.transform = `translateX(${from.x}px)`;
 
-    const anim = gsap.from(element, vars);
+    // Use inView to trigger animation when element enters viewport
+    const cleanup = inView(element, () => {
+      const controls = animate(
+        element,
+        { opacity: 1, x: 0, y: 0 },
+        {
+          duration,
+          delay,
+          easing: [0.16, 1, 0.3, 1], // power3.out equivalent
+        }
+      );
 
-    return () => {
-      anim.kill();
-      if (ScrollTrigger.getById(element)) {
-        ScrollTrigger.getById(element)?.kill();
-      }
-    };
+      return () => controls.cancel();
+    }, { margin: "0px 0px -15% 0px" });
+
+    return cleanup;
   }, [options.direction, options.delay, options.duration, options.distance]);
 
   return elementRef;

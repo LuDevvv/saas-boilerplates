@@ -1,28 +1,34 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef } from "react";
-import gsap from "gsap";
+import { useEffect, useLayoutEffect, useRef, type RefObject } from "react";
+import { animate } from "@motionone/dom";
 
 /**
- * A custom hook to use GSAP safely with React.
- * It ensures that animations are cleaned up when the component unmounts.
+ * A custom hook to run imperative animations safely with React.
+ * Replaces the legacy useGsap hook with Motion's animate() API.
+ * Ensures animations are cancelled on component unmount.
  */
-export const useGsap = (
-  fn: (ctx: gsap.Context) => void,
+export const useMotionAnimate = (
+  fn: (scope: HTMLElement) => any | any[] | void,
   deps: React.DependencyList = []
-) => {
-  const rootRef = useRef<any>(null);
+): RefObject<HTMLElement | null> => {
+  const rootRef = useRef<HTMLElement | null>(null);
 
-  // useLayoutEffect to avoid flashes of unstyled content
   const useIsomorphicLayoutEffect =
     typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
   useIsomorphicLayoutEffect(() => {
-    const ctx = gsap.context(fn, rootRef);
-    return () => ctx.revert(); // Cleanup
+    if (!rootRef.current) return;
+
+    const result = fn(rootRef.current);
+    const controls = Array.isArray(result) ? result : result ? [result] : [];
+
+    return () => {
+      controls.forEach(c => c.cancel());
+    };
   }, deps);
 
   return rootRef;
 };
 
-export { gsap };
+export { animate };

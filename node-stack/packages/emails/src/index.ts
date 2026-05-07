@@ -5,6 +5,7 @@ export * from "./render.js";
 
 import { ConsoleProvider } from "./providers/console.provider.js";
 import { SESProvider } from "./providers/ses.provider.js";
+import { ResendProvider } from "./providers/resend.provider.js";
 import { IEmailProvider, SendEmailOptions } from "./providers/types.js";
 import { renderEmail, EmailTemplate } from "./render.js";
 
@@ -20,7 +21,14 @@ export class EmailSender {
   private provider: IEmailProvider;
 
   constructor() {
-    if (
+    const providerType = process.env.EMAIL_PROVIDER || "console";
+
+    if (providerType === "resend" && process.env.RESEND_API_KEY) {
+      this.provider = new ResendProvider({
+        apiKey: process.env.RESEND_API_KEY,
+      });
+    } else if (
+      providerType === "ses" &&
       process.env.AWS_REGION &&
       process.env.AWS_ACCESS_KEY_ID &&
       process.env.AWS_SECRET_ACCESS_KEY

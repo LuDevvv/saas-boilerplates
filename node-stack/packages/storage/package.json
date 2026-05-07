@@ -2,8 +2,14 @@
   "name": "@node-stack/storage",
   "version": "1.0.0",
   "private": true,
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts --max-warnings 0",

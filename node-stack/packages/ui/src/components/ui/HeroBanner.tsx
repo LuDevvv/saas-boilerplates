@@ -103,7 +103,7 @@ const schemes: Record<
   fintech: {
     container:
       "from-[#004080]/5 via-blue-50/30 to-white dark:from-[#004080]/20 dark:via-gray-900 dark:to-gray-900 border-[#004080]/10 dark:border-white/5",
-    blob1: "bg-[#004080]/10 dark:bg-[#004080]/5",
+    blob1: "bg-primary/10",
     blob2: "bg-[#7144F9]/10 dark:bg-[#7144F9]/5",
     badge: "border-[#004080]/10 dark:border-white/10",
     icon: "text-[#004080] dark:text-blue-400",
@@ -144,7 +144,7 @@ export const HeroBanner: FC<HeroBannerProps> = ({
       )}
     >
       <span className={cn("[&>svg]:w-5 [&>svg]:h-5", s.icon)}>{icon}</span>
-      <span className={cn("text-[10px] font-label uppercase tracking-widest text-gray-400 dark:text-gray-500")}>
+      <span className={cn("text-[10px] font-label uppercase  text-fg-muted")}>
         {label}
       </span>
     </div>
@@ -182,7 +182,7 @@ export const HeroBanner: FC<HeroBannerProps> = ({
           badge
         )}
 
-        <h1 className="text-2xl sm:text-4xl font-heading text-gray-950 dark:text-white leading-[1.1] break-words">
+        <h1 className="text-2xl sm:text-4xl font-heading text-fg leading-[1.1] break-words">
           {title}{" "}
           <span
             className={cn(
@@ -194,7 +194,7 @@ export const HeroBanner: FC<HeroBannerProps> = ({
           </span>
         </h1>
 
-        <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-[15px] font-label leading-relaxed max-w-2xl">          {description}
+        <p className="text-fg-secondary text-sm sm:text-[15px] font-label leading-relaxed max-w-2xl">          {description}
         </p>
 
         {(action || children) && (
@@ -236,7 +236,7 @@ export const HeroButton: FC<HeroButtonProps> = ({
     <button
       onClick={onClick}
       className={cn(
-        "group flex items-center gap-2 text-white px-6 py-3 rounded-xl text-sm font-heading uppercase tracking-widest transition-all duration-300 active:scale-[0.98] w-fit hover:translate-y-[-1px]",
+        "group flex items-center gap-2 text-white px-6 py-3 rounded-xl text-sm font-heading uppercase  transition-all duration-300 active:scale-[0.98] w-fit hover:translate-y-[-1px]",
         colorStyles[color],
         className
       )}

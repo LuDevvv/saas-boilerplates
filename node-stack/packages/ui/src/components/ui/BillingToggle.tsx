@@ -16,15 +16,15 @@ export const BillingToggle: React.FC<BillingToggleProps> = ({
   className,
   monthlyLabel = "Mensual",
   annualLabel = "Anual",
-  discountLabel = "-20%",
+  discountLabel = "-15%",
 }) => {
   return (
-    <div className={cn("flex items-center justify-center py-2", className)}>
-      <div className="relative flex items-center p-1 bg-gray-100/80 dark:bg-white/5 backdrop-blur-md rounded-[16px] border border-gray-200 dark:border-white/10 w-fit shadow-sm">
-        {/* Sliding background */}
+    <div className={cn("flex items-center justify-center py-1", className)}>
+      <div className="relative flex items-center p-1 bg-surface-muted rounded-[16px] border border-border w-fit shadow-[var(--shadow-sm)]">
+        {/* Sliding pill */}
         <div
           className={cn(
-            "absolute inset-y-1 w-[calc(50%-4px)] bg-white dark:bg-white/10 rounded-[12px] shadow-sm transition-all duration-500 ease-out-expo pointer-events-none",
+            "absolute inset-y-1 w-[calc(50%-4px)] bg-surface border border-border-subtle rounded-[12px] shadow-[var(--shadow-sm)] transition-all duration-400 ease-out pointer-events-none",
             isAnnualBilling ? "left-[calc(50%+2px)]" : "left-1"
           )}
         />
@@ -32,27 +32,31 @@ export const BillingToggle: React.FC<BillingToggleProps> = ({
         <button
           onClick={() => onChange(false)}
           className={cn(
-            "relative z-10 px-6 py-2 rounded-xl text-[11px] font-label uppercase  transition-colors duration-300 min-w-[110px]",
-            !isAnnualBilling
-              ? "text-gray-950 dark:text-white"
-              : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+            "relative z-10 w-[120px] py-2.5 rounded-xl text-[13px] font-medium transition-colors duration-300 text-center",
+            !isAnnualBilling ? "text-fg" : "text-fg-muted hover:text-fg-secondary"
           )}
         >
           {monthlyLabel}
         </button>
+
         <button
           onClick={() => onChange(true)}
           className={cn(
-            "relative z-10 px-6 py-2 rounded-xl text-[11px] font-label uppercase  transition-colors duration-300 min-w-[110px] flex items-center justify-center gap-2",
-            isAnnualBilling
-              ? "text-gray-950 dark:text-white"
-              : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+            "relative z-10 w-[120px] py-2.5 rounded-xl text-[13px] font-medium transition-colors duration-300 flex items-center justify-center gap-1.5",
+            isAnnualBilling ? "text-fg" : "text-fg-muted hover:text-fg-secondary"
           )}
         >
           {annualLabel}
-          <span className="bg-primary text-white text-[9px] px-1.5 py-0.5 rounded-lg font-label shadow-sm">
-            {discountLabel}
-          </span>
+          {discountLabel && (
+            <span className={cn(
+              "text-[9px] font-bold px-1.5 py-0.5 rounded-md leading-none",
+              isAnnualBilling
+                ? "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
+                : "text-fg-muted bg-surface-hover"
+            )}>
+              {discountLabel}
+            </span>
+          )}
         </button>
       </div>
     </div>

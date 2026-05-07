@@ -7,30 +7,30 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: "xs" | "sm" | "md" | "lg" | "icon";
   fullWidth?: boolean;
   loading?: boolean;
-  icon?: unknown;
+  icon?: React.ElementType | React.ReactNode;
 }
 
 const variantClasses = {
   primary:
-    "bg-primary text-white hover:bg-primary/90 shadow-premium hover:shadow-premium-hover hover:-translate-y-0.5 active:scale-95 active:translate-y-0",
+    "bg-primary hover:bg-primary-600 text-primary-foreground shadow-[0_4px_14px_-2px_rgba(0,64,128,0.20)] dark:shadow-[0_4px_14px_-2px_rgba(91,168,229,0.20)] hover:-translate-y-[1px] active:scale-95 transition-all duration-200",
   secondary:
-    "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 active:scale-95 shadow-sm dark:bg-[#1A1A1A] dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/5",
+    "bg-surface border border-border text-fg-secondary hover:bg-surface-hover hover:border-border-strong hover:text-fg active:scale-95 transition-all duration-200",
   outline:
-    "bg-transparent border-2 border-primary text-primary hover:bg-primary/5 active:scale-95 dark:border-primary-light dark:text-primary-light dark:hover:bg-primary-light/5",
+    "bg-transparent border-2 border-primary text-primary hover:bg-primary/10 hover:-translate-y-[1px] active:scale-95 transition-all duration-200",
   ghost:
-    "bg-transparent text-gray-600 hover:bg-gray-100 active:scale-95 dark:text-gray-400 dark:hover:bg-white/5",
+    "bg-transparent text-fg-secondary hover:bg-surface-hover hover:text-fg active:scale-95 transition-all duration-200",
   danger:
-    "bg-danger text-white hover:bg-danger/90 active:scale-95 shadow-premium hover:shadow-premium-hover",
+    "bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/15 hover:border-red-300 dark:hover:border-red-500/30 active:scale-95 transition-all duration-200",
   success:
-    "bg-success text-white hover:bg-success/90 active:scale-95 shadow-premium hover:shadow-premium-hover",
+    "bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/15 active:scale-95 transition-all duration-200",
 };
 
 const sizeClasses = {
   xs: "h-7 px-3 text-xs",
   sm: "h-9 px-4 text-sm",
-  md: "h-10 px-5 text-sm font-medium",
-  lg: "h-12 px-8 text-base font-medium",
-  icon: "h-10 w-10 flex items-center justify-center p-0",
+  md: "h-11 px-6 text-sm font-medium",
+  lg: "h-14 px-10 text-base font-bold",
+  icon: "h-11 w-11 flex items-center justify-center p-0",
 };
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -49,13 +49,13 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseClasses =
-      "inline-flex items-center justify-center gap-2 transition-all duration-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed select-none";
+      "inline-flex items-center justify-center gap-2 transition-all duration-300 focus-visible:outline-none disabled:opacity-50 disabled:cursor-not-allowed select-none";
 
     const sizeRounded = {
-      xs: "rounded-md",
-      sm: "rounded-lg",
-      md: "rounded-xl",
-      lg: "rounded-xl",
+      xs: "rounded-lg",
+      sm: "rounded-xl",
+      md: "rounded-2xl",
+      lg: "rounded-2xl",
       icon: "rounded-full",
     };
 
@@ -97,10 +97,13 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         {!loading && icon && (
           <span className="flex items-center justify-center">
-            {typeof icon === "function" ||
-            (typeof icon === "object" && icon !== null && "render" in icon)
-              ? React.createElement(icon as unknown as { render: unknown }, { className: "w-4 h-4" })
-              : (icon as React.ReactNode)}
+            {React.isValidElement(icon) ? (
+              icon
+            ) : (
+              React.createElement(icon as React.ElementType, {
+                className: "w-4 h-4",
+              })
+            )}
           </span>
         )}
         {children}

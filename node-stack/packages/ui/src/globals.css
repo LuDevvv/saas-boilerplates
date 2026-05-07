@@ -13,10 +13,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 262.1 83.3% 57.8%;
+    --primary: 255 94% 62%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 172 96% 42%;
+    --secondary: 174 94% 42%;
     --secondary-foreground: 222.2 47.4% 11.2%;
 
     --muted: 210 40% 96.1%;
@@ -30,13 +30,13 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 262.1 83.3% 57.8%;
+    --ring: 255 94% 62%;
 
-    --radius: 0.75rem;
+    --radius: 1.25rem;
 
     /* Typography Weights */
-    --font-weight-label: 600;
-    --font-weight-heading: 800;
+    --font-weight-label: 400;
+    --font-weight-heading: 700;
     --font-weight-body: 400;
     --font-weight-medium: 500;
     --font-weight-kpi: 700;
@@ -53,10 +53,10 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 263.4 70% 50.4%;
+    --primary: 255 94% 62%;
     --primary-foreground: 210 40% 98%;
 
-    --secondary: 172 96% 42%;
+    --secondary: 174 94% 42%;
     --secondary-foreground: 222.2 47.4% 11.2%;
 
     --muted: 217.2 32.6% 17.5%;
@@ -70,7 +70,7 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 263.4 70% 50.4%;
+    --ring: 255 94% 62%;
   }
 }
 

@@ -59,7 +59,7 @@ async function seed(): Promise<void> {
     } else {
       // 1. Create/Update Super User
       const adminEmail = 'admin@ludevv.com';
-      const adminPassword = 'password123';
+      const adminPassword = 'Password123';
       
       console.log(`Creating/Updating super user: ${adminEmail}...`);
       const { user: admin } = await createUserWithPassword(db as any, adminPassword, {

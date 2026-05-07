@@ -21,7 +21,7 @@ export const UsageBar: React.FC<UsageBarProps> = ({ current, limit, className })
   };
 
   return (
-    <div className={cn("w-full h-2 rounded-full overflow-hidden relative bg-[#F1F5F9] dark:bg-[#FFFFFF]/5 border border-[#E2E8F0] dark:border-[#FFFFFF]/5", className)}>
+    <div className={cn("w-full h-2 rounded-full overflow-hidden relative bg-surface-muted border border-border-subtle", className)}>
       <div
         className={cn(
           "h-full rounded-full transition-all duration-1000 ease-out",

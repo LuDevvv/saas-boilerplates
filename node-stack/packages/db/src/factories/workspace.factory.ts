@@ -19,6 +19,10 @@ export async function createWorkspace(
     const [workspace] = await (tx as any)
       .insert(schema.workspaces)
       .values({ name, slug, ...overrides })
+      .onConflictDoUpdate({
+        target: schema.workspaces.slug,
+        set: { name: name }
+      })
       .returning();
 
     // Always create owner membership
@@ -26,7 +30,7 @@ export async function createWorkspace(
       userId: ownerUserId,
       workspaceId: workspace.id,
       role: 'owner',
-    });
+    }).onConflictDoNothing();
 
     return workspace;
   }, db as any);

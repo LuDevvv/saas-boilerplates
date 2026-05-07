@@ -22,10 +22,10 @@ export function HeroSection({
   image,
   className,
 }: HeroSectionProps) {
-  const titleRef = useGsapReveal({ direction: "up", delay: 0.1 });
-  const subtitleRef = useGsapReveal({ direction: "up", delay: 0.3 });
-  const actionsRef = useGsapReveal({ direction: "up", delay: 0.5 });
-  const imageRef = useGsapReveal({ direction: "up", delay: 0.7, distance: 100 });
+  const titleRef = useGsapReveal<HTMLHeadingElement>({ direction: "up", delay: 0.1 });
+  const subtitleRef = useGsapReveal<HTMLParagraphElement>({ direction: "up", delay: 0.3 });
+  const actionsRef = useGsapReveal<HTMLDivElement>({ direction: "up", delay: 0.5 });
+  const imageRef = useGsapReveal<HTMLDivElement>({ direction: "up", delay: 0.7, distance: 100 });
 
   return (
     <section className={cn("relative overflow-hidden py-24 lg:py-32 bg-background", className)}>

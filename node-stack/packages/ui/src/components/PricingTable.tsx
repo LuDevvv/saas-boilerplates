@@ -20,7 +20,7 @@ export interface PricingTableProps {
 }
 
 export function PricingTable({ tiers, className }: PricingTableProps) {
-  const containerRef = useGsapReveal({ direction: "up", distance: 30 });
+  const containerRef = useGsapReveal<HTMLDivElement>({ direction: "up", distance: 30 });
 
   return (
     <div 

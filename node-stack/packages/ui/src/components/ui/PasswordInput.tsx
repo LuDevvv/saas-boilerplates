@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import { Input, type InputProps } from "./Input.js";
 import { Eye, EyeOff, Check, X } from "lucide-react";
@@ -40,7 +42,7 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
     }, [password]);
 
     const getStrengthColor = () => {
-      if (strength === 0) return "bg-[#E2E8F0] dark:bg-[#FFFFFF]/5";
+      if (strength === 0) return "bg-surface-hover";
       if (strength <= 1) return "bg-[#EF4F5F]";
       if (strength <= 3) return "bg-[#F4A524]";
       return "bg-[#00E6E6]";
@@ -73,9 +75,9 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
         />
 
         {showStrength && password.length > 0 && (
-          <div className="flex flex-col gap-4 p-5 bg-[#F8FAFC] dark:bg-[#0F172A] border border-[#E2E8F0] dark:border-[#FFFFFF]/5 rounded-2xl animate-in fade-in zoom-in-95 duration-300">
+          <div className="flex flex-col gap-4 p-5 bg-surface-muted border border-border-subtle rounded-2xl animate-in fade-in zoom-in-95 duration-300">
             <div className="flex flex-col gap-2">
-              <span className="text-[11px] font-label uppercase tracking-widest text-[#64748B] dark:text-[#94A3B8]">
+              <span className="text-[11px] font-label uppercase  text-[#64748B] dark:text-[#94A3B8]">
                 Your Password must include
               </span>
               <div className="flex flex-col gap-2">
@@ -102,7 +104,7 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
                     key={i}
                     className={cn(
                       "flex-1 rounded-full transition-all duration-500",
-                      i <= strength ? getStrengthColor() : "bg-[#E2E8F0] dark:bg-[#FFFFFF]/5"
+                      i <= strength ? getStrengthColor() : "bg-surface-hover"
                     )}
                   />
                 ))}
@@ -119,13 +121,13 @@ const RequirementItem = ({ label, met }: { label: string; met: boolean }) => (
   <div className="flex items-center gap-2">
     <div className={cn(
       "flex items-center justify-center w-4 h-4 rounded-full transition-all duration-300",
-      met ? "bg-[#00E6E6]/10 text-[#00E6E6]" : "bg-[#E2E8F0] dark:bg-[#FFFFFF]/5 text-[#64748B]/30"
+      met ? "bg-[#00E6E6]/10 text-[#00E6E6]" : "bg-surface-hover text-[#64748B]/30"
     )}>
       {met ? <Check size={10} strokeWidth={4} /> : <X size={10} strokeWidth={4} />}
     </div>
     <span className={cn(
       "text-[13px] transition-all duration-300",
-      met ? "text-[#0F172A] dark:text-[#F8FAFC]" : "text-[#64748B] dark:text-[#94A3B8]"
+      met ? "text-fg" : "text-[#64748B] dark:text-[#94A3B8]"
     )}>
       {label}
     </span>

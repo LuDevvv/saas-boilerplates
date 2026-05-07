@@ -1,33 +1,54 @@
 import React from "react";
-import { ChevronRight, Home } from "lucide-react";
+import { ChevronRight, MoreHorizontal, Home } from "lucide-react";
 import { cn } from "../../utils.js";
 
 export interface BreadcrumbItem {
   label: string | React.ReactNode;
   href?: string;
   isLast?: boolean;
-  icon?: React.ReactNode;
+  icon?: React.ElementType;
 }
 
 export interface BreadcrumbsProps {
   items: BreadcrumbItem[];
   homeHref?: string;
+  showHome?: boolean;
+  /** Collapse middle items when path exceeds this depth (0 = never collapse) */
+  collapseAfter?: number;
   className?: string;
   onItemClick?: (href: string) => void;
-  LinkComponent?: React.ComponentType<{ href: string; children: React.ReactNode; className?: string }>;
+  LinkComponent?: React.ComponentType<{
+    href: string;
+    children: React.ReactNode;
+    className?: string;
+    title?: string;
+  }>;
 }
 
 export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   items,
   homeHref = "/",
+  showHome = true,
+  collapseAfter = 3,
   className,
   onItemClick,
   LinkComponent,
 }) => {
-  const DefaultLink = ({ href, children, className: linkClassName }: { href: string; children: React.ReactNode; className?: string }) => (
-    <a 
-      href={href} 
-      className={linkClassName}
+  const DefaultLink = ({
+    href,
+    children,
+    className: lc,
+    title,
+  }: {
+    href: string;
+    children: React.ReactNode;
+    className?: string;
+    title?: string;
+  }) => (
+    <a
+      href={href}
+      className={lc}
+      title={title}
       onClick={(e) => {
         if (onItemClick) {
           e.preventDefault();
@@ -41,49 +62,109 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
 
   const Link = LinkComponent || DefaultLink;
 
-  return (
-    <nav 
-      className={cn(
-        "flex items-center gap-1.5 text-xs font-label text-gray-500 dark:text-gray-400 overflow-hidden select-none",        className
-      )}
-      aria-label="Breadcrumb"
-    >
-      <Link
-        href={homeHref}
-        className="flex items-center hover:text-gray-900 dark:hover:text-white transition-colors shrink-0"
-      >
-        <Home className="w-3.5 h-3.5" />
-      </Link>
+  // Collapse middle items when path is long
+  const shouldCollapse = collapseAfter > 0 && items.length > collapseAfter;
+  const visibleItems = shouldCollapse
+    ? [items[0], null, ...items.slice(-(collapseAfter - 1))]
+    : items;
 
-      {items.map((item, index) => {
-        const isLast = item.isLast ?? index === items.length - 1;
+  return (
+    <nav
+      aria-label="Breadcrumb"
+      className={cn("flex items-center gap-0.5 min-w-0 select-none", className)}
+    >
+      {/* Home */}
+      {showHome && (
+        <span className="flex items-center gap-0.5">
+          <Link
+            href={homeHref}
+            className={cn(
+              "flex items-center justify-center h-6 w-6 rounded-md",
+              "text-fg-muted",
+              "hover:bg-gray-100 dark:hover:bg-white/[0.08] hover:text-gray-700 dark:hover:text-gray-200",
+              "transition-all duration-150"
+            )}
+            title="Inicio"
+          >
+            <Home className="h-3.5 w-3.5" />
+          </Link>
+          {items.length > 0 && (
+            <ChevronRight className="h-3 w-3 text-gray-300 dark:text-gray-600 shrink-0 mx-0.5" />
+          )}
+        </span>
+      )}
+
+      {/* Items */}
+      {visibleItems.map((item, index) => {
+        // Collapsed ellipsis marker
+        if (item === null) {
+          return (
+            <span key="ellipsis" className="flex items-center gap-0.5">
+              <span
+                className="flex items-center justify-center h-6 px-1.5 rounded-md text-fg-muted cursor-default"
+                aria-hidden="true"
+              >
+                <MoreHorizontal className="h-3.5 w-3.5" />
+              </span>
+              <ChevronRight className="h-3 w-3 text-gray-300 dark:text-gray-600 shrink-0 mx-0.5" />
+            </span>
+          );
+        }
+
+        const isLast = item.isLast ?? index === visibleItems.length - 1;
         const isClickable = !!item.href && !isLast;
+        const labelText = typeof item.label === "string" ? item.label : undefined;
+        const Icon = item.icon;
+
+        const content = (
+          <>
+            {Icon && (
+              <Icon
+                className={cn(
+                  "h-3.5 w-3.5 shrink-0",
+                  isLast ? "text-primary" : "text-fg-muted"
+                )}
+              />
+            )}
+            <span className="truncate max-w-[160px]">{item.label}</span>
+          </>
+        );
 
         return (
-          <div key={`${item.href}-${index}`} className="flex items-center gap-1.5 min-w-0">
-            <ChevronRight className="w-3 h-3 text-gray-300 dark:text-gray-600 shrink-0" />
+          <span key={`${item.href ?? "item"}-${index}`} className="flex items-center gap-0.5 min-w-0">
             {isClickable ? (
               <Link
                 href={item.href!}
-                className="truncate hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-1"
+                title={labelText}
+                className={cn(
+                  "flex items-center gap-1.5 h-6 px-1.5 rounded-md",
+                  "text-[12px] font-medium text-fg-secondary",
+                  "hover:bg-gray-100 dark:hover:bg-white/[0.08] hover:text-gray-800 dark:hover:text-gray-100",
+                  "transition-all duration-150 min-w-0"
+                )}
               >
-                {item.icon}
-                {item.label}
+                {content}
               </Link>
             ) : (
               <span
+                aria-current={isLast ? "page" : undefined}
+                title={labelText}
                 className={cn(
-                  "truncate flex items-center gap-1",
+                  "flex items-center gap-1.5 h-6 px-1.5 rounded-md min-w-0",
+                  "text-[12px]",
                   isLast
-                    ? "text-gray-900 dark:text-white font-label"
-                    : "cursor-default"
+                    ? "font-semibold text-fg"
+                    : "font-medium text-fg-secondary cursor-default"
                 )}
               >
-                {item.icon}
-                {item.label}
+                {content}
               </span>
             )}
-          </div>
+
+            {!isLast && (
+              <ChevronRight className="h-3 w-3 text-gray-300 dark:text-gray-600 shrink-0 mx-0.5" />
+            )}
+          </span>
         );
       })}
     </nav>

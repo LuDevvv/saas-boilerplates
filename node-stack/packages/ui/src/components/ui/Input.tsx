@@ -44,7 +44,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {(label || labelRight) && (
           <label className="flex items-baseline justify-between px-1 mb-1.5">
             {label ? (
-              <span className="text-[13px] font-medium text-gray-700 transition-colors group-focus-within:text-primary dark:text-gray-300 dark:group-focus-within:text-white">
+              <span className="text-[13px] font-medium text-fg-secondary transition-colors group-focus-within:text-primary">
                 {label}
                 {required && <span className="text-danger ml-1">*</span>}
               </span>
@@ -55,7 +55,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
         <div className="relative">
           {icon && (
-            <div className="absolute left-4 top-1/2 z-10 -translate-y-1/2 pointer-events-none text-gray-400 dark:text-gray-500 group-focus-within:text-blue-600 transition-colors duration-300 dark:group-focus-within:text-blue-400 flex items-center justify-center">
+            <div className="absolute left-4 top-1/2 z-10 -translate-y-1/2 pointer-events-none text-fg-muted group-focus-within:text-primary transition-colors duration-300 flex items-center justify-center">
               {React.isValidElement(icon)
                 ? React.cloneElement(icon as React.ReactElement<any>, {
                   size: 15,
@@ -71,18 +71,18 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             disabled={disabled}
             type={type}
-            style={{ backgroundColor: "var(--canvas)", color: "inherit" }}
             className={cn(
-              "flex h-12 w-full py-2 text-[14px] font-label outline-none transition-all duration-300",              rightElement || error || success ? "pr-12" : "pr-4",
+              "flex h-12 w-full py-2 text-sm font-medium text-fg outline-none transition-all duration-300",
+              rightElement || error || success ? "pr-12" : "pr-4",
               icon ? "pl-11" : "pl-6",
-              "focus:bg-[var(--surface)]",
-              "border border-gray-200 dark:border-white/10 rounded-2xl",
-              "placeholder:text-[#64748B]/50 placeholder:font-body",
-              "focus:outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600/40 dark:focus:ring-blue-400/20 dark:focus:border-blue-400",
+              "bg-surface-muted",
+              "border border-border rounded-xl",
+              "placeholder:text-fg-muted placeholder:font-normal",
+              "focus:outline-none focus:border-primary",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               error
-                ? "border-[#EF4F5F] focus:border-[#EF4F5F] focus:ring-[#EF4F5F]/10"
-                : "focus:border-blue-600/40",
+                ? "border-danger focus:border-danger"
+                : "",
               className
             )}
             {...props}
@@ -95,9 +95,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {(error || success) && (
               <div className="pointer-events-none flex items-center">
                 {error ? (
-                  <AlertCircle className="w-5 h-5 text-[#EF4F5F] animate-in zoom-in duration-300" />
+                  <AlertCircle className="w-5 h-5 text-danger animate-in zoom-in duration-300" />
                 ) : (
-                  <CheckCircle2 className="w-5 h-5 text-[#00E6E6] animate-in zoom-in duration-300" />
+                  <CheckCircle2 className="w-5 h-5 text-success animate-in zoom-in duration-300" />
                 )}
               </div>
             )}
@@ -107,8 +107,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {(error || helperText) && (
           <p
             className={cn(
-              "px-1 text-[11px] font-label uppercase tracking-wider animate-in fade-in slide-in-from-top-1",
-              error ? "text-[#EF4F5F]" : "text-[#64748B] dark:text-[#94A3B8]"
+              "px-1 text-[12px] font-medium animate-in fade-in slide-in-from-top-1 duration-300",
+              error ? "text-danger" : "text-fg-muted"
             )}
           >
             {error || helperText}

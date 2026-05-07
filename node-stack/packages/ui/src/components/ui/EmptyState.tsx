@@ -10,6 +10,8 @@ export interface EmptyStateProps {
   secondaryAction?: ReactNode;
   className?: string;
   iconClassName?: string;
+  compact?: boolean;
+  variant?: "default" | "minimal";
 }
 
 export const EmptyState: FC<EmptyStateProps> = ({
@@ -20,34 +22,54 @@ export const EmptyState: FC<EmptyStateProps> = ({
   secondaryAction,
   className,
   iconClassName,
+  compact = false,
+  variant = "default"
 }) => {
+  const isMinimal = variant === "minimal";
+
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center py-16 px-8 text-center w-full rounded-[32px] border-2 border-dashed border-gray-100 dark:border-white/5 bg-gray-50/30 dark:bg-transparent",
+        "flex flex-col items-center justify-center text-center w-full transition-all",
+        !isMinimal && (compact 
+          ? "py-8 px-6 rounded-2xl border border-border-subtle bg-gray-50/30 dark:bg-transparent" 
+          : "py-16 px-8 rounded-[32px] border-2 border-dashed border-border-subtle bg-gray-50/30 dark:bg-transparent"),
         className
       )}
     >
       <div className={cn(
-        "w-20 h-20 rounded-3xl bg-white dark:bg-white/5 flex items-center justify-center mb-6 border border-gray-100 dark:border-white/10 shadow-sm",
+        "flex items-center justify-center transition-all",
+        !isMinimal && "bg-white dark:bg-white/5 border border-border shadow-sm",
+        compact 
+          ? "w-12 h-12 rounded-xl mb-4" 
+          : "w-20 h-20 rounded-3xl mb-6",
         iconClassName
       )}>
         <Icon
-          size={40}
-          strokeWidth={1.5}
-          className="text-gray-400 dark:text-gray-500"
+          size={compact ? 24 : 40}
+          strokeWidth={compact ? 2 : 1.5}
+          className="text-fg-muted"
         />
       </div>
-      <h2 className="text-xl font-heading text-gray-950 dark:text-white mb-2 ">
+      <h2 className={cn(
+        "font-heading text-fg leading-tight",
+        compact ? "text-[14px] font-bold mb-1" : "text-xl mb-2"
+      )}>
         {title}
       </h2>
-      <p className="text-sm font-label text-gray-500 dark:text-gray-400 max-w-sm leading-relaxed mb-8">        {description}
+      <p className={cn(
+        "font-label text-fg-secondary max-w-sm leading-relaxed mb-6",
+        compact ? "text-[11px]" : "text-sm"
+      )}>
+        {description}
       </p>
 
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-        {action}
-        {secondaryAction}
-      </div>
+      {(action || secondaryAction) && (
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          {action}
+          {secondaryAction}
+        </div>
+      )}
     </div>
   );
 };

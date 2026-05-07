@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { cn } from "../../utils.js";
@@ -11,7 +13,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-12 items-center justify-center rounded-2xl bg-[#F8FAFC] dark:bg-[#0F172A] border border-[#E2E8F0] dark:border-[#FFFFFF]/5 p-1 text-[#64748B]",
+      "inline-flex h-12 items-center justify-center rounded-xl bg-gray-50 dark:bg-canvas-dark border border-border p-1 text-gray-500",
       className
     )}
     {...props}
@@ -26,7 +28,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-xl px-6 py-2 text-sm font-heading ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#004080]/10 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white dark:data-[state=active]:bg-[#1E293B] data-[state=active]:text-[#004080] dark:data-[state=active]:text-[#00E6E6] data-[state=active]:shadow-md active:scale-95",
+      "inline-flex items-center justify-center whitespace-nowrap rounded-xl px-6 py-2 text-sm font-bold ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/10 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white dark:data-[state=active]:bg-white/10 data-[state=active]:text-primary dark:data-[state=active]:text-white data-[state=active]:shadow-sm active:scale-[0.97]",
       className
     )}
     {...props}
