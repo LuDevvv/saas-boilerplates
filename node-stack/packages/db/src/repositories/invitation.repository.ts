@@ -15,20 +15,27 @@ export class InvitationRepository {
     @Inject(DB_TOKEN) private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
-  async findById(id: string) {
-    return this.db.query.workspaceInvitations.findFirst({
+  async findById(id: string, tx?: NodePgDatabase<typeof schema>) {
+    const database = tx ?? this.db;
+    return database.query.workspaceInvitations.findFirst({
       where: eq(schema.workspaceInvitations.id, id),
     });
   }
 
-  async findByToken(token: string) {
-    return this.db.query.workspaceInvitations.findFirst({
+  async findByToken(token: string, tx?: NodePgDatabase<typeof schema>) {
+    const database = tx ?? this.db;
+    return database.query.workspaceInvitations.findFirst({
       where: eq(schema.workspaceInvitations.token, token),
     });
   }
 
-  async findPendingByEmailAndWorkspace(email: string, workspaceId: string) {
-    return this.db.query.workspaceInvitations.findFirst({
+  async findPendingByEmailAndWorkspace(
+    email: string,
+    workspaceId: string,
+    tx?: NodePgDatabase<typeof schema>,
+  ) {
+    const database = tx ?? this.db;
+    return database.query.workspaceInvitations.findFirst({
       where: and(
         eq(schema.workspaceInvitations.email, email),
         eq(schema.workspaceInvitations.workspaceId, workspaceId),
@@ -37,14 +44,22 @@ export class InvitationRepository {
     });
   }
 
-  async findManyByWorkspace(workspaceId: string) {
-    return this.db.query.workspaceInvitations.findMany({
+  async findManyByWorkspace(
+    workspaceId: string,
+    tx?: NodePgDatabase<typeof schema>,
+  ) {
+    const database = tx ?? this.db;
+    return database.query.workspaceInvitations.findMany({
       where: eq(schema.workspaceInvitations.workspaceId, workspaceId),
     });
   }
 
-  async findManyPendingByEmail(email: string) {
-    return this.db.query.workspaceInvitations.findMany({
+  async findManyPendingByEmail(
+    email: string,
+    tx?: NodePgDatabase<typeof schema>,
+  ) {
+    const database = tx ?? this.db;
+    return database.query.workspaceInvitations.findMany({
       where: and(
         eq(schema.workspaceInvitations.email, email),
         eq(schema.workspaceInvitations.status, "pending"),

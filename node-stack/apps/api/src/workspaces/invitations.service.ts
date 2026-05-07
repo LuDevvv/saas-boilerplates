@@ -7,14 +7,19 @@ import {
   BadRequestException,
   UnauthorizedException,
   Logger,
+  Inject,
 } from "@nestjs/common";
 import {
   WorkspaceRepository,
   InvitationRepository,
   UserRepository,
+  DB_TOKEN,
   schema,
   eq,
+  withSystemTx,
+  withTenantTx,
 } from "@node-stack/db";
+import type { Database } from "@node-stack/db";
 import type { InviteMemberDto } from "@node-stack/validators";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
@@ -29,6 +34,7 @@ export class InvitationsService {
     private readonly invitationRepo: InvitationRepository,
     private readonly userRepo: UserRepository,
     private readonly outbox: OutboxService,
+    @Inject(DB_TOKEN) private readonly db: Database,
   ) {}
 
   async createInvitation(
@@ -36,26 +42,26 @@ export class InvitationsService {
     dto: InviteMemberDto,
     invitedById: string,
   ) {
-    const workspace = await this.workspaceRepo.findById(workspaceId);
-    if (!workspace) throw new NotFoundException("Workspace not found");
+    return withTenantTx(workspaceId, async (tx: NodePgDatabase<typeof schema>) => {
+      const workspace = await this.workspaceRepo.findById(workspaceId, tx);
+      if (!workspace) throw new NotFoundException("Workspace not found");
 
-    const inviterMembership = await this.workspaceRepo.findMembership(workspaceId, invitedById);
-    if (!inviterMembership) throw new UnauthorizedException("Not a member of this workspace");
+      const inviterMembership = await this.workspaceRepo.findMembership(workspaceId, invitedById, tx);
+      if (!inviterMembership) throw new UnauthorizedException("Not a member of this workspace");
 
-    const existingUser = await this.userRepo.findByEmail(dto.email);
-    if (existingUser) {
-      const existingMember = await this.workspaceRepo.findMembership(workspaceId, existingUser.id);
-      if (existingMember) throw new ConflictException("User is already a member");
-    }
+      const existingUser = await this.userRepo.findByEmail(dto.email);
+      if (existingUser) {
+        const existingMember = await this.workspaceRepo.findMembership(workspaceId, existingUser.id, tx);
+        if (existingMember) throw new ConflictException("User is already a member");
+      }
 
-    const pendingInvite = await this.invitationRepo.findPendingByEmailAndWorkspace(dto.email, workspaceId);
-    if (pendingInvite) throw new ConflictException("A pending invitation already exists");
+      const pendingInvite = await this.invitationRepo.findPendingByEmailAndWorkspace(dto.email, workspaceId, tx);
+      if (pendingInvite) throw new ConflictException("A pending invitation already exists");
 
-    const token = randomUUID();
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
+      const token = randomUUID();
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7);
 
-    return await this.workspaceRepo.transaction(async (tx: NodePgDatabase<typeof schema>) => {
       const newInvitation = await this.invitationRepo.create({
         workspaceId,
         email: dto.email,
@@ -81,19 +87,25 @@ export class InvitationsService {
         expiresAt: newInvitation.expiresAt,
         link,
       };
-    });
+    }, this.db);
   }
 
   async listPendingForUser(userId: string) {
-    const user = await this.userRepo.findById(userId);
-    if (!user) throw new NotFoundException("User not found");
-    return this.invitationRepo.findManyPendingByEmail(user.email);
+    // Cross-tenant: a user can have invites from any workspace they're
+    // not in yet, so withSystemTx; the email filter is the boundary.
+    return withSystemTx(async (tx) => {
+      const user = await this.userRepo.findById(userId);
+      if (!user) throw new NotFoundException("User not found");
+      return this.invitationRepo.findManyPendingByEmail(user.email, tx);
+    }, this.db);
   }
 
   async listForWorkspace(workspaceId: string, currentUserId: string) {
-    const membership = await this.workspaceRepo.findMembership(workspaceId, currentUserId);
-    if (!membership) throw new UnauthorizedException("Not a member");
-    return this.invitationRepo.findManyByWorkspace(workspaceId);
+    return withTenantTx(workspaceId, async (tx) => {
+      const membership = await this.workspaceRepo.findMembership(workspaceId, currentUserId, tx);
+      if (!membership) throw new UnauthorizedException("Not a member");
+      return this.invitationRepo.findManyByWorkspace(workspaceId, tx);
+    }, this.db);
   }
 
   async cancelInvitation(
@@ -101,27 +113,31 @@ export class InvitationsService {
     invitationId: string,
     currentUserId: string,
   ) {
-    const membership = await this.workspaceRepo.findMembership(workspaceId, currentUserId);
-    if (!membership) throw new UnauthorizedException("Not a member");
-    
-    if (membership.role === "member") {
-      throw new UnauthorizedException("Only admins or owners can cancel invitations");
-    }
+    await withTenantTx(workspaceId, async (tx) => {
+      const membership = await this.workspaceRepo.findMembership(workspaceId, currentUserId, tx);
+      if (!membership) throw new UnauthorizedException("Not a member");
 
-    const invitation = await this.invitationRepo.findById(invitationId);
-    if (!invitation || invitation.workspaceId !== workspaceId || invitation.status !== "pending") {
-      throw new NotFoundException("Invitation not found");
-    }
+      if (membership.role === "member") {
+        throw new UnauthorizedException("Only admins or owners can cancel invitations");
+      }
 
-    await this.invitationRepo.delete(invitationId);
+      const invitation = await this.invitationRepo.findById(invitationId, tx);
+      if (!invitation || invitation.workspaceId !== workspaceId || invitation.status !== "pending") {
+        throw new NotFoundException("Invitation not found");
+      }
+
+      await this.invitationRepo.delete(invitationId, tx);
+    }, this.db);
   }
 
   async acceptInvitation(token: string, currentUserId: string) {
-    const currentUser = await this.userRepo.findById(currentUserId);
-    if (!currentUser) throw new UnauthorizedException("User not found");
+    // Cross-tenant: the token resolves to a workspace we don't know yet.
+    // withSystemTx for the lookup + atomic membership creation. The email
+    // match against currentUser is the security boundary inside.
+    return withSystemTx(async (tx: NodePgDatabase<typeof schema>) => {
+      const currentUser = await this.userRepo.findById(currentUserId);
+      if (!currentUser) throw new UnauthorizedException("User not found");
 
-    return this.workspaceRepo.transaction(async (tx: NodePgDatabase<typeof schema>) => {
-      // Row lock for safety
       const [lockedInvitation] = await tx
         .select()
         .from(schema.workspaceInvitations)
@@ -163,28 +179,31 @@ export class InvitationsService {
         workspaceId: lockedInvitation.workspaceId,
         role: lockedInvitation.role,
       };
-    });
+    }, this.db);
   }
 
   async getInvitationDetails(token: string) {
-    const invitation = await this.invitationRepo.findByToken(token);
-    if (!invitation || invitation.status !== "pending") {
-      throw new NotFoundException("Invalid invitation");
-    }
+    // Token-based lookup: workspace not known up front, withSystemTx.
+    return withSystemTx(async (tx) => {
+      const invitation = await this.invitationRepo.findByToken(token, tx);
+      if (!invitation || invitation.status !== "pending") {
+        throw new NotFoundException("Invalid invitation");
+      }
 
-    if (invitation.expiresAt < new Date()) {
-      await this.invitationRepo.update(invitation.id, { status: "expired" });
-      throw new BadRequestException("Invitation has expired");
-    }
+      if (invitation.expiresAt < new Date()) {
+        await this.invitationRepo.update(invitation.id, { status: "expired" }, tx);
+        throw new BadRequestException("Invitation has expired");
+      }
 
-    const workspace = await this.workspaceRepo.findById(invitation.workspaceId);
-    const inviter = await this.userRepo.findById(invitation.invitedById);
+      const workspace = await this.workspaceRepo.findById(invitation.workspaceId, tx);
+      const inviter = await this.userRepo.findById(invitation.invitedById);
 
-    return {
-      workspaceName: workspace?.name,
-      inviterName: inviter?.name || inviter?.email,
-      role: invitation.role,
-      expiresAt: invitation.expiresAt,
-    };
+      return {
+        workspaceName: workspace?.name,
+        inviterName: inviter?.name || inviter?.email,
+        role: invitation.role,
+        expiresAt: invitation.expiresAt,
+      };
+    }, this.db);
   }
 }

@@ -5,17 +5,17 @@ import { DB_TOKEN } from "../tokens.js";
 import * as schema from "../schema/index.js";
 import { tickets, type Ticket, type NewTicket } from "../schema/tickets.js";
 
+type Tx = NodePgDatabase<typeof schema>;
+
 @Injectable()
 export class TicketRepository {
   constructor(
-    @Inject(DB_TOKEN) private readonly db: NodePgDatabase<typeof schema>,
+    @Inject(DB_TOKEN) private readonly db: Tx,
   ) {}
 
-  /**
-   * Find a single ticket by ID
-   */
-  async findById(id: string): Promise<Ticket | undefined> {
-    const [result] = await this.db
+  async findById(id: string, tx?: Tx): Promise<Ticket | undefined> {
+    const database = tx ?? this.db;
+    const [result] = await database
       .select()
       .from(tickets)
       .where(eq(tickets.id, id))
@@ -23,25 +23,22 @@ export class TicketRepository {
     return result;
   }
 
-  /**
-   * Find ticket by workspace
-   */
-  async findByWorkspace(workspaceId: string): Promise<Ticket[]> {
-    return this.db
+  async findByWorkspace(workspaceId: string, tx?: Tx): Promise<Ticket[]> {
+    const database = tx ?? this.db;
+    return database
       .select()
       .from(tickets)
       .where(eq(tickets.workspaceId, workspaceId))
       .orderBy(desc(tickets.createdAt));
   }
 
-  /**
-   * Find ticket by workspace and status
-   */
   async findByWorkspaceAndStatus(
     workspaceId: string,
-    status: Ticket["status"]
+    status: Ticket["status"],
+    tx?: Tx,
   ): Promise<Ticket[]> {
-    return this.db
+    const database = tx ?? this.db;
+    return database
       .select()
       .from(tickets)
       .where(
@@ -53,22 +50,22 @@ export class TicketRepository {
       .orderBy(desc(tickets.createdAt));
   }
 
-  /**
-   * Create a new ticket
-   */
-  async create(data: NewTicket): Promise<Ticket> {
-    const [result] = await this.db
+  async create(data: NewTicket, tx?: Tx): Promise<Ticket> {
+    const database = tx ?? this.db;
+    const [result] = await database
       .insert(tickets)
       .values(data)
       .returning();
     return result;
   }
 
-  /**
-   * Update a ticket
-   */
-  async update(id: string, data: Partial<NewTicket>): Promise<Ticket | undefined> {
-    const [result] = await this.db
+  async update(
+    id: string,
+    data: Partial<NewTicket>,
+    tx?: Tx,
+  ): Promise<Ticket | undefined> {
+    const database = tx ?? this.db;
+    const [result] = await database
       .update(tickets)
       .set(data)
       .where(eq(tickets.id, id))
@@ -76,21 +73,17 @@ export class TicketRepository {
     return result;
   }
 
-  /**
-   * Soft delete a ticket
-   */
-  async softDelete(id: string): Promise<void> {
-    await this.db
+  async softDelete(id: string, tx?: Tx): Promise<void> {
+    const database = tx ?? this.db;
+    await database
       .update(tickets)
       .set({ status: "deleted", deletedAt: new Date() })
       .where(eq(tickets.id, id));
   }
 
-  /**
-   * Hard delete a ticket
-   */
-  async delete(id: string): Promise<void> {
-    await this.db
+  async delete(id: string, tx?: Tx): Promise<void> {
+    const database = tx ?? this.db;
+    await database
       .delete(tickets)
       .where(eq(tickets.id, id));
   }

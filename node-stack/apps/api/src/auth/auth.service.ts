@@ -524,7 +524,13 @@ export class AuthService {
   }
 
   async getAuditLogs(userId: string) {
-    return this.authRepository.getAuthAuditLogs(userId);
+    // User-scoped read crosses workspaces (a user may have entries
+    // across every workspace they're a member of); withSystemTx so the
+    // policy doesn't filter by a single tenant GUC.
+    return withSystemTx(
+      (tx) => this.authRepository.getAuthAuditLogs(userId, tx),
+      this.authRepository.db,
+    );
   }
 
   async logout(sessionId: string): Promise<void> {

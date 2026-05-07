@@ -1,6 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
-import { AuditLogRepository } from "@node-stack/db";
+import { AuditLogRepository, DB_TOKEN, withSystemTx } from "@node-stack/db";
+import type { Database } from "@node-stack/db";
 
 export interface AuditEventPayload {
   action: string;
@@ -19,6 +20,7 @@ const SENSITIVE_KEYS = ["password", "token", "secret", "apiKey", "credential"];
 export class AuditService {
   constructor(
     private readonly auditLogRepository: AuditLogRepository,
+    @Inject(DB_TOKEN) private readonly db: Database,
   ) {}
 
   @OnEvent("audit.log", { async: true })
@@ -26,17 +28,27 @@ export class AuditService {
     const sanitizedMetadata = this.sanitize(payload.metadata || {});
 
     try {
-      await this.auditLogRepository.create({
-        action: payload.action,
-        userId: payload.userId ?? null,
-        workspaceId: payload.workspaceId ?? null,
-        metadata: sanitizedMetadata,
-        entityId: payload.entityId ?? null,
-        entityType: payload.entityType ?? null,
-        ipAddress: payload.ipAddress ?? null,
-        userAgent: payload.userAgent ?? null,
-        createdAt: new Date(),
-      });
+      // Audit events arrive from many tenants (and pre-tenant flows).
+      // withSystemTx satisfies the audit_logs RLS policy uniformly; the
+      // workspaceId column is the row's tenant key, not a query filter.
+      await withSystemTx(
+        (tx) =>
+          this.auditLogRepository.create(
+            {
+              action: payload.action,
+              userId: payload.userId ?? null,
+              workspaceId: payload.workspaceId ?? null,
+              metadata: sanitizedMetadata,
+              entityId: payload.entityId ?? null,
+              entityType: payload.entityType ?? null,
+              ipAddress: payload.ipAddress ?? null,
+              userAgent: payload.userAgent ?? null,
+              createdAt: new Date(),
+            },
+            tx,
+          ),
+        this.db,
+      );
     } catch (error) {
       console.error("Failed to persist audit log:", error);
     }

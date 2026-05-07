@@ -1,6 +1,7 @@
-import { Injectable, Logger, NotFoundException, ForbiddenException } from "@nestjs/common";
-import { TicketRepository } from "@node-stack/db";
+import { Injectable, Logger, NotFoundException, ForbiddenException, Inject } from "@nestjs/common";
+import { DB_TOKEN, TicketRepository, withTenantTx } from "@node-stack/db";
 import { type Ticket, type NewTicket } from "@node-stack/db";
+import type { Database } from "@node-stack/db";
 import {
   CreateTicketDto,
   UpdateTicketDto,
@@ -12,6 +13,7 @@ export class TicketService {
 
   constructor(
     private readonly ticketRepository: TicketRepository,
+    @Inject(DB_TOKEN) private readonly db: Database,
   ) {}
 
   /**
@@ -32,10 +34,14 @@ export class TicketService {
       status: "pending",
     };
 
-    const ticket = await this.ticketRepository.create(data);
-    
+    const ticket = await withTenantTx(
+      workspaceId,
+      (tx) => this.ticketRepository.create(data, tx),
+      this.db,
+    );
+
     this.logger.log(`Created ticket ${ticket.id} in workspace ${workspaceId}`);
-    
+
     return ticket;
   }
 
@@ -48,27 +54,30 @@ export class TicketService {
   ): Promise<{ data: Ticket[]; nextCursor?: string }> {
     const { status, cursor, limit = 20 } = query;
 
-    let tickets: Ticket[];
-    
-    if (status) {
-      tickets = await this.ticketRepository.findByWorkspaceAndStatus(
-        workspaceId,
-        status as Ticket["status"]
-      );
-    } else {
-      tickets = await this.ticketRepository.findByWorkspace(workspaceId);
-    }
+    const tickets = await withTenantTx(
+      workspaceId,
+      (tx) =>
+        status
+          ? this.ticketRepository.findByWorkspaceAndStatus(
+              workspaceId,
+              status as Ticket["status"],
+              tx,
+            )
+          : this.ticketRepository.findByWorkspace(workspaceId, tx),
+      this.db,
+    );
+    let filtered = tickets;
 
     // Apply cursor pagination if provided
     if (cursor) {
-      const cursorIndex = tickets.findIndex(t => t.id === cursor);
+      const cursorIndex = filtered.findIndex(t => t.id === cursor);
       if (cursorIndex !== -1) {
-        tickets = tickets.slice(cursorIndex + 1);
+        filtered = filtered.slice(cursorIndex + 1);
       }
     }
 
     // Apply limit
-    const limitedData = tickets.slice(0, limit);
+    const limitedData = filtered.slice(0, limit);
     const nextCursor = limitedData.length === limit ? limitedData[limitedData.length - 1]?.id : undefined;
 
     return {
@@ -81,51 +90,47 @@ export class TicketService {
    * Find a ticket by ID (with workspace validation)
    */
   async findById(workspaceId: string, id: string): Promise<Ticket> {
-    const ticket = await this.ticketRepository.findById(id);
-
-    if (!ticket) {
-      throw new NotFoundException(`Ticket not found`);
-    }
-
-    // Verify workspace ownership
-    if (ticket.workspaceId !== workspaceId) {
-      throw new ForbiddenException(`Access denied to this ticket`);
-    }
-
-    return ticket;
+    return withTenantTx(workspaceId, async (tx) => {
+      const ticket = await this.ticketRepository.findById(id, tx);
+      if (!ticket) {
+        throw new NotFoundException(`Ticket not found`);
+      }
+      if (ticket.workspaceId !== workspaceId) {
+        throw new ForbiddenException(`Access denied to this ticket`);
+      }
+      return ticket;
+    }, this.db);
   }
 
-  /**
-   * Update a ticket
-   */
   async update(
     workspaceId: string,
     id: string,
     dto: UpdateTicketDto,
   ): Promise<Ticket> {
-    // First verify access
-    await this.findById(workspaceId, id);
-
-    const updated = await this.ticketRepository.update(id, dto);
-
-    if (!updated) {
-      throw new NotFoundException(`Ticket not found`);
-    }
+    const updated = await withTenantTx(workspaceId, async (tx) => {
+      const ticket = await this.ticketRepository.findById(id, tx);
+      if (!ticket || ticket.workspaceId !== workspaceId) {
+        throw new NotFoundException(`Ticket not found`);
+      }
+      const next = await this.ticketRepository.update(id, dto, tx);
+      if (!next) {
+        throw new NotFoundException(`Ticket not found`);
+      }
+      return next;
+    }, this.db);
 
     this.logger.log(`Updated ticket ${id}`);
-    
     return updated;
   }
 
-  /**
-   * Soft delete a ticket
-   */
   async softDelete(workspaceId: string, id: string): Promise<void> {
-    // Verify access first
-    await this.findById(workspaceId, id);
-
-    await this.ticketRepository.softDelete(id);
-    
+    await withTenantTx(workspaceId, async (tx) => {
+      const ticket = await this.ticketRepository.findById(id, tx);
+      if (!ticket || ticket.workspaceId !== workspaceId) {
+        throw new NotFoundException(`Ticket not found`);
+      }
+      await this.ticketRepository.softDelete(id, tx);
+    }, this.db);
     this.logger.log(`Soft deleted ticket ${id}`);
   }
 }
