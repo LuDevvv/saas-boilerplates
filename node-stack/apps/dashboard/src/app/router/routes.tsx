@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import MainLayout from "@/layouts/MainLayout";
 import Loading from "@/components/ui/Loading";
 import { useAuth } from "@/hooks/stores/useAuth";
+import { ProfileLayoutSkeleton } from "@/features/profile";
 import { protectedGuard, guestGuard } from "./routeguards";
 
 // Lazy load pages
@@ -44,86 +45,95 @@ const NotFoundPage = lazy(() => import("@pages/_error/NotFoundPage"));
 const WorkspaceMembersPage = lazy(() => import("@pages/_settings/WorkspaceMembersPage"));
 const ApiKeysPage = lazy(() => import("@pages/_settings/ApiKeysPage"));
 const WebhooksPage = lazy(() => import("@pages/_settings/WebhooksPage"));
+const PortabilityPage = lazy(() => import("@/features/workspaces/pages/PortabilityPage"));
 
-const LoadingFallback = () => <Loading />;
+import { PageSkeleton } from "@/components/shared/ErrorBoundary";
+import {
+  BillingLayoutSkeleton,
+  PricingPageSkeleton,
+  CheckoutPageSkeleton,
+} from "@/features/billing/components/BillingSkeletons";
+import { AnalyticsLayoutSkeleton } from "@/features/analytics/components/AnalyticsSkeletons";
+import { MembersLayoutSkeleton } from "@/features/workspaces/components/MembersSkeletons";
+
+const LoadingFallback = () => <PageSkeleton />;
 
 export const AppRoutes = () => {
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      <Routes>
-        {/* Guest Routes - Redirect to dashboard if authenticated */}
-        <Route path="/auth/sign-in" element={guestGuard(<SignInPage />)} />
-        <Route path="/auth/sign-up" element={guestGuard(<SignUpPage />)} />
-        <Route path="/auth/forgot-password" element={guestGuard(<ForgotPasswordPage />)} />
-        <Route path="/auth/reset-password" element={guestGuard(<ResetPasswordPage />)} />
-        <Route path="/auth/verify-email" element={guestGuard(<VerifyEmailPage />)} />
+    <Routes>
+      {/* Guest Routes - Redirect to dashboard if authenticated */}
+      <Route path="/auth/sign-in" element={<Suspense fallback={<Loading />} children={guestGuard(<SignInPage />)} />} />
+      <Route path="/auth/sign-up" element={<Suspense fallback={<Loading />} children={guestGuard(<SignUpPage />)} />} />
+      <Route path="/auth/forgot-password" element={<Suspense fallback={<Loading />} children={guestGuard(<ForgotPasswordPage />)} />} />
+      <Route path="/auth/reset-password" element={<Suspense fallback={<Loading />} children={guestGuard(<ResetPasswordPage />)} />} />
+      <Route path="/auth/verify-email" element={<Suspense fallback={<Loading />} children={guestGuard(<VerifyEmailPage />)} />} />
 
-        {/* Legacy redirects */}
-        <Route path="/login" element={<Navigate to="/auth/sign-in" replace />} />
-        <Route path="/register" element={<Navigate to="/auth/sign-up" replace />} />
+      {/* Legacy redirects */}
+      <Route path="/login" element={<Navigate to="/auth/sign-in" replace />} />
+      <Route path="/register" element={<Navigate to="/auth/sign-up" replace />} />
 
-        {/* Legal pages (public) */}
-        <Route path="/legal/terms" element={<TermsPage />} />
-        <Route path="/legal/privacy" element={<PrivacyPage />} />
+      {/* Legal pages (public) */}
+      <Route path="/legal/terms" element={<Suspense fallback={<LoadingFallback />} children={<TermsPage />} />} />
+      <Route path="/legal/privacy" element={<Suspense fallback={<LoadingFallback />} children={<PrivacyPage />} />} />
 
-        {/* Protected routes with MainLayout */}
-        <Route
-          element={
-            <ProtectedRoute>
-              <MainLayout />
-            </ProtectedRoute>
-          }
-        >
-          {/* Dashboard */}
-          <Route index element={<DashboardPage />} />
-          <Route path="analytics" element={<AnalyticsPage />} />
+      {/* Protected routes with MainLayout */}
+      <Route
+        element={
+          <ProtectedRoute>
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Suspense fallback={<LoadingFallback />} children={<DashboardPage />} />} />
+        <Route path="analytics" element={<Suspense fallback={<AnalyticsLayoutSkeleton />} children={<AnalyticsPage />} />} />
 
-          {/* Profile */}
-          <Route path="profile/personal" element={<PersonalProfilePage />} />
-          <Route path="profile/company" element={<CompanyProfilePage />} />
+        {/* Profile */}
+        <Route path="profile/personal" element={<Suspense fallback={<ProfileLayoutSkeleton />} children={<PersonalProfilePage />} />} />
+        <Route path="profile/company" element={<Suspense fallback={<ProfileLayoutSkeleton />} children={<CompanyProfilePage />} />} />
 
-          {/* Payments */}
-          <Route path="payments" element={<BillingPage />} />
-          <Route path="payments/pricing" element={<PricingPage />} />
+        {/* Payments */}
+        <Route path="payments" element={<Suspense fallback={<BillingLayoutSkeleton />} children={<BillingPage />} />} />
+        <Route path="payments/pricing" element={<Suspense fallback={<PricingPageSkeleton />} children={<PricingPage />} />} />
+        <Route path="pricing" element={<Suspense fallback={<PricingPageSkeleton />} children={<PricingPage />} />} />
 
-          {/* Other features */}
-          <Route path="notifications" element={<NotificationsPage />} />
-          <Route path="tickets" element={<TicketsPage />} />
-          <Route path="tickets/:id" element={<TicketDetailPage />} />
-          <Route path="tickets/create" element={<CreateTicketPage />} />
-          <Route path="reports" element={<ReportsPage />} />
-          <Route path="news" element={<NewsPage />} />
-          <Route path="ai" element={<AIPlaygroundPage />} />
+        {/* Other features */}
+        <Route path="notifications" element={<Suspense fallback={<LoadingFallback />} children={<NotificationsPage />} />} />
+        <Route path="tickets" element={<Suspense fallback={<LoadingFallback />} children={<TicketsPage />} />} />
+        <Route path="tickets/:id" element={<Suspense fallback={<LoadingFallback />} children={<TicketDetailPage />} />} />
+        <Route path="tickets/create" element={<Suspense fallback={<LoadingFallback />} children={<CreateTicketPage />} />} />
+        <Route path="reports" element={<Suspense fallback={<LoadingFallback />} children={<ReportsPage />} />} />
+        <Route path="news" element={<Suspense fallback={<LoadingFallback />} children={<NewsPage />} />} />
+        <Route path="ai" element={<Suspense fallback={<LoadingFallback />} children={<AIPlaygroundPage />} />} />
 
-          {/* Admin */}
-          <Route path="admin" element={<AdminOverviewPage />} />
-          <Route path="admin/users" element={<ManageUsersPage />} />
-          <Route path="admin/audit" element={<AuditLogsPage />} />
-          
-          {/* Settings */}
-          <Route path="settings/members" element={<WorkspaceMembersPage />} />
-          <Route path="settings/api-keys" element={<ApiKeysPage />} />
-          <Route path="settings/webhooks" element={<WebhooksPage />} />
-        </Route>
+        {/* Admin */}
+        <Route path="admin" element={<Suspense fallback={<LoadingFallback />} children={<AdminOverviewPage />} />} />
+        <Route path="admin/users" element={<Suspense fallback={<LoadingFallback />} children={<ManageUsersPage />} />} />
+        <Route path="admin/audit" element={<Suspense fallback={<LoadingFallback />} children={<AuditLogsPage />} />} />
+        
+        {/* Settings */}
+        <Route path="settings/members" element={<Suspense fallback={<MembersLayoutSkeleton />} children={<WorkspaceMembersPage />} />} />
+        <Route path="settings/api-keys" element={<Suspense fallback={<LoadingFallback />} children={<ApiKeysPage />} />} />
+        <Route path="settings/webhooks" element={<Suspense fallback={<LoadingFallback />} children={<WebhooksPage />} />} />
+        <Route path="settings/export" element={<Suspense fallback={<LoadingFallback />} children={<PortabilityPage />} />} />
+      </Route>
 
-        {/* Standalone protected routes (no layout) */}
-        <Route
-          path="/payments/checkout"
-          element={protectedGuard(<CheckoutPage />)}
-        />
-        <Route
-          path="/onboarding"
-          element={protectedGuard(<OnboardingPage />)}
-        />
-        <Route
-          path="/onboarding/pricing"
-          element={protectedGuard(<OnboardingPricingPage />)}
-        />
+      {/* Standalone protected routes (no layout) */}
+      <Route
+        path="/payments/checkout"
+        element={<Suspense fallback={<CheckoutPageSkeleton />} children={protectedGuard(<CheckoutPage />)} />}
+      />
+      <Route
+        path="/onboarding"
+        element={<Suspense fallback={<Loading />} children={protectedGuard(<OnboardingPage />)} />}
+      />
+      <Route
+        path="/onboarding/pricing"
+        element={<Suspense fallback={<Loading />} children={protectedGuard(<OnboardingPricingPage />)} />}
+      />
 
-        {/* Fallback */}
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </Suspense>
+      {/* Fallback */}
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
   );
 };
 

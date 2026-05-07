@@ -3,223 +3,280 @@ import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/utils/classNames";
 
-interface ModalLayoutProps {
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+export type ModalVariant =
+  | "modal"          // Centered dialog — mobile becomes bottom sheet
+  | "drawer-right"   // Slides from right — side panel / forms
+  | "drawer-bottom"  // Slides from bottom — mobile-first actions
+  | "command";       // Top-centered — search palettes, quick actions
+
+export type ModalSize = "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "full";
+
+const SIZE_MAP: Record<ModalSize, string> = {
+  sm:   "sm:max-w-sm",
+  md:   "sm:max-w-md",
+  lg:   "sm:max-w-lg",
+  xl:   "sm:max-w-xl",
+  "2xl": "sm:max-w-2xl",
+  "3xl": "sm:max-w-3xl",
+  full: "sm:max-w-full",
+};
+
+export interface ModalLayoutProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string | ReactNode;
-  subtitle?: string;
+  // Content
+  title?: ReactNode;
+  description?: string;
   children: ReactNode;
-  maxWidth?:
-  | "xs"
-  | "sm"
-  | "md"
-  | "lg"
-  | "xl"
-  | "2xl"
-  | "3xl"
-  | "4xl"
-  | "5xl"
-  | "full";
-  showCloseButton?: boolean;
   footer?: ReactNode;
+  // Behaviour
+  variant?: ModalVariant;
+  size?: ModalSize;
+  showCloseButton?: boolean;
+  closeOnBackdrop?: boolean;
+  // Styling
   className?: string;
+  contentClassName?: string;
+  // System
   zIndex?: number;
-  variant?: "modal" | "drawer";
-  drawerPlacement?: "right" | "bottom";
+  // Legacy compat (ignored, kept to avoid breakage in existing usages)
+  subtitle?: string;
+  maxWidth?: string;
+  drawerPlacement?: string;
 }
 
-const maxWidthClasses = {
-  xs: "max-w-xs",
-  sm: "max-w-sm",
-  md: "max-w-md",
-  lg: "max-w-lg",
-  xl: "max-w-xl",
-  "2xl": "max-w-2xl",
-  "3xl": "max-w-3xl",
-  "4xl": "max-w-4xl",
-  "5xl": "max-w-5xl",
-  full: "max-w-full",
-};
+// ─── Animation helpers ────────────────────────────────────────────────────────
+
+const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
+const DURATION_IN  = "400ms";
+const DURATION_OUT = "280ms";
+const COMMAND_DURATION = "200ms";
+
+function getSurfaceClasses(variant: ModalVariant, size: ModalSize, isVisible: boolean): string {
+  const base = cn(
+    "relative z-10 flex flex-col",
+    "bg-surface-elevated",
+    "border border-border",
+    "shadow-[var(--shadow-elevated)]",
+    `transition-all ease-[${EASE_OUT}]`,
+    isVisible ? "" : "pointer-events-none"
+  );
+
+  switch (variant) {
+    case "modal":
+      return cn(
+        base,
+        SIZE_MAP[size],
+        "w-full",
+        // Mobile: bottom sheet
+        "rounded-t-[28px] sm:rounded-[28px]",
+        "h-auto max-h-[92dvh] sm:max-h-[85dvh]",
+        isVisible
+          ? "translate-y-0 opacity-100 sm:scale-100"
+          : "translate-y-full sm:translate-y-6 opacity-0 sm:scale-[0.97]"
+      );
+
+    case "drawer-right":
+      return cn(
+        base,
+        "h-full w-full sm:max-w-[480px]",
+        "sm:rounded-l-[24px]",
+        isVisible ? "translate-x-0" : "translate-x-full"
+      );
+
+    case "drawer-bottom":
+      return cn(
+        base,
+        SIZE_MAP[size] || "sm:max-w-2xl",
+        "w-full",
+        "rounded-t-[28px]",
+        "max-h-[85dvh]",
+        isVisible ? "translate-y-0" : "translate-y-full"
+      );
+
+    case "command":
+      return cn(
+        base,
+        SIZE_MAP[size] || "sm:max-w-2xl",
+        "w-full",
+        "rounded-[20px]",
+        "max-h-[70dvh]",
+        isVisible
+          ? "translate-y-0 opacity-100 scale-100"
+          : "translate-y-[-10px] opacity-0 scale-[0.98]"
+      );
+  }
+}
+
+function getContainerClasses(variant: ModalVariant, isVisible: boolean): string {
+  const base = cn(
+    "fixed inset-0",
+    isVisible ? "pointer-events-auto" : "pointer-events-none"
+  );
+
+  switch (variant) {
+    case "modal":
+      return cn(base, "flex items-end sm:items-center justify-center p-0 sm:p-6");
+    case "drawer-right":
+      return cn(base, "flex justify-end");
+    case "drawer-bottom":
+      return cn(base, "flex items-end justify-center");
+    case "command":
+      return cn(base, "flex items-start justify-center pt-[12vh] px-4");
+  }
+}
+
+function getDuration(variant: ModalVariant): string {
+  return variant === "command" ? COMMAND_DURATION : DURATION_IN;
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export const ModalLayout: FC<ModalLayoutProps> = ({
   isOpen,
   onClose,
   title,
-  subtitle,
+  description,
+  subtitle,    // legacy
   children,
-  maxWidth = "lg",
-  showCloseButton = true,
   footer,
-  className,
-  zIndex = 100,
   variant = "modal",
-  drawerPlacement = "right",
+  size = "md",
+  showCloseButton = true,
+  closeOnBackdrop = true,
+  className,
+  contentClassName,
+  zIndex = 100,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [shouldRender, setShouldRender] = useState(false);
   const [isHeaderSticky, setIsHeaderSticky] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const isDrawer = variant === "drawer";
+  const desc = description ?? subtitle;
+  const hasHeader = title != null;
+  const duration = getDuration(variant);
 
-  // Animation lifecycle
+  // — Lifecycle
   useEffect(() => {
-    let timer: ReturnType<typeof setTimeout>;
-
+    let t: ReturnType<typeof setTimeout>;
     if (isOpen) {
       setShouldRender(true);
-      timer = setTimeout(() => setIsVisible(true), 10);
+      t = setTimeout(() => setIsVisible(true), 10);
       document.body.style.overflow = "hidden";
     } else {
       setIsVisible(false);
-      timer = setTimeout(() => {
+      t = setTimeout(() => {
         setShouldRender(false);
         document.body.style.overflow = "";
-      }, 300);
+      }, 320);
     }
-
-    return () => clearTimeout(timer);
+    return () => clearTimeout(t);
   }, [isOpen]);
 
-  // Clean up on unmount
-  useEffect(() => {
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, []);
+  useEffect(() => () => { document.body.style.overflow = ""; }, []);
 
-  // Escape key handler
+  // — Escape key
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
+    const handler = (e: KeyboardEvent) => {
       if (isVisible && e.key === "Escape") onClose();
     };
-    document.addEventListener("keydown", handleEscape);
-    return () => document.removeEventListener("keydown", handleEscape);
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
   }, [isVisible, onClose]);
 
-  // Scroll detection
+  // — Sticky header detection
   useEffect(() => {
     const el = contentRef.current;
     if (!el) return;
-
-    const handleScroll = () => {
-      setIsHeaderSticky(el.scrollTop > 5);
-    };
-
-    el.addEventListener("scroll", handleScroll);
-    return () => el.removeEventListener("scroll", handleScroll);
+    const onScroll = () => setIsHeaderSticky(el.scrollTop > 4);
+    el.addEventListener("scroll", onScroll);
+    return () => el.removeEventListener("scroll", onScroll);
   }, [shouldRender]);
 
   if (!shouldRender) return null;
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) onClose();
+  const handleBackdrop = (e: React.MouseEvent) => {
+    if (closeOnBackdrop && e.target === e.currentTarget) onClose();
   };
 
-  // Positioning and Animation classes
-  const getContainerClasses = () => {
-    if (isDrawer) {
-      if (drawerPlacement === "right") {
-        return cn(
-          "fixed inset-0 flex justify-end overflow-hidden",
-          isVisible ? "pointer-events-auto" : "pointer-events-none"
-        );
-      }
-      return cn(
-        "fixed inset-0 flex items-end justify-center overflow-hidden",
-        isVisible ? "pointer-events-auto" : "pointer-events-none"
-      );
-    }
-    return cn(
-      "fixed inset-0 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-hidden",
-      isVisible ? "pointer-events-auto" : "pointer-events-none"
-    );
-  };
-
-  const getSurfaceClasses = () => {
-    const base = "relative flex flex-col bg-white dark:bg-[#121212] shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) border-[var(--border)]";
-    
-    if (isDrawer) {
-      if (drawerPlacement === "right") {
-        return cn(
-          base,
-          "h-full w-full sm:w-[480px] border-l",
-          isVisible ? "translate-x-0" : "translate-x-full"
-        );
-      }
-      return cn(
-        base,
-        "w-full sm:max-w-2xl h-[85dvh] rounded-t-[2rem] border-t",
-        isVisible ? "translate-y-0" : "translate-y-full"
-      );
-    }
-
-    return cn(
-      base,
-      maxWidthClasses[maxWidth],
-      "w-full rounded-t-[2rem] sm:rounded-[2rem] border",
-      isVisible 
-        ? "translate-y-0 opacity-100 scale-100" 
-        : "translate-y-full sm:translate-y-12 opacity-0 sm:scale-[0.95]",
-      "h-[92dvh] sm:h-auto sm:max-h-[85dvh]"
-    );
-  };
+  const backdropOpacity = variant === "command"
+    ? isVisible ? "opacity-60" : "opacity-0"
+    : isVisible ? "opacity-100" : "opacity-0";
 
   return createPortal(
-    <div className={getContainerClasses()} style={{ zIndex }}>
-      {/* Premium Backdrop */}
+    <div
+      className={getContainerClasses(variant, isVisible)}
+      style={{ zIndex }}
+    >
+      {/* Backdrop */}
       <div
         className={cn(
-          "absolute inset-0 bg-gray-900/20 transition-opacity duration-300 ease-out",
-          isVisible ? "opacity-100 backdrop-blur-[2px]" : "opacity-0 backdrop-blur-none"
+          "absolute inset-0 bg-gray-950/30 transition-opacity",
+          variant === "command" && "bg-gray-950/20",
+          backdropOpacity,
+          isVisible ? "backdrop-blur-[2px]" : "backdrop-blur-none",
+          `duration-[${duration}]`
         )}
-        onClick={handleBackdropClick}
+        onClick={closeOnBackdrop ? onClose : undefined}
       />
 
-      {/* Modal/Drawer Surface */}
-      <div className={cn(getSurfaceClasses(), className)} onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <header
-          className={cn(
-            "relative flex items-center justify-between px-8 py-6 transition-all duration-300 border-b",
-            isHeaderSticky
-              ? "bg-white/80 dark:bg-[#121212]/80 backdrop-blur-xl border-[var(--border)] shadow-sm"
-              : "bg-transparent border-transparent"
-          )}
-        >
-          <div className="flex flex-col gap-1">
-            <h2 id="modal-title" className="text-lg sm:text-xl font-heading text-gray-950 dark:text-white leading-tight">
-              {title}
-            </h2>
-            {subtitle && (
-              <p className="text-[13px] font-label text-gray-500">
-                {subtitle}
-              </p>
+      {/* Surface */}
+      <div
+        className={cn(
+          getSurfaceClasses(variant, size, isVisible),
+          `duration-[${duration}]`,
+          className
+        )}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* ── Header ── */}
+        {hasHeader && (
+          <header
+            className={cn(
+              "shrink-0 flex items-center justify-between px-6 py-5 transition-all duration-200 border-b",
+              isHeaderSticky
+                ? "bg-surface-elevated border-border shadow-[var(--shadow-sm)]"
+                : "bg-transparent border-transparent"
             )}
-          </div>
+          >
+            <div className="min-w-0 flex-1">
+              <h2 className="text-[17px] font-bold text-fg leading-snug truncate">
+                {title}
+              </h2>
+              {desc && (
+                <p className="text-[13px] text-fg-muted mt-0.5 truncate">{desc}</p>
+              )}
+            </div>
+            {showCloseButton && (
+              <button
+                onClick={onClose}
+                className="ml-4 shrink-0 flex h-8 w-8 items-center justify-center rounded-full border border-border text-fg-muted hover:bg-surface-hover hover:text-fg transition-all active:scale-95"
+                aria-label="Cerrar"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </header>
+        )}
 
-          {showCloseButton && (
-            <button
-              onClick={onClose}
-              className="group p-2.5 rounded-full border border-gray-100 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 text-gray-400 hover:text-gray-950 dark:hover:text-white transition-all active:scale-95 shadow-sm"
-              aria-label="Cerrar"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
-        </header>
-
-        {/* Content */}
+        {/* ── Content ── */}
         <div
           ref={contentRef}
-          className="flex-1 overflow-y-auto px-8 py-8 custom-scrollbar"
+          className={cn(
+            "flex-1 overflow-y-auto custom-scrollbar",
+            !hasHeader && "pt-5",
+            contentClassName
+          )}
         >
           {children}
         </div>
 
-        {/* Footer */}
+        {/* ── Footer ── */}
         {footer && (
-          <footer className="sticky bottom-0 mt-auto px-8 py-6 border-t border-gray-100 dark:border-white/5 flex items-center justify-end gap-4 bg-white/80 dark:bg-[#121212]/80 backdrop-blur-xl z-20">
+          <footer className="shrink-0 px-6 py-4 border-t border-border bg-surface-elevated">
             {footer}
           </footer>
         )}

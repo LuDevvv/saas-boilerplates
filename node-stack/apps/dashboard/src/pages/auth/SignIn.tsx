@@ -1,46 +1,59 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import type { LoginFormData } from "@utils/validations/auth";
-import { loginSchema } from "@utils/validations/auth";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { appToast } from "@/components/alerts/Toasts";
+import { z } from "zod";
+
+// SignIn form schema — matches LoginSchema from @node-stack/validators + UI-only rememberMe
+const SignInFormSchema = z.object({
+  email: z.string().email("Correo electrónico inválido").toLowerCase().trim(),
+  password: z.string().min(1, "La contraseña es obligatoria"),
+  rememberMe: z.boolean().default(false),
+});
+
+type SignInFormData = z.infer<typeof SignInFormSchema>;
+
 import { Eye, EyeOff } from "lucide-react";
 import { Input, Checkbox, Button, SocialButton } from "@node-stack/ui";
 import { useLoginFlow } from "@/composables";
 import { useAuthStore } from "@/stores/authStore";
 import { useShallow } from "zustand/react/shallow";
 import { AuthSidebar } from "./components/AuthSidebar";
-
+import { Logo } from "@/assets/logo/logo";
 
 const SignInPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const isAuthenticated = useAuthStore(useShallow((state) => state.isAuthenticated));
   const navigate = useNavigate();
-  const { mutate: loginUser, isPending } = useLoginFlow();
-  
-  // Watch password for strength UI
+  const { mutateAsync: loginUser, isPending, error: serverError } = useLoginFlow();
+
   const {
     register,
     handleSubmit,
     watch,
+    setError,
     formState: { errors },
-  } = useForm<LoginFormData>({
-    resolver: async (data) => {
-      try {
-        const parsed = await loginSchema.parseAsync(data);
-        return { values: parsed, errors: {} };
-      } catch (error: any) {
-        if (error.errors) {
-          const formErrors: any = {};
-          error.errors.forEach((e: any) => {
-             formErrors[e.path[0]] = { type: e.code, message: e.message };
-          });
-          return { values: {}, errors: formErrors };
-        }
-        return { values: {}, errors: {} };
-      }
-    },
+  } = useForm<SignInFormData>({
+    resolver: zodResolver(SignInFormSchema as any),
+    mode: "onChange",
     defaultValues: { rememberMe: false, email: "", password: "" },
   });
+
+  // Sync server errors with form fields and show toast
+  useEffect(() => {
+    if (serverError) {
+      const message = serverError.message || "Error al iniciar sesión";
+      appToast.error(serverError);
+
+      // Map to fields if it's a credential error
+      const lowerOriginal = message.toLowerCase();
+      if (lowerOriginal.includes("correo") || lowerOriginal.includes("contraseña") || lowerOriginal.includes("incorrectos") || lowerOriginal.includes("credential")) {
+        setError("email", { type: "server", message });
+        setError("password", { type: "server", message });
+      }
+    }
+  }, [serverError, setError]);
 
   const passwordValue = watch("password") || "";
   const hasMinLength = passwordValue.length >= 6;
@@ -52,45 +65,46 @@ const SignInPage = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  const onSubmit = (data: LoginFormData) => {
-    loginUser(data);
+  const onSubmit = async (data: SignInFormData) => {
+    try {
+      await loginUser(data);
+    } catch (e) {
+      // El error ya se maneja en el useEffect y en el onError de la mutación
+    }
   };
 
   return (
-    <div className="flex h-screen bg-white dark:bg-[#0A0A0A] overflow-hidden">
+    <div className="flex h-screen bg-white dark:bg-canvas overflow-hidden">
       {/* Left side: Form */}
       <div className="flex w-full lg:w-1/2 flex-col p-8 lg:p-12 xl:p-16 h-full overflow-y-auto">
         <div className="mx-auto w-full max-w-md flex-1 flex flex-col justify-center animate-slide-up-fade" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
           {/* Logo - Perfectly aligned with the form content */}
-          <div className="flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-              <div className="w-5 h-5 bg-white rounded-sm transform rotate-45"></div>
-            </div>
-            <span className="text-xl font-heading tracking-tight text-gray-900 dark:text-white">NodeStack</span>
-          </div>
+          <Link to="/" className="mb-10 w-fit">
+            <Logo variant="full" width={180} height={45} />
+          </Link>
 
           <div className="mb-8">
-            <h1 className="text-3xl font-heading text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-heading text-fg">
               Bienvenido de nuevo
             </h1>
-            <p className="mt-2 text-gray-500 dark:text-gray-400">
+            <p className="mt-2 text-fg-secondary">
               Ingresa tus credenciales para acceder a tu cuenta
             </p>
           </div>
 
           <div className="mb-4">
             <div className="flex w-full gap-3">
-              <SocialButton provider="google" disabled={isPending} className="h-12 w-full border-gray-200 shadow-sm hover:bg-gray-50 dark:border-white/10 dark:hover:bg-white/5">
+              <SocialButton provider="google" disabled={isPending} className="h-12 w-full border-gray-200 shadow-sm hover:bg-gray-50 dark:border-white/10 dark:hover:bg-surface-hover">
                 Continuar con Google
               </SocialButton>
             </div>
 
             <div className="my-8 flex items-center">
-              <div className="grow border-t border-gray-100 dark:border-white/5"></div>
-              <span className="mx-4 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
+              <div className="grow border-t border-border-subtle"></div>
+              <span className="mx-4 text-[10px] font-bold uppercase text-gray-400">
                 o ingresa con correo
               </span>
-              <div className="grow border-t border-gray-100 dark:border-white/5"></div>
+              <div className="grow border-t border-border-subtle"></div>
             </div>
           </div>
 
@@ -102,7 +116,7 @@ const SignInPage = () => {
               placeholder="ejemplo@correo.com"
               autoComplete="email"
               className="h-12 rounded-xl"
-              error={errors.email?.message}
+              error={errors.email?.message?.toString()}
               {...register("email")}
             />
 
@@ -114,12 +128,12 @@ const SignInPage = () => {
                 placeholder="••••••••"
                 autoComplete="current-password"
                 className="h-12 rounded-xl"
-                error={errors.password?.message}
+                error={errors.password?.message?.toString()}
                 {...register("password")}
                 labelRight={
                   <Link
                     to="/auth/forgot-password"
-                    className="text-xs font-bold text-primary-600 hover:text-primary-700 dark:text-primary-400"
+                    className="text-xs font-bold text-primary hover:opacity-90 dark:text-primary"
                   >
                     ¿Olvidaste tu contraseña?
                   </Link>
@@ -136,22 +150,22 @@ const SignInPage = () => {
                   </Button>
                 }
               />
-              
+
               {/* Password Requirements UI */}
               {passwordValue.length > 0 && (
-                <div className="mt-3 p-4 bg-gray-50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/10 flex flex-col gap-2.5">
-                  <p className="text-[12px] font-bold text-gray-500 uppercase tracking-wide mb-1">Tu contraseña debe incluir:</p>
+                <div className="mt-3 p-4 bg-surface-muted rounded-xl border border-border flex flex-col gap-2.5">
+                  <p className="text-[12px] font-bold text-gray-500 uppercase  mb-1">Tu contraseña debe incluir:</p>
                   <div className="flex items-center gap-2">
                     <div className={`w-4 h-4 rounded-full flex items-center justify-center ${hasMinLength ? 'bg-success text-white' : 'bg-gray-200 dark:bg-white/10 text-transparent'}`}>
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                     </div>
-                    <span className={`text-[13px] ${hasMinLength ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-500'}`}>Al menos 6 caracteres</span>
+                    <span className={`text-[13px] ${hasMinLength ? 'text-fg font-medium' : 'text-gray-500'}`}>Al menos 6 caracteres</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className={`w-4 h-4 rounded-full flex items-center justify-center ${hasRegex ? 'bg-success text-white' : 'bg-gray-200 dark:bg-white/10 text-transparent'}`}>
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                     </div>
-                    <span className={`text-[13px] ${hasRegex ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-500'}`}>Mayúscula, minúscula y número</span>
+                    <span className={`text-[13px] ${hasRegex ? 'text-fg font-medium' : 'text-gray-500'}`}>Mayúscula, minúscula y número</span>
                   </div>
                 </div>
               )}
@@ -169,7 +183,7 @@ const SignInPage = () => {
               loading={isPending}
               fullWidth
               size="lg"
-              className="h-12 rounded-xl shadow-lg shadow-primary/25 text-base font-bold tracking-tight"
+              className="h-12 rounded-xl shadow-lg shadow-primary/25 text-base font-bold "
             >
               Iniciar Sesión
             </Button>
@@ -180,7 +194,7 @@ const SignInPage = () => {
               ¿No tienes cuenta?{" "}
               <Link
                 to="/auth/sign-up"
-                className="font-bold text-primary-600 hover:text-primary-700 dark:text-primary-400"
+                className="font-bold text-primary hover:opacity-90 dark:text-primary"
               >
                 Regístrate gratis
               </Link>
@@ -194,10 +208,10 @@ const SignInPage = () => {
         </div>
       </div>
 
-      <AuthSidebar 
-        titleMain="La forma más simple de gestionar tus" 
-        titleAccent="flujos de trabajo" 
-        subtitle="Accede a tu panel de control personalizado y optimiza tu productividad hoy mismo." 
+      <AuthSidebar
+        titleMain="La forma más simple de gestionar tus"
+        titleAccent="flujos de trabajo"
+        subtitle="Accede a tu panel de control personalizado y optimiza tu productividad hoy mismo."
       />
     </div>
   );

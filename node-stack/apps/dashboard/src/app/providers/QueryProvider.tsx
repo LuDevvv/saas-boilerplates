@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { onlineManager } from "@tanstack/react-query";
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 
 onlineManager.setEventListener((setOnline) => {
   if (typeof window !== "undefined") {
@@ -24,13 +24,13 @@ export const createQueryClient = () =>
     defaultOptions: {
       queries: {
         refetchOnWindowFocus: import.meta.env.PROD,
-        retry: 1,
+        retry: false,
         staleTime: 5 * 60 * 1000,
         gcTime: 30 * 60 * 1000,
         networkMode: "online",
       },
       mutations: {
-        retry: 1,
+        retry: false,
         networkMode: "online",
       },
     },
@@ -41,7 +41,7 @@ export interface QueryProviderProps {
 }
 
 export const QueryProvider = ({ children }: QueryProviderProps) => {
-  const queryClient = createQueryClient();
+  const [queryClient] = useState(() => createQueryClient());
 
   return (
     <QueryClientProvider client={queryClient}>

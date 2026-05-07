@@ -1,19 +1,75 @@
-import { FC } from "react";
-import { ShieldCheck } from "lucide-react";
-import { Button } from "@node-stack/ui";
+import { FC, useState } from "react";
+import { ShieldCheck, ShieldAlert, Loader2 } from "lucide-react";
+import { Button, CalloutCard } from "@node-stack/ui";
+import { useAuth } from "@/hooks/stores/useAuth";
+import { TwoFactorModal } from "./TwoFactorModal";
+import { useDisable2fa } from "../../auth/hooks/use2faMutations";
+import { appToast } from "@/components/alerts/Toasts";
 
-export const SecurityCard: FC = () => (
-  <div className="rounded-[24px] bg-[#004080] text-white p-6 shadow-xl shadow-blue-900/20 group hover:scale-[1.01] transition-all">
-    <div className="flex items-center justify-between mb-4">
-      <p className="text-[10px] font-label uppercase opacity-60">Protección</p>
-      <ShieldCheck className="h-5 w-5 text-[#00E6E6]" />
-    </div>
-    <h3 className="text-xl font-heading mb-1">Cuenta Segura</h3>
-    <p className="text-xs font-label opacity-70 leading-relaxed">
-      Tu autenticación de dos factores (2FA) está activa.
-    </p>
-    <Button className="mt-6 w-full bg-white/10 hover:bg-white/20 border border-white/5 rounded-xl py-2 text-[11px] font-heading transition-all">
-      Gestionar Seguridad
-    </Button>
-  </div>
-);
+export const SecurityCard: FC = () => {
+  const { user } = useAuth();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { mutateAsync: disable2fa, isPending: isDisabling } = useDisable2fa();
+
+  const isEnabled = user?.twoFactorEnabled || false;
+
+  const handleDisable = async () => {
+    try {
+      await disable2fa();
+      appToast.success({
+        title: "2FA Desactivado",
+        description: "Se ha eliminado la protección de dos pasos de tu cuenta."
+      });
+    } catch (error) {
+      appToast.error({
+        title: "Error",
+        description: "No se pudo desactivar el 2FA. Inténtalo de nuevo."
+      });
+    }
+  };
+
+  return (
+    <>
+      <CalloutCard
+        icon={isEnabled ? ShieldCheck : ShieldAlert}
+        iconTone={isEnabled ? "success" : "primary"}
+        variant="card"
+        title="Seguridad en Dos Pasos"
+        description={
+          isEnabled
+            ? "Tu cuenta está protegida. Cada vez que inicies sesión, deberás introducir un código único de tu aplicación."
+            : "Añade una capa extra de protección. Evita el acceso no autorizado incluso si alguien consigue tu contraseña."
+        }
+        status={{
+          label: isEnabled ? "Activado y seguro" : "Configuración pendiente",
+          tone: isEnabled ? "success" : "warning",
+          pulse: true,
+        }}
+        action={
+          isEnabled ? (
+            <Button
+              variant="outline"
+              onClick={handleDisable}
+              disabled={isDisabling}
+              className="h-11 w-full rounded-xl border-red-200 dark:border-red-500/20 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 font-bold uppercase text-[10px] transition-all active:scale-95"
+            >
+              {isDisabling ? <Loader2 className="h-4 w-4 animate-spin" /> : "Desactivar 2FA"}
+            </Button>
+          ) : (
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              className="h-11 w-full rounded-xl bg-primary hover:bg-primary-600 text-primary-foreground font-bold uppercase text-[10px] transition-all active:scale-95"
+            >
+              Configurar Seguridad 2FA
+            </Button>
+          )
+        }
+      />
+
+      <TwoFactorModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
+    </>
+  );
+};

@@ -1,63 +1,6 @@
-import axios, { type AxiosInstance, type InternalAxiosRequestConfig, type AxiosError } from "axios";
+import axios from "axios";
+import { createClient } from "@node-stack/api-client";
 import { cookieTokenStorage } from "../cookie-storage";
-
-const createAxiosInstance = (): AxiosInstance => {
-  const instance = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000/api/v1",
-    timeout: 10000,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    withCredentials: true,
-  });
-
-  instance.interceptors.request.use(
-    (config: InternalAxiosRequestConfig) => {
-      const token = cookieTokenStorage.getToken();
-      if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-
-      const workspaceId = getActiveWorkspaceId();
-      if (workspaceId && config.headers) {
-        config.headers["X-Workspace-ID"] = workspaceId;
-      }
-
-      return config;
-    },
-    (error) => Promise.reject(error)
-  );
-
-  instance.interceptors.response.use(
-    (response) => response.data,
-    async (error: AxiosError) => {
-      const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
-
-      if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
-        originalRequest._retry = true;
-
-        try {
-          const { data } = await axios.post(
-            `${import.meta.env.VITE_API_URL}/auth/refresh`,
-            {},
-            { withCredentials: true }
-          );
-          cookieTokenStorage.setToken(data.accessToken);
-          originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
-          return instance(originalRequest);
-        } catch {
-          cookieTokenStorage.removeToken();
-          window.location.href = "/auth/sign-in";
-          return Promise.reject(error);
-        }
-      }
-
-      return Promise.reject(error);
-    }
-  );
-
-  return instance;
-};
 
 const getActiveWorkspaceId = (): string | null => {
   try {
@@ -68,4 +11,81 @@ const getActiveWorkspaceId = (): string | null => {
   }
 };
 
-export const axiosInstance = createAxiosInstance();
+export const axiosInstance = createClient({
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000/api/v1",
+  getToken: () => cookieTokenStorage.getToken(),
+  getWorkspaceId: getActiveWorkspaceId,
+});
+
+// Response interceptor is now handled by @node-stack/api-client's createClient
+// but we keep the error handling (retry/refresh) here
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error: any) => {
+    // Determine if this is a 401 error, handling both AxiosError and AppError
+    const status = error.statusCode || error.response?.status || error.originalError?.response?.status;
+    const originalRequest = error.config || error.originalError?.config;
+
+    // Auth and core check routes don't retry refresh to avoid loops
+    const isAuthRoute = 
+      originalRequest?.url?.includes("/auth/login") || 
+      originalRequest?.url?.includes("/auth/register") || 
+      originalRequest?.url?.includes("/auth/refresh");
+
+    if (status === 401 && originalRequest && !originalRequest._retry && !isAuthRoute) {
+      originalRequest._retry = true;
+      const refreshToken = cookieTokenStorage.getRefreshToken();
+
+      if (refreshToken) {
+        try {
+          // Use direct axios to avoid interceptor loop
+          const response = await axios.post(
+            `${import.meta.env.VITE_API_URL || "http://localhost:4000/api/v1"}/auth/refresh`,
+            { refreshToken },
+            { withCredentials: true }
+          );
+
+          const { accessToken, refreshToken: newRefreshToken } = response.data.data || response.data;
+
+          cookieTokenStorage.setToken(accessToken);
+          if (newRefreshToken) {
+            cookieTokenStorage.setRefreshToken(newRefreshToken);
+          }
+
+          // Update the original request with the new token
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          return axiosInstance(originalRequest);
+        } catch (refreshError: any) {
+          const rStatus = refreshError?.response?.status || refreshError?.statusCode;
+          if (rStatus === 401 || rStatus === 403) {
+            cookieTokenStorage.clear();
+            try {
+              const { useAuthStore } = require("@/stores/authStore");
+              const authStore = useAuthStore.getState();
+              authStore.logout();
+              if (!window.location.pathname.startsWith("/auth")) {
+                window.location.href = "/auth/sign-in";
+              }
+            } catch (e) {}
+          }
+          return Promise.reject(refreshError);
+        }
+      } else {
+        // No refresh token, just logout
+        cookieTokenStorage.clear();
+        try {
+          const { useAuthStore } = require("@/stores/authStore");
+          const authStore = useAuthStore.getState();
+          if (authStore.isAuthenticated) {
+            authStore.logout();
+            if (!window.location.pathname.startsWith("/auth")) {
+              window.location.href = "/auth/sign-in";
+            }
+          }
+        } catch (e) {}
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);

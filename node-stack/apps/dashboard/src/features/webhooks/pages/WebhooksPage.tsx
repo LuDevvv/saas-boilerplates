@@ -24,7 +24,7 @@ const WebhooksPage: FC = () => {
         action={
           <Button 
             onClick={() => setIsAddModalOpen(true)}
-            className="rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-heading uppercase text-[10px] h-11 px-6 shadow-lg shadow-indigo-600/20"
+            className="rounded-2xl bg-primary hover:opacity-90 text-white font-heading uppercase text-[10px] h-11 px-6 shadow-lg shadow-primary/20"
           >
             <Plus className="mr-2 h-4 w-4" />
             Agregar Endpoint
@@ -57,30 +57,30 @@ const WebhooksPage: FC = () => {
                 await deleteMutation.mutateAsync(id);
               }}
               onToggle={async (id, enabled) => {
-                await updateMutation.mutateAsync({ id, updates: { enabled } });
+                await updateMutation.mutateAsync({ id, enabled });
               }}
             />
           )}
         </div>
 
         <div className="space-y-8">
-          <Card className="p-8 rounded-[32px] border-slate-100 dark:border-white/5 bg-white dark:bg-white/5 shadow-sm">
+          <Card className="p-8 rounded-[32px] border-border dark:border-white/5 bg-white dark:bg-white/5 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-2.5 bg-indigo-50 dark:bg-indigo-500/5 rounded-xl">
-                <ShieldCheck className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              <div className="p-2.5 bg-primary/10 dark:bg-primary/20 rounded-xl">
+                <ShieldCheck className="w-5 h-5 text-primary dark:text-primary" />
               </div>
-              <h3 className="text-sm font-heading text-slate-900 dark:text-white uppercase">Seguridad</h3>
+              <h3 className="text-sm font-heading text-fg uppercase">Seguridad</h3>
             </div>
             <div className="space-y-4">
-              <p className="text-xs text-slate-500 font-label leading-relaxed">
-                Todas las peticiones incluyen un header <code className="text-indigo-600 dark:text-indigo-400 font-mono">X-NodeStack-Signature</code>.
+              <p className="text-xs text-gray-500 font-label leading-relaxed">
+                Todas las peticiones incluyen un header <code className="text-primary dark:text-primary font-mono">X-NodeStack-Signature</code>.
               </p>
-              <p className="text-xs text-slate-500 font-label leading-relaxed">
+              <p className="text-xs text-gray-500 font-label leading-relaxed">
                 Utiliza el secreto de cada webhook para validar que la petición proviene realmente de nuestros servidores.
               </p>
               <Button 
                 variant="ghost" 
-                className="w-full justify-start text-[11px] font-heading uppercase text-indigo-600 p-0 h-auto hover:bg-transparent"
+                className="w-full justify-start text-[11px] font-heading uppercase text-primary p-0 h-auto hover:bg-transparent"
                 onClick={() => window.open('https://docs.nodestack.com/webhooks', '_blank')}
               >
                 Ver guía de firmas <Plus className="ml-1 h-3 w-3 rotate-45" />
@@ -88,11 +88,11 @@ const WebhooksPage: FC = () => {
             </div>
           </Card>
 
-          <Card className="p-8 rounded-[32px] border-none bg-slate-900 text-white shadow-xl relative overflow-hidden group">
-            <div className="absolute right-0 top-0 w-32 h-32 bg-indigo-500/10 blur-3xl rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-700" />
+          <Card className="p-8 rounded-[32px] border-none bg-gray-950 text-white shadow-xl relative overflow-hidden group">
+            <div className="absolute right-0 top-0 w-32 h-32 bg-primary/10 blur-3xl rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-700" />
             <div className="relative z-10">
               <div className="p-2.5 bg-white/10 w-fit rounded-xl mb-6">
-                <Terminal className="w-5 h-5 text-indigo-400" />
+                <Terminal className="w-5 h-5 text-secondary" />
               </div>
               <h4 className="text-sm font-heading uppercase mb-2">Logs de Envío</h4>
               <p className="text-[11px] text-white/50 leading-relaxed mb-6">

@@ -14,7 +14,7 @@ const filterButtons = [
 ];
 
 export const TimeFilter: React.FC<TimeFilterProps> = ({ value, onChange }) => (
-  <div className="flex items-center gap-3 bg-white dark:bg-white/5 p-1.5 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm">
+  <div className="flex items-center gap-3 bg-white dark:bg-white/5 p-1.5 rounded-2xl border border-border-subtle shadow-sm">
     {filterButtons.map((btn) => (
       <Button
         key={btn.id}

@@ -43,7 +43,7 @@ export const UserTableContent: FC<UserTableContentProps> = ({
 
   return (
     <div className="rounded-3xl border border-gray-100 bg-white shadow-sm dark:border-white/5 dark:bg-gray-900 overflow-hidden">
-      <div className="p-6 border-b border-gray-100 dark:border-white/5 flex flex-col sm:flex-row gap-4">
+      <div className="p-6 border-b border-border-subtle flex flex-col sm:flex-row gap-4">
         <UserSearch value={searchTerm} onChange={onSearchChange} />
         <button className="inline-flex items-center gap-2 rounded-2xl border border-gray-100 px-4 py-2 text-sm font-heading text-gray-600 hover:bg-gray-50 dark:border-white/5 dark:text-gray-400 dark:hover:bg-white/10 transition-colors">
           <Filter className="h-4 w-4" />
@@ -60,7 +60,7 @@ export const UserTableContent: FC<UserTableContentProps> = ({
                   {user.name.charAt(0)}
                 </div>
                 <div>
-                  <div className="text-sm font-heading text-gray-950 dark:text-white">{user.name}</div>
+                  <div className="text-sm font-heading text-fg">{user.name}</div>
                   <div className="text-xs text-gray-500 lowercase">{user.email}</div>
                 </div>
               </div>
@@ -71,7 +71,7 @@ export const UserTableContent: FC<UserTableContentProps> = ({
                   "h-3.5 w-3.5",
                   user.role === "admin" || user.role === "super_admin" ? "text-amber-500" : "text-gray-400"
                 )} />
-                <span className="text-sm font-label text-gray-700 dark:text-gray-300">
+                <span className="text-sm font-label text-fg-secondary">
                   {user.role}
                 </span>
               </div>
@@ -86,7 +86,7 @@ export const UserTableContent: FC<UserTableContentProps> = ({
                 {user.status}
               </span>
             </td>
-            <td className="px-6 py-4 text-sm font-label text-gray-500 dark:text-gray-400">
+            <td className="px-6 py-4 text-sm font-label text-fg-secondary">
               {new Date(user.createdAt).toLocaleDateString()}
             </td>
             <td className="px-6 py-4 text-right">
@@ -109,7 +109,7 @@ export const UserTableContent: FC<UserTableContentProps> = ({
                 >
                   <UserX className="h-4 w-4" />
                 </button>
-                <button className="p-2 rounded-xl text-gray-400 hover:text-gray-950 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-all">
+                <button className="p-2 rounded-xl text-gray-400 hover:text-gray-950 dark:hover:text-white hover:bg-surface-hover transition-all">
                   <MoreVertical className="h-4 w-4" />
                 </button>
               </div>
@@ -118,9 +118,9 @@ export const UserTableContent: FC<UserTableContentProps> = ({
         ))}
       </UserTable>
 
-      <div className="p-6 border-t border-gray-100 dark:border-white/5 flex items-center justify-between">
+      <div className="p-6 border-t border-border-subtle flex items-center justify-between">
         <p className="text-sm font-label text-gray-500">
-          Showing <span className="text-gray-950 dark:text-white font-heading">1 to {filteredUsers.length}</span> of {filteredUsers.length} users
+          Showing <span className="text-fg font-heading">1 to {filteredUsers.length}</span> of {filteredUsers.length} users
         </p>
         <div className="flex items-center gap-2">
           <button className="p-2 rounded-xl border border-gray-100 text-gray-400 hover:bg-gray-50 dark:border-white/5 disabled:opacity-50 transition-colors" disabled>

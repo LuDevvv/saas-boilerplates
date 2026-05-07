@@ -6,15 +6,11 @@ import { flushSync } from "react-dom";
 export const ThemeToggle: FC = () => {
   const { theme, toggleTheme } = useThemeStore();
 
-  const handleToggle = (e: React.MouseEvent) => {
+  const handleToggle = () => {
     if (!document.startViewTransition) {
       toggleTheme();
       return;
     }
-
-    const { clientX: x, clientY: y } = e;
-    document.documentElement.style.setProperty('--x', `${x}px`);
-    document.documentElement.style.setProperty('--y', `${y}px`);
 
     document.documentElement.classList.add('theme-toggling');
     
@@ -32,13 +28,13 @@ export const ThemeToggle: FC = () => {
   return (
     <button
       onClick={handleToggle}
-      className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gray-50/50 text-gray-500 transition-all duration-300 hover:bg-gray-100 hover:text-primary hover:scale-[1.05] active:scale-95 dark:bg-white/5 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary border border-transparent hover:border-sidebar-border"
+      className="flex h-9 w-9 items-center justify-center rounded-2xl bg-gray-50/50 text-gray-500 transition-all duration-300 hover:bg-gray-100 hover:text-primary active:scale-95 dark:bg-white/5 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-primary border border-transparent hover:border-sidebar-border"
       aria-label={theme === "light" ? "Activar modo oscuro" : "Activar modo claro"}
     >
       {theme === "light" ? (
-        <Moon className="h-4 w-4 animate-in fade-in zoom-in duration-300" />
+        <Moon className="h-4 w-4" />
       ) : (
-        <Sun className="h-4 w-4 animate-in fade-in zoom-in duration-300" />
+        <Sun className="h-4 w-4" />
       )}
     </button>
   );

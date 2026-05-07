@@ -1,6 +1,8 @@
-import { User as UserType } from "@node-stack/types";
+import { User, UserEntity } from "@node-stack/types";
 import { LucideIcon } from "lucide-react";
 import React from "react";
+
+export type UserType = User | UserEntity;
 
 export interface SidebarProps {
   isOpen: boolean;
@@ -52,6 +54,8 @@ export interface AccountDropdownProps {
   onLogout: () => void;
   items: DropdownItem[];
   triggerRef: React.RefObject<HTMLButtonElement | null>;
+  user?: UserType | null;
+  getFullName?: () => string;
 }
 
 export interface AccountSectionProps {

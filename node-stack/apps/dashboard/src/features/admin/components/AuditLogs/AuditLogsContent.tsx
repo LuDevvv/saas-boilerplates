@@ -1,6 +1,7 @@
 import { FC, useState, useEffect } from "react";
 import { SectionHeader } from "@/components/layout/SectionHeader";
-import { adminApi, type AuditLog } from "@/features/admin";
+import { api } from "@/lib/api";
+import { type AuditLog } from "@/features/admin";
 import { AuditLogCard } from "./AuditLogCard";
 import { AuditLogList } from "./AuditLogList";
 import { AuditLogEmptyState } from "./AuditLogEmptyState";
@@ -13,7 +14,7 @@ export const AuditLogsContent: FC = () => {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const data = await adminApi.getAuditLogs();
+        const data = await api.admin.getAuditLogs();
         setLogs(data);
       } catch (error) {
         console.error("Error fetching audit logs:", error);

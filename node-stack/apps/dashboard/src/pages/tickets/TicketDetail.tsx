@@ -28,13 +28,13 @@ import { cn } from "@/utils/classNames";
 
 const priorityConfig: Record<TicketPriority, { label: string; color: string; bg: string }> = {
   low: { label: "Baja", color: "text-gray-500", bg: "bg-gray-100 dark:bg-gray-800" },
-  medium: { label: "Media", color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20" },
+  medium: { label: "Media", color: "text-primary", bg: "bg-primary/10 dark:bg-primary/20" },
   high: { label: "Alta", color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-900/20" },
   critical: { label: "Crítica", color: "text-red-500", bg: "bg-red-50 dark:bg-red-900/20" },
 };
 
 const statusConfig: Record<TicketStatus, { label: string; dot: string; color: string }> = {
-  open: { label: "Abierto", dot: "bg-blue-500", color: "text-blue-600 bg-blue-50 dark:bg-blue-900/20" },
+  open: { label: "Abierto", dot: "bg-primary", color: "text-primary bg-primary/10 dark:bg-primary/20" },
   in_progress: { label: "En progreso", dot: "bg-amber-500", color: "text-amber-600 bg-amber-50 dark:bg-amber-900/20" },
   resolved: { label: "Resuelto", dot: "bg-emerald-500", color: "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20" },
   closed: { label: "Cerrado", dot: "bg-gray-400", color: "text-gray-600 bg-gray-50 dark:bg-gray-800" },
@@ -61,7 +61,7 @@ const TicketDetail: FC = () => {
   if (isLoading) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
-        <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
       </div>
     );
   }
@@ -101,7 +101,7 @@ const TicketDetail: FC = () => {
         <div className="flex items-center gap-4">
           <button
             onClick={() => navigate("/tickets")}
-            className="p-3 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 transition-all cursor-pointer"
+            className="p-3 rounded-2xl bg-white dark:bg-gray-900 border border-border dark:border-white/5 hover:border-gray-200 dark:hover:border-white/10 transition-all cursor-pointer"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
@@ -114,7 +114,7 @@ const TicketDetail: FC = () => {
                 {statusConfig[ticket.status].label}
               </span>
             </div>
-            <h1 className="text-2xl font-heading text-gray-950 dark:text-white truncate max-w-md">
+            <h1 className="text-2xl font-heading text-fg truncate max-w-md">
               {ticket.subject}
             </h1>
           </div>
@@ -137,7 +137,7 @@ const TicketDetail: FC = () => {
               )}
             </button>
           )}
-          <button className="p-3 rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-white/5 hover:bg-gray-50 transition-all">
+          <button className="p-3 rounded-2xl bg-white dark:bg-gray-900 border border-border dark:border-white/5 hover:bg-gray-50 transition-all">
             <MoreVertical className="h-5 w-5 text-gray-400" />
           </button>
         </div>
@@ -145,21 +145,21 @@ const TicketDetail: FC = () => {
 
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-8 h-full">
         {/* Main Chat Area */}
-        <div className="xl:col-span-3 flex flex-col bg-white dark:bg-gray-900 rounded-[32px] border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden min-h-[600px]">
+        <div className="xl:col-span-3 flex flex-col bg-white dark:bg-gray-900 rounded-[32px] border border-border dark:border-white/5 shadow-sm overflow-hidden min-h-[600px]">
           {/* Thread */}
           <div className="flex-1 p-6 space-y-8 overflow-y-auto custom-scrollbar">
             {/* Original Description as first message */}
             <div className="flex gap-4">
-              <div className="h-10 w-10 shrink-0 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <User className="h-5 w-5 text-blue-600" />
+              <div className="h-10 w-10 shrink-0 rounded-2xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+                <User className="h-5 w-5 text-primary" />
               </div>
               <div className="max-w-[80%]">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="text-sm font-heading text-gray-950 dark:text-white">Tú (Autor)</span>
+                  <span className="text-sm font-heading text-fg">Tú (Autor)</span>
                   <span className="text-[10px] text-gray-400 font-label">Hace 2 días</span>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800/50 p-5 rounded-2xl rounded-tl-none border border-gray-100 dark:border-white/5">
-                  <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                <div className="bg-gray-50 dark:bg-gray-800/50 p-5 rounded-2xl rounded-tl-none border border-border dark:border-white/5">
+                  <p className="text-sm text-fg-secondary leading-relaxed whitespace-pre-wrap">
                     {ticket.description}
                   </p>
                 </div>
@@ -178,13 +178,13 @@ const TicketDetail: FC = () => {
                 <div className={cn(
                   "h-10 w-10 shrink-0 rounded-2xl flex items-center justify-center",
                   msg.isAdmin
-                    ? "bg-purple-100 dark:bg-purple-900/30"
-                    : "bg-blue-100 dark:bg-blue-900/30"
+                    ? "bg-secondary/10 dark:bg-secondary/20"
+                    : "bg-primary/10 dark:bg-primary/20"
                 )}>
                   {msg.isAdmin ? (
-                    <Shield className="h-5 w-5 text-purple-600" />
+                    <Shield className="h-5 w-5 text-secondary" />
                   ) : (
-                    <User className="h-5 w-5 text-blue-600" />
+                    <User className="h-5 w-5 text-primary" />
                   )}
                 </div>
                 <div className={cn(
@@ -195,7 +195,7 @@ const TicketDetail: FC = () => {
                     "flex items-center gap-2 mb-1.5",
                     msg.isAdmin ? "flex-row-reverse" : "flex-row"
                   )}>
-                    <span className="text-sm font-heading text-gray-950 dark:text-white">
+                    <span className="text-sm font-heading text-fg">
                       {msg.isAdmin ? "Soporte Técnico" : "Tú"}
                     </span>
                     <span className="text-[10px] text-gray-400 font-label">Hace 1h</span>
@@ -203,10 +203,10 @@ const TicketDetail: FC = () => {
                   <div className={cn(
                     "p-5 rounded-2xl border transition-all",
                     msg.isAdmin
-                      ? "bg-purple-50 dark:bg-purple-900/10 border-purple-100 dark:border-purple-500/10 rounded-tr-none shadow-sm"
-                      : "bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-white/5 rounded-tl-none"
+                      ? "bg-secondary/5 dark:bg-secondary/10 border-secondary/10 dark:border-secondary/20 rounded-tr-none shadow-sm"
+                      : "bg-gray-50 dark:bg-gray-800/50 border-border dark:border-white/5 rounded-tl-none"
                   )}>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">
+                    <p className="text-sm text-fg-secondary leading-relaxed whitespace-pre-wrap">
                       {msg.content}
                     </p>
                   </div>
@@ -217,7 +217,7 @@ const TicketDetail: FC = () => {
           </div>
 
           {/* Input Area */}
-          <div className="p-6 bg-gray-50/50 dark:bg-gray-800/20 border-t border-gray-100 dark:border-white/5">
+          <div className="p-6 bg-gray-50/50 dark:bg-gray-800/20 border-t border-border dark:border-white/5">
             {ticket.status === "closed" ? (
               <div className="flex items-center justify-center py-4 gap-2 text-gray-500 font-heading text-sm">
                 <XCircle className="h-5 w-5" />
@@ -230,7 +230,7 @@ const TicketDetail: FC = () => {
                   value={reply}
                   onChange={(e) => setReply(e.target.value)}
                   placeholder="Escribe tu respuesta aquí..."
-                  className="w-full p-5 pr-32 bg-white dark:bg-gray-900 border border-gray-200 dark:border-white/10 rounded-3xl text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/5 focus:border-blue-500 transition-all resize-none shadow-sm"
+                  className="w-full p-5 pr-32 bg-white dark:bg-gray-900 border border-border rounded-3xl text-sm focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all resize-none shadow-sm"
                 />
                 <div className="absolute right-4 bottom-4 flex items-center gap-2">
                   <button type="button" className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
@@ -239,7 +239,7 @@ const TicketDetail: FC = () => {
                   <button
                     type="submit"
                     disabled={!reply.trim() || replyMutation.isPending}
-                    className="btn-primary py-2.5 px-5 shadow-blue-500/20"
+                    className="btn-primary py-2.5 px-5 shadow-primary/20"
                   >
                     {replyMutation.isPending ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -259,8 +259,8 @@ const TicketDetail: FC = () => {
         {/* Sidebar Metadata */}
         <aside className="space-y-6">
           {/* Metadata Card */}
-          <div className="bg-white dark:bg-gray-900 rounded-[32px] border border-gray-100 dark:border-white/5 p-6 shadow-sm">
-            <h3 className="text-sm font-label text-gray-950 dark:text-white uppercase  mb-6">
+          <div className="bg-white dark:bg-gray-900 rounded-[32px] border border-border dark:border-white/5 p-6 shadow-sm">
+            <h3 className="text-sm font-label text-fg uppercase  mb-6">
               Detalles del Ticket
             </h3>
 
@@ -280,7 +280,7 @@ const TicketDetail: FC = () => {
                   <Clock className="h-3.5 w-3.5" />
                   Creado
                 </span>
-                <span className="text-xs font-label text-gray-700 dark:text-gray-300">
+                <span className="text-xs font-label text-fg-secondary">
                   {new Date(ticket.createdAt).toLocaleDateString()}
                 </span>
               </div>
@@ -290,15 +290,15 @@ const TicketDetail: FC = () => {
                   <Shield className="h-3.5 w-3.5" />
                   Asignado a
                 </span>
-                <span className="text-xs font-label text-gray-700 dark:text-gray-300">
+                <span className="text-xs font-label text-fg-secondary">
                   {ticket.assignedTo || "Pendiente"}
                 </span>
               </div>
 
-              <div className="pt-4 border-t border-gray-100 dark:border-white/5">
-                <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-900/10 rounded-2xl">
-                  <CheckCircle className="h-4 w-4 text-blue-600" />
-                  <p className="text-[10px] font-label text-blue-700 dark:text-blue-400 leading-tight">
+              <div className="pt-4 border-t border-border dark:border-white/5">
+                <div className="flex items-center gap-2 p-3 bg-primary/10 dark:bg-primary/20 rounded-2xl">
+                  <CheckCircle className="h-4 w-4 text-primary" />
+                  <p className="text-[10px] font-label text-primary dark:text-primary leading-tight">
                     Recibirás notificaciones por cada respuesta.
                   </p>
                 </div>
@@ -307,10 +307,10 @@ const TicketDetail: FC = () => {
           </div>
 
           {/* Quick Help Card */}
-          <div className="bg-gradient-to-br from-indigo-600 to-blue-700 rounded-[32px] p-6 text-white overflow-hidden relative group shadow-lg shadow-blue-500/20">
+          <div className="bg-gradient-to-br from-secondary to-primary rounded-[32px] p-6 text-white overflow-hidden relative group shadow-lg shadow-primary/20">
             <div className="relative z-10">
               <h3 className="font-heading mb-2">¿Necesitas algo más?</h3>
-              <p className="text-xs text-blue-100 opacity-90 leading-relaxed">
+              <p className="text-xs text-white/80 opacity-90 leading-relaxed">
                 Nuestros agentes de soporte suelen responder en menos de 2 horas durante horario laboral.
               </p>
             </div>
@@ -323,3 +323,4 @@ const TicketDetail: FC = () => {
 };
 
 export default TicketDetail;
+

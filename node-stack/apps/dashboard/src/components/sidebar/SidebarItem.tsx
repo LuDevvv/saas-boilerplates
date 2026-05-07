@@ -1,7 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import { FC, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/utils/classNames";
 import LinkTransition from "../utils/LinkTransition.js";
 import {
@@ -32,7 +31,6 @@ export const SidebarItem: FC<SidebarItemProps> = ({
 
   const hasSubItems = subItems && subItems.length > 0;
 
-  // Colapsado: usar ruta propia o recurrir al primer sub-item
   const collapsedPath =
     path ||
     (isCollapsed && subItems && subItems.length > 0
@@ -46,7 +44,6 @@ export const SidebarItem: FC<SidebarItemProps> = ({
   };
 
   const handleMainClick = (e: React.MouseEvent) => {
-    // Si tiene subitems, alternamos el menú
     if (hasSubItems && !isCollapsed) {
       if (!path) {
         e.preventDefault();
@@ -68,61 +65,52 @@ export const SidebarItem: FC<SidebarItemProps> = ({
   };
 
   const hasActiveChild = isDescendantActive(subItems);
-
-  // Activo si está seleccionado o tiene un hijo activo
   const isVisuallyActive = isActive || hasActiveChild;
 
   const ItemContent = (
     <div
       ref={itemRef}
       className={cn(
-        "group relative flex items-center transition-all duration-200 cursor-pointer pl-[10px] pr-2 py-2 border border-transparent outline-none",
-        isCollapsed ? "w-10 h-10 justify-center pl-0 pr-0 rounded-full" : "w-full rounded-lg",
+        "group relative flex items-center transition-all duration-200 cursor-pointer border border-transparent outline-none",
+        isCollapsed ? "w-10 h-10 justify-center p-0 rounded-full gap-0" : "w-full rounded-lg pl-[10px] pr-2 py-2 gap-3",
         isVisuallyActive
-          ? "bg-sidebar-active text-primary font-heading shadow-sm"
-          : "text-sidebar-text/70 hover:bg-sidebar-active/50 hover:text-sidebar-text-active",
-        "gap-3",
+          ? "bg-sidebar-active text-sidebar-text-active font-medium"
+          : "text-sidebar-text hover:bg-sidebar-active/25 hover:text-sidebar-text-active/80",
         level > 0 && !isCollapsed && "ml-4"
       )}
       onClick={handleMainClick}
     >
-
       {Icon && (
-        <div
-          className={cn(
-            "flex-shrink-0 transition-all duration-200 relative"
-          )}
-        >
+        <div className="flex-shrink-0 transition-all duration-200 relative">
           <Icon
             className={cn(
               "h-5 w-5",
               isVisuallyActive
-                ? "text-primary"
-                : "text-sidebar-text/60 group-hover:text-sidebar-text-active transition-colors duration-200"
+                ? "text-sidebar-text-active"
+                : "text-sidebar-text/50 group-hover:text-sidebar-text-active transition-colors duration-200"
             )}
           />
           {isCollapsed && badge && badge !== "Nuevo" && (
-            <div className="absolute -right-3 -top-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-label text-white shadow-md ring-2 ring-white dark:ring-[#0A0A0A] z-10">
+            <div className="absolute -right-3 -top-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-label text-white shadow-md ring-2 ring-sidebar z-10">
               {badge}
             </div>
           )}
         </div>
       )}
 
+      {/* Label and Badge — removed from DOM when collapsed to kill phantom flex gap */}
       {!isCollapsed && (
-        <div className="flex flex-1 items-center gap-3 animate-fade-in-fast overflow-hidden">
+        <div className="flex flex-1 items-center gap-3 overflow-hidden">
           <span className={cn(
-            "flex-1 truncate text-sm",
-            isVisuallyActive ? "text-primary" : "text-inherit"
+            "flex-1 truncate text-sm whitespace-nowrap",
+            isVisuallyActive ? "text-sidebar-text-active" : "text-inherit"
           )}>
             {label}
           </span>
           {badge && (
             <span className={cn(
-              "flex h-5 min-w-[20px] items-center justify-center rounded-lg px-1.5 text-[9px] font-label shadow-sm transition-colors uppercase ",
-              badge === "Nuevo"
-                ? "bg-primary text-white"
-                : "bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300"
+              "flex h-5 min-w-[20px] items-center justify-center px-1.5 text-[9px] font-bold shadow-sm transition-colors uppercase bg-primary text-white shrink-0",
+              String(badge).length === 1 ? "rounded-full w-5" : "rounded-lg"
             )}>
               {badge}
             </span>
@@ -131,7 +119,7 @@ export const SidebarItem: FC<SidebarItemProps> = ({
             <ChevronDown
               onClick={handleChevronClick}
               className={cn(
-                "h-4 w-4 flex-shrink-0 transition-all duration-200 text-sidebar-text/40 hover:text-primary cursor-pointer",
+                "h-4 w-4 flex-shrink-0 transition-all duration-200 text-sidebar-text/40 hover:text-sidebar-text-active cursor-pointer",
                 isExpanded && "rotate-180"
               )}
             />
@@ -141,7 +129,6 @@ export const SidebarItem: FC<SidebarItemProps> = ({
     </div>
   );
 
-  // Sub-items recursivos
   const renderSubItems = (items: typeof subItems, parentLevel: number) => {
     if (!items) return null;
 
@@ -179,8 +166,8 @@ export const SidebarItem: FC<SidebarItemProps> = ({
             className={cn(
               "flex items-center gap-3 px-3 py-1.5 transition-all duration-200 relative group cursor-pointer border border-transparent rounded-lg",
               isSubItemActive
-                ? "bg-sidebar-active/80 text-sidebar-text-active font-heading"
-                : "text-sidebar-text hover:bg-sidebar-active/50 hover:text-gray-900 dark:hover:text-white"
+                ? "bg-sidebar-active text-sidebar-text-active font-bold"
+                : "text-sidebar-text hover:bg-sidebar-active/50"
             )}
           >
             {subItem.icon && (
@@ -188,8 +175,8 @@ export const SidebarItem: FC<SidebarItemProps> = ({
                 className={cn(
                   "h-4 w-4 flex-shrink-0 transition-colors duration-200",
                   isSubItemActive
-                    ? "text-sidebar-text-active"
-                    : "text-sidebar-text group-hover:text-gray-600 dark:group-hover:text-gray-300"
+                  ? "text-sidebar-text-active"
+                  : "text-sidebar-text group-hover:text-sidebar-text-active"
                 )}
               />
             )}
@@ -202,94 +189,59 @@ export const SidebarItem: FC<SidebarItemProps> = ({
     });
   };
 
-  const renderMainItem = () => {
-    const content = (
-      <div className="w-full">
-        {isCollapsed ? (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              {collapsedPath ? (
-                <LinkTransition
-                  href={collapsedPath}
-                  className="w-full text-left block"
-                  callBack={closeMobile}
-                >
-                  {ItemContent}
-                </LinkTransition>
-              ) : (
-                <div>{ItemContent}</div>
-              )}
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              {label}
-            </TooltipContent>
-          </Tooltip>
+  const renderMainItem = () => (
+    <div className={cn("flex items-center", isCollapsed ? "w-full justify-center" : "w-full")}>
+      {isCollapsed ? (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {collapsedPath ? (
+              <LinkTransition
+                href={collapsedPath}
+                className="w-10 h-10 mx-auto block"
+                callBack={closeMobile}
+              >
+                {ItemContent}
+              </LinkTransition>
+            ) : (
+              <div className="w-10 h-10 mx-auto">{ItemContent}</div>
+            )}
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            {label}
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        path ? (
+          <LinkTransition
+            href={path}
+            className="w-full text-left block"
+            callBack={closeMobile}
+          >
+            {ItemContent}
+          </LinkTransition>
         ) : (
-          path ? (
-            <LinkTransition
-              href={path}
-              className="w-full text-left block"
-              callBack={closeMobile}
-            >
-              {ItemContent}
-            </LinkTransition>
-          ) : (
-            <div>{ItemContent}</div>
-          )
-        )}
-      </div>
-    );
-
-    return content;
-  };
+          <div>{ItemContent}</div>
+        )
+      )}
+    </div>
+  );
 
   return (
     <>
       {hasSubItems && !isCollapsed ? (
         <div className="transition-all duration-300">
           {renderMainItem()}
-
-          <AnimatePresence initial={false}>
-            {isExpanded && (
-              <motion.div
-                initial={{ height: 0, opacity: 0, filter: "blur(4px)" }}
-                animate={{
-                  height: "auto",
-                  opacity: 1,
-                  filter: "blur(0px)",
-                  transition: {
-                    height: {
-                      type: "spring",
-                      stiffness: 300,
-                      damping: 30
-                    },
-                    opacity: { duration: 0.25 },
-                    filter: { duration: 0.2 }
-                  }
-                }}
-                exit={{
-                  height: 0,
-                  opacity: 0,
-                  filter: "blur(4px)",
-                  transition: {
-                    height: { duration: 0.25 },
-                    opacity: { duration: 0.15 },
-                    filter: { duration: 0.1 }
-                  }
-                }}
-                className="overflow-hidden"
+          {isExpanded && (
+            <div className="overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200">
+              <div
+                className="mt-1 space-y-0.5 px-6 pb-2 relative"
+                onClick={(e) => e.stopPropagation()}
               >
-                <div
-                  className="mt-1 space-y-0.5 px-6 pb-2 relative"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {/* Main vertical line for the whole group */}
-                  <div className="absolute left-[25px] top-0 bottom-4 w-px bg-sidebar-border opacity-50" />
-                  {renderSubItems(subItems, level)}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                <div className="absolute left-[25px] top-0 bottom-4 w-px bg-sidebar-border opacity-50" />
+                {renderSubItems(subItems, level)}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         renderMainItem()

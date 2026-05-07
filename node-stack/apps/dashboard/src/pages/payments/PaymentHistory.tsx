@@ -34,7 +34,7 @@ const PaymentHistory = () => {
       accessorKey: "id",
       header: "Factura",
       cell: ({ row }) => (
-        <span className="font-label text-gray-900 dark:text-white uppercase  text-[11px]">{row.getValue("id")}</span>
+        <span className="font-label text-fg uppercase  text-[11px]">{row.getValue("id")}</span>
       ),
     },
     {
@@ -47,14 +47,14 @@ const PaymentHistory = () => {
       accessorKey: "method",
       header: "Método",
       cell: ({ row }) => (
-        <span className="text-[12px] font-label text-gray-500 dark:text-gray-400 uppercase  bg-gray-50 dark:bg-white/5 px-2.5 py-1 rounded-md border border-gray-100 dark:border-white/5">{row.getValue("method")}</span>
+        <span className="text-[12px] font-label text-fg-secondary uppercase  bg-surface-muted px-2.5 py-1 rounded-md border border-border-subtle">{row.getValue("method")}</span>
       ),
     },
     {
       accessorKey: "amount",
       header: "Monto",
       cell: ({ row }) => (
-        <span className="font-kpi text-gray-950 dark:text-white text-[15px] ">{row.getValue("amount")}</span>
+        <span className="font-kpi text-fg text-[15px] ">{row.getValue("amount")}</span>
       ),
     },
     {
@@ -74,8 +74,8 @@ const PaymentHistory = () => {
       id: "actions",
       cell: ({ row }) => (
         <div className="flex justify-end gap-2">
-          <Button variant="ghost" size="icon" className="rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95 transition-all">
-            <Download className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+          <Button variant="ghost" size="icon" className="rounded-xl hover:bg-surface-hover active:scale-95 transition-all">
+            <Download className="h-4 w-4 text-fg-secondary" />
           </Button>
           <Button
             variant="ghost"
@@ -92,8 +92,8 @@ const PaymentHistory = () => {
 
   const mappedHistory: PaymentRecord[] = (invoices || []).map(inv => ({
     id: inv.id,
-    date: new Date(inv.created).toLocaleDateString(),
-    amount: `$${inv.amountPaid / 100}`,
+    date: new Date(inv.date).toLocaleDateString(),
+    amount: `$${inv.amount / 100}`,
     status: inv.status === "paid" ? "Pagado" : "Pendiente",
     method: "Visa"
   }));

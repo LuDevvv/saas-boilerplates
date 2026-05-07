@@ -41,22 +41,41 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       }
 
       return (
-        <div className="flex flex-col items-center justify-center min-h-[200px] p-8 text-center">
-          <div className="bg-rose-50 dark:bg-rose-500/10 rounded-xl p-6 max-w-md">
-            <AlertTriangle className="w-10 h-10 text-rose-500 mx-auto mb-4" />
-            <h3 className="text-lg font-heading text-gray-900 dark:text-gray-100 mb-2">
-              {this.props.moduleName ? `${this.props.moduleName} Error` : "Something went wrong"}
-            </h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              {this.state.error?.message || "An unexpected error occurred."}
-            </p>
-            <button
-              onClick={this.handleReset}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg text-sm font-label transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Try again
-            </button>
+        <div className="flex flex-col items-center justify-center min-h-[400px] w-full p-8 text-center animate-fade-in">
+          <div className="bg-white dark:bg-canvas-dark border border-rose-100 dark:border-rose-500/20 rounded-3xl p-8 md:p-12 max-w-lg shadow-xl shadow-rose-500/5 relative overflow-hidden">
+            {/* Decorative background */}
+            <div className="absolute -right-10 -top-10 w-32 h-32 bg-rose-50 dark:bg-rose-500/5 blur-3xl rounded-full"></div>
+
+            <div className="relative">
+              <div className="bg-rose-50 dark:bg-rose-500/10 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <AlertTriangle className="w-10 h-10 text-rose-500" />
+              </div>
+
+              <h3 className="text-2xl font-heading text-fg mb-3">
+                {this.props.moduleName ? `Error en ${this.props.moduleName}` : "Algo salió mal"}
+              </h3>
+
+              <p className="text-sm text-fg-secondary mb-8 leading-relaxed">
+                Lo sentimos, ha ocurrido un error inesperado al cargar esta sección. Por favor, intenta recargar la página o vuelve más tarde.
+              </p>
+
+              <button
+                onClick={this.handleReset}
+                className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-sm font-heading transition-all active:scale-95 shadow-lg shadow-rose-500/20 w-full sm:w-auto"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Intentar de nuevo
+              </button>
+
+              {process.env.NODE_ENV === 'development' && this.state.error && (
+                <div className="mt-8 pt-6 border-t border-border-subtle text-left">
+                  <p className="text-[10px] font-mono text-rose-400 dark:text-rose-500/60 uppercase mb-2 ">Debug Info</p>
+                  <p className="text-xs font-mono text-fg-muted overflow-auto max-h-32 p-3 bg-surface-muted rounded-lg border border-border-subtle">
+                    {this.state.error.message}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       );

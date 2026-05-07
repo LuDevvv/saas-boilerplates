@@ -23,7 +23,7 @@ export const ViewToggle: FC<ViewToggleProps> = ({
           "p-1.5 rounded-full transition-colors active:scale-95",
           mode === "list"
             ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-            : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5"
+            : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-surface-hover"
         )}
         aria-label="Vista de lista"
       >
@@ -35,7 +35,7 @@ export const ViewToggle: FC<ViewToggleProps> = ({
           "p-1.5 rounded-full transition-colors active:scale-95",
           mode === "grid"
             ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
-            : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5"
+            : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-surface-hover"
         )}
         aria-label="Vista de cuadrícula"
       >

@@ -28,7 +28,7 @@ const TicketsContent: FC = () => {
         action={
           <button
             onClick={() => setIsModalOpen(true)}
-            className="rounded-2xl bg-primary-600 px-6 py-3.5 text-sm font-heading text-white shadow-xl shadow-blue-900/20 hover:bg-primary-700 hover:scale-[1.02] transition-all active:scale-95 flex items-center gap-2 group"
+            className="rounded-2xl bg-primary px-6 py-3.5 text-sm font-heading text-white shadow-xl shadow-primary/20 hover:opacity-90 hover:scale-[1.02] transition-all active:scale-95 flex items-center gap-2 group"
           >
             <Plus className="h-5 w-5" />
             Nuevo Ticket

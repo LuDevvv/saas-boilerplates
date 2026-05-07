@@ -3,7 +3,6 @@ import { useLocation } from "react-router-dom";
 import {
   PanelLeftOpen
 } from "lucide-react";
-import { motion } from "framer-motion";
 import { cn } from "@/utils/classNames";
 import { useAuth } from "@/hooks/stores/useAuth";
 import { useSidebarStore } from "@/stores/sidebarStore";
@@ -14,7 +13,7 @@ import { getMenuSections } from "@/config/navigation";
 import { SidebarProps } from "../sidebar/types.js";
 import { WorkspaceSwitcher } from "../sidebar/WorkspaceSwitcher.js";
 import { UserIdentity } from "../sidebar/UserIdentity.js";
-import { UpgradePremiumWidget, TrialStatusWidget } from "../sidebar/SidebarWidgets.js";
+import { TrialStatusWidget } from "../sidebar/SidebarWidgets.js";
 import { SidebarSearch } from "../sidebar/SidebarSearch.js";
 
 export const Sidebar: FC<SidebarProps> = ({
@@ -40,7 +39,6 @@ export const Sidebar: FC<SidebarProps> = ({
   const menuSections = useMemo(() => {
     const rawSections = propMenuSections || getMenuSections();
 
-    // If not superadmin, hide the Admin section
     if (user?.role !== "super_admin") {
       return rawSections.filter(section => section.title !== "Admin");
     }
@@ -49,10 +47,26 @@ export const Sidebar: FC<SidebarProps> = ({
   }, [propMenuSections, user?.role]);
 
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
-
-  // The sidebar is visually collapsed if it's not mobile AND it's collapsed state AND NOT hovered
   const isVisuallyCollapsed = isMobile ? false : (isCollapsed && !isHovered);
   const isEffectiveCollapsed = isVisuallyCollapsed;
+
+  // Delays content layout switch when expanding so text doesn't wrap inside a
+  // still-narrow sidebar. Collapses content immediately.
+  const [displayCollapsed, setDisplayCollapsed] = useState(isEffectiveCollapsed);
+  const expandTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (expandTimerRef.current) clearTimeout(expandTimerRef.current);
+    if (isEffectiveCollapsed) {
+      // Collapsing: keep expanded content while sidebar shrinks, switch to icons when sidebar
+      // is already ~97% closed (~77px) so icons never appear in a wide container
+      expandTimerRef.current = setTimeout(() => setDisplayCollapsed(true), 150);
+    } else {
+      // Expanding: show expanded content when sidebar is ~99% open (~239px)
+      expandTimerRef.current = setTimeout(() => setDisplayCollapsed(false), 200);
+    }
+    return () => { if (expandTimerRef.current) clearTimeout(expandTimerRef.current); };
+  }, [isEffectiveCollapsed]);
 
   const handleToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -66,6 +80,7 @@ export const Sidebar: FC<SidebarProps> = ({
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleMouseEnter = () => {
+    if (document.body.style.overflow === "hidden") return;
     if (isCollapsed) {
       if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
       hoverTimeoutRef.current = setTimeout(() => {
@@ -75,11 +90,13 @@ export const Sidebar: FC<SidebarProps> = ({
   };
 
   const handleMouseLeave = () => {
+    if (document.body.style.overflow === "hidden") return;
     if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
     setHovered(false);
   };
 
-
+  const sidebarWidth = isMobile ? "min(320px, 85%)" : (isVisuallyCollapsed ? 72 : 240);
+  const sidebarX = isMobile ? (isOpen ? 0 : "100%") : 0;
 
   return (
     <TooltipProvider>
@@ -90,20 +107,15 @@ export const Sidebar: FC<SidebarProps> = ({
         />
       )}
 
-      <motion.div
-        initial={false}
+      <div
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        animate={{
-          x: isMobile ? (isOpen ? 0 : window.innerWidth) : 0,
-          width: isMobile ? "75%" : (isVisuallyCollapsed ? 72 : 260),
-        }}
-        transition={{
-          duration: 0.35,
-          ease: [0.4, 0, 0.2, 1]
+        style={{
+          width: sidebarWidth,
+          transform: isMobile ? `translateX(${sidebarX})` : "none",
         }}
         className={cn(
-          "fixed z-50 flex flex-col pointer-events-none inset-y-0",
+          "fixed z-50 flex flex-col pointer-events-none inset-y-0 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]",
           isMobile ? "right-0" : "left-0"
         )}
       >
@@ -111,8 +123,9 @@ export const Sidebar: FC<SidebarProps> = ({
           <button
             onClick={handleToggle}
             className={cn(
-              "absolute top-[50px] -right-4 z-[100] flex h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-[#0A0A0A] border border-sidebar-border text-sidebar-text shadow-md transition-all duration-300 pointer-events-auto",
-              "hover:text-primary hover:scale-110 active:scale-95 outline-none focus:outline-none focus:ring-0 focus-visible:ring-0"
+              "absolute top-[50px] -right-4 z-[100] flex h-8 w-8 items-center justify-center rounded-full bg-surface border border-border text-fg-muted shadow-[var(--shadow-sm)] transition-all duration-300 pointer-events-auto",
+              "hover:text-primary hover:border-primary/30 hover:scale-110 active:scale-95",
+              "focus:outline-none focus-visible:outline-none"
             )}
             title={isCollapsed ? "Expandir barra lateral" : "Colapsar barra lateral"}
           >
@@ -122,10 +135,9 @@ export const Sidebar: FC<SidebarProps> = ({
 
         <aside
           className={cn(
-            "h-full w-full flex flex-col bg-white dark:bg-[#0A0A0A] shadow-sm transition-shadow duration-300 pointer-events-auto",
+            "h-full w-full flex flex-col bg-sidebar shadow-premium transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] pointer-events-auto overflow-hidden",
             isMobile ? "border-l border-sidebar-border" : "border-r border-sidebar-border",
             isCollapsed && isHovered && "shadow-2xl z-50",
-            isVisuallyCollapsed && "overflow-hidden"
           )}
         >
           {isMobile && isOpen && (
@@ -138,31 +150,31 @@ export const Sidebar: FC<SidebarProps> = ({
           )}
 
           <div className={cn(
-            "flex flex-col h-full shrink-0",
-            isEffectiveCollapsed ? "w-[72px]" : "w-full lg:w-[260px]"
+            "flex flex-col h-full shrink-0 transition-all duration-400 ease-[cubic-bezier(0.16,1,0.3,1)]",
+            isMobile ? "w-full" : (isEffectiveCollapsed ? "w-[72px]" : "w-[240px]")
           )}>
-            <div className="flex-none">
-              <WorkspaceSwitcher isCollapsed={isEffectiveCollapsed} />
+            <div className={cn("flex-none w-full", displayCollapsed && "flex justify-center items-center")}>
+              <WorkspaceSwitcher isCollapsed={displayCollapsed} />
             </div>
 
             <SidebarSearch
-              isCollapsed={isEffectiveCollapsed}
+              isCollapsed={displayCollapsed}
               onTogglePalette={toggleCommandPalette}
             />
 
             <nav
               className={cn(
-                "flex-1 overflow-y-auto overflow-x-hidden px-4 py-2 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent custom-scrollbar",
-                isEffectiveCollapsed ? "space-y-0 mt-2" : "space-y-1"
+                "flex-1 overflow-y-auto overflow-x-hidden py-2 scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700 scrollbar-track-transparent custom-scrollbar transition-all duration-300",
+                displayCollapsed ? "space-y-2 mt-2 px-0 flex flex-col items-center" : "space-y-1 px-4 animate-fade-in"
               )}
             >
               {menuSections.map((section, index) => (
                 <SidebarSection
                   key={section.title || `section-${index}`}
-                  title={isEffectiveCollapsed ? "" : section.title}
-                  isCollapsed={isEffectiveCollapsed}
+                  title={displayCollapsed ? "" : section.title}
+                  isCollapsed={displayCollapsed}
                 >
-                  <div className={cn("flex flex-col", isEffectiveCollapsed ? "gap-2" : "gap-1")}>
+                  <div className={cn("flex flex-col w-full", displayCollapsed ? "gap-2" : "gap-1")}>
                     {section.items.map((item, i) => (
                       <SidebarItem
                         key={item.label || `item-${index}-${i}`}
@@ -171,7 +183,7 @@ export const Sidebar: FC<SidebarProps> = ({
                         path={item.path}
                         badge={item.badge}
                         subItems={item.subItems}
-                        isCollapsed={isEffectiveCollapsed}
+                        isCollapsed={displayCollapsed}
                         isActive={
                           item.path === "/"
                             ? currentPage === "/"
@@ -185,16 +197,16 @@ export const Sidebar: FC<SidebarProps> = ({
             </nav>
 
             <div className={cn(
-              "flex-none z-20 bg-inherit pb-6 px-4 space-y-4",
-              isEffectiveCollapsed && "space-y-3"
+              "flex-none z-20 bg-inherit pb-6 space-y-4 transition-all duration-300",
+              displayCollapsed ? "px-0 flex flex-col items-center" : "px-4 animate-fade-in"
             )}>
-              <TrialStatusWidget isCollapsed={isEffectiveCollapsed} />
-              <UpgradePremiumWidget isCollapsed={isEffectiveCollapsed} />
-              <UserIdentity isCollapsed={isEffectiveCollapsed} currentPage={currentPage} />
+              <TrialStatusWidget isCollapsed={displayCollapsed} />
+              {/* <UpgradePremiumWidget isCollapsed={displayCollapsed} /> */}
+              <UserIdentity isCollapsed={displayCollapsed} currentPage={currentPage} />
             </div>
           </div>
         </aside>
-      </motion.div>
+      </div>
     </TooltipProvider>
   );
 };

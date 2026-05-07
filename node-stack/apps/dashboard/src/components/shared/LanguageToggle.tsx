@@ -43,9 +43,9 @@ export const LanguageToggle: FC = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-2xl border border-gray-100 bg-white/95 p-2 shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-top-2 duration-200 dark:border-white/10 dark:bg-gray-900/95 z-50">
+        <div className="absolute right-0 mt-2 w-48 origin-top-right rounded-2xl border border-border bg-white/95 p-2 shadow-2xl backdrop-blur-md animate-in fade-in slide-in-from-top-2 duration-200 dark:border-white/10 dark:bg-gray-900/95 z-50">
           <div className="px-3 py-2 mb-1">
-            <p className="text-[10px] font-label uppercase  text-gray-400 dark:text-gray-500">
+            <p className="text-[10px] font-label uppercase  text-fg-muted">
               Select Language
             </p>
           </div>
@@ -57,7 +57,7 @@ export const LanguageToggle: FC = () => {
                 className={cn(
                   "flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-all duration-200 cursor-pointer group",
                   i18n.language.startsWith(lang.code)
-                    ? "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 shadow-sm"
+                    ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary shadow-sm"
                     : "text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800"
                 )}
               >

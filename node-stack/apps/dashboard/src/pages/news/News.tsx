@@ -183,14 +183,14 @@ const NewsCard: FC<{ item: NewsItem }> = ({ item }) => {
             {config.label}
           </span>
         </div>
-        <h3 className="text-sm font-heading text-gray-900 dark:text-white leading-snug line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+        <h3 className="text-sm font-heading text-fg leading-snug line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
           {item.title}
         </h3>
-        <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed line-clamp-2">
+        <p className="text-xs text-fg-muted leading-relaxed line-clamp-2">
           {item.description}
         </p>
         <div className="flex items-center justify-between mt-auto pt-2.5">
-          <span className="text-[10px] text-gray-400 dark:text-gray-500 font-label flex items-center gap-1">
+          <span className="text-[10px] text-fg-muted font-label flex items-center gap-1">
             <Calendar className="w-3 h-3" /> {item.date}
           </span>
           {item.link ? (
@@ -198,7 +198,7 @@ const NewsCard: FC<{ item: NewsItem }> = ({ item }) => {
               {item.linkText} <ArrowUpRight className="w-3 h-3" />
             </span>
           ) : (
-            <span className="text-xs font-label text-gray-400 dark:text-gray-500 group-hover:text-primary-500 transition-colors">
+            <span className="text-xs font-label text-fg-muted group-hover:text-primary-500 transition-colors">
               Leer más
             </span>
           )}
@@ -217,7 +217,7 @@ const EmptyState: FC = () => (
     <h3 className="text-lg font-heading text-gray-800 dark:text-white mb-1">
       No se encontraron novedades
     </h3>
-    <p className="text-sm text-gray-400 dark:text-gray-500 max-w-xs">
+    <p className="text-sm text-fg-muted max-w-xs">
       Intenta buscar con otro término o selecciona una categoría diferente.
     </p>
   </div>

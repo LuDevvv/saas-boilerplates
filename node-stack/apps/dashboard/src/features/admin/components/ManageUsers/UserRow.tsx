@@ -6,7 +6,7 @@ interface UserRowProps {
 
 export const UserRow: FC<UserRowProps> = ({ children }) => {
   return (
-    <tr className="group hover:bg-gray-50/30 dark:hover:bg-white/[0.01] transition-colors">
+    <tr className="group hover:bg-surface-hover transition-colors">
       {children}
     </tr>
   );

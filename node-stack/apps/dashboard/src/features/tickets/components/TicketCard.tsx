@@ -1,5 +1,5 @@
-import { Ticket } from "../api/tickets.api";
-import { priorityConfig, statusConfig } from "../api/tickets.api";
+import { Ticket } from "@node-stack/types";
+import { priorityConfig, statusConfig } from "../config";
 import { cn } from "@/utils/classNames";
 import { Link } from "react-router-dom";
 import { ChevronRight, Clock, User } from "lucide-react";
@@ -15,7 +15,7 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
   return (
     <Link
       to={`/tickets/${ticket.id}`}
-      className="group relative flex flex-col md:flex-row md:items-center gap-6 p-7 bg-white/80 backdrop-blur-md dark:bg-gray-900/50 rounded-[24px] border border-gray-100 dark:border-white/10 hover:scale-[1.01] hover:shadow-xl hover:border-primary-100 dark:hover:border-primary-500/20 transition-all duration-300 active:scale-[0.99]"
+      className="group relative flex flex-col md:flex-row md:items-center gap-6 p-7 bg-white/80 backdrop-blur-md dark:bg-gray-900/50 rounded-[24px] border border-border dark:border-white/10 hover:scale-[1.01] hover:shadow-xl hover:border-primary-100 dark:hover:border-primary-500/20 transition-all duration-300 active:scale-[0.99]"
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-3 mb-3">
@@ -27,7 +27,7 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
           </span>
         </div>
 
-        <h3 className="text-lg font-heading text-gray-950 dark:text-white group-hover:text-primary-600 transition-colors truncate ">
+        <h3 className="text-lg font-heading text-fg group-hover:text-primary transition-colors truncate ">
           {ticket.subject}
         </h3>
 
@@ -50,7 +50,7 @@ export const TicketCard = ({ ticket }: TicketCardProps) => {
       </div>
 
       <div className="flex items-center justify-end">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-50 dark:bg-white/5 group-hover:bg-primary-600 group-hover:text-white group-hover:shadow-lg group-hover:shadow-blue-900/20 transition-all duration-300">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-muted group-hover:bg-primary group-hover:text-white group-hover:shadow-lg group-hover:shadow-primary/20 transition-all duration-300">
           <ChevronRight className="h-5 w-5 group-hover:translate-x-0.5 transition-transform" />
         </div>
       </div>

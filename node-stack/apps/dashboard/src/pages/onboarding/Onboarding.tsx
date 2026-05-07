@@ -32,18 +32,18 @@ const Onboarding: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0A0A0A] flex flex-col justify-center items-center p-6 animate-in fade-in duration-700">
+    <div className="min-h-screen bg-canvas flex flex-col justify-center items-center p-6 animate-in fade-in duration-700">
       <div className="w-full max-w-md">
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-heading text-slate-900 dark:text-white mb-3">
+          <h1 className="text-3xl font-heading text-fg mb-3">
             ¡Bienvenido, {user?.firstName || 'Usuario'}!
           </h1>
-          <p className="text-sm font-label text-slate-500 dark:text-slate-400 leading-relaxed">
+          <p className="text-sm font-label text-fg-secondary leading-relaxed">
             Configuremos tu espacio de trabajo. Solo tomará un minuto y nos ayudará a personalizar tu experiencia.
           </p>
         </div>
 
-        <Card className="p-8 rounded-[32px] border-slate-100 dark:border-white/5 bg-white dark:bg-white/5 shadow-2xl shadow-blue-900/5">
+        <Card className="p-8 rounded-3xl border-border bg-surface/95 backdrop-blur-xl shadow-premium">
           <form onSubmit={handleSubmit} className="space-y-6">
             <Input
               label="Nombre de tu Empresa / Proyecto"
@@ -64,7 +64,7 @@ const Onboarding: React.FC = () => {
             <Button
               type="submit"
               loading={isSubmitting}
-              className="w-full h-14 rounded-2xl bg-primary text-white font-heading text-sm uppercase hover:bg-primary-600 active:scale-95 transition-all shadow-xl shadow-primary/20 mt-8"
+              className="w-full h-14 rounded-xl bg-gradient-to-br from-primary to-accent text-white font-heading text-sm uppercase hover:opacity-95 active:scale-[0.97] transition-all shadow-premium mt-8"
             >
               Continuar
               <ArrowRight className="ml-2 w-4 h-4" />

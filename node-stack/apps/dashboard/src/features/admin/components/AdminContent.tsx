@@ -45,7 +45,7 @@ export const AdminContent: FC = () => {
       change: "+12.5%",
       trend: "up" as const,
       icon: Users,
-      color: "text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400",
+      color: "text-primary bg-primary/10 dark:bg-primary/20 dark:text-primary",
     },
     {
       label: "Nuevos Registros",
@@ -53,7 +53,7 @@ export const AdminContent: FC = () => {
       change: "+18.2%",
       trend: "up" as const,
       icon: UserPlus,
-      color: "text-primary-600 bg-primary-50 dark:bg-primary-500/10 dark:text-primary-400",
+      color: "text-primary bg-primary/10 dark:bg-primary/20 dark:text-primary",
     },
     {
       label: "Suscripciones Activas",

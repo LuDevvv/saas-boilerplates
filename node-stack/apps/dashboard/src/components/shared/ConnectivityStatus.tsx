@@ -68,7 +68,7 @@ export const ConnectivityBanner = () => {
 
   if (showUpdatePrompt) {
     return (
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-blue-600/95 text-white px-4 py-2 backdrop-blur-sm shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-primary/95 text-white px-4 py-2 backdrop-blur-sm shadow-lg">
         <div className="container mx-auto flex items-center justify-center gap-4 text-sm">
           <RefreshCw className="w-4 h-4 animate-spin" />
           <span>A new version is available.</span>

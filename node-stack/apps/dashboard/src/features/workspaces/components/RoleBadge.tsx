@@ -10,7 +10,7 @@ interface RoleBadgeProps {
 const roleMap = {
   owner: { label: "Propietario", color: "bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20" },
   admin: { label: "Administrador", color: "bg-cyan-50 text-cyan-700 border-cyan-100 dark:bg-cyan-500/10 dark:text-cyan-400 dark:border-cyan-500/20" },
-  member: { label: "Miembro", color: "bg-slate-50 text-slate-700 border-slate-100 dark:bg-white/5 dark:text-slate-400 dark:border-white/10" },
+  member: { label: "Miembro", color: "bg-canvas text-slate-700 border-border dark:text-slate-400" },
   guest: { label: "Invitado", color: "bg-orange-50 text-orange-700 border-orange-100 dark:bg-orange-500/10 dark:text-orange-400 dark:border-orange-500/20" },
 };
 

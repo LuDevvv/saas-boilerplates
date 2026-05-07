@@ -1,13 +1,21 @@
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { ModalLayout } from "@/layouts/ModalLayout";
 import { Button, Input, Select } from "@node-stack/ui";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const reportSchema = z.object({
+  name: z.string().min(1, "El nombre del reporte es obligatorio"),
+  type: z.string().min(1, "El formato es obligatorio"),
+});
+
+type ReportFormValues = z.infer<typeof reportSchema>;
 
 interface CreateReportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: () => void;
-  formData: { name: string; type: string };
-  onFormChange: (data: { name: string; type: string }) => void;
+  onSave: (data: ReportFormValues) => void;
   isLoading: boolean;
 }
 
@@ -15,10 +23,28 @@ export const CreateReportModal: FC<CreateReportModalProps> = ({
   isOpen,
   onClose,
   onSave,
-  formData,
-  onFormChange,
   isLoading,
 }) => {
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors },
+  } = useForm<ReportFormValues>({
+    resolver: zodResolver(reportSchema as any),
+    defaultValues: {
+      name: "",
+      type: "PDF",
+    },
+  });
+
+  useEffect(() => {
+    if (isOpen) {
+      reset({ name: "", type: "PDF" });
+    }
+  }, [isOpen, reset]);
+
   return (
     <ModalLayout
       isOpen={isOpen}
@@ -39,7 +65,7 @@ export const CreateReportModal: FC<CreateReportModalProps> = ({
           <Button
             variant="primary"
             fullWidth
-            onClick={onSave}
+            onClick={handleSubmit(onSave)}
             disabled={isLoading}
             className="rounded-xl font-heading shadow-lg shadow-blue-900/20"
           >
@@ -52,21 +78,27 @@ export const CreateReportModal: FC<CreateReportModalProps> = ({
         <Input
           label="Nombre del Archivo"
           placeholder="Ej. Resumen_Q1"
-          value={formData.name}
-          onChange={(e) => onFormChange({ ...formData, name: e.target.value })}
           required
           disabled={isLoading}
-          className="rounded-[16px]"
+          error={errors.name?.message}
+          {...register("name")}
         />
-        <Select
-          label="Formato de Exportación"
-          value={formData.type}
-          onChange={(val) => onFormChange({ ...formData, type: val as string })}
-          options={[
-            { label: "Documento PDF", value: "PDF" },
-            { label: "Hoja de Cálculo CSV", value: "CSV" },
-            { label: "Datos JSON", value: "JSON" },
-          ]}
+        <Controller
+          name="type"
+          control={control}
+          render={({ field }) => (
+            <Select
+              label="Formato de Exportación"
+              value={field.value}
+              onChange={field.onChange}
+              disabled={isLoading}
+              options={[
+                { label: "Documento PDF", value: "PDF" },
+                { label: "Hoja de Cálculo CSV", value: "CSV" },
+                { label: "Datos JSON", value: "JSON" },
+              ]}
+            />
+          )}
         />
       </div>
     </ModalLayout>

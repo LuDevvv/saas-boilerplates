@@ -114,8 +114,8 @@ const Pagination: React.FC<PaginationProps> = ({
     <div
       className={`flex flex-col sm:flex-row justify-between items-center gap-4 w-full py-4 ${className}`}
     >
-      <div className="text-sm text-gray-500 dark:text-gray-400 font-label">
-        Mostrando <span className="text-gray-900 dark:text-white font-heading">{startItem}</span> a <span className="text-gray-900 dark:text-white font-heading">{endItem}</span> de <span className="text-gray-900 dark:text-white font-heading">{totalItems}</span>
+      <div className="text-sm text-fg-secondary font-label">
+        Mostrando <span className="text-fg font-heading">{startItem}</span> a <span className="text-fg font-heading">{endItem}</span> de <span className="text-fg font-heading">{totalItems}</span>
       </div>
 
       <div className="flex items-center gap-2 bg-white dark:bg-gray-900 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-x-auto max-w-full">

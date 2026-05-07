@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useAi, useAiUsage } from "@/features/ai";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { ChatMessageDto } from "@node-stack/validators";
 import {
   Send,
@@ -28,8 +29,10 @@ const AIPlayground: React.FC = () => {
   const [input, setInput] = useState("");
   const [model, setModel] = useState("gpt-4o");
   const [quotaExceeded, setQuotaExceeded] = useState(false);
-  const { streamChat, loading } = useAi();
-  const { data: usage } = useAiUsage();
+  const { activeWorkspaceId } = useWorkspaceStore();
+  const workspaceId = activeWorkspaceId || "";
+  const { streamChat, loading } = useAi(workspaceId);
+  const { data: usage } = useAiUsage(workspaceId);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -91,13 +94,13 @@ const AIPlayground: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl rounded-3xl border border-gray-100 dark:border-white/10 shadow-2xl overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-140px)] bg-white/40 dark:bg-gray-900/40 backdrop-blur-xl rounded-3xl border border-border shadow-2xl overflow-hidden">
       <SectionHeader
         title="AI Playground"
         subtitle="Test our premium AI stack"
         badge={usage !== undefined ? `${usage?.toLocaleString()} tokens used` : undefined}
         tag="PREMIUM"
-        className="p-6 border-b border-gray-100 dark:border-white/10 bg-white/50 dark:bg-gray-900/50 sm:items-center"
+        className="p-6 border-b border-border bg-white/50 dark:bg-gray-900/50 sm:items-center"
         action={
           <div className="flex items-center gap-2">
             {quotaExceeded && (
@@ -114,7 +117,7 @@ const AIPlayground: React.FC = () => {
               value={model}
               onChange={(e) => setModel(e.target.value)}
               disabled={quotaExceeded}
-              className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs font-label text-gray-700 dark:text-gray-300 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none disabled:opacity-50"
+              className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs font-label text-fg-secondary focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none disabled:opacity-50"
             >
               <option value="gpt-4o">GPT-4o (Smart)</option>
               <option value="gpt-4o-mini">GPT-4o Mini (Fast)</option>
@@ -148,7 +151,7 @@ const AIPlayground: React.FC = () => {
               "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm",
               m.role === "user"
                 ? "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-                : "bg-blue-600 text-white shadow-blue-500/20"
+                : "bg-primary text-white shadow-primary/20"
             )}>
               {m.role === "user" ? <User size={20} /> : <Bot size={20} />}
             </div>
@@ -171,7 +174,7 @@ const AIPlayground: React.FC = () => {
         ))}
       </div>
 
-      <div className="p-6 bg-white/50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-white/10">
+      <div className="p-6 bg-white/50 dark:bg-gray-900/50 border-t border-border">
         <div className="relative group">
           <textarea
             value={input}

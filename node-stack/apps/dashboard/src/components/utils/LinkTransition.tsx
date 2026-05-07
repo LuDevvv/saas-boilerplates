@@ -7,6 +7,7 @@ interface LinkTransitionProps {
   className?: string;
   children: React.ReactNode;
   callBack?: () => void;
+  title?: string;
 }
 
 // Función de guarda de tipo para verificar si startViewTransition está disponible
@@ -21,6 +22,7 @@ export const LinkTransition: FC<LinkTransitionProps> = ({
   className = "",
   children,
   callBack = () => { },
+  title,
 }) => {
   const navigate = useNavigate();
 
@@ -45,7 +47,7 @@ export const LinkTransition: FC<LinkTransitionProps> = ({
   };
 
   return (
-    <button type="button" onClick={handleClick} className={cn("outline-none focus:outline-none focus-visible:outline-none", className)}>
+    <button type="button" onClick={handleClick} title={title} className={cn("outline-none focus:outline-none focus-visible:outline-none", className)}>
       {children}
     </button>
   );

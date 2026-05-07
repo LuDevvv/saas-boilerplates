@@ -4,7 +4,8 @@ import { Button } from "@node-stack/ui";
 import { appToast } from "@/components/alerts/Toasts";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { useRealtimeStore } from "@/stores/realtimeStore";
-import { useUploadFile, storageApi, type StorageFile } from "@/features/storage";
+import { useUploadFile, type StorageFile } from "@/features/storage";
+import { api } from "@/lib/api";
 import { useShallow } from "zustand/react/shallow";
 import { useQueryClient } from "@tanstack/react-query";
 import { SectionHeader } from "@/components/layout/SectionHeader";
@@ -17,7 +18,6 @@ export const ReportsContent: FC = () => {
   const activeWorkspaceId = useWorkspaceStore(useShallow((state) => state.activeWorkspaceId));
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: "", type: "PDF" });
 
   const socket = useRealtimeStore(useShallow((state) => state.socket));
   const queryClient = useQueryClient();
@@ -43,18 +43,12 @@ export const ReportsContent: FC = () => {
   const { upload, isUploading } = useUploadFile(activeWorkspaceId || "");
 
   const openCreateModal = () => {
-    setFormData({ name: "", type: "PDF" });
     setIsModalOpen(true);
   };
 
-  const handleSave = async () => {
-    if (!formData.name) {
-      appToast.error({ title: "Validation Error", description: "Report name is required" });
-      return;
-    }
-
+  const handleSave = async (formData: { name: string; type: string }) => {
     if (!activeWorkspaceId) {
-      appToast.error({ title: "Error", description: "No active workspace" });
+      appToast.error({ title: "Error", description: "No hay una compañía activa." });
       return;
     }
 
@@ -91,7 +85,7 @@ export const ReportsContent: FC = () => {
 
   const handleDownload = async (report: StorageFile) => {
     try {
-      const { downloadUrl } = await storageApi.getDownloadUrl(report.id);
+      const { downloadUrl } = await api.storage.getDownloadUrl(report.id);
       const link = document.createElement("a");
       link.href = downloadUrl;
       link.download = report.name;
@@ -115,7 +109,7 @@ export const ReportsContent: FC = () => {
           <Button
             onClick={openCreateModal}
             disabled={isUploading || isLoading}
-            className="rounded-2xl bg-primary hover:bg-primary-600 px-6 h-11 text-[10px] font-heading uppercase text-white shadow-xl shadow-blue-900/20 transition-all active:scale-95"
+            className="rounded-2xl bg-primary hover:opacity-90 px-6 h-11 text-[10px] font-heading uppercase text-white shadow-xl shadow-primary/20 transition-all active:scale-95"
           >
             <FileText className="mr-2 h-4 w-4" />
             Nuevo Reporte
@@ -127,7 +121,7 @@ export const ReportsContent: FC = () => {
 
       <section className="space-y-4">
         <div className="flex items-center justify-between px-2">
-          <h2 className="text-lg font-heading text-gray-900 dark:text-white leading-none">Archivos Generados</h2>
+          <h2 className="text-lg font-heading text-fg leading-none">Archivos Generados</h2>
           <span className="text-[10px] font-label text-gray-400 uppercase">{filteredReports.length} REPORTES</span>
         </div>
 
@@ -144,8 +138,6 @@ export const ReportsContent: FC = () => {
         isOpen={isModalOpen}
         onClose={() => !isUploading && setIsModalOpen(false)}
         onSave={handleSave}
-        formData={formData}
-        onFormChange={setFormData}
         isLoading={isUploading}
       />
     </div>

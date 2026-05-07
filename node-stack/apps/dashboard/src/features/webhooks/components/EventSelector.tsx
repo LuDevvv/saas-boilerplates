@@ -33,7 +33,7 @@ export const EventSelector: FC<EventSelectorProps> = ({ selectedEvents, onChange
           className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-3 ${
             selectedEvents.includes(event.id) 
               ? "border-primary bg-primary/5 dark:bg-primary/10 shadow-sm" 
-              : "border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-white/5 hover:bg-slate-50"
+              : "border-border bg-canvas hover:bg-surface"
           }`}
           onClick={() => toggleEvent(event.id)}
         >

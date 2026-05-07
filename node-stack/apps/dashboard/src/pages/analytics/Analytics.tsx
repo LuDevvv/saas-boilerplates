@@ -1,11 +1,6 @@
-import { Suspense } from "react";
 import { AnalyticsContent } from "@/features/analytics";
-import { LoadingState } from "@/components/shared/LoadingState";
 
-const Analytics = () => (
-  <Suspense fallback={<LoadingState />}>
-    <AnalyticsContent />
-  </Suspense>
-);
+// Inner Suspense removed — lazy loading + skeleton is handled by routes.tsx.
+const Analytics = () => <AnalyticsContent />;
 
 export default Analytics;

@@ -1,6 +1,6 @@
+import { useEffect } from "react";
 import { useAuthStore } from "@/stores/authStore";
-import { authApi } from "@/features/auth/api/auth.api";
-import { cookieTokenStorage } from "@/lib/api";
+import { api, cookieTokenStorage } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
 import { appToast } from "@/components/alerts/Toasts";
 import { useUser } from "@/features/auth/hooks/useUser";
@@ -17,7 +17,7 @@ export const useAuth = () => {
 
   const logout = async () => {
     try {
-      await authApi.logout();
+      await api.auth.logout();
     } catch (e) {
       // Ignore network errors on logout
     } finally {
@@ -36,6 +36,14 @@ export const useAuth = () => {
 
   const isPremium = user?.subscriptions?.some(s => s.status === 'active') || false;
   const currentPlan = user?.subscriptions?.find(s => s.status === 'active') || null;
+
+  // Sync state if user is null after loading (session expired/invalid)
+  useEffect(() => {
+    if (!isLoading && user === null && isAuthenticated) {
+      clearStore();
+      cookieTokenStorage.removeToken();
+    }
+  }, [isLoading, user, isAuthenticated, clearStore]);
 
   return {
     user,

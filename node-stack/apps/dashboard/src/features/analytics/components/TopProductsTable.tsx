@@ -1,49 +1,94 @@
-import { Card, Button } from "@node-stack/ui";
-import { appToast } from "@/components/alerts/Toasts";
-import type { Product } from "../types";
+/**
+ * TopSourcesWidget — ranked channel/source list with change indicators.
+ * File kept as TopProductsTable.tsx for import compatibility.
+ */
+import { FC } from "react";
+import { TrendingUp, TrendingDown } from "lucide-react";
+import { cn } from "@/utils/classNames";
 
-interface TopProductsTableProps {
-  products: Product[];
+export interface SourceItem {
+  name: string;
+  visits: number;
+  change: number;
+  color: string;
+  percentage: number;
 }
 
-export const TopProductsTable: React.FC<TopProductsTableProps> = ({ products }) => (
-  <Card className="lg:col-span-2 p-8 rounded-[32px] border-slate-100 dark:border-white/5 bg-white dark:bg-white/5 shadow-sm">
-    <div className="flex items-center justify-between mb-8">
-      <h3 className="text-sm font-heading text-slate-900 dark:text-white uppercase">Top Productos</h3>
-      <Button
-        className="btn-secondary text-[10px] h-9 px-4"
-        onClick={() => appToast.info({ title: "Lista completa", description: "La vista completa de productos estará disponible pronto." })}
-      >
-        Ver Todos
-      </Button>
-    </div>
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead>
-          <tr className="text-[10px] font-heading text-slate-400 uppercase border-b border-slate-100 dark:border-white/5">
-            <th className="pb-4 text-left">Producto</th>
-            <th className="pb-4 text-center">Vendidos</th>
-            <th className="pb-4 text-right">Ingresos</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-50 dark:divide-white/5">
-          {products.map((item, i) => (
-            <tr key={i} className="group hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
-              <td className="py-5">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center text-lg">{item.image}</div>
-                  <div>
-                    <p className="text-xs font-label text-slate-900 dark:text-white">{item.name}</p>
-                    <p className="text-[10px] text-slate-400 uppercase font-label">{item.id}</p>
+interface TopProductsTableProps {
+  title?: string;
+  sources: SourceItem[];
+}
+
+export const TopProductsTable: FC<TopProductsTableProps> = ({
+  title = "Principales canales",
+  sources,
+}) => {
+  const maxVisits = Math.max(...sources.map(s => s.visits), 1);
+
+  return (
+    <div className="rounded-[20px] border border-border bg-white dark:bg-surface p-5 flex flex-col gap-4 h-full">
+      <h3 className="text-[14px] font-semibold text-fg">{title}</h3>
+
+      {/* Column headers */}
+      <div className="flex items-center gap-3 px-0 text-[11px] font-bold uppercase text-gray-400">
+        <span className="flex-1">Canal</span>
+        <span className="w-20 text-right">Visitas</span>
+        <span className="w-14 text-right">Cambio</span>
+      </div>
+
+      {/* Source rows */}
+      <div className="space-y-3">
+        {sources.map((source, i) => {
+          const isPositive = source.change >= 0;
+          return (
+            <div key={source.name} className="space-y-1.5">
+              <div className="flex items-center gap-2 sm:gap-3">
+                {/* Rank + name */}
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <span className="text-[10px] font-bold text-gray-300 dark:text-gray-600 tabular-nums w-4 shrink-0">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div
+                    className="h-5 w-5 rounded-[6px] flex items-center justify-center shrink-0 text-[10px] font-bold text-white"
+                    style={{ background: source.color }}
+                  >
+                    {source.name.charAt(0)}
                   </div>
+                  <span className="text-[12px] sm:text-[13px] font-medium text-fg-secondary truncate">
+                    {source.name}
+                  </span>
                 </div>
-              </td>
-              <td className="py-5 text-center text-xs font-label text-slate-600 dark:text-slate-300">{item.sold}</td>
-              <td className="py-5 text-right text-xs font-kpi text-emerald-500">{item.revenue}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+
+                {/* Visits */}
+                <span className="text-[12px] sm:text-[13px] font-semibold text-fg tabular-nums shrink-0">
+                  {source.visits.toLocaleString()}
+                </span>
+
+                {/* Change */}
+                <div className={cn(
+                  "inline-flex items-center gap-0.5 text-[10px] sm:text-[11px] font-semibold shrink-0 w-12 justify-end",
+                  isPositive ? "text-emerald-500" : "text-red-500"
+                )}>
+                  {isPositive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                  {Math.abs(source.change)}%
+                </div>
+              </div>
+
+              {/* Progress bar — no margin-left to prevent overflow */}
+              <div className="h-1.5 rounded-full bg-surface-hover overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{
+                    width: `${(source.visits / maxVisits) * 100}%`,
+                    background: source.color,
+                    opacity: 0.75,
+                  }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
-  </Card>
-);
+  );
+};

@@ -1,5 +1,5 @@
-import { TicketStatus } from "../api/tickets.api";
-import { statusTabs } from "../api/tickets.api";
+import { TicketStatus } from "@node-stack/types";
+import { statusTabs } from "../config";
 import { cn } from "@/utils/classNames";
 
 interface StatusTabsProps {
@@ -16,7 +16,7 @@ export const StatusTabs = ({ activeTab, onChange }: StatusTabsProps) => (
         className={cn(
           "rounded-[14px] px-5 py-2.5 text-[10px] font-label  transition-all duration-300 active:scale-95",
           activeTab === tab.key
-            ? "bg-primary-600 text-white shadow-lg shadow-blue-900/20"
+            ? "bg-primary text-white shadow-lg shadow-primary/20"
             : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
         )}
       >

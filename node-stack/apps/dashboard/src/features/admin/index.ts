@@ -1,5 +1,4 @@
-export { adminApi } from "./api/admin.api";
-export type { AuditLog, SystemStats, AdminUser, FeatureFlag } from "./api/admin.api";
+export type { AuditLog, SystemStats, AdminUser, FeatureFlag } from "@node-stack/types";
 
 export {
   useAdminStats,

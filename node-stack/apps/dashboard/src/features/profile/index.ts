@@ -8,5 +8,12 @@ export { CompanyEditForm } from "./components/CompanyEditForm";
 export { LoginHistory } from "./components/LoginHistory";
 export { AuditLog } from "./components/AuditLog";
 
+export { 
+  ProfileHeroSkeleton, 
+  FormSkeleton, 
+  CardSkeleton, 
+  ProfileLayoutSkeleton 
+} from "./components/ProfileSkeletons";
+
 export type { ProfileFormValues, CompanyFormValues } from "./types";
 export type { SessionHistoryItem, AuditLogItem } from "./types";

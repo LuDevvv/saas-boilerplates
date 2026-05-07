@@ -1,10 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
-import { authApi } from "../api/auth.api";
-import type { LoginDto } from "@node-stack/types";
-import type { AuthResponse } from "../api/types";
+import { api } from "@/lib/api";
+import type { LoginDto, AuthResponse } from "@node-stack/types";
 
 export const useLogin = () => {
   return useMutation<AuthResponse, Error, LoginDto>({
-    mutationFn: (credentials) => authApi.login(credentials),
+    mutationFn: (credentials) => api.auth.login(credentials),
   });
 };

@@ -1,4 +1,3 @@
-export { ticketsApi } from "./api/tickets.api";
 export type {
   Ticket,
   TicketMessage,
@@ -6,9 +5,8 @@ export type {
   TicketPriority,
   TicketCategory,
   TicketListResponse,
-  TicketListParams,
-  CreateTicketData,
-} from "./api/tickets.api";
+  CreateTicketDto,
+} from "@node-stack/types";
 
 export {
   useTickets,

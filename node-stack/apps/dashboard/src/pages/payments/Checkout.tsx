@@ -1,305 +1,550 @@
-import React, { useState } from "react";
+/**
+ * Checkout page — integrated for Polar.sh
+ *
+ * Flow:
+ *  1. User selects a plan on the Pricing page → redirected here with query params
+ *  2. They confirm their email and review the order summary
+ *  3. On submit → call api.billing.createCheckout() → receive Polar checkout URL
+ *  4. Redirect to Polar's hosted checkout (checkout.polar.sh/c/{sessionId})
+ *  5. Polar handles: card details, 3-D Secure, billing address, receipts, invoices
+ *  6. After payment Polar redirects to success_url (/payments?success=true)
+ *
+ * Remove the simulated timeout in onSubmit when the backend is wired to Polar.
+ */
+
+import { FC, useState } from "react";
 import {
-  CreditCard,
-  Calendar,
-  Lock,
   CheckCircle2,
-  Info,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  ChevronLeft,
+  ExternalLink,
+  Loader2,
+  Mail,
+  ShieldCheck,
+  Zap,
+  Lock,
+  Tag,
 } from "lucide-react";
-import { Button, Input, Badge, Select } from "@node-stack/ui";
+import { Input } from "@node-stack/ui";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { cn } from "@/utils/classNames";
 import { BackButton } from "@/components/shared/BackButton";
+import { useExchangeRate } from "@/hooks/useExchangeRate";
+
+// ─── Schema — Polar handles card / address; we only pre-fill email ────────────
 
 const checkoutSchema = z.object({
-  email: z.string().email("Email inválido"),
-  cardName: z.string().min(3, "Nombre muy corto"),
-  cardNumber: z.string().min(19, "Número incompleto"),
-  expiry: z.string().regex(/^(0[1-9]|1[0-2]) \/ \d{2}$/, "Formato MM / AA"),
-  cvc: z.string().min(3, "Mínimo 3 dígitos").max(4),
-  address: z.string().min(5, "Dirección requerida"),
-  country: z.string().min(1, "País requerido")
+  email: z.string().email("Ingresa un correo electrónico válido"),
 });
 
 type CheckoutForm = z.infer<typeof checkoutSchema>;
 
-const plansData = {
-  free: { name: "Starter", price: 0, yearlyPrice: 0 },
-  pro: { name: "Growth", price: 29, yearlyPrice: 290 },
-  elite: { name: "Unlimited", price: 99, yearlyPrice: 990 }
+// ─── Plan catalog ─────────────────────────────────────────────────────────────
+
+const PLANS: Record<string, {
+  name: string;
+  price: number;
+  yearlyPrice: number;
+  features: string[];
+}> = {
+  free: {
+    name: "Starter",
+    price: 0,
+    yearlyPrice: 0,
+    features: ["Hasta 3 proyectos activos", "Analíticas básicas", "Soporte por email"],
+  },
+  pro: {
+    name: "Growth",
+    price: 29,
+    yearlyPrice: 290,
+    features: ["Proyectos ilimitados", "Analíticas avanzadas", "Soporte prioritario 24/7"],
+  },
+  elite: {
+    name: "Unlimited",
+    price: 99,
+    yearlyPrice: 990,
+    features: ["Todo lo de Growth", "Infraestructura dedicada", "Manager dedicado"],
+  },
 };
 
-const countryOptions = [
-  { value: "US", label: "Estados Unidos" },
-  { value: "ES", label: "España" },
-  { value: "MX", label: "México" },
-  { value: "CO", label: "Colombia" },
-  { value: "AR", label: "Argentina" },
-  { value: "CL", label: "Chile" }
-];
+// ─── Order summary (shared desktop + mobile) ──────────────────────────────────
 
-const Checkout: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSummaryMobile, setShowSummaryMobile] = useState(false);
+interface SummaryProps {
+  planName: string;
+  basePrice: number;
+  isYearly: boolean;
+  extraUsers: number;
+  extraCompanies: number;
+  totalToday: number;
+  savings: number;
+  isMobile?: boolean;
+}
 
-  const planId = searchParams.get("plan") || "pro";
-  const billing = searchParams.get("billing") || "monthly";
-  const extraUsers = parseInt(searchParams.get("users") || "0");
-  const extraWorkspaces = parseInt(searchParams.get("workspaces") || "0");
-  const isOnboarding = searchParams.get("onboarding") === "true";
+const OrderSummary: FC<SummaryProps> = ({
+  planName,
+  basePrice,
+  isYearly,
+  extraUsers,
+  extraCompanies,
+  totalToday,
+  savings,
+  isMobile,
+}) => {
+  const textMuted  = isMobile ? "text-fg-muted"       : "text-white/45";
+  const textNormal = isMobile ? "text-fg"           : "text-white/80";
+  const textBold   = isMobile ? "text-fg font-bold" : "text-white font-bold";
 
-  const isYearly = billing === "yearly";
-  const planInfo = (plansData as any)[planId] || plansData.pro;
-
-  const basePrice = isYearly ? planInfo.yearlyPrice : planInfo.price;
-  const addonsTotal = (extraUsers * 5) + (extraWorkspaces * 10);
-  const totalToday = basePrice + addonsTotal;
-
-  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<CheckoutForm>({
-    resolver: zodResolver(checkoutSchema),
-    defaultValues: {
-      email: "usuario@ejemplo.com",
-      country: "ES"
-    }
-  });
-
-  const selectedCountry = watch("country");
-
-  const onSubmit = async (_data: CheckoutForm) => {
-    setIsSubmitting(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsSubmitting(false);
-    
-    if (isOnboarding) {
-      navigate("/");
-    } else {
-      navigate("/payments?success=true");
-    }
-  };
-
-  const OrderSummary = ({ isMobile = false }: { isMobile?: boolean }) => (
+  return (
     <div className={cn(
-      "space-y-6",
-      isMobile ? "bg-slate-50 dark:bg-white/5 p-6 rounded-[24px] border border-slate-100 dark:border-white/5" : ""
+      "space-y-5",
+      isMobile && "bg-gray-50 dark:bg-white/[0.03] rounded-[18px] border border-border p-5"
     )}>
-      <div className="flex items-center justify-between">
-        <div className="flex flex-col">
-          <span className={cn("font-label", isMobile ? "text-slate-900 dark:text-white" : "text-white text-lg")}>
-            Plan {planInfo.name}
-          </span>
-          <span className={cn("text-[10px] font-label uppercase mt-1", isMobile ? "text-slate-400" : "text-white/30")}>
-            {isYearly ? "Facturación Anual" : "Facturación Mensual"}
-          </span>
+      {/* Plan row */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className={cn("text-[14px] font-semibold", textNormal)}>Plan {planName}</p>
+          <p className={cn("text-[11px] mt-0.5", textMuted)}>
+            {isYearly ? "Facturación anual" : "Facturación mensual"}
+          </p>
         </div>
-        <span className={cn("font-label", isMobile ? "text-slate-900 dark:text-white text-lg" : "text-white text-lg")}>
+        <p className={cn("text-[14px] shrink-0", textNormal)}>
           US$ {basePrice}.00
-        </span>
+        </p>
       </div>
 
-      <div className="space-y-4 pt-4 border-t border-dashed border-slate-200 dark:border-white/10">
-        {extraUsers > 0 && (
-          <div className="flex items-center justify-between text-sm">
-            <span className={isMobile ? "text-slate-500" : "text-white/40"}>{extraUsers} Usuarios extra</span>
-            <span className={isMobile ? "text-slate-900 dark:text-white" : "text-white/70 font-label"}>US$ {extraUsers * 5}.00</span>
-          </div>
-        )}
-        {extraWorkspaces > 0 && (
-          <div className="flex items-center justify-between text-sm">
-            <span className={isMobile ? "text-slate-500" : "text-white/40"}>{extraWorkspaces} Workspaces extra</span>
-            <span className={isMobile ? "text-slate-900 dark:text-white" : "text-white/70 font-label"}>US$ {extraWorkspaces * 10}.00</span>
-          </div>
-        )}
-        <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-white/10">
-          <span className={cn("font-label uppercase", isMobile ? "text-slate-900 dark:text-white" : "text-white text-base")}>Total</span>
-          <span className={cn("font-kpi", isMobile ? "text-slate-900 dark:text-white text-2xl" : "text-white text-3xl")}>
+      {/* Annual savings badge */}
+      {isYearly && savings > 0 && (
+        <div className={cn(
+          "flex items-center gap-2 px-3 py-1.5 rounded-[10px]",
+          isMobile ? "bg-emerald-50 dark:bg-emerald-500/10" : "bg-white/[0.07]"
+        )}>
+          <Tag className={cn("h-3.5 w-3.5 shrink-0", isMobile ? "text-emerald-600 dark:text-emerald-400" : "text-white/60")} />
+          <p className={cn("text-[11px] font-semibold", isMobile ? "text-emerald-600 dark:text-emerald-400" : "text-white/60")}>
+            Ahorro anual de US$ {savings}.00
+          </p>
+        </div>
+      )}
+
+      {/* Add-ons */}
+      {(extraUsers > 0 || extraCompanies > 0) && (
+        <div className={cn("space-y-2 pt-4 border-t border-dashed", isMobile ? "border-border" : "border-white/10")}>
+          {extraUsers > 0 && (
+            <div className="flex items-center justify-between text-[13px]">
+              <span className={textMuted}>{extraUsers} usuario{extraUsers !== 1 ? "s" : ""} extra</span>
+              <span className={textNormal}>US$ {extraUsers * 5}.00</span>
+            </div>
+          )}
+          {extraCompanies > 0 && (
+            <div className="flex items-center justify-between text-[13px]">
+              <span className={textMuted}>{extraCompanies} compañía{extraCompanies !== 1 ? "s" : ""} extra</span>
+              <span className={textNormal}>US$ {extraCompanies * 10}.00</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Total */}
+      <div className={cn(
+        "flex items-center justify-between pt-4 border-t",
+        isMobile ? "border-border" : "border-white/10"
+      )}>
+        <p className={cn("text-[13px] font-semibold uppercase", textMuted)}>Total hoy</p>
+        <div className="text-right">
+          <p className={cn("text-[20px] font-semibold tabular-nums leading-none", textBold)}>
             US$ {totalToday}.00
-          </span>
+            <span className={cn("text-[12px] font-normal ml-1", textMuted)}>
+              /{isYearly ? "año" : "mes"}
+            </span>
+          </p>
         </div>
       </div>
     </div>
   );
+};
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+const Checkout: FC = () => {
+  const [searchParams]  = useSearchParams();
+  const navigate        = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSummary,  setShowSummary]  = useState(false);
+
+  const planId          = searchParams.get("plan")       || "pro";
+  const billing         = searchParams.get("billing")    || "monthly";
+  const extraUsers      = parseInt(searchParams.get("users")       || "0", 10);
+  const extraCompanies  = parseInt(searchParams.get("workspaces")  || "0", 10);
+  const isOnboarding    = searchParams.get("onboarding") === "true";
+
+  const isYearly  = billing === "yearly";
+  const plan      = PLANS[planId] ?? PLANS.pro;
+
+  const monthlyEquiv  = isYearly ? Math.round(plan.yearlyPrice / 12) : plan.price;
+  const basePrice     = isYearly ? plan.yearlyPrice : plan.price;
+  const addonsTotal   = extraUsers * 5 + extraCompanies * 10;
+  const totalToday    = basePrice + addonsTotal;
+  const annualSavings = isYearly ? plan.price * 12 - plan.yearlyPrice : 0;
+
+  const { toDOP } = useExchangeRate();
+
+  const { register, handleSubmit, formState: { errors } } = useForm<CheckoutForm>({
+    resolver: zodResolver(checkoutSchema as any),
+  });
+
+  const onSubmit = async (_data: CheckoutForm) => {
+    setIsSubmitting(true);
+    try {
+      /**
+       * Production: call api.billing.createCheckout() → get Polar checkout URL
+       * const result = await api.billing.createCheckout({
+       *   planId, billing, extraUsers, extraCompanies, email: _data.email,
+       * });
+       * window.location.href = result.url;
+       */
+      await new Promise(r => setTimeout(r, 1500)); // remove when API is wired
+      navigate(isOnboarding ? "/" : "/payments?success=true");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const summaryProps: SummaryProps = {
+    planName: plan.name,
+    basePrice,
+    isYearly,
+    extraUsers,
+    extraCompanies,
+    totalToday,
+    savings: annualSavings,
+  };
+
+  // Free plan — no payment needed
+  const isFree = plan.price === 0;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0A0A0A] flex flex-col lg:flex-row animate-in fade-in duration-500">
-      {/* Desktop Sidebar Summary (Solid Blue) */}
-      <div className="hidden lg:flex w-[38%] bg-[#004080] dark:bg-[#001a33] p-16 flex-col justify-between shadow-2xl overflow-y-auto custom-scrollbar sticky top-0 h-screen">
-        <div className="relative z-10">
-          <BackButton label="Cancelar Pago" className="mb-12 text-white/40 hover:text-white" />
+    <div className="min-h-screen bg-[var(--canvas)] dark:bg-canvas flex flex-col lg:flex-row animate-in fade-in duration-500">
 
-          <div className="space-y-4 mb-10">
-            <Badge className="bg-[#00E6E6]/10 text-[#00E6E6] border border-[#00E6E6]/20 text-[10px] font-label uppercase px-3 py-1 rounded-full">
-              Suscripción Segura
-            </Badge>
-            <h1 className="text-5xl font-kpi text-white leading-tight">
-              US$ {totalToday}.00 <span className="text-xl text-white/30 font-kpi">/{isYearly ? "año" : "mes"}</span>
+      {/* ── Desktop sidebar ── */}
+      <aside className="hidden lg:flex w-[38%] flex-col justify-between sticky top-0 h-screen overflow-y-auto custom-scrollbar"
+             style={{ background: "linear-gradient(160deg, #004080 0%, #002D5A 100%)" }}>
+        {/* Decorative circles */}
+        <div className="absolute -top-20 -right-20 h-72 w-72 rounded-full bg-white/[0.03] pointer-events-none" />
+        <div className="absolute -bottom-16 -left-12 h-56 w-56 rounded-full bg-white/[0.03] pointer-events-none" />
+        <div className="absolute inset-0 pointer-events-none opacity-20"
+             style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px)", backgroundSize: "28px 28px" }} />
+
+        <div className="relative z-10 p-12 flex flex-col h-full">
+          {/* White back button — styled for dark sidebar */}
+          <button
+            onClick={() => navigate(isOnboarding ? "/onboarding/pricing" : "/payments/pricing")}
+            className="flex items-center gap-2.5 mb-10 group w-fit text-white/50 hover:text-white transition-colors duration-200"
+          >
+            <div className="h-7 w-7 rounded-lg bg-white/[0.08] border border-white/[0.12] flex items-center justify-center group-hover:bg-white/[0.15] transition-colors">
+              <ChevronLeft className="h-3.5 w-3.5" />
+            </div>
+            <span className="text-[12px] font-medium">Cancelar</span>
+          </button>
+
+          {/* Plan preview */}
+          <div className="mb-6">
+            <p className="text-white/40 text-[11px] font-medium uppercase mb-2">
+              {isFree ? "Activando" : "Suscribiéndote a"}
+            </p>
+            <h2 className="text-[28px] font-semibold text-white leading-tight">
+              Plan {plan.name}
+            </h2>
+            <p className="text-white/50 text-[13px] mt-0.5">{plan.description}</p>
+
+            {/* Key features */}
+            <div className="mt-5 space-y-2.5">
+              {plan.features.slice(0, 3).map(f => (
+                <div key={f} className="flex items-center gap-2.5">
+                  <CheckCircle2 className="h-4 w-4 text-[#00E6E6] shrink-0 opacity-90" />
+                  <span className="text-white/65 text-[13px]">{f}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-white/[0.10] mb-6" />
+
+          {/* Receipt-style breakdown */}
+          <div className="space-y-3">
+            {/* Plan base */}
+            <div className="flex items-center justify-between text-[13px]">
+              <span className="text-white/50">
+                Plan {plan.name} · {isYearly ? "anual" : "mensual"}
+              </span>
+              <span className="text-white/75 tabular-nums">US$ {basePrice}.00</span>
+            </div>
+
+            {/* Annual savings */}
+            {isYearly && annualSavings > 0 && (
+              <div className="flex items-center justify-between text-[13px]">
+                <span className="text-emerald-400">Descuento anual 15%</span>
+                <span className="text-emerald-400 tabular-nums">-US$ {annualSavings}.00</span>
+              </div>
+            )}
+
+            {/* Add-ons */}
+            {extraUsers > 0 && (
+              <div className="flex items-center justify-between text-[13px]">
+                <span className="text-white/50">
+                  {extraUsers} usuario{extraUsers !== 1 ? "s" : ""} extra
+                </span>
+                <span className="text-white/75 tabular-nums">US$ {extraUsers * 5}.00</span>
+              </div>
+            )}
+            {extraCompanies > 0 && (
+              <div className="flex items-center justify-between text-[13px]">
+                <span className="text-white/50">
+                  {extraCompanies} compañía{extraCompanies !== 1 ? "s" : ""} extra
+                </span>
+                <span className="text-white/75 tabular-nums">US$ {extraCompanies * 10}.00</span>
+              </div>
+            )}
+
+            {/* Total */}
+            <div className="flex items-start justify-between pt-3.5 border-t border-white/[0.12] mt-1">
+              <div>
+                <p className="text-white text-[14px] font-semibold">Total hoy</p>
+                <p className="text-white/35 text-[11px] mt-0.5">
+                  {isYearly ? "Cargo anual único" : "Se renueva mensualmente"}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-white text-[22px] font-semibold tabular-nums leading-none">
+                  US$ {totalToday}.00
+                </p>
+                {!isFree && toDOP(totalToday) && (
+                  <p className="text-white/35 text-[11px] mt-1">
+                    ≈ {toDOP(totalToday)}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Trust signals */}
+          <div className="mt-8 pt-6 border-t border-white/[0.08] space-y-3">
+            {[
+              "Acceso inmediato al activar",
+              "Cancela o pausa en cualquier momento",
+              "Soporte incluido en tu plan",
+            ].map(point => (
+              <div key={point} className="flex items-center gap-3">
+                <div className="h-5 w-5 rounded-full bg-white/[0.08] flex items-center justify-center shrink-0 border border-white/[0.10]">
+                  <CheckCircle2 className="h-3 w-3 text-white/60" />
+                </div>
+                <span className="text-white/50 text-[12px] leading-snug">{point}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Footer */}
+          <div className="mt-auto pt-10 border-t border-white/[0.08] flex items-center justify-between">
+            <span className="text-white/20 text-[10px] uppercase font-bold">Seguridad bancaria</span>
+            <div className="flex gap-4 text-white/20 text-[10px]">
+              <button onClick={() => navigate("/legal/terms")}
+                      className="hover:text-white/40 transition-colors">Términos</button>
+              <button onClick={() => navigate("/legal/privacy")}
+                      className="hover:text-white/40 transition-colors">Privacidad</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* ── Main content ── */}
+      <main className="flex-1 overflow-y-auto px-5 py-8 sm:px-10 md:px-16 lg:px-20 lg:py-16">
+        <div className="max-w-xl mx-auto">
+
+          {/* Mobile back */}
+          <div className="lg:hidden mb-6">
+            <BackButton
+              label="Volver a planes"
+              to={isOnboarding ? "/onboarding/pricing" : "/payments/pricing"}
+            />
+          </div>
+
+          {/* Header */}
+          <div className="mb-8">
+            <p className="text-[11px] font-bold uppercase text-primary/70 dark:text-primary/60 mb-1">
+              Paso final
+            </p>
+            <h1 className="text-2xl sm:text-3xl font-heading text-fg leading-tight">
+              Confirmar suscripción
             </h1>
+            <p className="text-[13px] text-fg-muted mt-1">
+              {isFree
+                ? "Activa tu cuenta gratuita sin tarjeta de crédito."
+                : "El pago es procesado de forma segura por Polar."}
+            </p>
           </div>
 
-          <div className="bg-white/5 p-8 rounded-[32px] border border-white/10">
-            <OrderSummary />
-          </div>
-
-          <div className="mt-12 space-y-6">
-            <div className="flex items-start gap-4">
-              <div className="mt-1 w-5 h-5 rounded-full bg-[#00E6E6]/10 flex items-center justify-center flex-shrink-0 border border-[#00E6E6]/20">
-                <CheckCircle2 className="w-3 h-3 text-[#00E6E6]" />
-              </div>
-              <span className="text-white/60 text-sm font-label leading-relaxed">Acceso inmediato y sin interrupciones</span>
-            </div>
-            <div className="flex items-start gap-4">
-              <div className="mt-1 w-5 h-5 rounded-full bg-[#00E6E6]/10 flex items-center justify-center flex-shrink-0 border border-[#00E6E6]/20">
-                <CheckCircle2 className="w-3 h-3 text-[#00E6E6]" />
-              </div>
-              <span className="text-white/60 text-sm font-label leading-relaxed">Cancelación flexible en un clic</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative z-10 pt-12 flex items-center justify-between border-t border-white/5 text-[9px] font-label text-white/20 uppercase">
-          <span>Seguridad de nivel Bancario</span>
-          <div className="flex gap-6">
-            <span className="hover:text-white/40 cursor-pointer transition-colors">Términos</span>
-            <span className="hover:text-white/40 cursor-pointer transition-colors">Privacidad</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex-1 p-6 md:p-12 lg:p-20 overflow-y-auto">
-        <div className="max-w-2xl mx-auto">
+          {/* Mobile order summary accordion */}
           <div className="lg:hidden mb-8">
-            <BackButton label="Atrás" />
-          </div>
-
-          <div className="mb-10">
-            <h2 className="text-2xl lg:text-3xl font-heading text-slate-900 dark:text-white mb-2">Detalles del Pago</h2>
-            <p className="text-sm font-label text-slate-400">Ingresa la información para activar tu cuenta.</p>
-          </div>
-
-          {/* Mobile Integrated Summary */}
-          <div className="lg:hidden mb-10">
             <button
-              onClick={() => setShowSummaryMobile(!showSummaryMobile)}
-              className="w-full flex items-center justify-between p-5 bg-white dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/5"
+              onClick={() => setShowSummary(v => !v)}
+              className="w-full flex items-center justify-between p-4 rounded-[16px] border border-border bg-gray-50/80 dark:bg-white/[0.03] hover:bg-gray-100 dark:hover:bg-white/[0.05] transition-colors"
             >
-              <div className="flex flex-col items-start">
-                <span className="text-[10px] font-label text-slate-400 uppercase">Resumen de Orden</span>
-                <span className="text-lg font-kpi text-slate-900 dark:text-white">US$ {totalToday}.00</span>
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-[10px] bg-primary/10 flex items-center justify-center shrink-0">
+                  <Tag className="h-4 w-4 text-primary" />
+                </div>
+                <div className="text-left">
+                  <p className="text-[11px] text-gray-400">Resumen del pedido</p>
+                  <p className="text-[15px] font-semibold text-fg tabular-nums">
+                    US$ {totalToday}.00
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center gap-2 text-slate-400">
-                <span className="text-xs font-label">{showSummaryMobile ? "Ocultar" : "Ver detalles"}</span>
-                {showSummaryMobile ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              <div className="flex items-center gap-1 text-[12px] text-gray-400">
+                {showSummary ? "Ocultar" : "Ver"}
+                {showSummary ? <ChevronUp className="h-4 w-4 ml-0.5" /> : <ChevronDown className="h-4 w-4 ml-0.5" />}
               </div>
             </button>
-            {showSummaryMobile && (
-              <div className="mt-4 animate-in slide-in-from-top-2 duration-300">
-                <OrderSummary isMobile />
+
+            {showSummary && (
+              <div className="mt-3 animate-in slide-in-from-top-2 duration-300">
+                <OrderSummary {...summaryProps} isMobile />
               </div>
             )}
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Plan preview card */}
+          <div className="mb-8 rounded-[20px] border border-border bg-white dark:bg-surface overflow-hidden">
+            {/* Gradient accent */}
+            <div className="h-[3px]" style={{ background: "linear-gradient(to right, #4D94DB, #004080)" }} />
+            <div className="p-5">
+              <div className="flex items-start justify-between gap-3 mb-4">
+                <div>
+                  <p className="text-[12px] text-gray-400 font-medium">Seleccionaste</p>
+                  <h3 className="text-[18px] font-bold text-fg mt-0.5">
+                    Plan {plan.name}
+                  </h3>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-[22px] font-semibold text-fg tabular-nums leading-none">
+                    ${isFree ? "0" : monthlyEquiv}
+                    <span className="text-[12px] font-normal text-gray-400 ml-1">/mes</span>
+                  </p>
+                  {isYearly && !isFree && (
+                    <p className="text-[10px] text-gray-400 mt-0.5">Pago anual · US$ {plan.yearlyPrice}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                {plan.features.map(f => (
+                  <div key={f} className="flex items-center gap-2.5">
+                    <div className="h-4 w-4 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <CheckCircle2 className="h-2.5 w-2.5 text-primary" />
+                    </div>
+                    <span className="text-[12px] text-fg-secondary">{f}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+
+            {/* Email */}
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold uppercase text-gray-400">
+                Correo electrónico
+              </label>
               <Input
-                label="Correo Electrónico"
-                placeholder="usuario@ejemplo.com"
+                icon={Mail}
+                placeholder="tu@email.com"
+                className="h-11 rounded-xl text-[14px]"
                 {...register("email")}
                 error={errors.email?.message}
+                autoFocus
               />
-              <Input
-                label="Nombre en la Tarjeta"
-                placeholder="Ej: Juan Pérez"
-                {...register("cardName")}
-                error={errors.cardName?.message}
-              />
-            </div>
-
-            <Input
-              label="Información de la Tarjeta"
-              placeholder="1234 1234 1234 1234"
-              icon={<CreditCard />}
-              {...register("cardNumber")}
-              error={errors.cardNumber?.message}
-              onChange={(e) => {
-                const val = e.target.value.replace(/\D/g, "").slice(0, 16);
-                const formatted = val.match(/.{1,4}/g)?.join(" ") || val;
-                setValue("cardNumber", formatted, { shouldValidate: true });
-              }}
-            />
-
-            <div className="grid grid-cols-2 gap-6">
-              <Input
-                label="Vencimiento"
-                placeholder="MM / AA"
-                icon={<Calendar />}
-                {...register("expiry")}
-                error={errors.expiry?.message}
-                onChange={(e) => {
-                  const val = e.target.value.replace(/\D/g, "").slice(0, 4);
-                  if (val.length >= 2) {
-                    setValue("expiry", `${val.slice(0, 2)} / ${val.slice(2)}`, { shouldValidate: true });
-                  } else {
-                    setValue("expiry", val, { shouldValidate: true });
-                  }
-                }}
-              />
-              <Input
-                label="CVC"
-                placeholder="123"
-                icon={<Lock />}
-                {...register("cvc")}
-                error={errors.cvc?.message}
-                maxLength={4}
-              />
-            </div>
-
-            <div className="space-y-6 pt-6 border-t border-slate-200 dark:border-white/5">
-              <div className="flex items-center gap-2">
-                <h3 className="text-[11px] font-label uppercase text-slate-400">Dirección de Facturación</h3>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Select
-                  label="País / Región"
-                  options={countryOptions}
-                  value={selectedCountry}
-                  onChange={(val) => setValue("country", val, { shouldValidate: true })}
-                  error={errors.country?.message}
-                />
-                <Input
-                  label="Dirección"
-                  placeholder="Calle y número"
-                  {...register("address")}
-                  error={errors.address?.message}
-                />
-              </div>
-            </div>
-
-            <div className="pt-8">
-              <Button
-                type="submit"
-                loading={isSubmitting}
-                className="w-full h-16 rounded-2xl bg-primary text-white font-heading text-sm uppercase hover:bg-primary-600 active:scale-95 transition-all shadow-2xl shadow-blue-900/20"
-              >
-                Pagar US$ {totalToday}.00 ahora
-              </Button>
-            </div>
-
-            <div className="flex items-start gap-4 p-6 bg-slate-50 dark:bg-white/5 rounded-[24px] border border-slate-100 dark:border-white/10">
-              <Info className="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5" />
-              <p className="text-[11px] font-label text-slate-500 leading-relaxed">
-                Al confirmar el pago, aceptas nuestros términos de servicio. El cargo se realizará de forma automática según el ciclo de facturación {isYearly ? "anual" : "mensual"} de Elora.
+              <p className="text-[11px] text-gray-400">
+                Usaremos este correo para enviarte el recibo y acceder a tu cuenta.
               </p>
             </div>
+
+            {/* CTA */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className={cn(
+                "w-full h-13 rounded-xl text-white text-[14px] font-semibold transition-all active:scale-[0.98] shadow-lg shadow-primary/20 disabled:opacity-70 disabled:cursor-not-allowed",
+                "flex items-center justify-center gap-2"
+              )}
+              style={{ background: "linear-gradient(to right, #4D94DB, #004080)", height: "52px" }}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Redirigiendo a pago...
+                </>
+              ) : isFree ? (
+                <>
+                  <Zap className="h-5 w-5" />
+                  Activar Plan Gratuito
+                </>
+              ) : (
+                <>
+                  Ir a pago seguro · US$ {totalToday}.00
+                  <ExternalLink className="h-4 w-4 opacity-70" />
+                </>
+              )}
+            </button>
+
+            {/* Polar trust row */}
+            {!isFree && (
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-1">
+                <div className="flex items-center gap-2 text-[11px] text-gray-400">
+                  <Lock className="h-3.5 w-3.5 shrink-0" />
+                  Cifrado TLS 256-bit
+                </div>
+                <div className="hidden sm:block h-3 w-px bg-gray-200 dark:bg-white/10" />
+                <div className="flex items-center gap-2 text-[11px] text-gray-400">
+                  <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
+                  Pago gestionado por Polar.sh
+                </div>
+                <div className="hidden sm:block h-3 w-px bg-gray-200 dark:bg-white/10" />
+                <div className="flex items-center gap-2 text-[11px] text-gray-400">
+                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                  Cancela cuando quieras
+                </div>
+              </div>
+            )}
+
+            {/* Legal note */}
+            <p className="text-[11px] text-fg-muted text-center leading-relaxed px-4">
+              Al continuar, aceptas nuestros{" "}
+              <button
+                type="button"
+                onClick={() => navigate("/legal/terms")}
+                className="underline hover:text-primary transition-colors"
+              >
+                Términos de Servicio
+              </button>{" "}
+              y{" "}
+              <button
+                type="button"
+                onClick={() => navigate("/legal/privacy")}
+                className="underline hover:text-primary transition-colors"
+              >
+                Política de Privacidad
+              </button>
+              . El cargo se realiza de forma automática según el ciclo{" "}
+              {isYearly ? "anual" : "mensual"}.
+            </p>
           </form>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

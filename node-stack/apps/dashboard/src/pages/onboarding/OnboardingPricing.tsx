@@ -3,7 +3,7 @@ import Pricing from "../payments/Pricing";
 
 const OnboardingPricing: React.FC = () => {
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#0A0A0A] pt-12 px-6">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-canvas pt-12 px-6">
       <div className="max-w-6xl mx-auto">
         <Pricing isOnboarding={true} />
         

@@ -1,4 +1,4 @@
-import { apiClient } from "@/shared/lib/api";
+import { apiClient } from "@/lib/api";
 
 export type TicketStatus = "open" | "in_progress" | "resolved" | "closed";
 export type TicketPriority = "low" | "medium" | "high" | "critical";
@@ -6,13 +6,13 @@ export type TicketCategory = "bug" | "feature" | "billing" | "general";
 
 export const priorityConfig: Record<TicketPriority, { label: string; color: string; bg: string }> = {
   low: { label: "BAJA", color: "text-gray-500", bg: "bg-gray-100 dark:bg-gray-800" },
-  medium: { label: "MEDIA", color: "text-primary-600", bg: "bg-primary-50 dark:bg-primary-900/20" },
+  medium: { label: "MEDIA", color: "text-primary", bg: "bg-primary/10 dark:bg-primary/20" },
   high: { label: "ALTA", color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-900/20" },
   critical: { label: "CRÍTICA", color: "text-red-600", bg: "bg-red-50 dark:bg-red-900/20" },
 };
 
 export const statusConfig: Record<TicketStatus, { label: string; dot: string; color: string }> = {
-  open: { label: "Abierto", dot: "bg-primary-500", color: "text-primary-600" },
+  open: { label: "Abierto", dot: "bg-primary", color: "text-primary" },
   in_progress: { label: "En progreso", dot: "bg-amber-500", color: "text-amber-600" },
   resolved: { label: "Resuelto", dot: "bg-teal-500", color: "text-teal-600" },
   closed: { label: "Cerrado", dot: "bg-gray-400", color: "text-gray-500" },

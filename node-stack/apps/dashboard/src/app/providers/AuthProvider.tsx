@@ -1,6 +1,8 @@
-import { ReactNode, createContext, useContext } from "react";
+import { ReactNode, createContext, useContext, useEffect } from "react";
 import { useAuth } from "@/hooks/stores/useAuth";
 import Loading from "@/components/ui/Loading";
+import { useAuthStore } from "@/stores/authStore";
+import { cookieTokenStorage } from "@/lib/api";
 
 interface AuthContextValue {
   isAuthenticated: boolean;
@@ -24,7 +26,16 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const setAuth = useAuthStore(state => state.setAuth);
   const auth = useAuth();
+
+  // Synchronize store with query result
+  useEffect(() => {
+    if (auth.user && !auth.isAuthenticated) {
+      const token = cookieTokenStorage.getToken();
+      if (token) setAuth(token);
+    }
+  }, [auth.user, auth.isAuthenticated, setAuth]);
 
   if (auth.isLoading) {
     return <Loading />;

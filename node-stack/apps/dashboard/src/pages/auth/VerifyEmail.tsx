@@ -6,16 +6,18 @@ import { appToast } from "@/components/alerts/Toasts";
 import { useAuth } from "@/hooks/stores/useAuth";
 import { useVerifyEmail, useResendVerification } from "@/features/auth/hooks";
 import { AuthSidebar } from "./components/AuthSidebar";
+import { Logo } from "@/assets/logo/logo";
+import { Link } from "react-router-dom";
 
 const VerifyEmail: React.FC = () => {
   const [code, setCode] = useState<string[]>(new Array(6).fill(""));
   const [resendCooldown, setResendCooldown] = useState(0);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  
+
   const location = useLocation();
   const navigate = useNavigate();
   const { logout } = useAuth();
-  
+
   const queryParams = new URLSearchParams(location.search);
   const email = queryParams.get("email") || "";
 
@@ -96,7 +98,7 @@ const VerifyEmail: React.FC = () => {
   const handleResend = async () => {
     if (resendCooldown > 0) return;
 
-    resendCode(email, {
+    resendCode(email || "", {
       onSuccess: () => {
         appToast.success({
           title: "Código enviado",
@@ -120,7 +122,7 @@ const VerifyEmail: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-white dark:bg-[#0A0A0A] overflow-hidden">
+    <div className="flex h-screen bg-white dark:bg-canvas overflow-hidden">
       {/* Left side: Form */}
       <div className="flex w-full lg:w-1/2 flex-col p-8 lg:p-12 xl:p-16 h-full overflow-y-auto relative">
         <div className="absolute top-8 left-8 lg:top-12 lg:left-12">
@@ -137,19 +139,16 @@ const VerifyEmail: React.FC = () => {
 
         <div className="mx-auto w-full max-w-md flex-1 flex flex-col justify-center animate-slide-up-fade" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
           {/* Logo */}
-          <div className="flex items-center gap-3 mb-10 mt-16 lg:mt-0">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-              <div className="w-5 h-5 bg-white rounded-sm transform rotate-45"></div>
-            </div>
-            <span className="text-xl font-heading tracking-tight text-gray-900 dark:text-white">NodeStack</span>
-          </div>
+          <Link to="/" className="mb-10 w-fit mt-16 lg:mt-0">
+            <Logo variant="full" width={180} height={45} />
+          </Link>
 
           <div className="mb-8">
-            <h1 className="text-3xl font-heading text-gray-900 dark:text-white">
+            <h1 className="text-3xl font-heading text-fg">
               Verifica tu email
             </h1>
-            <p className="mt-2 text-gray-500 dark:text-gray-400">
-              Hemos enviado un código de 6 dígitos a <span className="font-medium text-gray-900 dark:text-white">{email}</span>
+            <p className="mt-2 text-fg-secondary">
+              Hemos enviado un código de 6 dígitos a <span className="font-medium text-fg">{email}</span>
             </p>
           </div>
 
@@ -166,9 +165,9 @@ const VerifyEmail: React.FC = () => {
 
             <div className="h-5 text-center">
               {resendCooldown > 0 && (
-                <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                <p className="text-sm text-fg-secondary font-medium">
                   Podrás reenviar el código en:{" "}
-                  <span className="font-mono font-bold text-gray-900 dark:text-primary-400">
+                  <span className="font-mono font-bold text-gray-900 dark:text-primary">
                     {formatTime(resendCooldown)}
                   </span>
                 </p>
@@ -181,17 +180,17 @@ const VerifyEmail: React.FC = () => {
               disabled={code.some((d) => d === "")}
               fullWidth
               size="lg"
-              className="h-12 rounded-xl shadow-lg shadow-primary/25 text-base font-bold tracking-tight mt-4"
+              className="h-12 rounded-xl shadow-lg shadow-primary/25 text-base font-bold  mt-4"
             >
               Verificar código
             </Button>
-            
+
             <div className="mt-6 text-center text-sm">
-              <p className="text-gray-500 dark:text-gray-400">¿No recibiste el código?</p>
+              <p className="text-fg-secondary">¿No recibiste el código?</p>
               <button
                 onClick={handleResend}
                 disabled={loading || resendCooldown > 0}
-                className="mt-1 font-bold text-primary-600 transition-colors duration-200 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="mt-1 font-bold text-primary transition-colors duration-200 hover:opacity-90 dark:text-primary dark:hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {resendCooldown > 0 ? "Espera para reenviar" : "Reenviar código"}
               </button>
@@ -205,10 +204,10 @@ const VerifyEmail: React.FC = () => {
         </div>
       </div>
 
-      <AuthSidebar 
-        titleMain="Verifica tu" 
-        titleAccent="identidad" 
-        subtitle="Ingresa el código que enviamos a tu correo para activar tu cuenta y acceder al panel." 
+      <AuthSidebar
+        titleMain="Verifica tu"
+        titleAccent="identidad"
+        subtitle="Ingresa el código que enviamos a tu correo para activar tu cuenta y acceder al panel."
       />
     </div>
   );

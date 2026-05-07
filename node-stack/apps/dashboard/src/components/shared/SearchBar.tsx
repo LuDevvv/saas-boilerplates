@@ -52,7 +52,7 @@ export const SearchBar: FC<SearchBarProps> = ({
       <button
         type="button"
         onClick={onCreate}
-        className="flex items-center justify-center gap-2 w-full sm:w-auto h-10 px-4 sm:px-5 rounded-full text-sm font-heading bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-transform duration-200 ease-in-out hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+        className="flex items-center justify-center gap-2 w-full sm:w-auto h-10 px-4 sm:px-5 rounded-full text-sm font-heading bg-primary hover:opacity-90 text-white shadow-sm transition-transform duration-200 ease-in-out hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
       >
         {createButtonIcon && (
           <span className="shrink-0">{createButtonIcon}</span>

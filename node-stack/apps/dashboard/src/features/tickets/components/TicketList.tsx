@@ -1,4 +1,4 @@
-import { Ticket } from "../api/tickets.api";
+import { Ticket } from "@node-stack/types";
 import { TicketCard } from "./TicketCard";
 
 interface TicketListProps {

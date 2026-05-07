@@ -90,7 +90,7 @@ const FooterCopyright: FC<FooterCopyrightProps> = ({ year, by, className }) => {
   const displayYear = year ? `${year}-${currentYear}` : currentYear;
 
   return (
-    <p className={cn("text-sm text-gray-500 dark:text-gray-400", className)}>
+    <p className={cn("text-sm text-fg-secondary", className)}>
       © {displayYear} {by}. All rights reserved.
     </p>
   );

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
-import gsap from "gsap";
+import { animate } from "@motionone/dom";
 import heroImage from "@/assets/resorces/hero-screenshot.png";
+import { easing, duration } from "@/lib/motion";
 
 interface AuthSidebarProps {
   titleMain: string;
@@ -13,57 +14,51 @@ export const AuthSidebar = ({ titleMain, titleAccent, subtitle, imageSrc = heroI
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
-  
+
   // Refs for staggered text animation
   const titleMainRef = useRef<HTMLSpanElement>(null);
   const titleAccentRef = useRef<HTMLSpanElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
-    const ctx = gsap.context(() => {
-      const tl = gsap.timeline();
+    const textElements = [titleMainRef.current, titleAccentRef.current, subtitleRef.current].filter(Boolean) as HTMLElement[];
+    const imageEl = imageRef.current;
+    if (!textElements.length || !imageEl) return;
 
-      // Advanced Text Reveal (3D Flip Stagger)
-      gsap.set([titleMainRef.current, titleAccentRef.current, subtitleRef.current], { 
-        y: 50, 
-        opacity: 0,
-        rotationX: -45,
-        transformOrigin: "50% 100%"
-      });
+    // Set initial states before animation
+    textElements.forEach(el => {
+      el.style.opacity = "0";
+      el.style.transform = "translateY(50px)";
+    });
+    imageEl.style.opacity = "0";
+    imageEl.style.transform = "scale(0.85)";
 
-      tl.to([titleMainRef.current, titleAccentRef.current, subtitleRef.current], {
-        y: 0,
-        opacity: 1,
-        rotationX: 0,
+    // Cinematic text reveal — staggered entrance with deceleration
+    const textAnimation = animate(
+      textElements,
+      { opacity: 1, transform: "translateY(0px)" },
+      {
+        duration: duration.cinematic,
+        easing: easing.entrance,
+        delay: (_, i) => 0.1 + i * 0.15,
+      }
+    );
+
+    // Cinematic image entrance — spatial reveal with gentle deceleration
+    const imageAnimation = animate(
+      imageEl,
+      { opacity: 1, transform: "scale(1)" },
+      {
         duration: 1.2,
-        stagger: 0.15,
-        ease: "power4.out",
-        delay: 0.1
-      });
+        easing: easing.entrance,
+        delay: 0.4,
+      }
+    );
 
-      // Advanced Image Entrance (3D Spatial Reveal)
-      gsap.set(imageRef.current, {
-        opacity: 0,
-        scale: 0.85,
-        rotationX: 15,
-        rotationY: -10,
-        z: -100,
-        transformOrigin: "center center"
-      });
-
-      tl.to(imageRef.current, {
-        opacity: 1,
-        scale: 1,
-        rotationX: 0,
-        rotationY: 0,
-        z: 0,
-        duration: 1.8,
-        ease: "expo.out",
-      }, "-=0.8"); // Starts smoothly while text is still entering
-
-    }, containerRef);
-
-    return () => ctx.revert();
+    return () => {
+      textAnimation.cancel();
+      imageAnimation.cancel();
+    };
   }, []);
 
   return (
@@ -78,10 +73,10 @@ export const AuthSidebar = ({ titleMain, titleAccent, subtitle, imageSrc = heroI
 
         {/* Centered Content Wrapper */}
         <div className="relative z-10 flex flex-col items-center justify-center h-full w-full max-w-[800px] px-8 lg:px-12 py-12 m-auto">
-          
-          {/* Text Section with perspective for 3D rotation */}
-          <div ref={textRef} style={{ perspective: "1000px" }} className="text-white text-center w-full max-w-xl mx-auto mb-12 shrink-0">
-            <h2 className="text-[32px] lg:text-[40px] xl:text-[48px] mb-6 leading-[1.15] tracking-tight font-semibold flex flex-col items-center justify-center">
+
+          {/* Text Section */}
+          <div ref={textRef} className="text-white text-center w-full max-w-xl mx-auto mb-12 shrink-0">
+            <h2 className="text-[32px] lg:text-[40px] xl:text-[48px] mb-6 leading-[1.15]  font-semibold flex flex-col items-center justify-center">
               <span ref={titleMainRef} className="block">{titleMain}</span>
               <span ref={titleAccentRef} className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00E6E6] to-white block mt-1 pb-1">
                 {titleAccent}
@@ -92,8 +87,8 @@ export const AuthSidebar = ({ titleMain, titleAccent, subtitle, imageSrc = heroI
             </p>
           </div>
 
-          {/* Image Section with perspective for 3D reveal */}
-          <div style={{ perspective: "1000px" }} className="relative w-full flex justify-center items-center shrink-0">
+          {/* Image Section */}
+          <div className="relative w-full flex justify-center items-center shrink-0">
             <div ref={imageRef} className="relative w-full max-w-[700px] transform-gpu">
               <img
                 src={imageSrc}
@@ -102,7 +97,7 @@ export const AuthSidebar = ({ titleMain, titleAccent, subtitle, imageSrc = heroI
               />
             </div>
           </div>
-          
+
         </div>
       </div>
     </div>

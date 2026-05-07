@@ -60,12 +60,12 @@ const ApiKeysPage: FC = () => {
         </div>
 
         <div className="space-y-8">
-          <Card className="p-8 rounded-[32px] border-slate-100 dark:border-white/5 bg-white dark:bg-white/5 shadow-sm">
+          <Card className="p-8 rounded-[32px] border-border-subtle bg-white dark:bg-white/5 shadow-sm">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2.5 bg-cyan-50 dark:bg-cyan-500/5 rounded-xl">
                 <Terminal className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
               </div>
-              <h3 className="text-sm font-heading text-slate-900 dark:text-white uppercase">Guía de Inicio</h3>
+              <h3 className="text-sm font-heading text-fg uppercase">Guía de Inicio</h3>
             </div>
             <div className="space-y-4">
               <div className="p-4 rounded-2xl bg-slate-900 text-slate-300 font-mono text-[10px] leading-relaxed border border-slate-800">

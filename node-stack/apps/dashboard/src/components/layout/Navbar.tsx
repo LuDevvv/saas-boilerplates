@@ -8,6 +8,8 @@ import { Breadcrumbs } from "./Breadcrumbs";
 import { ThemeToggle } from "../ui/ThemeToggle";
 import { NotificationBell } from "../notifications/NotificationBell";
 
+import { Logo } from "@/assets/logo/logo";
+
 interface NavbarProps {
   onMenuClick?: () => void;
   title?: string;
@@ -18,14 +20,14 @@ export const Navbar: FC<NavbarProps> = ({ onMenuClick }) => {
   const { user, isPremium, logout, currentPlan } = useAuth();
 
   return (
-    <header className="sticky top-0 z-30 flex h-[68px] w-full items-center justify-between bg-white dark:bg-[#0A0A0A] px-6 border-b border-sidebar-border transition-all duration-300">
+    <header className="sticky top-0 z-30 flex h-[68px] w-full items-center justify-between bg-white dark:bg-canvas px-6 border-b border-sidebar-border transition-all duration-300">
       {/* Left Section: Logo (Mobile) or Breadcrumbs (Desktop) */}
       <div className="flex items-center gap-4">
         <LinkTransition
           href="/"
-          className="lg:hidden flex items-center transition-transform duration-200 active:scale-95"
+          className="lg:hidden flex items-center transition-transform duration-200 active:scale-[0.97]"
         >
-          <img className="h-6 w-auto" src="/Logo.svg" alt="NodeStack" />
+          <Logo variant="full" width={110} height={28} />
         </LinkTransition>
 
         <div className="hidden lg:flex items-center">
@@ -54,7 +56,7 @@ export const Navbar: FC<NavbarProps> = ({ onMenuClick }) => {
         {onMenuClick && (
           <button
             onClick={onMenuClick}
-            className="flex items-center justify-center h-9 w-9 rounded-xl text-sidebar-text/60 transition-all hover:bg-gray-100 hover:text-primary active:scale-95 dark:hover:bg-white/5 lg:hidden cursor-pointer outline-none border border-transparent hover:border-sidebar-border"
+            className="flex items-center justify-center h-9 w-9 rounded-xl text-sidebar-text/60 transition-all hover:bg-gray-100 hover:text-primary active:scale-[0.97] dark:hover:bg-surface-hover lg:hidden cursor-pointer outline-none border border-transparent hover:border-sidebar-border"
             aria-label="Abrir menú"
           >
             <Menu className="h-5 w-5" />

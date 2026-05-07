@@ -1,70 +1,149 @@
 @import "@fontsource/geist-sans";
+
 :root {
-  /* Design System Tokens: Delightful Premium */
+  /* ─── Brand & Accent ───
+     RGB vars MUST be space-separated (not comma-separated) so they work with
+     Tailwind's <alpha-value> placeholder via `rgb(var(--x) / <alpha>)`.
+     Mixing commas + slash in rgb() is invalid CSS and breaks the color.
+  */
   --primary: #004080;
-  --primary-light: #4D94DB;
-  --secondary: #00E6E6;
-  --accent: #4D94DB;
-  --canvas: #F8FAFC;
+  --primary-rgb: 0 64 128;
+  --primary-600: #003366;
+  --primary-foreground: #FFFFFF;
+  --secondary: #4D94DB;
+  --secondary-rgb: 77 148 219;
+  --accent: #00E6E6;
+  --ring: #4D94DB;
+  --ring-rgb: 77 148 219;
+
+  /* ─── Surface Hierarchy (light) ───
+     White-flat approach: canvas, surface and sidebar all share the same
+     near-white tone. Cards are distinguished by border, not by tint.
+  */
+  --canvas: #FFFFFF;
   --surface: #FFFFFF;
-  --border: #F1F5F9;
-  /* Softer, cleaner border */
+  --surface-elevated: #FFFFFF;
+  --surface-hover: #F4F6F9;
+  --surface-muted: #F8F9FB;
 
-  /* Functional Status Colors */
+  /* ─── Borders (neutral cool) ─── */
+  --border: #E5E8EE;
+  --border-strong: #CBD2DB;
+  --border-subtle: #EFF1F5;
+
+  /* ─── Text (neutral cool slate) ─── */
+  --text-primary: #0E1117;
+  --text-secondary: #475160;
+  --text-muted: #8C95A4;
+  --text-disabled: #C8CDD6;
+
+  /* ─── Status (functional) — RGB vars space-separated for alpha modifier ─── */
   --status-success: #10B981;
+  --status-success-rgb: 16 185 129;
   --status-warning: #F59E0B;
+  --status-warning-rgb: 245 158 11;
   --status-error: #EF4444;
+  --status-error-rgb: 239 68 68;
   --status-info: #3B82F6;
+  --status-info-rgb: 59 130 246;
 
-  /* Hyper-Rounded Radii */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  /* Perfect for buttons and inputs */
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
-  /* Standard Bento Box */
-  --radius-3xl: 32px;
-  --radius-hero: 40px;
+  /* ─── Radii ─── */
+  --radius-input: 12px;
+  --radius-button: 16px;
+  --radius-card: 20px;
+  --radius-hero: 32px;
+  --radius-full: 9999px;
 
-  /* Typography Weights */
-  --font-weight-label: 600;
-  --font-weight-heading: 800;
+  /* ─── Typography Weights ─── */
+  --font-weight-label: 400;
+  --font-weight-heading: 700;
   --font-weight-body: 400;
   --font-weight-medium: 500;
   --font-weight-kpi: 700;
   --font-weight-black: 900;
 
-  /* Sidebar Tokens */
-  --sidebar-bg: var(--canvas);
-  /* Blends with canvas for modern feel */
-  --sidebar-border: var(--border);
+  /* ─── Shadows (soft, tinted) ───
+     Light-mode cards live on white canvas, so we lean on borders for
+     definition; shadows are minimal and only used for elevated overlays.
+  */
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 2px 8px -2px rgba(15, 23, 42, 0.04);
+  --shadow-elevated: 0 12px 40px -8px rgba(15, 23, 42, 0.10);
+  --shadow-focus-ring: 0 0 0 3px rgba(77, 148, 219, 0.20);
+
+  /* ─── Sidebar (light) — pure white, matches canvas + cards ─── */
+  --sidebar-bg: #FFFFFF;
+  --sidebar-border: var(--border-subtle);
   --sidebar-text: #64748B;
   --sidebar-text-active: var(--primary);
-  --sidebar-bg-active: rgba(0, 64, 128, 0.04);
+  --sidebar-bg-active: #EBF2FA;
+
+  /* ─── Tooltip (light) ─── */
+  --tooltip-bg: #0F172A;
+  --tooltip-border: rgba(15, 23, 42, 0.08);
+  --tooltip-text: #FFFFFF;
 }
 
 .dark {
-  --primary: #4D94DB;
-  --primary-light: #00E6E6;
-  --canvas: #0A0A0A;
-  /* Extremely deep dark canvas */
-  --surface: #121212;
-  /* Distinct surface for bento cards */
-  --border: rgba(255, 255, 255, 0.05);
-  /* Barely visible border */
+  /* ─── Brand & Accent (dark) ───
+     Primary blue lifted to a slightly desaturated, brighter shade so it
+     pops against the neutral charcoal canvas without becoming neon.
+  */
+  --primary: #5BA8E5;
+  --primary-rgb: 91 168 229;
+  --primary-600: #4D94DB;
+  --primary-foreground: #0E1117;
+  --secondary: #4D94DB;
+  --secondary-rgb: 77 148 219;
+  --accent: #22D3DB;
+  --ring: #5BA8E5;
+  --ring-rgb: 91 168 229;
 
-  /* Sidebar Tokens Dark */
-  --sidebar-bg: #0A0A0A;
-  --sidebar-border: rgba(255, 255, 255, 0.05);
-  --sidebar-text: #94A3B8;
-  --sidebar-text-active: #FFFFFF;
-  --sidebar-bg-active: rgba(255, 255, 255, 0.05);
+  /* ─── Surface Hierarchy (neutral charcoal dark) ───
+     Inspiration: Linear, Vercel, GitHub. Cool-neutral charcoal — neither
+     warm-brown nor saturated navy. The brand blue is the only saturated
+     accent on the page, which is why it reads premium.
+     Each step is a measured ~3-5% lift in luminance.
+  */
+  --canvas: #0D1014;
+  --surface: #14181E;
+  --surface-elevated: #1B2028;
+  --surface-hover: #232A33;
+  --surface-muted: #11141A;
 
-  /* Tooltip Tokens */
-  --tooltip-bg: #1A1A1A;
-  --tooltip-border: rgba(255, 255, 255, 0.08);
-  --tooltip-text: #FFFFFF;
+  /* ─── Borders (neutral cool) ───
+     Slate-tinted whites at very low opacity. Visible enough to delineate
+     cards, never harsh.
+  */
+  --border: rgba(180, 195, 215, 0.09);
+  --border-strong: rgba(180, 195, 215, 0.16);
+  --border-subtle: rgba(180, 195, 215, 0.05);
+
+  /* ─── Text (cool off-white) ───
+     Slightly cool off-whites — pair naturally with the charcoal surfaces.
+  */
+  --text-primary: #ECEEF2;
+  --text-secondary: #9BA3AE;
+  --text-muted: #6A7280;
+  --text-disabled: #3E4651;
+
+  /* ─── Shadows (dark — neutral, low-spread) ─── */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.32);
+  --shadow-card: 0 4px 18px -4px rgba(0, 0, 0, 0.42);
+  --shadow-elevated: 0 12px 36px -8px rgba(0, 0, 0, 0.55);
+  --shadow-focus-ring: 0 0 0 3px rgba(91, 168, 229, 0.22);
+
+  /* ─── Sidebar (dark) — same as canvas for unified flat look ─── */
+  --sidebar-bg: var(--canvas);
+  --sidebar-border: rgba(180, 195, 215, 0.07);
+  --sidebar-text: #9BA3AE;
+  --sidebar-text-active: #ECEEF2;
+  --sidebar-bg-active: rgba(91, 168, 229, 0.10);
+
+  /* ─── Tooltip (dark) ─── */
+  --tooltip-bg: #1B2028;
+  --tooltip-border: rgba(180, 195, 215, 0.12);
+  --tooltip-text: #ECEEF2;
 }
 
 @tailwind base;
@@ -73,10 +152,22 @@
 
 @layer base {
   body {
-    @apply bg-[var(--canvas)] text-gray-900 dark:text-gray-100 antialiased selection:bg-blue-200 selection:text-blue-900 dark:selection:bg-blue-900/50 dark:selection:text-blue-100;
+    @apply bg-[var(--canvas)] text-[color:var(--text-primary)] antialiased selection:bg-blue-200 selection:text-blue-900 dark:selection:bg-blue-900/50 dark:selection:text-blue-100;
   }
 
-  /* Global interaction stability fix - Target outlines and Tailwind rings only */
+  /* ─── Universal focus reset ─────────────────────────────────────────────────
+     Kill the default browser outline + Tailwind rings on click.
+     Show a custom, brand-tinted ring only when the user is using the keyboard
+     (`:focus-visible`). Fixes the black/blue outline on WorkspaceSwitcher,
+     sidebar toggle, and other interactive elements.
+  */
+
+  /* Click/tap focus → no outline anywhere (default in modern browsers anyway,
+     but we enforce it explicitly to override stray UA styles) */
+  *:focus {
+    outline: none !important;
+  }
+
   *:focus:not(:focus-visible) {
     outline: none !important;
     box-shadow: none !important;
@@ -87,15 +178,30 @@
     --tw-ring-offset-shadow: none !important;
   }
 
-  /* Specific fix for buttons and inputs to prevent any flicker during active/focus transitions */
+  /* Keyboard focus → show a brand ring on inputs/buttons.
+     Block by default so divs/buttons that already define their own active
+     style don't get a duplicate ring. */
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  a:focus-visible {
+    outline: none !important;
+    box-shadow: var(--shadow-focus-ring) !important;
+    border-radius: inherit;
+  }
+
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: none !important;
+    box-shadow: var(--shadow-focus-ring) !important;
+    border-color: var(--ring) !important;
+  }
+
+  /* Mobile tap highlight cleanup */
   button,
   input,
   textarea,
-  [role="button"] {
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  /* Remove default tap highlight on mobile */
+  [role="button"],
   * {
     -webkit-tap-highlight-color: transparent;
   }
@@ -116,25 +222,8 @@
     }
   }
 
-  @keyframes bounce-subtle-delayed {
-
-    0%,
-    100% {
-      transform: translateY(0);
-    }
-
-    50% {
-      transform: translateY(-6px);
-    }
-  }
-
   .animate-bounce-subtle {
     animation: bounce-subtle 4s ease-in-out infinite;
-  }
-
-  .animate-bounce-subtle-delayed {
-    animation: bounce-subtle-delayed 4.5s ease-in-out infinite;
-    animation-delay: 1s;
   }
 
   /* Bento Card Entrance Animation */
@@ -160,7 +249,7 @@
 
   /* Base button: Natural easing and elegant scale down on click */
   .btn-base {
-    @apply flex items-center justify-center gap-2 px-4 py-2 font-medium transition-all duration-300 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
+    @apply flex items-center justify-center gap-2 px-4 py-2 font-medium transition-all duration-300 active:scale-[0.96] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
   }
 
   /* Primary Button - Fintech Blue with tinted shadow */
@@ -178,169 +267,25 @@
     @apply btn-base bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/30 rounded-[16px] hover:bg-red-500 hover:text-white dark:hover:bg-red-600 dark:hover:text-white transition-colors;
   }
 
-  /* Ghost Button */
-  .btn-ghost {
-    @apply btn-base text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 rounded-[16px];
+  /* Premium Card Implementation */
+  .card-premium {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* Bento Card Implementation (Replaces card-premium) */
-  .card-bento {
-    @apply bg-white dark:bg-[#121212] rounded-[24px] border border-[var(--border)] shadow-[0_4px_20px_-4px_rgba(0,64,128,0.03)] dark:shadow-none transition-all duration-300 overflow-hidden hover:shadow-[0_8px_30px_-4px_rgba(0,64,128,0.06)];
+  /* Elevated surface — modals, dropdowns, popovers */
+  .card-elevated {
+    background-color: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    box-shadow: var(--shadow-elevated);
   }
 
-  /* Standard Input field - Custom ring, no default outline */
-  .input-standard {
-    @apply w-full bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 rounded-[16px] px-4 py-3 text-gray-900 dark:text-white placeholder:text-[#64748B]/60 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 dark:focus:ring-blue-400/20 dark:focus:border-blue-400 shadow-sm transition-all duration-200;
-  }
 
-  /* Pill Badges */
-  .badge-pill {
-    @apply px-3 py-1 rounded-full text-[12px] font-medium backdrop-blur-md inline-flex items-center gap-1.5;
-  }
-
-  /* Layout Shell */
-  .layout-inset-container {
-    @apply flex flex-1 flex-col bg-[var(--canvas)] lg:rounded-tl-[32px] border-t lg:border-l border-[var(--border)] overflow-hidden transition-all duration-500;
-  }
-}
-
-/* ═══════════════════════════════════════════════
-   Premium Loading Screen
-   Orbital spinner with dual arcs and pulsing dot.
-   Zero dependencies — pure CSS animations.
-   ═══════════════════════════════════════════════ */
-
-.loading-screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  height: 100dvh;
-  background: var(--surface);
-  animation: loading-entrance 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.dark .loading-screen {
-  background: var(--canvas);
-}
-
-/* Entrance fade */
-@keyframes loading-entrance {
-  from {
-    opacity: 0;
-    transform: scale(0.98);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* ── Spinner Container ── */
-.loading-spinner {
-  position: relative;
-  width: 56px;
-  height: 56px;
-  margin-bottom: 24px;
-}
-
-/* Static background track */
-.loading-track {
-  position: absolute;
-  inset: 0;
-  border-radius: 9999px;
-  border: 3px solid var(--border);
-}
-
-/* ── Arc animations ── */
-.loading-arc {
-  position: absolute;
-  border-radius: 9999px;
-  border-style: solid;
-  border-color: transparent;
-}
-
-/* Primary arc — outer ring, clockwise */
-.loading-arc--primary {
-  inset: 0;
-  border-width: 3px;
-  border-top-color: var(--primary);
-  border-right-color: var(--primary);
-  animation: loading-spin 1.2s cubic-bezier(0.42, 0, 0.58, 1) infinite;
-}
-
-/* Secondary arc — inner ring, counter-clockwise */
-.loading-arc--secondary {
-  inset: 7px;
-  border-width: 2.5px;
-  border-bottom-color: var(--secondary);
-  animation: loading-spin-reverse 1.8s cubic-bezier(0.42, 0, 0.58, 1) infinite;
-}
-
-/* Pulsing center dot */
-.loading-dot {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 8px;
-  height: 8px;
-  margin: -4px 0 0 -4px;
-  border-radius: 9999px;
-  background: var(--primary);
-  animation: loading-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  box-shadow: 0 0 12px rgba(0, 64, 128, 0.3);
-}
-
-.dark .loading-dot {
-  background: var(--secondary);
-  box-shadow: 0 0 12px rgba(0, 230, 230, 0.25);
-}
-
-/* Micro-label */
-.loading-label {
-  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #94A3B8;
-  animation: loading-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  user-select: none;
-}
-
-/* ── Keyframes ── */
-@keyframes loading-spin {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes loading-spin-reverse {
-  0% {
-    transform: rotate(360deg);
-  }
-
-  100% {
-    transform: rotate(0deg);
-  }
-}
-
-@keyframes loading-pulse {
-
-  0%,
-  100% {
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 0.5;
-  }
 }
 
 /* Custom Scrollbar Premium */
@@ -359,18 +304,7 @@
 
 /* Cmdk Menu Group Header */
 [cmdk-group-heading] {
-  @apply px-4 text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2 mt-4;
-}
-
-/* ===== Flag Icons (Phone + Currency) ===== */
-.currency-flag {
-  width: 22px;
-  height: 16px;
-  border-radius: 3px;
-  overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  flex-shrink: 0;
-  object-fit: cover;
+  @apply px-4 text-[11px] font-bold uppercase text-gray-400 dark:text-gray-500 mb-2 mt-4;
 }
 
 /* Toast Custom Entrance Animation */
@@ -429,29 +363,39 @@
   --expo-out: linear(0 0%, 0.1684 2.66%, 0.3165 5.49%, 0.446 8.52%, 0.5581 11.78%, 0.6535 15.29%, 0.7341 19.11%, 0.8011 23.3%, 0.8557 27.93%, 0.8962 32.68%, 0.9283 38.01%, 0.9529 44.08%, 0.9711 51.14%, 0.9833 59.06%, 0.9915 68.74%, 1 100%);
 }
 
+.theme-toggling * {
+  transition-duration: 0s !important;
+}
+
 .theme-toggling::view-transition-group(root) {
-  animation-duration: 0.8s;
-  animation-timing-function: var(--expo-out);
+  animation-duration: 0.2s;
+  animation-timing-function: ease-out;
+}
+
+.theme-toggling::view-transition-old(root) {
+  animation: fade-out 0.2s ease-out forwards;
 }
 
 .theme-toggling::view-transition-new(root) {
-  animation-name: reveal-theme;
-  animation-fill-mode: both;
-  will-change: clip-path;
+  animation: fade-in 0.2s ease-out forwards;
 }
 
-.theme-toggling::view-transition-old(root),
-.theme-toggling.dark::view-transition-old(root) {
-  animation: none;
-  z-index: -1;
-}
-
-@keyframes reveal-theme {
+@keyframes fade-in {
   from {
-    clip-path: circle(0% at var(--x) var(--y));
+    opacity: 0;
   }
 
   to {
-    clip-path: circle(150% at var(--x) var(--y));
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
   }
 }

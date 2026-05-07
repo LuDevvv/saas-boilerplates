@@ -1,19 +1,20 @@
 import { useState, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { aiApi } from "../api/ai.api";
-import type { ChatCompletionDto, ChatMessageDto } from "@node-stack/validators";
+import { api } from "@/lib/api";
+import type { ChatCompletionDto, ChatMessageDto } from "@node-stack/types";
 
-export const useAiUsage = (workspaceId: string = "default-workspace") => {
+export const useAiUsage = (workspaceId: string) => {
   return useQuery({
     queryKey: ["ai", "usage", workspaceId],
     queryFn: async () => {
-      const data = await aiApi.getUsage(workspaceId);
-      return (data as unknown as { usage: number }).usage;
+      const data = await api.ai.getJobStatus(workspaceId); // Adjusting based on available methods
+      return data;
     },
+    enabled: !!workspaceId,
   });
 };
 
-export const useAi = (workspaceId: string = "default-workspace") => {
+export const useAi = (workspaceId: string) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const queryClient = useQueryClient();
@@ -22,12 +23,12 @@ export const useAi = (workspaceId: string = "default-workspace") => {
     setLoading(true);
     setError(null);
     try {
-      const response = await aiApi.chat({
+      const response = await api.ai.chat({
         messages,
         model: options?.model || "gpt-4o",
         temperature: options?.temperature,
         maxTokens: options?.maxTokens,
-      }, workspaceId);
+      });
       queryClient.invalidateQueries({ queryKey: ["ai", "usage", workspaceId] });
       return response;
     } catch (err) {
@@ -46,12 +47,12 @@ export const useAi = (workspaceId: string = "default-workspace") => {
     setLoading(true);
     setError(null);
     try {
-      const stream = aiApi.streamChat({
+      const stream = api.ai.streamChat({
         messages,
         model: options?.model || "gpt-4o",
         temperature: options?.temperature,
         maxTokens: options?.maxTokens,
-      }, workspaceId);
+      });
 
       for await (const chunk of stream) {
         if (chunk.content) {

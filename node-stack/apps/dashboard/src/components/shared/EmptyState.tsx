@@ -27,17 +27,17 @@ export const EmptyState: FC<EmptyStateProps> = ({
       className
     )}>
       {Icon && (
-        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-white/5">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-surface-hover">
           <Icon className="h-6 w-6 text-gray-400" />
         </div>
       )}
       
-      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+      <h3 className="text-sm font-semibold text-fg">
         {title}
       </h3>
       
       {description && (
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 max-w-sm">
+        <p className="mt-1 text-sm text-fg-secondary max-w-sm">
           {description}
         </p>
       )}

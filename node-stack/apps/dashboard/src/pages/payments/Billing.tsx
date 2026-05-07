@@ -1,13 +1,6 @@
-import { FC, Suspense } from "react";
+import { FC } from "react";
 import { BillingContent } from "@/features/billing";
-import { LoadingState } from "@/components/shared/LoadingState";
 
-const BillingPage: FC = () => {
-  return (
-    <Suspense fallback={<LoadingState message="Cargando información de pagos..." />}>
-      <BillingContent />
-    </Suspense>
-  );
-};
+const BillingPage: FC = () => <BillingContent />;
 
 export default BillingPage;

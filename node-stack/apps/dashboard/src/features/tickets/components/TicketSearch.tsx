@@ -6,7 +6,7 @@ export const TicketSearch = () => (
     <input
       type="text"
       placeholder="Buscar tickets por ID o asunto..."
-      className="w-full pl-11 pr-4 py-3 bg-white/80 backdrop-blur-md dark:bg-gray-900/50 border border-gray-100 dark:border-white/10 rounded-[20px] text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all"
+      className="w-full pl-11 pr-4 py-3 bg-white/80 backdrop-blur-md dark:bg-gray-900/50 border border-border rounded-[20px] text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all"
     />
   </div>
 );

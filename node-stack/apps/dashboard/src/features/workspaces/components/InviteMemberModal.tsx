@@ -2,19 +2,10 @@ import { FC } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  Button,
-  Input,
-  Label,
-  Select,
-} from "@node-stack/ui";
-import { Loader2, Mail } from "lucide-react";
+import { Button, Input, Select } from "@node-stack/ui";
+import { Loader2, Mail, ShieldCheck, User, Eye } from "lucide-react";
+import { ModalLayout } from "@/layouts/ModalLayout";
+import { cn } from "@/utils/classNames";
 
 const inviteSchema = z.object({
   email: z.string().email("Ingresa un correo válido"),
@@ -30,6 +21,37 @@ interface InviteMemberModalProps {
   isLoading: boolean;
 }
 
+// ─── Role option cards ────────────────────────────────────────────────────────
+
+const ROLES = [
+  {
+    value: "member" as const,
+    label: "Miembro",
+    hint: "Puede crear y editar recursos pero no gestionar la compañía.",
+    icon: User,
+    iconBg: "bg-blue-50 dark:bg-blue-500/10",
+    iconColor: "text-blue-600 dark:text-blue-400",
+  },
+  {
+    value: "admin" as const,
+    label: "Administrador",
+    hint: "Control total: miembros, configuración y facturación.",
+    icon: ShieldCheck,
+    iconBg: "bg-amber-50 dark:bg-amber-500/10",
+    iconColor: "text-amber-600 dark:text-amber-400",
+  },
+  {
+    value: "guest" as const,
+    label: "Invitado",
+    hint: "Solo puede visualizar los recursos de la compañía.",
+    icon: Eye,
+    iconBg: "bg-surface-hover",
+    iconColor: "text-fg-secondary",
+  },
+] as const;
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export const InviteMemberModal: FC<InviteMemberModalProps> = ({
   isOpen,
   onClose,
@@ -44,86 +66,134 @@ export const InviteMemberModal: FC<InviteMemberModalProps> = ({
     reset,
     formState: { errors },
   } = useForm<InviteFormValues>({
-    resolver: zodResolver(inviteSchema),
-    defaultValues: {
-      role: "member",
-    },
+    resolver: zodResolver(inviteSchema as any),
+    defaultValues: { role: "member" },
   });
 
   const selectedRole = watch("role");
 
-  const onSubmit = async (data: InviteFormValues) => {
-    await onInvite(data);
+  const handleClose = () => {
     reset();
     onClose();
   };
 
+  const onSubmit = async (data: InviteFormValues) => {
+    await onInvite(data);
+    handleClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[425px] rounded-[32px] border-none shadow-2xl p-8">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-heading text-slate-900 dark:text-white">Invitar Miembro</DialogTitle>
-          <DialogDescription className="font-label text-slate-500 mt-2">
-            Envía una invitación a alguien para que se una a tu espacio de trabajo.
-          </DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-[11px] font-heading uppercase text-slate-400 ml-1">
-              Correo Electrónico
-            </Label>
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                id="email"
-                placeholder="ejemplo@correo.com"
-                className="pl-11 rounded-2xl h-12 border-slate-100 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 focus:ring-primary/20 transition-all"
-                {...register("email")}
-              />
-            </div>
-            {errors.email && (
-              <p className="text-[10px] text-red-500 font-label ml-1">{errors.email.message}</p>
+    <ModalLayout
+      isOpen={isOpen}
+      onClose={handleClose}
+      title="Invitar al Equipo"
+      description="El usuario recibirá un correo para unirse a tu compañía."
+      variant="drawer-right"
+      footer={
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleClose}
+            className="w-full sm:w-auto h-11 px-6 rounded-xl text-[13px] font-medium"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            form="invite-member-form"
+            disabled={isLoading}
+            className="w-full sm:w-auto h-11 px-8 rounded-xl bg-primary hover:bg-primary-600 text-white text-[13px] font-medium shadow-lg shadow-primary/20 active:scale-[0.98]"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Enviando...
+              </>
+            ) : (
+              "Enviar invitación"
             )}
-          </div>
+          </Button>
+        </div>
+      }
+    >
+      <form
+        id="invite-member-form"
+        onSubmit={handleSubmit(onSubmit)}
+        className="px-6 py-6 space-y-6"
+      >
+        {/* Email */}
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-bold uppercase  text-gray-400">
+            Correo Electrónico
+          </label>
+          <Input
+            icon={Mail}
+            placeholder="nombre@empresa.com"
+            className="h-11 rounded-xl text-[14px]"
+            autoFocus
+            {...register("email")}
+          />
+          {errors.email && (
+            <p className="text-[11px] text-red-500">{errors.email.message}</p>
+          )}
+        </div>
 
+        {/* Role selector — visual cards */}
+        <div className="space-y-2">
+          <label className="text-[11px] font-bold uppercase  text-gray-400">
+            Rol en la Compañía
+          </label>
           <div className="space-y-2">
-            <Select 
-              label="Rol en el Espacio"
-              value={selectedRole} 
-              onChange={(val: any) => setValue("role", val)}
-              options={[
-                { value: "member", label: "Miembro (Estándar)" },
-                { value: "admin", label: "Administrador (Control total)" },
-                { value: "guest", label: "Invitado (Solo lectura)" },
-              ]}
-              searchable={false}
-            />
-            <p className="text-[10px] text-slate-400 font-label ml-1 leading-relaxed">
-              {selectedRole === "admin" && "Puede gestionar miembros, configuración y facturación."}
-              {selectedRole === "member" && "Puede crear y editar recursos pero no gestionar el espacio."}
-              {selectedRole === "guest" && "Solo puede ver los recursos del espacio."}
-            </p>
+            {ROLES.map((role) => {
+              const Icon = role.icon;
+              const isSelected = selectedRole === role.value;
+              return (
+                <button
+                  key={role.value}
+                  type="button"
+                  onClick={() => setValue("role", role.value)}
+                  className={cn(
+                    "w-full flex items-center gap-3 p-3.5 rounded-[14px] border text-left transition-all duration-150 active:scale-[0.99]",
+                    isSelected
+                      ? "border-primary/30 bg-primary/[0.04] dark:bg-primary/[0.08]"
+                      : "border-[var(--border)] bg-white dark:bg-surface hover:border-border-strong"
+                  )}
+                >
+                  <div className={cn(
+                    "h-9 w-9 rounded-[10px] flex items-center justify-center shrink-0",
+                    role.iconBg
+                  )}>
+                    <Icon className={cn("h-4 w-4", role.iconColor)} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className={cn(
+                      "text-[13px] font-semibold leading-snug",
+                      isSelected ? "text-fg" : "text-fg-secondary"
+                    )}>
+                      {role.label}
+                    </p>
+                    <p className="text-[11px] text-fg-muted leading-relaxed mt-0.5">
+                      {role.hint}
+                    </p>
+                  </div>
+                  {/* Selected indicator */}
+                  <div className={cn(
+                    "h-4 w-4 rounded-full border-2 shrink-0 transition-all",
+                    isSelected
+                      ? "border-primary bg-primary"
+                      : "border-gray-300 dark:border-gray-600"
+                  )}>
+                    {isSelected && (
+                      <div className="h-full w-full rounded-full bg-white scale-[0.4]" />
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
-
-          <DialogFooter className="pt-4">
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full h-12 rounded-2xl bg-primary hover:bg-primary-600 text-white font-heading uppercase text-xs shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Enviando...
-                </>
-              ) : (
-                "Enviar Invitación"
-              )}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </form>
+    </ModalLayout>
   );
 };

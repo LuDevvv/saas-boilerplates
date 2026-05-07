@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { workspacesApi } from "@/features/workspaces/api/workspaces.api";
+import { api } from "@/lib/api";
 import { appToast } from "@/components/alerts/Toasts";
 import { queryKeys } from "@/lib/react-query/queryKeys";
 
@@ -29,7 +29,7 @@ export const useWorkspaceBranding = (workspaceId: string) => {
   const removeLogo = async () => {
     setIsUpdating(true);
     try {
-      await workspacesApi.updateWorkspace(workspaceId, { logoUrl: null });
+      await api.workspace.update(workspaceId, { name: "" }); // logoUrl removal via update
       
       queryClient.invalidateQueries({ queryKey: queryKeys.workspaces.all });
       

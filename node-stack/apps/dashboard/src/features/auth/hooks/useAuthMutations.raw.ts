@@ -1,20 +1,19 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { authApi } from "../api/auth.api";
+import { api, cookieTokenStorage } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
-import { cookieTokenStorage } from "@/lib/api";
 import { useShallow } from "zustand/react/shallow";
 import { queryKeys } from "@/lib/react-query/queryKeys";
-import type { LoginDto, RegisterDto } from "@node-stack/types";
+import type { LoginDto, RegisterDto, AuthResponse, VerifyEmailDto } from "@node-stack/types";
 
 export const useLogin = () => {
   const setAuth = useAuthStore(useShallow((state) => state.setAuth));
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (credentials: LoginDto) => authApi.login(credentials),
-    onSuccess: ({ token }) => {
-      setAuth(token);
-      cookieTokenStorage.setToken(token);
+  return useMutation<AuthResponse, Error, LoginDto>({
+    mutationFn: (credentials) => api.auth.login(credentials),
+    onSuccess: ({ accessToken }) => {
+      setAuth(accessToken);
+      cookieTokenStorage.setToken(accessToken);
       queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
     },
   });
@@ -24,26 +23,25 @@ export const useRegister = () => {
   const setAuth = useAuthStore(useShallow((state) => state.setAuth));
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (userData: RegisterDto) => authApi.register(userData),
-    onSuccess: ({ token }) => {
-      setAuth(token);
-      cookieTokenStorage.setToken(token);
+  return useMutation<AuthResponse, Error, RegisterDto>({
+    mutationFn: (userData) => api.auth.register(userData),
+    onSuccess: ({ accessToken }) => {
+      setAuth(accessToken);
+      cookieTokenStorage.setToken(accessToken);
       queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
     },
   });
 };
 
 export const useRequestPasswordReset = () => {
-  return useMutation({
-    mutationFn: (email: string) => authApi.requestPasswordReset(email),
+  return useMutation<{ message: string }, Error, string>({
+    mutationFn: (email) => api.auth.forgotPassword({ email }),
   });
 };
 
 export const useResetPassword = () => {
-  return useMutation({
-    mutationFn: ({ token, password }: { token: string; password: string }) =>
-      authApi.resetPassword(token, password),
+  return useMutation<{ message: string }, Error, { token: string; password: string }>({
+    mutationFn: ({ token, password }) => api.auth.resetPassword({ token, newPassword: password }),
   });
 };
 
@@ -52,7 +50,7 @@ export const useLogout = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => authApi.logout(),
+    mutationFn: () => api.auth.logout(),
     onSettled: () => {
       clearStore();
       cookieTokenStorage.removeToken();
@@ -62,14 +60,13 @@ export const useLogout = () => {
 };
 
 export const useVerifyEmail = () => {
-  return useMutation({
-    mutationFn: ({ email, code }: { email: string; code: string }) =>
-      authApi.verifyEmail(email, code),
+  return useMutation<{ message: string }, Error, VerifyEmailDto>({
+    mutationFn: (data) => api.auth.verifyEmail(data),
   });
 };
 
 export const useResendVerification = () => {
-  return useMutation({
-    mutationFn: (email: string) => authApi.resendVerificationCode(email),
+  return useMutation<{ message: string }, Error, string>({
+    mutationFn: () => api.auth.sendVerificationEmail(),
   });
 };

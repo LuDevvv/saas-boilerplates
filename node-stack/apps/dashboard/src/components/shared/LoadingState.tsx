@@ -24,11 +24,11 @@ export const LoadingState: FC<LoadingStateProps> = ({
       className
     )}>
       <div className={cn(
-        "animate-spin rounded-full border-2 border-gray-200 border-t-primary-600",
+        "animate-spin rounded-full border-2 border-border border-t-primary",
         sizeClasses[size]
       )} />
       {message && (
-        <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+        <p className="mt-3 text-sm text-fg-secondary">
           {message}
         </p>
       )}

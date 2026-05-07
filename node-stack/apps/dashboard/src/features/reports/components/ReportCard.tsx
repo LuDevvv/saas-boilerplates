@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { StorageFile } from "@/features/storage";
+import type { StorageFile } from "@/features/storage";
 import { cn } from "@/utils/classNames";
 import { FileText, Download, Trash2 } from "lucide-react";
 
@@ -26,14 +26,14 @@ export const ReportCard: FC<ReportCardProps> = ({ report, onDownload, onDelete }
         </div>
       </td>
       <td className="px-6 py-5">
-        <span className="px-2.5 py-0.5 bg-gray-100 dark:bg-white/10 rounded-full text-[9px] font-abel text-gray-600 dark:text-gray-400 uppercase border border-gray-200 dark:border-white/5">
+        <span className="px-2.5 py-0.5 bg-gray-100 dark:bg-white/10 rounded-full text-[9px] font-abel text-gray-600 dark:text-gray-400 uppercase border border-border-subtle">
           {report.type.split("/")[1]?.toUpperCase() || report.type}
         </span>
       </td>
-      <td className="px-6 py-5 text-xs font-abel text-gray-500 dark:text-gray-400">
+      <td className="px-6 py-5 text-xs font-abel text-fg-secondary">
         {new Date(report.createdAt).toLocaleDateString()}
       </td>
-      <td className="px-6 py-5 text-xs font-abel text-gray-500 dark:text-gray-400">
+      <td className="px-6 py-5 text-xs font-abel text-fg-secondary">
         {formatSize(report.size)}
       </td>
       <td className="px-6 py-5">

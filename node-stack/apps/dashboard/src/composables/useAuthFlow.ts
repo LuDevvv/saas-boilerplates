@@ -1,24 +1,27 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { authApi } from "@/features/auth/api/auth.api";
+import { api, cookieTokenStorage } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
 import { useShallow } from "zustand/react/shallow";
-import { cookieTokenStorage } from "@/lib/api";
 import { queryKeys } from "@/lib/react-query/queryKeys";
 import { appToast } from "@/components/alerts/Toasts";
-import type { LoginDto, RegisterDto } from "@node-stack/types";
-import type { AuthResponse } from "@/features/auth/api/types";
+import type { LoginDto, RegisterDto, AuthResponse } from "@node-stack/types";
 
 export const useLoginFlow = () => {
   const navigate = useNavigate();
   const setAuth = useAuthStore(useShallow((state) => state.setAuth));
   const queryClient = useQueryClient();
 
-  return useMutation<AuthResponse, Error, LoginDto>({
-    mutationFn: (credentials) => authApi.login(credentials),
-    onSuccess: ({ token, user }) => {
-      setAuth(token);
-      cookieTokenStorage.setToken(token);
+  return useMutation<AuthResponse, Error, LoginDto & { rememberMe?: boolean }>({
+    mutationFn: (credentials) => api.auth.login(credentials),
+    onSuccess: ({ accessToken, refreshToken, user }, variables) => {
+      const cookieOptions = variables.rememberMe ? { expires: 90 } : { expires: 30 };
+
+      setAuth(accessToken);
+      cookieTokenStorage.setToken(accessToken, cookieOptions);
+      if (refreshToken) {
+        cookieTokenStorage.setRefreshToken(refreshToken, cookieOptions);
+      }
       queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
 
       appToast.success({
@@ -27,11 +30,8 @@ export const useLoginFlow = () => {
       });
       navigate("/");
     },
-    onError: (error: Error) => {
-      appToast.error({
-        title: "Error al iniciar sesión",
-        description: error.message || "Credenciales inválidas",
-      });
+    onError: () => {
+      // Handled by the component
     },
   });
 };
@@ -42,10 +42,13 @@ export const useRegisterFlow = () => {
   const queryClient = useQueryClient();
 
   return useMutation<AuthResponse, Error, RegisterDto>({
-    mutationFn: (userData) => authApi.register(userData),
-    onSuccess: ({ token, user }) => {
-      setAuth(token);
-      cookieTokenStorage.setToken(token);
+    mutationFn: (userData) => api.auth.register(userData),
+    onSuccess: ({ accessToken, refreshToken, user }) => {
+      setAuth(accessToken);
+      cookieTokenStorage.setToken(accessToken);
+      if (refreshToken) {
+        cookieTokenStorage.setRefreshToken(refreshToken);
+      }
       queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
 
       appToast.success({
@@ -54,11 +57,8 @@ export const useRegisterFlow = () => {
       });
       navigate("/");
     },
-    onError: (error: Error) => {
-      appToast.error({
-        title: "Error al registrarse",
-        description: error.message || "El correo ya está en uso",
-      });
+    onError: () => {
+      // Handled by the component
     },
   });
 };
@@ -69,7 +69,7 @@ export const useLogoutFlow = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => authApi.logout(),
+    mutationFn: () => api.auth.logout(),
     onSettled: () => {
       clearStore();
       cookieTokenStorage.removeToken();

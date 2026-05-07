@@ -8,145 +8,125 @@ import {
   Check,
   Trash2,
   Loader2,
-  Filter,
-  Inbox
+  Package,
+  Settings,
+  Sparkles,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/utils/classNames";
-import {
-  useNotifications,
-  useUnreadCount
-} from "@/features/notifications/hooks/useNotifications";
+import { useNotifications } from "@/features/notifications/hooks/useNotifications";
 import {
   useMarkAsRead,
   useMarkAllAsRead,
   useDismissNotification,
+  useSeedNotifications,
 } from "@/features/notifications/hooks/useNotificationMutations";
-import { Notification, NotificationType } from "@/features/notifications/api/notifications.api";
+import type { Notification, NotificationType } from "@node-stack/types";
 import { SectionHeader } from "@/components/layout/SectionHeader";
+import { Button } from "@node-stack/ui";
 
-// ─── Helpers ───────────────────────────────────────────────
+// ─── Config ───────────────────────────────────────────────────────────────────
 
-const typeConfig: Record<NotificationType, { icon: typeof Info; color: string; bg: string; ring: string }> = {
-  info: {
-    icon: Info,
-    color: "text-blue-600",
-    bg: "bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400",
-    ring: "ring-blue-500/20",
-  },
-  warning: {
-    icon: AlertTriangle,
-    color: "text-amber-600",
-    bg: "bg-amber-50 dark:bg-amber-500/10 dark:text-amber-400",
-    ring: "ring-amber-500/20",
-  },
-  success: {
-    icon: CheckCircle2,
-    color: "text-teal-600",
-    bg: "bg-teal-50 dark:bg-teal-500/10 dark:text-teal-400",
-    ring: "ring-teal-500/20",
-  },
-  error: {
-    icon: XCircle,
-    color: "text-red-600",
-    bg: "bg-red-50 dark:bg-red-500/10 dark:text-red-400",
-    ring: "ring-red-500/20",
-  },
+const TYPE_CONFIG: Record<NotificationType, { icon: React.ElementType; color: string; label: string }> = {
+  info:    { icon: Info,         color: "text-blue-500",    label: "Info" },
+  warning: { icon: AlertTriangle, color: "text-amber-500",  label: "Aviso" },
+  success: { icon: CheckCircle2, color: "text-emerald-500", label: "Éxito" },
+  error:   { icon: XCircle,      color: "text-rose-500",    label: "Error" },
 };
 
 function relativeTime(dateStr: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
-  if (diffSec < 60) return "Ahora";
-  const diffMin = Math.floor(diffSec / 60);
-  if (diffMin < 60) return `${diffMin}m`;
-  const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}h`;
-  const diffDay = Math.floor(diffHr / 24);
-  if (diffDay < 7) return `${diffDay}d`;
-  return date.toLocaleDateString("es-ES", {
-    month: "short",
-    day: "numeric",
-  });
+  const ms = Date.now() - new Date(dateStr).getTime();
+  const s  = Math.floor(ms / 1000);
+  if (s < 60)  return "Ahora";
+  const m = Math.floor(s / 60);
+  if (m < 60)  return `Hace ${m}m`;
+  const h = Math.floor(m / 60);
+  if (h < 24)  return `Hace ${h}h`;
+  const d = Math.floor(h / 24);
+  if (d < 7)   return `Hace ${d}d`;
+  return new Date(dateStr).toLocaleDateString("es-ES", { day: "numeric", month: "short" });
 }
 
-type FilterTab = "all" | "unread" | "read";
+type FilterTab = "all" | "unread" | "payouts" | "products" | "settings";
 
-const filterTabs: { key: FilterTab; label: string }[] = [
-  { key: "all", label: "TODAS" },
-  { key: "unread", label: "SIN LEER" },
-  { key: "read", label: "LEÍDAS" },
+const FILTER_TABS: { key: FilterTab; label: string; icon?: React.ElementType }[] = [
+  { key: "all",      label: "Todas" },
+  { key: "unread",   label: "Sin leer" },
+  { key: "payouts",  label: "Pagos",     icon: CreditCard },
+  { key: "products", label: "Productos", icon: Package },
+  { key: "settings", label: "Ajustes",   icon: Settings },
 ];
 
-// ─── Notification Card ─────────────────────────────────────
+// ─── Notification Card ────────────────────────────────────────────────────────
 
-interface NotificationCardProps {
+const NotificationCard: FC<{
   notification: Notification;
   onRead: (id: string) => void;
   onDismiss: (id: string) => void;
-}
-
-const NotificationCard: FC<NotificationCardProps> = ({ notification, onRead, onDismiss }) => {
-  const config = typeConfig[notification.type] || typeConfig.info;
-  const Icon = config.icon;
+}> = ({ notification, onRead, onDismiss }) => {
+  const { icon: Icon, color } = TYPE_CONFIG[notification.type] ?? TYPE_CONFIG.info;
 
   return (
     <div
       className={cn(
-        "group relative flex items-start gap-5 rounded-[20px] border p-5 transition-all duration-300 active:scale-[0.99]",
+        "group relative flex items-start gap-4 rounded-[16px] border px-5 py-4 transition-all duration-200",
         notification.read
-          ? "border-gray-100 bg-white/80 backdrop-blur-md hover:border-primary-100 dark:border-white/10 dark:bg-gray-900/50"
-          : "border-primary-100 bg-primary-50/20 dark:border-primary-500/20 dark:bg-primary-500/5 shadow-sm"
+          ? "border-[var(--border)] bg-white dark:bg-surface hover:border-gray-200 dark:hover:border-white/10"
+          : "border-primary/20 bg-primary/[0.02] dark:bg-primary/[0.04]"
       )}
     >
-      {/* Type Icon */}
-      <div className={cn("mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-sm transition-transform group-hover:scale-105", config.bg)}>
-        <Icon className={cn("h-5 w-5", config.color)} />
-      </div>
+      {/* Icon — small, no heavy background */}
+      <Icon className={cn("mt-0.5 h-4 w-4 shrink-0", color)} />
 
       {/* Content */}
       <div className="min-w-0 flex-1">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-2">
+        {/* Title row */}
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center gap-2 min-w-0">
             <h3 className={cn(
-              "text-sm ",
+              "text-[14px] leading-snug truncate",
               notification.read
-                ? "font-label text-gray-600 dark:text-gray-400"
-                : "font-label text-gray-950 dark:text-white"
+                ? "text-fg-secondary"
+                : "font-semibold text-fg"
             )}>
               {notification.title}
             </h3>
             {!notification.read && (
-              <span className="h-2 w-2 shrink-0 rounded-full bg-primary-500 shadow-[0_0_8px_rgba(113,68,249,0.5)]" />
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary animate-pulse" />
             )}
           </div>
-          <span className="shrink-0 text-[10px] font-label text-gray-400 uppercase  mt-0.5">
+          <span className="text-[12px] text-gray-400 shrink-0 whitespace-nowrap mt-0.5">
             {relativeTime(notification.createdAt)}
           </span>
         </div>
 
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 leading-relaxed font-label">
+        {/* Body */}
+        <p className={cn(
+          "mt-1 text-[13px] leading-relaxed line-clamp-2 max-w-prose",
+          notification.read
+            ? "text-fg-muted"
+            : "text-gray-600 dark:text-gray-300"
+        )}>
           {notification.body}
         </p>
 
-        {/* Action row */}
-        <div className="mt-4 flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-all transform translate-y-1 group-hover:translate-y-0 duration-300">
+        {/* Actions — appear on hover */}
+        <div className="mt-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 -translate-y-1 group-hover:translate-y-0 transition-all duration-200">
           {!notification.read && (
             <button
               onClick={() => onRead(notification.id)}
-              className="flex items-center gap-1.5 rounded-xl bg-primary-50 px-3 py-1.5 text-[10px] font-label text-primary-600 hover:bg-primary-100 dark:bg-primary-500/10 dark:text-primary-400 transition-all active:scale-95"
+              className="flex items-center gap-1.5 rounded-lg bg-primary/[0.08] px-3 py-1.5 text-[12px] font-medium text-primary hover:bg-primary/15 transition-colors active:scale-95"
             >
-              <Check className="h-3.5 w-3.5" />
-              MARCAR COMO LEÍDA
+              <Check className="h-3 w-3" />
+              Marcar como leída
             </button>
           )}
           <button
             onClick={() => onDismiss(notification.id)}
-            className="flex items-center gap-1.5 rounded-xl bg-red-50 px-3 py-1.5 text-[10px] font-label text-red-600 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 transition-all active:scale-95"
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium text-gray-400 hover:bg-gray-100 hover:text-rose-500 dark:hover:bg-surface-hover transition-colors active:scale-95"
           >
-            <Trash2 className="h-3.5 w-3.5" />
-            ELIMINAR
+            <Trash2 className="h-3 w-3" />
+            Descartar
           </button>
         </div>
       </div>
@@ -154,142 +134,151 @@ const NotificationCard: FC<NotificationCardProps> = ({ notification, onRead, onD
   );
 };
 
-// ─── Notifications Page ────────────────────────────────────
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 const NotificationsPage: FC = () => {
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
-  
+
   const { data: notifications = [], isLoading, error } = useNotifications({
     ...(activeFilter === "unread" ? { unread: true } : {}),
-    ...(activeFilter === "read" ? { read: true } : {}),
-  });
+  }) as { data: Notification[]; isLoading: boolean; error: any };
 
-  const markAsReadMutation = useMarkAsRead();
-  const markAllAsReadMutation = useMarkAllAsRead();
-  const dismissMutation = useDismissNotification();
+  const markAsRead    = useMarkAsRead();
+  const markAllAsRead = useMarkAllAsRead();
+  const dismiss       = useDismissNotification();
+  const seed          = useSeedNotifications();
 
-  const { data: unreadCount = 0 } = useUnreadCount();
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
-  // ─── Loading State ─────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="flex h-96 w-full items-center justify-center">
-        <div className="relative">
-          <Loader2 className="h-10 w-10 animate-spin text-primary-600" />
-          <div className="absolute inset-0 bg-primary-500/20 blur-xl rounded-full" />
+      <div className="flex h-96 items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-[13px] text-gray-400">Cargando notificaciones...</p>
         </div>
       </div>
     );
   }
 
-  // ─── Error State ───────────────────────────────────────
   if (error) {
     return (
-      <div className="flex h-96 w-full flex-col items-center justify-center gap-4">
-        <div className="flex h-20 w-20 items-center justify-center rounded-[24px] bg-red-50 dark:bg-red-900/20 border border-red-100">
-          <XCircle className="h-8 w-8 text-red-500" />
+      <div className="flex h-96 flex-col items-center justify-center gap-4 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-[20px] bg-rose-50 dark:bg-rose-500/10">
+          <XCircle className="h-7 w-7 text-rose-500" />
         </div>
-        <div className="text-center">
-          <p className="text-lg font-heading text-red-950 dark:text-red-200">Error de Conexión</p>
-          <p className="text-sm text-red-600/70 font-label">No pudimos sincronizar tus notificaciones.</p>
+        <div>
+          <p className="text-[15px] font-semibold text-fg">Error de conexión</p>
+          <p className="text-[13px] text-gray-400 mt-1">No pudimos cargar las notificaciones.</p>
         </div>
+        <Button variant="outline" onClick={() => window.location.reload()} className="rounded-xl">
+          Reintentar
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-10 w-full max-w-[1600px] mx-auto pb-20 px-4 md:px-6 animate-fade-in">
+    <div className="flex flex-col gap-8 w-full max-w-[1400px] mx-auto pb-20 px-4 md:px-8 animate-fade-in">
       <SectionHeader
         title="Notificaciones"
-        subtitle="Gestiona y revisa todas tus alertas y actualizaciones en un solo lugar."
+        subtitle="Mantente al día con la actividad de tu cuenta y la plataforma."
         action={
-          unreadCount > 0 && activeFilter !== "read" && (
-            <button
-              onClick={() => markAllAsReadMutation.mutate()}
-              disabled={markAllAsReadMutation.isPending}
-              className="inline-flex items-center gap-2 rounded-2xl bg-primary-600 px-6 py-3.5 text-sm font-heading text-white shadow-xl shadow-blue-900/20 hover:bg-primary-700 hover:scale-[1.02] transition-all active:scale-95 disabled:opacity-50 group"
+          <div className="flex items-center gap-3">
+            {unreadCount > 0 && (
+              <Button
+                variant="outline"
+                onClick={() => markAllAsRead.mutate()}
+                disabled={markAllAsRead.isPending}
+                className="rounded-xl h-10 px-5 text-[12px] font-medium"
+              >
+                {markAllAsRead.isPending
+                  ? <Loader2 className="h-4 w-4 animate-spin" />
+                  : <><Check className="h-3.5 w-3.5 mr-1.5" />Marcar todo leído</>
+                }
+              </Button>
+            )}
+            <Button
+              onClick={() => seed.mutate()}
+              loading={seed.isPending}
+              className="rounded-xl h-10 px-5 text-[12px] font-medium bg-surface-muted text-gray-500 border-none shadow-none hover:bg-surface-hover"
             >
-              {markAllAsReadMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Check className="h-4 w-4 group-hover:scale-110 transition-transform" />
-              )}
-              Marcar todas como leídas
-            </button>
-          )
+              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+              Generar pruebas
+            </Button>
+          </div>
         }
       />
 
-      {/* 2. Filter Bar - Bento Style */}
-      <div className="flex items-center gap-1.5 rounded-[20px] bg-white/80 backdrop-blur-md p-1.5 border border-gray-100 dark:bg-gray-900/50 dark:border-white/10 shadow-sm w-fit">
-        {filterTabs.map((tab) => (
+      {/* Filter tabs */}
+      <div className="flex items-center gap-1 rounded-xl bg-surface-muted p-1 w-fit border border-border">
+        {FILTER_TABS.map(({ key, label, icon: TabIcon }) => (
           <button
-            key={tab.key}
-            onClick={() => setActiveFilter(tab.key)}
+            key={key}
+            onClick={() => setActiveFilter(key)}
             className={cn(
-              "rounded-[14px] px-6 py-3 text-[10px] font-heading  transition-all duration-300 active:scale-95",
-              activeFilter === tab.key
-                ? "bg-primary-600 text-white shadow-lg shadow-blue-900/20"
-                : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+              "flex items-center gap-1.5 rounded-lg px-4 py-2 text-[12px] font-medium transition-all duration-200 whitespace-nowrap active:scale-95",
+              activeFilter === key
+                ? "bg-white dark:bg-surface text-fg shadow-sm border border-border"
+                : "text-fg-secondary hover:text-gray-800 dark:hover:text-gray-200"
             )}
           >
-            {tab.label}
+            {TabIcon && <TabIcon className="h-3.5 w-3.5" />}
+            {label}
           </button>
         ))}
       </div>
 
-      {/* 3. Content Area */}
+      {/* Notification list */}
       {notifications.length > 0 ? (
-        <div className="grid gap-4">
-          {notifications.map((notification) => (
+        <div className="flex flex-col gap-2">
+          {notifications.map((n) => (
             <NotificationCard
-              key={notification.id}
-              notification={notification}
-              onRead={(id) => markAsReadMutation.mutate(id)}
-              onDismiss={(id) => dismissMutation.mutate(id)}
+              key={n.id}
+              notification={n}
+              onRead={(id) => markAsRead.mutate(id)}
+              onDismiss={(id) => dismiss.mutate(id)}
             />
           ))}
         </div>
       ) : (
-        /* Empty State */
-        <div className="flex flex-col items-center justify-center rounded-[32px] border border-gray-100 bg-white/80 backdrop-blur-md py-24 px-8 dark:border-white/10 dark:bg-gray-900/50 shadow-sm">
-          <div className="flex h-24 w-24 items-center justify-center rounded-[32px] bg-gray-50 dark:bg-primary-500/10 mb-8 transform group-hover:rotate-6 transition-transform">
-            <Inbox className="h-10 w-10 text-primary-300" />
+        <div className="flex flex-col items-center justify-center rounded-[24px] border border-dashed border-border py-24 px-8 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-surface-muted mb-5 relative">
+            <Bell className="h-7 w-7 text-gray-300 dark:text-gray-600" />
+            <span className="absolute top-2 right-2 h-3 w-3 rounded-full bg-primary border-2 border-white dark:border-[#121212]" />
           </div>
-          <h3 className="text-2xl font-heading text-gray-950 dark:text-white ">Todo al día</h3>
-          <p className="mt-2 text-gray-500 dark:text-gray-400 text-center max-w-sm font-label leading-relaxed">
+          <h3 className="text-[18px] font-bold text-fg">¡Todo en orden!</h3>
+          <p className="mt-2 text-[13px] text-gray-400 max-w-sm leading-relaxed">
             {activeFilter === "unread"
-              ? "¡Excelente! No tienes notificaciones pendientes de revisión."
-              : "Las notificaciones importantes de tu plataforma aparecerán en esta sección."}
+              ? "No tienes notificaciones pendientes. Te avisaremos si algo cambia."
+              : "Tu bandeja está vacía. Las actualizaciones importantes aparecerán aquí."}
           </p>
+          {activeFilter !== "all" && (
+            <Button
+              variant="outline"
+              onClick={() => setActiveFilter("all")}
+              className="mt-6 rounded-xl text-[12px]"
+            >
+              Ver historial completo
+            </Button>
+          )}
         </div>
       )}
 
-      {/* 4. Footer Stats Bar */}
+      {/* Legend */}
       {notifications.length > 0 && (
-        <div className="flex items-center justify-between rounded-[24px] border border-gray-100 bg-white/80 backdrop-blur-md px-8 py-6 dark:border-white/10 dark:bg-gray-900/50 shadow-sm mt-4 group">
-          <div className="flex items-center gap-10">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-gray-50 dark:bg-white/5 p-2 transition-transform group-hover:scale-110">
-                <Bell className="h-4 w-4 text-gray-400" />
-              </div>
-              <span className="text-sm font-label text-gray-500 dark:text-gray-400">
-                <span className="font-label text-gray-950 dark:text-white">{notifications.length}</span> Notificaciones totales
-              </span>
-            </div>
-            {unreadCount > 0 && (
-              <div className="flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-primary-500 shadow-[0_0_8px_rgba(113,68,249,0.5)]" />
-                <span className="text-sm font-label text-gray-500 dark:text-gray-400">
-                  <span className="font-label text-primary-600 dark:text-primary-400">{unreadCount}</span> sin leer
-                </span>
-              </div>
-            )}
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 px-1">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-primary" />
+            <span className="text-[12px] text-gray-400">Sin leer</span>
           </div>
-          <div className="flex items-center gap-2 text-[10px] font-label text-gray-400 uppercase ">
-            <Filter className="h-3.5 w-3.5" />
-            VISTA: {filterTabs.find((t) => t.key === activeFilter)?.label}
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-gray-200 dark:bg-gray-700" />
+            <span className="text-[12px] text-gray-400">Leída</span>
           </div>
+          <span className="text-[12px] text-gray-300 dark:text-gray-600 ml-auto">
+            Las notificaciones se eliminan automáticamente después de 30 días.
+          </span>
         </div>
       )}
     </div>

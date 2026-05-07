@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { StorageFile } from "@/features/storage";
+import type { StorageFile } from "@/features/storage";
 import { ReportCard } from "./ReportCard";
 import { ReportEmptyState } from "./ReportEmptyState";
 

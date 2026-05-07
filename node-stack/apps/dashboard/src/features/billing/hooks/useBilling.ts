@@ -1,45 +1,63 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/react-query/queryKeys";
-import { billingApi, type SubscriptionInfo, type Invoice, type CheckoutResponse, type PortalResponse } from "../api/billing.api";
+import { api } from "@/lib/api";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
+import type { 
+  Subscription, 
+  Invoice, 
+  CheckoutResponse, 
+  PortalResponse, 
+  PaymentMethod,
+  CreateCheckoutDto
+} from "@node-stack/types";
 
 export const useSubscription = () => {
-  return useQuery<SubscriptionInfo, Error>({
+  const workspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
+  return useQuery<Subscription | null, Error>({
     queryKey: queryKeys.billing.subscription(),
-    queryFn: () => billingApi.getSubscription(),
+    queryFn: () => api.billing.getSubscription(),
+    enabled: !!workspaceId,
   });
 };
 
 export const useInvoices = () => {
+  const workspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   return useQuery<Invoice[], Error>({
     queryKey: queryKeys.billing.invoices(),
-    queryFn: () => billingApi.getInvoices(),
+    queryFn: async () => {
+      const response = await api.billing.listInvoices();
+      return (response as any)?.data ?? response;
+    },
+    enabled: !!workspaceId,
   });
 };
 
 export const usePaymentMethods = () => {
-  return useQuery({
+  const workspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
+  return useQuery<PaymentMethod[], Error>({
     queryKey: queryKeys.billing.paymentMethods(),
-    queryFn: () => billingApi.getPaymentMethods(),
+    queryFn: () => { return [] as PaymentMethod[]; }, // Stubbed since it's not in controller
+    enabled: !!workspaceId,
   });
 };
 
 export const useCheckout = () => {
-  return useMutation<CheckoutResponse, Error, string>({
-    mutationFn: (planId: string) => billingApi.createCheckout(planId),
+  return useMutation<CheckoutResponse, Error, CreateCheckoutDto>({
+    mutationFn: (data: CreateCheckoutDto) => api.billing.createCheckout(data),
   });
 };
 
 export const useCustomerPortal = () => {
-  return useMutation<PortalResponse, Error>({
-    mutationFn: () => billingApi.getCustomerPortal(),
+  return useMutation<PortalResponse, Error, { returnUrl: string }>({
+    mutationFn: () => api.billing.getPortalUrl(), // returnUrl is not accepted by the backend portal endpoint in this version
   });
 };
 
 export const useCancelSubscription = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error>({
-    mutationFn: () => billingApi.cancelSubscription(),
+  return useMutation<Subscription, Error, { cancelAtPeriodEnd?: boolean }>({
+    mutationFn: (_body) => { throw new Error("Not implemented in backend") }, // Stubbed since it's not in controller
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.billing.subscription() });
     },

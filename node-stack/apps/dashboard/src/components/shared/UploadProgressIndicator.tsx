@@ -53,7 +53,7 @@ export const UploadProgressIndicator = ({
               {getStageLabel()}
             </p>
             {filename && progress.stage === "idle" && (
-              <p className="text-xs text-gray-500 dark:text-gray-400">{filename}</p>
+              <p className="text-xs text-fg-secondary">{filename}</p>
             )}
           </div>
         </div>
@@ -89,7 +89,7 @@ export const UploadProgressIndicator = ({
       )}
 
       {progress.stage === "error" && progress.retryCount > 0 && (
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+        <p className="text-xs text-fg-secondary">
           Retry {progress.retryCount}/3
         </p>
       )}

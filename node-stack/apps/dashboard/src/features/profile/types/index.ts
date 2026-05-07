@@ -2,18 +2,16 @@ import { z } from "zod";
 
 export const profileSchema = z.object({
   firstName: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
-  lastName: z.string().min(2, "El apellido debe tener al menos 2 caracteres"),
+  lastName: z.string().optional().or(z.literal("")),
+  phone: z.string().optional().or(z.literal("")),
   email: z.string().email("Correo electrónico inválido"),
 });
 
 export type ProfileFormValues = z.infer<typeof profileSchema>;
 
 export const companySchema = z.object({
-  name: z.string().min(2, "El nombre de la empresa es obligatorio"),
-  vatNumber: z.string().min(5, "CIF/NIF inválido"),
-  website: z.string().url("Sitio web inválido").or(z.literal("")),
-  industry: z.string().min(2, "Especifica el sector"),
-  address: z.string().min(5, "La dirección es obligatoria"),
+  name: z.string().min(2, "El nombre de la compañía es obligatorio"),
+  description: z.string().optional().or(z.literal("")),
 });
 
 export type CompanyFormValues = z.infer<typeof companySchema>;

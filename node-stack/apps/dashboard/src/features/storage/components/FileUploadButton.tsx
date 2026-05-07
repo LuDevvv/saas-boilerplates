@@ -53,7 +53,7 @@ export const FileUploadButton: FC<FileUploadButtonProps> = ({ onUpload, isUpload
       </Button>
 
       {isUploading && (
-        <div className="absolute top-full left-0 right-0 mt-3 p-3 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-white/5 z-50 animate-in fade-in slide-in-from-top-2">
+        <div className="absolute top-full left-0 right-0 mt-3 p-3 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-border-subtle z-50 animate-in fade-in slide-in-from-top-2">
           <div className="flex justify-between items-center mb-2">
             <span className="text-[9px] font-heading uppercase text-slate-400">Progreso</span>
             <span className="text-[9px] font-heading text-primary">{progress}%</span>

@@ -1,14 +1,7 @@
-import { FC, lazy, Suspense } from "react";
-import { LoadingState } from "@/components/shared/LoadingState";
+import { FC } from "react";
+import MembersPage from "@features/workspaces/pages/MembersPage";
 
-const MembersPage = lazy(() => import("@features/workspaces/pages/MembersPage"));
-
-const WorkspaceMembersPage: FC = () => {
-  return (
-    <Suspense fallback={<LoadingState message="Cargando equipo..." />}>
-      <MembersPage />
-    </Suspense>
-  );
-};
+// Inner Suspense removed — lazy loading + MembersLayoutSkeleton handled by routes.tsx.
+const WorkspaceMembersPage: FC = () => <MembersPage />;
 
 export default WorkspaceMembersPage;

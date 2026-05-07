@@ -21,7 +21,7 @@ import {
   File as FileIcon
 } from "lucide-react";
 import { formatBytes } from "@/utils/formatters";
-import type { StorageFile } from "../api/storage.api";
+import type { FileInfo as StorageFile } from "@node-stack/types";
 
 interface FileGridProps {
   files: StorageFile[];
@@ -54,17 +54,17 @@ export const FileGrid: FC<FileGridProps> = ({ files, isLoading, onDelete, onDown
         return (
           <Card 
             key={file.id} 
-            className="group p-5 rounded-[24px] border-slate-100 dark:border-white/5 bg-white dark:bg-white/5 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 relative overflow-hidden"
+            className="group p-5 rounded-[24px] border-border dark:border-white/5 bg-white dark:bg-white/5 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all duration-300 relative overflow-hidden"
           >
             <div className="flex flex-col h-full gap-4">
               <div className="flex justify-between items-start relative z-10">
-                <div className={`p-2.5 rounded-xl transition-colors ${file.status === "Ready" ? "bg-primary-50 dark:bg-primary-500/5 text-primary-600 dark:text-primary-400" : "bg-slate-50 text-slate-400"}`}>
+                <div className={`p-2.5 rounded-xl transition-colors ${file.status === "Ready" ? "bg-primary/10 dark:bg-primary/10 text-primary dark:text-primary" : "bg-gray-50 text-gray-400"}`}>
                   <Icon className="w-5 h-5" />
                 </div>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
                       <MoreVertical className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -90,18 +90,18 @@ export const FileGrid: FC<FileGridProps> = ({ files, isLoading, onDelete, onDown
               </div>
 
               <div className="space-y-1 relative z-10">
-                <h4 className="text-sm font-heading text-slate-900 dark:text-white truncate" title={file.name}>
+                <h4 className="text-sm font-heading text-fg truncate" title={file.name}>
                   {file.name}
                 </h4>
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-label text-slate-400 uppercase">{formatBytes(file.size)}</span>
-                  <span className="text-[10px] font-label text-slate-400">{new Date(file.createdAt).toLocaleDateString()}</span>
+                  <span className="text-[10px] font-label text-gray-400 uppercase">{formatBytes(file.size)}</span>
+                  <span className="text-[10px] font-label text-gray-400">{new Date(file.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
             </div>
 
             {/* Background Accent */}
-            <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-primary-500/5 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+            <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-primary/5 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
           </Card>
         );
       })}

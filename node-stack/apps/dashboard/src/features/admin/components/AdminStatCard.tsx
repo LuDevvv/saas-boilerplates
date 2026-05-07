@@ -45,7 +45,7 @@ export const AdminStatCard: FC<AdminStatCardProps> = ({
       </div>
       <div className="mt-5 relative z-10">
         <p className="text-[11px] font-label uppercase text-gray-400 mb-1">{label}</p>
-        <h3 className="text-30px font-kpi text-gray-950 dark:text-white leading-none">{value}</h3>
+        <h3 className="text-30px font-kpi text-fg leading-none">{value}</h3>
       </div>
 
       <div className="absolute -right-10 -bottom-10 h-32 w-32 rounded-full bg-primary-500/5 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />

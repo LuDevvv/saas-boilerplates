@@ -1,3 +1,2 @@
-export { storageApi } from "./api/storage.api";
-export type { StorageFile, StorageStats } from "./api/storage.api";
-export { useUploadFile, useStorageFiles, useStorageStats, useDeleteFile } from "./hooks";
+export { useUploadFile, useStorageFiles, useStorageStats, useDeleteFile } from "./hooks/useStorage";
+export type { FileInfo as StorageFile } from "@node-stack/types";

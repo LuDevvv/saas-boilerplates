@@ -1,189 +1,291 @@
-import { FC, useMemo } from "react";
+import { FC, ReactNode, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  Users, 
-  Zap, 
-  CreditCard, 
-  Settings as SettingsIcon, 
-  Sparkles,
+import {
+  Users,
+  CreditCard,
+  Building2,
+  BarChart3,
   User,
-  Rocket
+  Zap,
+  Rocket,
+  SlidersHorizontal,
 } from "lucide-react";
 import { useAuth } from "@/hooks/stores/useAuth";
 import { WelcomeBanner } from "@/components/dashboard/WelcomeBanner";
 import { QuickActions, type QuickAction } from "./QuickActions";
+import { KpiCard } from "@/features/analytics/components/KpiCard";
 import { ConfigSteps } from "@/components/dashboard/ConfigSteps";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { Card, Skeleton } from "@node-stack/ui";
-import { ShieldCheck, ArrowRight } from "lucide-react";
+import { TutorialsWidget } from "./TutorialsWidget";
+import { DashboardCustomizer } from "./DashboardCustomizer";
+import { Skeleton } from "@node-stack/ui";
 import { appToast } from "@/components/alerts/Toasts";
 import { NovedadesSection } from "@/components/news/NovedadesSection";
 import { useOnboardingStatus, useReleaseNotes } from "../hooks/useDashboard";
+import { useDashboardLayout, type WidgetId } from "../hooks/useDashboardLayout";
+import { cn } from "@/utils/classNames";
+
+// ─── Quick actions ────────────────────────────────────────────────────────────
 
 const QUICK_ACTIONS: QuickAction[] = [
   {
-    label: "Equipos",
-    description: "Permisos y Miembros",
-    icon: Users,
-    route: "/profile/personal",
-    color: "text-[#004080]",
-    bg: "bg-[#004080]/5 hover:bg-[#004080]/10",
-    iconBg: "bg-white shadow-sm shadow-[#004080]/5"
-  },
-  {
-    label: "IA Assistant",
-    description: "BI Predictivo",
-    icon: Sparkles,
+    label: "Analíticas",
+    description: "Métricas y datos",
+    icon: BarChart3,
     route: "/analytics",
-    color: "text-[#00E6E6]",
-    bg: "bg-[#00E6E6]/5 hover:bg-[#00E6E6]/10",
-    iconBg: "bg-slate-900 shadow-lg shadow-[#00E6E6]/10"
+    headerBg: "bg-primary/[0.06] dark:bg-primary/[0.10]",
+    iconBg: "bg-primary/10",
+    iconColor: "text-primary",
   },
   {
-    label: "Pagos",
-    description: "Suscripción y Más",
+    label: "Equipo",
+    description: "Miembros y roles",
+    icon: Users,
+    route: "/settings/members",
+    headerBg: "bg-blue-50 dark:bg-blue-500/[0.08]",
+    iconBg: "bg-blue-50 dark:bg-blue-500/10",
+    iconColor: "text-blue-600 dark:text-blue-400",
+  },
+  {
+    label: "Suscripción",
+    description: "Plan y pagos",
     icon: CreditCard,
     route: "/payments",
-    color: "text-slate-600",
-    bg: "bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10",
-    iconBg: "bg-white dark:bg-slate-800 shadow-sm"
+    headerBg: "bg-emerald-50 dark:bg-emerald-500/[0.08]",
+    iconBg: "bg-emerald-50 dark:bg-emerald-500/10",
+    iconColor: "text-emerald-600 dark:text-emerald-400",
   },
   {
     label: "Empresa",
-    description: "Datos de Marca",
-    icon: SettingsIcon,
+    description: "Datos de compañía",
+    icon: Building2,
     route: "/profile/company",
-    color: "text-slate-500",
-    bg: "bg-slate-50 hover:bg-slate-100 dark:bg-white/5 dark:hover:bg-white/10",
-    iconBg: "bg-white dark:bg-slate-800 shadow-sm"
+    headerBg: "bg-amber-50 dark:bg-amber-500/[0.08]",
+    iconBg: "bg-amber-50 dark:bg-amber-500/10",
+    iconColor: "text-amber-600 dark:text-amber-400",
   },
 ];
+
+// ─── KPI cards (reuse same component as analytics page) ───────────────────────
+
+const DASHBOARD_KPIS = [
+  {
+    id: "users",
+    label: "Usuarios activos",
+    value: "1,248",
+    change: 12.4,
+    icon: Users,
+    sparkline: [820, 910, 880, 950, 1100, 1180, 1248],
+    color: "#3B82F6",
+    iconBg: "bg-blue-50 dark:bg-blue-500/10",
+    iconColor: "text-blue-600 dark:text-blue-400",
+  },
+  {
+    id: "revenue",
+    label: "Ingresos",
+    value: "$8,492",
+    change: 7.2,
+    icon: CreditCard,
+    sparkline: [6200, 6800, 7100, 7400, 7800, 8100, 8492],
+    color: "#10B981",
+    iconBg: "bg-emerald-50 dark:bg-emerald-500/10",
+    iconColor: "text-emerald-600 dark:text-emerald-400",
+  },
+  {
+    id: "sessions",
+    label: "Sesiones",
+    value: "3,651",
+    change: -2.1,
+    icon: BarChart3,
+    sparkline: [4200, 4100, 3900, 3800, 3750, 3680, 3651],
+    color: "#F59E0B",
+    iconBg: "bg-amber-50 dark:bg-amber-500/10",
+    iconColor: "text-amber-600 dark:text-amber-400",
+  },
+  {
+    id: "conversion",
+    label: "Conversión",
+    value: "4.2%",
+    change: 0.8,
+    icon: Zap,
+    sparkline: [3.2, 3.5, 3.8, 3.9, 4.0, 4.1, 4.2],
+    color: "#004080",
+    iconBg: "bg-primary/10",
+    iconColor: "text-primary",
+  },
+];
+
+// ─── Section label row ────────────────────────────────────────────────────────
+
+const SectionRow: FC<{ label: string; action?: ReactNode }> = ({ label, action }) => (
+  <div className="flex items-center justify-between gap-4">
+    <div className="flex items-center gap-3 min-w-0">
+      <span className="text-[11px] font-bold uppercase text-fg-muted whitespace-nowrap">
+        {label}
+      </span>
+      <div className="h-px flex-1 bg-[var(--border)] min-w-[20px]" />
+    </div>
+    {action}
+  </div>
+);
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export const DashboardContent: FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  
+  const [customizerOpen, setCustomizerOpen] = useState(false);
+
   const { data: onboardingSteps, isLoading: isLoadingOnboarding } = useOnboardingStatus();
   const { data: newsNotes, isLoading: isLoadingNews } = useReleaseNotes();
-  
-  // Orchestration: prepara los datos para los componentes presentacionales
-  const stepsWithInteractions = useMemo(() => 
+  const { visibility, widgetOrder, toggle, setWidgetOrder, resetToDefaults, isVisible } = useDashboardLayout();
+
+  const stepsWithInteractions = useMemo(() =>
     (onboardingSteps || []).map(step => ({
       ...step,
-      icon: step.id === "1" ? User : step.id === "2" ? CreditCard : step.id === "3" ? Zap : Rocket,
+      icon: step.id === "1" ? User
+          : step.id === "2" ? CreditCard
+          : step.id === "3" ? Zap
+          : Rocket,
+      actionLabel: "Ir",
       onClick: () => {
         if (step.id === "1") navigate("/profile/personal");
         else if (step.id === "2") navigate("/payments");
-        else appToast.info({ 
-          title: "Próximamente", 
-          description: "Esta configuración estará disponible más adelante en tu flujo." 
-        });
-      }
+        else appToast.info({ title: "Próximamente", description: "Esta configuración estará disponible pronto." });
+      },
     })),
     [onboardingSteps, navigate]
   );
 
-  const userName = useMemo(() => 
-    (user?.firstName || "Usuario").split(' ')[0],
-    [user?.firstName]
-  );
+  const hasAnyVisible = widgetOrder.some(id => isVisible(id));
+
+  // ── Widget renderer ──────────────────────────────────────────────────────────
+
+  const renderWidget = (id: WidgetId): ReactNode => {
+    switch (id) {
+      case "quick-actions":
+        return (
+          <div className="space-y-3" key="quick-actions">
+            <SectionRow label="Acceso rápido" />
+            <QuickActions actions={QUICK_ACTIONS} />
+          </div>
+        );
+
+      case "stats":
+        return (
+          <div className="space-y-3" key="stats">
+            <SectionRow label="Resumen" />
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {DASHBOARD_KPIS.map(kpi => (
+                <KpiCard key={kpi.id} {...kpi} />
+              ))}
+            </div>
+          </div>
+        );
+
+      case "onboarding":
+        if (isLoadingOnboarding) return <Skeleton key="onboarding" className="h-[68px] rounded-[20px]" />;
+        if (!stepsWithInteractions.length) return null;
+        return (
+          <div className="space-y-3" key="onboarding">
+            <SectionRow label="Configuración inicial" />
+            <ConfigSteps
+              steps={stepsWithInteractions}
+              title="Completa tu cuenta"
+              defaultCollapsed={false}
+            />
+          </div>
+        );
+
+      case "novedades":
+        if (isLoadingNews) return (
+          <div key="novedades" className="space-y-3">
+            <Skeleton className="h-4 w-20 rounded" />
+            <Skeleton className="h-[180px] rounded-[20px]" />
+          </div>
+        );
+        return (
+          <NovedadesSection key="novedades" notes={newsNotes || []} />
+        );
+
+      case "guias":
+        return (
+          <div className="space-y-3" key="guias">
+            <SectionRow label="Guías y tutoriales" />
+            <TutorialsWidget />
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="space-y-10 animate-in fade-in duration-700 w-full">
-      {/* Header Section */}
-      <PageHeader
-        title={`¡Bienvenido de nuevo, ${userName}!`}
-        description="Aquí está el resumen de tu actividad"
+    <div className="animate-in fade-in duration-500 w-full space-y-6">
+
+      {/* ── Welcome banner — card with rounded corners ── */}
+      <WelcomeBanner
+        firstName={user?.firstName || "Usuario"}
+        lastName={user?.lastName ?? undefined}
+        avatarUrl={user?.avatarUrl}
       />
 
-      {/* Welcome & Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 flex flex-col gap-10">
-          <WelcomeBanner name={userName} avatarUrl={user?.avatar} />
-          
-          <section className="space-y-8">
-            <div className="flex items-center gap-4 px-2">
-              <h2 className="text-[11px] font-label text-slate-400 uppercase">Acceso Inmediato</h2>
-              <div className="h-px flex-1 bg-slate-100 dark:bg-white/5" />
-            </div>
-            <QuickActions actions={QUICK_ACTIONS} />
-          </section>
+      {/* ── Page header with personalizar button ── */}
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-bold uppercase text-fg-muted">Panel</p>
+          <h1 className="text-lg sm:text-xl font-heading text-fg leading-tight">
+            Inicio
+          </h1>
         </div>
-
-        {/* Security Card */}
-        <SecurityCard />
+        <button
+          onClick={() => setCustomizerOpen(true)}
+          className={cn(
+            "flex items-center gap-1.5 h-9 px-3 sm:px-4 rounded-[12px] shrink-0",
+            "border border-border text-[12px] font-medium",
+            "text-fg-secondary",
+            "hover:bg-surface-hover hover:border-border-strong",
+            "hover:text-gray-900 dark:hover:text-white",
+            "transition-all duration-150 active:scale-95"
+          )}
+        >
+          <SlidersHorizontal className="h-3.5 w-3.5 shrink-0" />
+          <span className="hidden xs:inline">Personalizar</span>
+        </button>
       </div>
 
-      {/* Configuration Steps */}
-      {isLoadingOnboarding ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24 rounded-2xl" />)}
-        </div>
+      {/* ── Ordered widgets ── */}
+      {hasAnyVisible ? (
+        widgetOrder
+          .filter(id => isVisible(id))
+          .map(id => renderWidget(id))
       ) : (
-        <ConfigSteps steps={stepsWithInteractions} />
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="h-14 w-14 rounded-full bg-surface-hover flex items-center justify-center mb-4">
+            <SlidersHorizontal className="h-6 w-6 text-gray-300 dark:text-gray-600" />
+          </div>
+          <p className="text-[14px] font-semibold text-fg-secondary">
+            Has ocultado todas las secciones.
+          </p>
+          <button
+            onClick={() => setCustomizerOpen(true)}
+            className="mt-3 text-[12px] font-medium text-primary hover:text-primary-600 transition-colors"
+          >
+            Personalizar inicio →
+          </button>
+        </div>
       )}
 
-      {/* News & Analytics CTA */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-        <div className="lg:col-span-2">
-          {isLoadingNews ? (
-            <Skeleton className="h-64 rounded-[32px]" />
-          ) : (
-            <NovedadesSection notes={newsNotes || []} />
-          )}
-        </div>
-        <AnalyticsCTA />
-      </div>
+      {/* ── Customizer drawer ── */}
+      <DashboardCustomizer
+        isOpen={customizerOpen}
+        onClose={() => setCustomizerOpen(false)}
+        visibility={visibility}
+        widgetOrder={widgetOrder}
+        onToggle={toggle}
+        onReorder={setWidgetOrder}
+        onReset={resetToDefaults}
+      />
     </div>
   );
 };
-
-// Sub-componentes pequeños para organización
-const SecurityCard: FC = () => (
-  <Card className="p-8 rounded-[32px] border-none bg-slate-900 text-white relative overflow-hidden group">
-    <div className="absolute right-0 top-0 w-48 h-48 bg-[#00E6E6]/10 rounded-full blur-[60px] -mr-20 -mt-20 transition-transform duration-1000 group-hover:scale-150" />
-    <div className="relative z-10 h-full flex flex-col justify-between">
-      <div className="space-y-4">
-        <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center border border-white/10">
-          <ShieldCheck className="h-6 w-6 text-[#00E6E6]" />
-        </div>
-        <h3 className="text-xl font-heading leading-tight">Tu seguridad es nuestra prioridad</h3>
-        <p className="text-[12px] text-white/50 leading-relaxed font-label">
-          Sistemas operando al 100%. Verificados 128 puntos de control sin anomalías detectadas en las últimas 24h.
-        </p>
-      </div>
-      <button 
-        className="w-full mt-8 bg-white/10 text-white hover:bg-white/20 rounded-xl h-12 text-[10px] font-heading uppercase transition-colors"
-        onClick={() => appToast.success({ 
-          title: "Seguridad verificada", 
-          description: "Todos los protocolos de seguridad están activos y actualizados." 
-        })}
-      >
-        Seguridad Avanzada
-      </button>
-    </div>
-  </Card>
-);
-
-const AnalyticsCTA: FC = () => (
-  <Card className="p-8 rounded-[32px] border-slate-100 dark:border-white/5 bg-white dark:bg-white/5 shadow-sm flex flex-col justify-between group transition-all duration-300 hover:shadow-xl">
-    <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <div className="p-2.5 bg-blue-50 dark:bg-[#00E6E6]/5 rounded-xl transition-transform group-hover:scale-110">
-          <Sparkles className="w-5 h-5 text-[#004080] dark:text-[#00E6E6]" />
-        </div>
-        <h3 className="text-sm font-heading text-slate-900 dark:text-white uppercase">Business Intelligence</h3>
-      </div>
-      <p className="text-[13px] text-slate-500 leading-relaxed font-label">
-        Explora analíticas profundas, predicciones por IA y reportes avanzados en el nuevo centro de datos.
-      </p>
-    </div>
-    <a 
-      href="/analytics"
-      className="mt-10 block w-full h-12 rounded-xl bg-[#004080] text-white text-[10px] font-heading uppercase hover:bg-[#003366] active:scale-95 transition-all shadow-lg shadow-[#004080]/10 text-center leading-[3rem]"
-    >
-      Ir a Analíticas Avanzadas
-      <ArrowRight className="w-4 h-4 ml-2 inline" />
-    </a>
-  </Card>
-);

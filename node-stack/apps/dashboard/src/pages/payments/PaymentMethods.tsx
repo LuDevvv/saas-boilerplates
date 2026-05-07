@@ -16,7 +16,7 @@ const PaymentMethods = () => {
 
       <div className="max-w-4xl space-y-8">
         <div className="flex items-center justify-between">
-          <h3 className="text-2xl font-heading text-gray-950 dark:text-white ">Tarjetas Guardadas</h3>
+          <h3 className="text-2xl font-heading text-fg ">Tarjetas Guardadas</h3>
           <Button size="lg" icon={Plus} className="rounded-2xl font-heading shadow-lg shadow-blue-900/20 active:scale-[0.98] transition-all">
             Añadir Tarjeta
           </Button>
@@ -31,19 +31,19 @@ const PaymentMethods = () => {
               {/* Ambient glow on hover */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
-              <div className="flex h-14 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200/50 dark:from-gray-800 dark:to-gray-900 dark:border-gray-700 font-heading text-gray-700 dark:text-gray-300 text-[18px]  relative z-10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)]">
+              <div className="flex h-14 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200/50 dark:from-gray-800 dark:to-gray-900 dark:border-gray-700 font-heading text-fg-secondary text-[18px]  relative z-10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)]">
                 {method.type}
               </div>
               <div className="flex-1 relative z-10">
                 <div className="flex items-center gap-3 mb-1">
-                  <p className="text-[16px] font-kpi text-gray-950 dark:text-white ">•••• {method.last4}</p>
+                  <p className="text-[16px] font-kpi text-fg ">•••• {method.last4}</p>
                   {method.isDefault && (
                     <Badge variant="success" className=" flex items-center gap-1">
                       <ShieldCheck className="h-3 w-3" /> Principal
                     </Badge>
                   )}
                 </div>
-                <p className="text-[13px] font-label text-gray-500 dark:text-gray-400">Expira el {method.expiry}</p>              </div>
+                <p className="text-[13px] font-label text-fg-secondary">Expira el {method.expiry}</p>              </div>
               <button className="relative z-10 opacity-0 group-hover:opacity-100 p-3 bg-red-50 text-red-500 dark:bg-red-500/10 dark:text-red-400 rounded-xl hover:bg-red-100 dark:hover:bg-red-500/20 transition-all active:scale-90 shadow-sm translate-x-4 group-hover:translate-x-0 duration-300">
                 <Trash2 className="h-4 w-4" />
               </button>

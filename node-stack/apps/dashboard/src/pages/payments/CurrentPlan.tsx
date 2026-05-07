@@ -25,7 +25,7 @@ export const CurrentPlan: React.FC = () => {
 
           <CardContent className="p-8 sm:p-10 relative z-10">
             {/* Header Layout */}
-            <div className="flex flex-col gap-6 pb-8 border-b border-gray-100 dark:border-white/5 w-full items-start">
+            <div className="flex flex-col gap-6 pb-8 border-b border-border-subtle w-full items-start">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full gap-6">
                 <div>
                   <div className="flex items-center gap-3 mb-3">
@@ -34,7 +34,7 @@ export const CurrentPlan: React.FC = () => {
                       {isPremium ? "Activo" : "Gratuito"}
                     </Badge>
                   </div>
-                  <h3 className="text-4xl md:text-5xl font-heading text-gray-950 dark:text-white ">
+                  <h3 className="text-4xl md:text-5xl font-heading text-fg ">
                     {currentPlan?.planId?.toUpperCase() || (isPremium ? "PRO" : "FREE")}
                   </h3>
                 </div>
@@ -50,7 +50,7 @@ export const CurrentPlan: React.FC = () => {
             <div className="w-full mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Benefits */}
               <div className="flex flex-col gap-6">
-                <h4 className="text-[14px] font-label text-gray-900 dark:text-white uppercase  flex items-center gap-2">
+                <h4 className="text-[14px] font-label text-fg uppercase  flex items-center gap-2">
                   <Activity className="h-4 w-4 text-primary-500" /> Beneficios Incluidos
                 </h4>
                 <ul className="space-y-4">
@@ -66,14 +66,14 @@ export const CurrentPlan: React.FC = () => {
               </div>
 
               {/* Billing Details & Progress */}
-              <Card className="bg-gray-50/80 p-6 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex flex-col gap-6">
+              <Card className="bg-gray-50/80 p-6 dark:bg-white/5 border border-border-subtle flex flex-col gap-6">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-                    <Calendar className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                    <Calendar className="h-5 w-5 text-fg-secondary" />
                   </div>
                   <div>
-                    <h4 className="text-[14px] font-label text-gray-900 dark:text-white uppercase ">Próximo cobro</h4>
-                    <p className="text-2xl font-heading text-gray-950 dark:text-white  mt-1">15 May, 2026</p>
+                    <h4 className="text-[14px] font-label text-fg uppercase ">Próximo cobro</h4>
+                    <p className="text-2xl font-heading text-fg  mt-1">15 May, 2026</p>
                   </div>
                 </div>
 
@@ -91,7 +91,7 @@ export const CurrentPlan: React.FC = () => {
                 </div>
 
                 {isPremium && (
-                  <Button variant="outline" className="mt-2 w-full text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 border-gray-200 dark:border-white/10">
+                  <Button variant="outline" className="mt-2 w-full text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 border-border">
                     Cancelar Suscripción
                   </Button>
                 )}

@@ -1,9 +1,8 @@
 import { Suspense } from "react";
-import { ProfileContent } from "@/features/profile";
-import { LoadingState } from "@/components/shared/LoadingState";
+import { ProfileContent, ProfileLayoutSkeleton } from "@/features/profile";
 
 const PersonalProfile = () => (
-  <Suspense fallback={<LoadingState />}>
+  <Suspense fallback={<ProfileLayoutSkeleton />}>
     <ProfileContent />
   </Suspense>
 );

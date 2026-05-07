@@ -14,7 +14,7 @@ const Loading: FC = () => {
   if (!visible) return null;
 
   return (
-    <div className="flex h-screen items-center justify-center bg-white dark:bg-[#0A0A0A] transition-colors duration-500">
+    <div className="flex h-screen items-center justify-center bg-white dark:bg-canvas transition-colors duration-500">
       <PremiumLoader
         logoSrc="/logo-sinfondo.png"
       />
