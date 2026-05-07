@@ -124,6 +124,6 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @node-stack/db db:migrate:full
       - run: pnpm -r test --if-present
-        continue-on-error: true
-        # Test job is informational until Phase 3 lands real test suites;
-        # the migrate step is what proves CI can talk to a fresh database.
+        # Phase 3b lands the test baseline (TotpSecretCipher, audit
+        # taxonomy, EncryptionUtils round-trip + tamper detection).
+        # The job is now mandatory; new specs that fail block merge.
