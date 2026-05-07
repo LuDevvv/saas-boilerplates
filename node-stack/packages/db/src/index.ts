@@ -96,6 +96,7 @@ export * from "./repositories/index.js";
 export * from "./database.module.js";
 export * from "./tokens.js";
 export * from "./utils/api-key.utils.js";
+export * from "./audit-actions.js";
 export * from "drizzle-orm";
 export { RequestContextService } from "./context/request-context.service.js";
 export * from "./context/request-context.service.js";

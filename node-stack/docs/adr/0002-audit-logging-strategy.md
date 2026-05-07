@@ -38,30 +38,42 @@ fan-out), the listener wraps in `withSystemTx`.
 
 ### Action taxonomy
 
+The canonical list lives at `packages/db/src/audit-actions.ts` as the
+`AUDIT_ACTIONS` const tuple. `AuditAction` is its derived union type
+and is the strict argument type of `AuditLogRepository.create`. Adding
+a new action means appending it there; using a string that's not in the
+union fails the typecheck at the call site (Phase 3b Task 4).
+
+The current list, grouped by domain:
+
 ```
-auth.user_registered
-auth.login_succeeded
-auth.login_failed
-auth.password_reset_requested
-auth.password_reset_completed
-auth.session_revoked
-auth.session_revoked_all
-auth.two_factor_enabled
-auth.two_factor_disabled
-auth.api_key_created
-auth.api_key_revoked
-workspace.member_invited
-workspace.member_joined
-workspace.member_role_changed
-workspace.member_removed
-billing.subscription_created
-billing.subscription_updated
-billing.subscription_canceled
-admin.user_role_changed
-admin.user_impersonated
+// auth
+auth.user_registered, auth.login_succeeded, auth.login_failed,
+auth.logout, auth.password_reset_requested, auth.password_reset_completed,
+auth.password_changed, auth.two_factor_enabled, auth.two_factor_disabled,
+auth.session_revoked, auth.session_revoked_all,
+auth.api_key_created, auth.api_key_revoked,
+auth.account_closed, auth.account_anonymized,
+// workspace
+workspace.created, workspace.member_invited, workspace.member_joined,
+workspace.member_added, workspace.member_role_changed, workspace.member_removed,
+workspace.workspace_closed, workspace.workspace_hard_deleted,
+// billing
+billing.subscription_created, billing.subscription_updated,
+billing.subscription_canceled,
+// admin
+admin.user_role_changed, admin.user_impersonated,
+// system
+system.config_updated
 ```
 
-New action strings MUST be added to this list before use.
+`AuditService.handleAuditLog` (the event-emitter fan-in) keeps a
+permissive `string` payload at the boundary so the AuditInterceptor's
+HTTP-derived `http.{method}.{path}` strings still flow through; it
+runs a runtime guard against `AUDIT_ACTIONS` and warns when a
+non-taxonomy string lands. Direct `auditLog.create({...})` calls in
+domain services bypass that bridge and benefit from full type
+checking.
 
 ### Redaction
 

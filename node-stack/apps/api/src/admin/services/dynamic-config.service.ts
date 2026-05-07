@@ -76,7 +76,7 @@ export class DynamicConfigService implements OnModuleInit {
 
     // Audit the change
     this.eventEmitter.emit("audit.log", {
-      action: "system.config.updated",
+      action: "system.config_updated",
       userId: adminId,
       entityType: "system_config",
       entityId: key,

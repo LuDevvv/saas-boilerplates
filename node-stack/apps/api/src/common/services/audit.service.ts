@@ -1,9 +1,22 @@
-import { Injectable, Inject } from "@nestjs/common";
+import { Injectable, Inject, Logger } from "@nestjs/common";
 import { OnEvent } from "@nestjs/event-emitter";
-import { AuditLogRepository, DB_TOKEN, withSystemTx } from "@node-stack/db";
+import {
+  AUDIT_ACTIONS,
+  AuditLogRepository,
+  DB_TOKEN,
+  withSystemTx,
+  type AuditAction,
+} from "@node-stack/db";
 import type { Database } from "@node-stack/db";
 
+// Set of valid taxonomy strings for runtime guard in handleAuditLog.
+const AUDIT_ACTION_SET = new Set<string>(AUDIT_ACTIONS);
+
 export interface AuditEventPayload {
+  // Permissive at the event boundary so the AuditInterceptor (which
+  // emits dynamic http.{method}.{path} strings) and any future
+  // request-derived events still flow through. AuditLogRepository.create
+  // is strictly typed; handleAuditLog narrows at the bridge.
   action: string;
   userId?: string | null;
   workspaceId?: string | null;
@@ -18,6 +31,8 @@ const SENSITIVE_KEYS = ["password", "token", "secret", "apiKey", "credential"];
 
 @Injectable()
 export class AuditService {
+  private readonly logger = new Logger(AuditService.name);
+
   constructor(
     private readonly auditLogRepository: AuditLogRepository,
     @Inject(DB_TOKEN) private readonly db: Database,
@@ -26,6 +41,7 @@ export class AuditService {
   @OnEvent("audit.log", { async: true })
   async handleAuditLog(payload: AuditEventPayload) {
     const sanitizedMetadata = this.sanitize(payload.metadata || {});
+    const action = this.narrowAction(payload.action);
 
     try {
       // Audit events arrive from many tenants (and pre-tenant flows).
@@ -35,7 +51,7 @@ export class AuditService {
         (tx) =>
           this.auditLogRepository.create(
             {
-              action: payload.action,
+              action,
               userId: payload.userId ?? null,
               workspaceId: payload.workspaceId ?? null,
               metadata: sanitizedMetadata,
@@ -52,6 +68,23 @@ export class AuditService {
     } catch (error) {
       console.error("Failed to persist audit log:", error);
     }
+  }
+
+  /**
+   * Bridge between the permissive event-emitter payload and the strictly
+   * typed `AuditLogRepository.create`. Logs a warning when a non-taxonomy
+   * action string lands here (e.g. AuditInterceptor's
+   * `http.{method}.{path}` strings) and forwards it as-is so existing
+   * callers do not regress. Phase 4 candidate: split request-audit from
+   * domain-audit so this cast goes away.
+   */
+  private narrowAction(action: string): AuditAction {
+    if (!AUDIT_ACTION_SET.has(action)) {
+      this.logger.warn(
+        `audit.log received non-taxonomy action "${action}"; widening cast applied`,
+      );
+    }
+    return action as AuditAction;
   }
 
   // ─── Domain Event Listeners ──────────────────────────────────────────
@@ -71,7 +104,7 @@ export class AuditService {
   @OnEvent("membership.added", { async: true })
   async onMembershipAdded(payload: any) {
     await this.handleAuditLog({
-      action: "membership.added",
+      action: "workspace.member_added",
       userId: payload.actorId,
       workspaceId: payload.workspaceId,
       entityType: "user",
