@@ -163,8 +163,4 @@ export class WorkspaceRepository {
         ),
       );
   }
-
-  async transaction<T>(callback: (tx: NodePgDatabase<typeof schema>) => Promise<T>): Promise<T> {
-    return this.db.transaction(callback);
-  }
 }
