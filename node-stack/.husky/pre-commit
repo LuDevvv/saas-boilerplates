@@ -1,6 +1,12 @@
 #!/usr/bin/env sh
 set -e
 
+# Bump Node heap so the cross-package tsc graph never OOMs mid-typecheck.
+# Phase 2.5 hit two transient OOMs on the in-flight working tree at the
+# default 4 GB; 4096 explicit + project-references incremental cache is
+# the working sweet spot for this monorepo.
+export NODE_OPTIONS="${NODE_OPTIONS:-} --max-old-space-size=4096"
+
 # Project-references typecheck for the security-critical backend packages.
 # Avoids `pnpm test` from boilerplates root because the monorepo-of-monorepos
 # layout makes turbo schema resolution recursive (boilerplates root sees
