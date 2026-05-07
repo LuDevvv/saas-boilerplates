@@ -28,9 +28,9 @@ export const files = pgTable(
     workspaceId: uuid("workspace_id")
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
-    userId: uuid("user_id")
-      .notNull()
-      .references(() => users.id),
+    userId: uuid("user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
     key: text("key").notNull(),
     name: text("name").notNull(),
     mimeType: text("mime_type").notNull(),
@@ -47,6 +47,7 @@ export const files = pgTable(
   (table) => ({
     workspaceIdx: index("idx_files_workspace_id").on(table.workspaceId),
     keyIdx: index("idx_files_key").on(table.key),
+    userIdx: index("idx_files_user_id").on(table.userId),
   }),
 );
 
