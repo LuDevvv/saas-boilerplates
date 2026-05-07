@@ -1,7 +1,26 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env.*"],
-  "globalEnv": ["DATABASE_URL", "REDIS_URL", "NODE_ENV", "JWT_SECRET"],
+  "globalEnv": [
+    "DATABASE_URL",
+    "MIGRATION_DATABASE_URL",
+    "REDIS_URL",
+    "REDIS_HOST",
+    "REDIS_PORT",
+    "NODE_ENV",
+    "JWT_SECRET",
+    "JWT_REFRESH_SECRET",
+    "ENCRYPTION_KEY",
+    "TRUST_PROXY",
+    "SENTRY_DSN",
+    "OTEL_EXPORTER_OTLP_ENDPOINT",
+    "CORS_ORIGINS",
+    "PORT",
+    "MINIO_ENDPOINT",
+    "MINIO_ROOT_USER",
+    "MINIO_ROOT_PASSWORD",
+    "OPENAI_API_KEY"
+  ],
   "tasks": {
     "build": {
       "dependsOn": [

@@ -1,1 +1,17 @@
-pnpm test
+#!/usr/bin/env sh
+set -e
+
+# Project-references typecheck for the security-critical backend packages.
+# Avoids `pnpm test` from boilerplates root because the monorepo-of-monorepos
+# layout makes turbo schema resolution recursive (boilerplates root sees
+# node-stack/turbo.json as a child config; node-stack/ sees the same file
+# as a root). `tsc -b --noEmit` walks TypeScript project references directly
+# and is the most reliable cross-package typecheck for this layout.
+
+cd node-stack
+
+echo "[husky] typechecking apps/api (with workspace deps)..."
+(cd apps/api && npx -s tsc -b --noEmit)
+
+echo "[husky] typechecking apps/worker (with workspace deps)..."
+(cd apps/worker && npx -s tsc -b --noEmit)
