@@ -10,6 +10,7 @@ import {
   Inject,
 } from "@nestjs/common";
 import {
+  AuditLogRepository,
   WorkspaceRepository,
   InvitationRepository,
   UserRepository,
@@ -33,6 +34,7 @@ export class InvitationsService {
     private readonly workspaceRepo: WorkspaceRepository,
     private readonly invitationRepo: InvitationRepository,
     private readonly userRepo: UserRepository,
+    private readonly auditLog: AuditLogRepository,
     private readonly outbox: OutboxService,
     @Inject(DB_TOKEN) private readonly db: Database,
   ) {}
@@ -78,6 +80,18 @@ export class InvitationsService {
         token,
         expiresAt: expiresAt.toISOString(),
       }, tx);
+
+      await this.auditLog.create(
+        {
+          workspaceId,
+          userId: invitedById,
+          action: "workspace.member_invited",
+          entityType: "invitation",
+          entityId: newInvitation.id,
+          metadata: { invitedEmail: dto.email, role: dto.role },
+        },
+        tx,
+      );
 
       const link = `${process.env.APP_URL || "http://localhost:4000"}/workspace-invitations/${token}/accept`;
 
@@ -173,6 +187,18 @@ export class InvitationsService {
         workspaceId: lockedInvitation.workspaceId,
         userId: currentUserId,
       }, tx);
+
+      await this.auditLog.create(
+        {
+          workspaceId: lockedInvitation.workspaceId,
+          userId: currentUserId,
+          action: "workspace.member_joined",
+          entityType: "membership",
+          entityId: currentUserId,
+          metadata: { invitationId: lockedInvitation.id, role: lockedInvitation.role },
+        },
+        tx,
+      );
 
       return {
         success: true,

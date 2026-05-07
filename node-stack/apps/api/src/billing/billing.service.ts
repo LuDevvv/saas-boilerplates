@@ -15,6 +15,7 @@ import type {
 } from "@node-stack/billing-adapter";
 import { CacheService } from "@node-stack/cache";
 import {
+  AuditLogRepository,
   BillingRepository,
   DB_TOKEN,
   withTenantTx,
@@ -45,6 +46,7 @@ export class BillingService {
     private readonly configService: ConfigService,
     private readonly outbox: OutboxService,
     private readonly billingRepo: BillingRepository,
+    private readonly auditLog: AuditLogRepository,
     private readonly encryption: EncryptionService,
     private readonly eventEmitter: EventEmitter2,
     private readonly cache: CacheService,
@@ -225,6 +227,24 @@ export class BillingService {
         { subscriptionId: sub.subscriptionId, workspaceId: sub.workspaceId },
         tx,
       );
+
+      // System-actor row: webhook events have no human actor.
+      await this.auditLog.create(
+        {
+          workspaceId: sub.workspaceId,
+          userId: null,
+          action: "billing.subscription_created",
+          entityType: "subscription",
+          entityId: sub.subscriptionId,
+          metadata: {
+            providerSubscriptionId: sub.subscriptionId,
+            planId: sub.planId,
+            variantId: sub.variantId,
+            status: this.mapStatus(sub.status),
+          },
+        },
+        tx,
+      );
     }, this.db);
 
     // Invalidate subscription cache
@@ -281,6 +301,22 @@ export class BillingService {
         },
         tx,
       );
+
+      await this.auditLog.create(
+        {
+          workspaceId: sub.workspaceId,
+          userId: null,
+          action: "billing.subscription_updated",
+          entityType: "subscription",
+          entityId: sub.subscriptionId,
+          metadata: {
+            providerSubscriptionId: sub.subscriptionId,
+            newStatus: this.mapStatus(sub.status),
+            cancelAt: sub.cancelAt?.toISOString() ?? null,
+          },
+        },
+        tx,
+      );
     }, this.db);
 
     // Invalidate subscription cache
@@ -330,6 +366,22 @@ export class BillingService {
       await this.outbox.createEvent(
         "billing.subscription.canceled",
         { subscriptionId: sub.subscriptionId, workspaceId: sub.workspaceId },
+        tx,
+      );
+
+      await this.auditLog.create(
+        {
+          workspaceId: sub.workspaceId,
+          userId: null,
+          action: "billing.subscription_canceled",
+          entityType: "subscription",
+          entityId: sub.subscriptionId,
+          metadata: {
+            providerSubscriptionId: sub.subscriptionId,
+            canceledAt: (sub.cancelAt ?? new Date()).toISOString(),
+            endsAt: (sub.cancelAt ?? sub.currentPeriodEnd ?? new Date()).toISOString(),
+          },
+        },
         tx,
       );
     }, this.db);
