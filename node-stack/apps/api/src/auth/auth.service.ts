@@ -12,6 +12,7 @@ import { CacheService } from "@node-stack/cache";
 import {
   withSystemTx,
   AuthRepository,
+  AuditLogRepository,
   SessionRepository,
 } from "@node-stack/db";
 import type { Database } from "@node-stack/db";
@@ -53,6 +54,7 @@ export class AuthService {
     private twoFactorService: TwoFactorService,
     private sessionRepository: SessionRepository,
     private authRepository: AuthRepository,
+    private auditLog: AuditLogRepository,
     private cacheService: CacheService,
   ) { }
 
@@ -84,6 +86,20 @@ export class AuthService {
     await this.sessionRepository.deleteById(sessionId, userId);
     // Invalidate cache for this user's session
     await this.cacheService.del(`session:${sessionId}`);
+
+    await withSystemTx(async (tx: Database) => {
+      await this.auditLog.create(
+        {
+          workspaceId: null,
+          userId,
+          action: "auth.session_revoked",
+          entityType: "session",
+          entityId: sessionId,
+          metadata: {},
+        },
+        tx,
+      );
+    }, this.authRepository.db);
   }
 
   async revokeAllOtherSessions(
@@ -104,7 +120,23 @@ export class AuthService {
         await this.cacheService.del(`session:${s.id}`);
       }
     }
-    return { count: (currentSessionId && currentSessionId !== "") ? before.length - 1 : before.length };
+    const count = (currentSessionId && currentSessionId !== "") ? before.length - 1 : before.length;
+
+    await withSystemTx(async (tx: Database) => {
+      await this.auditLog.create(
+        {
+          workspaceId: null,
+          userId,
+          action: "auth.session_revoked_all",
+          entityType: "session",
+          entityId: null,
+          metadata: { count, keptCurrent: currentSessionId !== undefined && currentSessionId !== "" },
+        },
+        tx,
+      );
+    }, this.authRepository.db);
+
+    return { count };
   }
 
   async register(
@@ -157,6 +189,20 @@ export class AuthService {
         tx,
       );
 
+      await this.auditLog.create(
+        {
+          workspaceId: null,
+          userId: newUser.id,
+          action: "auth.user_registered",
+          entityType: "user",
+          entityId: newUser.id,
+          metadata: { email: newUser.email },
+          ipAddress: ipAddress ?? null,
+          userAgent: userAgent ?? null,
+        },
+        tx,
+      );
+
       return newUser;
     }, this.authRepository.db);
 
@@ -187,7 +233,30 @@ export class AuthService {
     | (TokenPair & { token: string; user: { id: string; email: string; firstName: string | null; lastName: string | null; phone: string | null } })
     | { requires2FA: true; tempToken: string }
   > {
-    const user = await this.validateUser(dto.email.toLowerCase(), dto.password);
+    let user;
+    try {
+      user = await this.validateUser(dto.email.toLowerCase(), dto.password);
+    } catch (err) {
+      // Log the failed attempt before re-throwing. Email is recorded but
+      // the password is never touched here, satisfying the redaction rule
+      // for audit metadata.
+      await withSystemTx(async (tx: Database) => {
+        await this.auditLog.create(
+          {
+            workspaceId: null,
+            userId: null,
+            action: "auth.login_failed",
+            entityType: "user",
+            entityId: null,
+            metadata: { email: dto.email.toLowerCase() },
+            ipAddress: ipAddress ?? null,
+            userAgent: userAgent ?? null,
+          },
+          tx,
+        );
+      }, this.authRepository.db);
+      throw err;
+    }
 
     const fullUser = await this.authRepository.findUserById(user.id);
 
@@ -226,6 +295,22 @@ export class AuthService {
     }
 
     const tokens = await this.generateTokens(user.id, user.email, sessionId);
+
+    await withSystemTx(async (tx: Database) => {
+      await this.auditLog.create(
+        {
+          workspaceId: null,
+          userId: user.id,
+          action: "auth.login_succeeded",
+          entityType: "session",
+          entityId: sessionId,
+          metadata: { reused: existingSession !== undefined },
+          ipAddress: ipAddress ?? null,
+          userAgent: userAgent ?? null,
+        },
+        tx,
+      );
+    }, this.authRepository.db);
 
     return {
       ...tokens,
@@ -317,6 +402,18 @@ export class AuthService {
         { userId: user.id, email: user.email, token },
         tx
       );
+
+      await this.auditLog.create(
+        {
+          workspaceId: null,
+          userId: user.id,
+          action: "auth.password_reset_requested",
+          entityType: "user",
+          entityId: user.id,
+          metadata: { email: user.email },
+        },
+        tx,
+      );
     }, this.authRepository.db);
 
     if (outboxEventId) {
@@ -341,6 +438,18 @@ export class AuthService {
         "user.password_changed",
         { userId: verification.userId },
         tx
+      );
+
+      await this.auditLog.create(
+        {
+          workspaceId: null,
+          userId: verification.userId,
+          action: "auth.password_reset_completed",
+          entityType: "user",
+          entityId: verification.userId,
+          metadata: { via: "reset_token" },
+        },
+        tx,
       );
     }, this.authRepository.db);
 

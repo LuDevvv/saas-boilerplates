@@ -7,7 +7,14 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { CacheService } from "@node-stack/cache";
-import { schema, eq, DB_TOKEN, AuthRepository } from "@node-stack/db";
+import {
+  schema,
+  eq,
+  DB_TOKEN,
+  AuthRepository,
+  AuditLogRepository,
+  withSystemTx,
+} from "@node-stack/db";
 import type { Database } from "@node-stack/db";
 import { OTP } from "otplib";
 import * as QRCode from "qrcode";
@@ -29,6 +36,7 @@ export class TwoFactorService {
     private configService: ConfigService,
     @Inject(DB_TOKEN) private readonly db: Database,
     private readonly authRepository: AuthRepository,
+    private readonly auditLog: AuditLogRepository,
     private readonly totpCipher: TotpSecretCipher,
     private readonly cache: CacheService,
   ) { }
@@ -120,6 +128,20 @@ export class TwoFactorService {
       .update(schema.users)
       .set({ twoFactorEnabled: true })
       .where(eq(schema.users.id, userId));
+
+    await withSystemTx(async (tx) => {
+      await this.auditLog.create(
+        {
+          workspaceId: null,
+          userId,
+          action: "auth.two_factor_enabled",
+          entityType: "user",
+          entityId: userId,
+          metadata: {},
+        },
+        tx,
+      );
+    }, this.db);
   }
 
   async disableTwoFactor(userId: string): Promise<void> {
@@ -127,6 +149,20 @@ export class TwoFactorService {
       .update(schema.users)
       .set({ twoFactorEnabled: false, twoFactorSecret: null })
       .where(eq(schema.users.id, userId));
+
+    await withSystemTx(async (tx) => {
+      await this.auditLog.create(
+        {
+          workspaceId: null,
+          userId,
+          action: "auth.two_factor_disabled",
+          entityType: "user",
+          entityId: userId,
+          metadata: {},
+        },
+        tx,
+      );
+    }, this.db);
   }
 
   async verifyLoginToken(
