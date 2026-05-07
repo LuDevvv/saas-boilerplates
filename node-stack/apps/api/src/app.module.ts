@@ -46,6 +46,7 @@ import { ApiVersionMiddleware } from '@/common/middleware/api-version.middleware
 import { IdempotencyInterceptor } from '@/common/interceptors/idempotency.interceptor.js';
 import { IdempotencyService } from '@/common/services/idempotency.service.js';
 import { MaintenanceModule } from '@/common/maintenance/maintenance.module.js';
+import { TicketModule } from '@/tickets/tickets.module.js';
 
 @Module({
   imports: [
@@ -103,6 +104,7 @@ import { MaintenanceModule } from '@/common/maintenance/maintenance.module.js';
     MarketingModule,
     AdminModule,
     MaintenanceModule,
+    TicketModule,
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
