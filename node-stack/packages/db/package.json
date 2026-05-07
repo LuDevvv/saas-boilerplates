@@ -53,8 +53,7 @@
                          "@types/pg":  "^8.20.0",
                          "bcrypt":  "^6.0.0",
                          "drizzle-orm":  "^0.45.2",
-                         "pg":  "latest",
-                         "postgres":  "latest"
+                         "pg":  "latest"
                      },
     "devDependencies":  {
                             "@faker-js/faker":  "^10.4.0",
