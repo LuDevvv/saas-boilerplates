@@ -1,5 +1,6 @@
 import { Injectable, Logger, Inject } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
+import { CacheService } from "@node-stack/cache";
 import {
   DB_TOKEN,
   SessionRepository,
@@ -10,6 +11,13 @@ import type { IStorageProvider } from "@node-stack/storage";
 import { eq, lt, and } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
+import { withRedisLock } from "@/common/maintenance/redis-lock.helper.js";
+
+// Lease durations are slightly below the cron period so a crashed
+// holder's lock expires before the next tick fires.
+const HOURLY_LOCK_TTL_SECONDS = 55 * 60;
+const DAILY_LOCK_TTL_SECONDS = 23 * 60 * 60;
+
 @Injectable()
 export class MaintenanceService {
   private readonly logger = new Logger(MaintenanceService.name);
@@ -18,6 +26,7 @@ export class MaintenanceService {
     @Inject(DB_TOKEN) private readonly db: NodePgDatabase<typeof schema>,
     @Inject("STORAGE_SERVICE") private readonly storage: IStorageProvider,
     private readonly sessionRepository: SessionRepository,
+    private readonly cache: CacheService,
   ) {}
 
   /**
@@ -27,25 +36,36 @@ export class MaintenanceService {
    */
   @Cron(CronExpression.EVERY_HOUR)
   async cleanupOutbox() {
-    this.logger.log("Running Outbox cleanup...");
-    const fortyEightHoursAgo = new Date();
-    fortyEightHoursAgo.setHours(fortyEightHoursAgo.getHours() - 48);
+    const result = await withRedisLock(
+      this.cache,
+      "cron:cleanup_outbox",
+      HOURLY_LOCK_TTL_SECONDS,
+      async () => {
+        this.logger.log("Running Outbox cleanup...");
+        const fortyEightHoursAgo = new Date();
+        fortyEightHoursAgo.setHours(fortyEightHoursAgo.getHours() - 48);
 
-    // outbox is RLS-protected; cross-tenant cleanup runs under the
-    // system bypass policy added in migration 0016.
-    const result = await withSystemTx(async (tx) =>
-      tx
-        .delete(schema.outbox)
-        .where(
-          and(
-            eq(schema.outbox.processed, true),
-            lt(schema.outbox.createdAt, fortyEightHoursAgo)
-          )
-        )
-        .returning({ id: schema.outbox.id }),
-      this.db,
+        // outbox is RLS-protected; cross-tenant cleanup runs under the
+        // system bypass policy added in migration 0016.
+        return withSystemTx(async (tx) =>
+          tx
+            .delete(schema.outbox)
+            .where(
+              and(
+                eq(schema.outbox.processed, true),
+                lt(schema.outbox.createdAt, fortyEightHoursAgo)
+              )
+            )
+            .returning({ id: schema.outbox.id }),
+          this.db,
+        );
+      },
     );
 
+    if (result === null) {
+      this.logger.debug("cleanupOutbox skipped: lock held by peer instance");
+      return;
+    }
     if (result.length > 0) {
       this.logger.log(`Cleaned up ${result.length} processed outbox events.`);
     }
@@ -58,46 +78,58 @@ export class MaintenanceService {
    */
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async cleanupAbandonedUploads() {
-    this.logger.log("Running Abandoned Uploads cleanup...");
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const acquired = await withRedisLock(
+      this.cache,
+      "cron:cleanup_abandoned_uploads",
+      DAILY_LOCK_TTL_SECONDS,
+      async () => {
+        this.logger.log("Running Abandoned Uploads cleanup...");
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    // files is RLS-protected; cross-tenant scan runs under the system
-    // bypass policy added in migration 0016.
-    const abandonedFiles = await withSystemTx(async (tx) =>
-      tx
-        .select()
-        .from(schema.files)
-        .where(
-          and(
-            eq(schema.files.status, "pending"),
-            lt(schema.files.createdAt, sevenDaysAgo)
-          )
-        ),
-      this.db,
-    );
-
-    if (abandonedFiles.length === 0) {
-      return;
-    }
-
-    this.logger.log(`Found ${abandonedFiles.length} abandoned uploads to clean.`);
-
-    for (const file of abandonedFiles) {
-      try {
-        await this.storage.delete(file.key);
-        await withSystemTx(
-          async (tx) =>
-            tx.delete(schema.files).where(eq(schema.files.id, file.id)),
+        // files is RLS-protected; cross-tenant scan runs under the system
+        // bypass policy added in migration 0016.
+        const abandonedFiles = await withSystemTx(async (tx) =>
+          tx
+            .select()
+            .from(schema.files)
+            .where(
+              and(
+                eq(schema.files.status, "pending"),
+                lt(schema.files.createdAt, sevenDaysAgo)
+              )
+            ),
           this.db,
         );
-        this.logger.debug(`Deleted abandoned file ${file.id} (${file.key})`);
-      } catch (err) {
-        this.logger.error(`Failed to cleanup abandoned file ${file.id}:`, err);
-      }
-    }
 
-    this.logger.log(`Abandoned uploads cleanup complete.`);
+        if (abandonedFiles.length === 0) {
+          return 0;
+        }
+
+        this.logger.log(`Found ${abandonedFiles.length} abandoned uploads to clean.`);
+
+        for (const file of abandonedFiles) {
+          try {
+            await this.storage.delete(file.key);
+            await withSystemTx(
+              async (tx) =>
+                tx.delete(schema.files).where(eq(schema.files.id, file.id)),
+              this.db,
+            );
+            this.logger.debug(`Deleted abandoned file ${file.id} (${file.key})`);
+          } catch (err) {
+            this.logger.error(`Failed to cleanup abandoned file ${file.id}:`, err);
+          }
+        }
+
+        this.logger.log(`Abandoned uploads cleanup complete.`);
+        return abandonedFiles.length;
+      },
+    );
+
+    if (acquired === null) {
+      this.logger.debug("cleanupAbandonedUploads skipped: lock held by peer instance");
+    }
   }
 
   /**
@@ -107,12 +139,22 @@ export class MaintenanceService {
    */
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   async purgeExpiredSessions() {
-    this.logger.log("Running Expired Sessions purge...");
+    const result = await withRedisLock(
+      this.cache,
+      "cron:purge_expired_sessions",
+      DAILY_LOCK_TTL_SECONDS,
+      async () => {
+        this.logger.log("Running Expired Sessions purge...");
+        const count = await this.sessionRepository.deleteExpired();
+        if (count > 0) {
+          this.logger.log(`Purged ${count} expired sessions.`);
+        }
+        return count;
+      },
+    );
 
-    const count = await this.sessionRepository.deleteExpired();
-
-    if (count > 0) {
-      this.logger.log(`Purged ${count} expired sessions.`);
+    if (result === null) {
+      this.logger.debug("purgeExpiredSessions skipped: lock held by peer instance");
     }
   }
 }

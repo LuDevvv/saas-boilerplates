@@ -124,4 +124,37 @@ export class CacheService implements OnModuleDestroy {
   async ping(): Promise<string> {
     return await this.client.ping();
   }
+
+  /**
+   * Atomic SET key token NX EX ttl. Returns the token on acquisition,
+   * null if the lock is already held by another instance. Use with
+   * releaseLock to ensure only the holder removes the key. Used by
+   * MaintenanceService to dedupe cron work across replicas.
+   */
+  async tryAcquireLock(
+    key: string,
+    ttlSeconds: number,
+    token: string,
+  ): Promise<string | null> {
+    const result = await this.client.set(
+      this.key(key),
+      token,
+      "EX",
+      ttlSeconds,
+      "NX",
+    );
+    return result === "OK" ? token : null;
+  }
+
+  /**
+   * Conditional release: only delete the key if its current value
+   * matches the provided token, so a slow-running holder cannot
+   * accidentally delete a successor's lock after its lease has
+   * expired and another instance has taken over.
+   */
+  async releaseLock(key: string, token: string): Promise<void> {
+    const lua =
+      "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+    await this.client.eval(lua, 1, this.key(key), token);
+  }
 }
