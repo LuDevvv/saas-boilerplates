@@ -201,17 +201,17 @@ describe('AuthService', () => {
 
   describe('getActiveSessions', () => {
     it('marks current session with isCurrent: true', async () => {
-      (sessionRepo.findActiveByUserId as any).mockResolvedValue([
+      (sessionRepo.findActiveByUserIdPaged as any).mockResolvedValue([
         { id: 'sess-1', userId: 'u1', createdAt: new Date(), expiresAt: new Date(Date.now() + 1000000) },
         { id: 'sess-2', userId: 'u1', createdAt: new Date(), expiresAt: new Date(Date.now() + 1000000) },
       ]);
 
-      const sessions = await service.getActiveSessions('u1', 'sess-1');
-      const current = sessions.find(s => s.isCurrent);
+      const page = await service.getActiveSessions('u1', 'sess-1');
+      const current = page.data.find(s => s.isCurrent);
 
       expect(current).toBeDefined();
       expect(current!.id).toBe('sess-1');
-      expect(sessions.filter(s => !s.isCurrent)).toHaveLength(1);
+      expect(page.data.filter(s => !s.isCurrent)).toHaveLength(1);
     });
   });
 });

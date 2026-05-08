@@ -1,5 +1,5 @@
 import { Injectable, Inject, Logger } from "@nestjs/common";
-import { eq, and, gt, desc, isNull, lt } from "drizzle-orm";
+import { eq, and, gt, desc, isNull, lt, or, type SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import { DB_TOKEN } from "../tokens.js";
@@ -310,13 +310,36 @@ export class AuthRepository {
 
   // ── Audit Logs ──────────────────────────────────────
 
-  async getAuthAuditLogs(userId: string, tx?: Tx) {
+  async getAuthAuditLogs(
+    userId: string,
+    tx?: Tx,
+    options?: {
+      limit: number;
+      cursorCreatedAt: Date | null;
+      cursorId: string | null;
+    },
+  ) {
     const database = tx ?? this._db;
-    return database.query.auditLogs.findMany({
-      where: eq(schema.auditLogs.userId, userId),
-      orderBy: (auditLogs, { desc }) => [desc(auditLogs.createdAt)],
-      limit: 50,
-    });
+    const limit = options?.limit ?? 50;
+    const conditions: SQL[] = [eq(schema.auditLogs.userId, userId)];
+    if (options?.cursorCreatedAt && options.cursorId) {
+      const cursorCondition = or(
+        lt(schema.auditLogs.createdAt, options.cursorCreatedAt),
+        and(
+          eq(schema.auditLogs.createdAt, options.cursorCreatedAt),
+          lt(schema.auditLogs.id, options.cursorId),
+        ),
+      );
+      if (cursorCondition) {
+        conditions.push(cursorCondition);
+      }
+    }
+    return database
+      .select()
+      .from(schema.auditLogs)
+      .where(and(...conditions))
+      .orderBy(desc(schema.auditLogs.createdAt), desc(schema.auditLogs.id))
+      .limit(limit);
   }
 
   async findAll(options: { page: number; limit: number; search?: string }, tx?: Tx) {

@@ -19,6 +19,8 @@ import type { Database } from "@node-stack/db";
 import * as schema from "@node-stack/db/schema";
 import { OutboxProducer } from "@node-stack/outbox-queue";
 import type { OAuthProfile } from "@node-stack/types";
+import { encodeCursor, decodeCursor } from "@node-stack/utils";
+import { buildPage, type PaginatedResponse } from "@node-stack/validators";
 import * as bcrypt from "bcrypt";
 
 import { TOKEN_TYPE, AUTH_ERRORS, JWT_EXPIRY } from "@/auth/constants.js";
@@ -46,6 +48,16 @@ export interface ValidateUserResult {
   passwordHash: string;
 }
 
+interface ListCursor extends Record<string, unknown> {
+  createdAt: string;
+  id: string;
+}
+
+interface ListPageOptions {
+  cursor?: string;
+  limit?: number;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -61,16 +73,33 @@ export class AuthService {
   async getActiveSessions(
     userId: string,
     currentSessionId: string,
-  ): Promise<SessionListItem[]> {
-    const sessions = await this.sessionRepository.findActiveByUserId(userId);
-    return sessions.map((s: typeof schema.sessions.$inferSelect) => ({
-      id: s.id,
-      userAgent: s.userAgent ?? "Unknown device",
-      ipAddress: s.ipAddress ?? null,
-      lastUsedAt: s.lastUsedAt ?? s.createdAt,
-      createdAt: s.createdAt,
-      isCurrent: s.id === currentSessionId,
-    }));
+    options: ListPageOptions = {},
+  ): Promise<PaginatedResponse<SessionListItem>> {
+    const limit = options.limit ?? 20;
+    const cursor = options.cursor
+      ? decodeCursor<ListCursor>(options.cursor)
+      : null;
+
+    const rows = await this.sessionRepository.findActiveByUserIdPaged(userId, {
+      limit: limit + 1,
+      cursorCreatedAt: cursor ? new Date(cursor.createdAt) : null,
+      cursorId: cursor?.id ?? null,
+    });
+
+    const mapped: SessionListItem[] = rows.map(
+      (s: typeof schema.sessions.$inferSelect) => ({
+        id: s.id,
+        userAgent: s.userAgent ?? "Unknown device",
+        ipAddress: s.ipAddress ?? null,
+        lastUsedAt: s.lastUsedAt ?? s.createdAt,
+        createdAt: s.createdAt,
+        isCurrent: s.id === currentSessionId,
+      }),
+    );
+
+    return buildPage(mapped, limit, (item) =>
+      encodeCursor({ createdAt: item.createdAt.toISOString(), id: item.id }),
+    );
   }
 
   async revokeSession(
@@ -523,13 +552,30 @@ export class AuthService {
     }, this.authRepository.db);
   }
 
-  async getAuditLogs(userId: string) {
+  async getAuditLogs(
+    userId: string,
+    options: ListPageOptions = {},
+  ): Promise<PaginatedResponse<typeof schema.auditLogs.$inferSelect>> {
+    const limit = options.limit ?? 20;
+    const cursor = options.cursor
+      ? decodeCursor<ListCursor>(options.cursor)
+      : null;
+
     // User-scoped read crosses workspaces (a user may have entries
     // across every workspace they're a member of); withSystemTx so the
     // policy doesn't filter by a single tenant GUC.
-    return withSystemTx(
-      (tx) => this.authRepository.getAuthAuditLogs(userId, tx),
+    const rows = await withSystemTx(
+      (tx) =>
+        this.authRepository.getAuthAuditLogs(userId, tx, {
+          limit: limit + 1,
+          cursorCreatedAt: cursor ? new Date(cursor.createdAt) : null,
+          cursorId: cursor?.id ?? null,
+        }),
       this.authRepository.db,
+    );
+
+    return buildPage(rows, limit, (row) =>
+      encodeCursor({ createdAt: row.createdAt.toISOString(), id: row.id }),
     );
   }
 

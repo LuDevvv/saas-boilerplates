@@ -11,6 +11,7 @@ import {
   Param,
   Delete,
   Patch,
+  Query,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { AuthGuard } from "@nestjs/passport";
@@ -23,6 +24,7 @@ import {
 } from "@nestjs/swagger";
 import { Throttle, SkipThrottle } from "@nestjs/throttler";
 import type { OAuthProfile } from "@node-stack/types";
+import { PaginationDto } from "@node-stack/validators";
 import type { Request, Response } from "express";
 
 import { AuthService, SessionListItem } from "@/auth/auth.service.js";
@@ -185,11 +187,18 @@ export class AuthController {
   @ApiBearerAuth("JWT-auth")
   @ApiOperation({
     summary: "List active sessions",
-    description: "Returns a list of all active sessions (devices/browsers) for the current user.",
+    description: "Returns a paginated list of all active sessions (devices/browsers) for the current user.",
   })
-  @ApiResponse({ status: 200, description: "List of sessions" })
-  async getSessions(@CurrentUser() user: UserPayload): Promise<SessionListItem[]> {
-    return this.authService.getActiveSessions(user.id, user.sessionId);
+  @ApiResponse({ status: 200, description: "Paginated list of sessions" })
+  async getSessions(
+    @CurrentUser() user: UserPayload,
+    @Query() page: PaginationDto,
+  ) {
+    return this.authService.getActiveSessions(
+      user.id,
+      user.sessionId,
+      { cursor: page.cursor, limit: page.limit },
+    );
   }
 
   @Delete("sessions/:id")
@@ -346,11 +355,17 @@ export class AuthController {
   @ApiBearerAuth("JWT-auth")
   @ApiOperation({
     summary: "Get security audit logs",
-    description: "Returns the recent security-related actions for the current user.",
+    description: "Returns recent security-related actions for the current user, cursor-paginated.",
   })
-  @ApiResponse({ status: 200, description: "List of audit logs." })
-  async getAuditLogs(@CurrentUser("id") userId: string) {
-    return this.authService.getAuditLogs(userId);
+  @ApiResponse({ status: 200, description: "Paginated list of audit logs." })
+  async getAuditLogs(
+    @CurrentUser("id") userId: string,
+    @Query() page: PaginationDto,
+  ) {
+    return this.authService.getAuditLogs(userId, {
+      cursor: page.cursor,
+      limit: page.limit,
+    });
   }
 
   @Public()

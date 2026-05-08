@@ -24,7 +24,13 @@ export const auth = (client: AxiosInstance) => ({
   },
 
   getSessions: async () => {
-    return client.get<any[]>("/auth/sessions") as unknown as Promise<any[]>;
+    // /auth/sessions now returns a PaginatedResponse<SessionListItem>;
+    // unwrap .data here so existing array-shaped consumers keep
+    // working until Phase 4c regenerates these wrappers from OpenAPI.
+    const page = await client.get<{ data: any[]; nextCursor: string | null }>(
+      "/auth/sessions",
+    );
+    return ((page as any)?.data ?? []) as any[];
   },
 
   revokeSession: async (sessionId: string) => {
@@ -84,6 +90,11 @@ export const auth = (client: AxiosInstance) => ({
   },
 
   getAuditLogs: async () => {
-    return client.get<any[]>("/auth/audit-logs") as unknown as Promise<any[]>;
+    // Same shape change as getSessions — the controller is now
+    // cursor-paginated. Unwrap until Phase 4c regenerates this.
+    const page = await client.get<{ data: any[]; nextCursor: string | null }>(
+      "/auth/audit-logs",
+    );
+    return ((page as any)?.data ?? []) as any[];
   },
 });
