@@ -7,11 +7,6 @@ export {
 } from "./storage.js";
 export type { UploadContext, MimeType } from "./storage.js";
 export {
-  MAGIC_BYTES_PROBE_SIZE,
-  verifyMagicBytes,
-} from "./magic-bytes.js";
-export type { MagicByteVerdict } from "./magic-bytes.js";
-export {
   PaginationSchema,
   PaginationDto,
   buildPage,

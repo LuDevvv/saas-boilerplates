@@ -5,6 +5,11 @@ import { IStorageProvider } from "./interface.js";
 export * from "./interface.js";
 export { S3StorageProvider } from "./providers/s3.js";
 export { LocalStorageProvider } from "./providers/local.js";
+export {
+  MAGIC_BYTES_PROBE_SIZE,
+  verifyMagicBytes,
+} from "./magic-bytes.js";
+export type { MagicByteVerdict } from "./magic-bytes.js";
 
 export interface UnifiedStorageConfig {
   provider: "s3" | "local";

@@ -15,14 +15,16 @@ import {
   withTenantTx,
 } from "@node-stack/db";
 import type { Database, File } from "@node-stack/db";
+import {
+  MAGIC_BYTES_PROBE_SIZE,
+  verifyMagicBytes,
+} from "@node-stack/storage";
 import type { FileMetadata, IStorageProvider } from "@node-stack/storage";
 import {
   GetPresignedUrlDto,
-  MAGIC_BYTES_PROBE_SIZE,
   UPLOAD_POLICIES,
   getFileExtension,
   sanitizeFilename,
-  verifyMagicBytes,
 } from "@node-stack/validators";
 import type { UploadContext } from "@node-stack/validators";
 
@@ -179,7 +181,7 @@ export class AppStorageService {
           file.key,
           MAGIC_BYTES_PROBE_SIZE,
         );
-        const verdict = verifyMagicBytes(probe, file.mimeType);
+        const verdict = await verifyMagicBytes(probe, file.mimeType);
         if (!verdict.ok) {
           await this.rejectUpload(
             tx,
