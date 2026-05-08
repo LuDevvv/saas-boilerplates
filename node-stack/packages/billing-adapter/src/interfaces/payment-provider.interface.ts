@@ -79,7 +79,7 @@ export interface PaymentProvider {
   getSubscription(subscriptionId: string): Promise<Subscription>;
   createCheckoutSession(data: CheckoutData): Promise<CheckoutUrl>;
   handleWebhook(
-    payload: any,
+    payload: unknown,
     signatureOrHeaders?: string | Record<string, string>,
   ): Promise<WebhookEvent>;
 }

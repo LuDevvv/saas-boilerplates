@@ -1,4 +1,10 @@
-import type { PaymentProvider } from "./interfaces/payment-provider.interface.js";
+import type {
+  CheckoutUrl,
+  Customer,
+  PaymentProvider,
+  Subscription,
+  WebhookEvent,
+} from "./interfaces/payment-provider.interface.js";
 import { MockProvider } from "./providers/mock.provider.js";
 
 export type ProviderType = "polar" | "mock";
@@ -40,36 +46,41 @@ export class BillingService {
     }
   }
 
-  async createCustomer(data: Parameters<PaymentProvider["createCustomer"]>[0]) {
+  async createCustomer(
+    data: Parameters<PaymentProvider["createCustomer"]>[0],
+  ): Promise<Customer> {
     await this.ensureInitialized();
     return this.provider.createCustomer(data);
   }
 
   async createSubscription(
     data: Parameters<PaymentProvider["createSubscription"]>[0],
-  ) {
+  ): Promise<Subscription> {
     await this.ensureInitialized();
     return this.provider.createSubscription(data);
   }
 
-  async cancelSubscription(subscriptionId: string) {
+  async cancelSubscription(subscriptionId: string): Promise<void> {
     await this.ensureInitialized();
     return this.provider.cancelSubscription(subscriptionId);
   }
 
-  async getSubscription(subscriptionId: string) {
+  async getSubscription(subscriptionId: string): Promise<Subscription> {
     await this.ensureInitialized();
     return this.provider.getSubscription(subscriptionId);
   }
 
   async createCheckoutSession(
     data: Parameters<PaymentProvider["createCheckoutSession"]>[0],
-  ) {
+  ): Promise<CheckoutUrl> {
     await this.ensureInitialized();
     return this.provider.createCheckoutSession(data);
   }
 
-  async handleWebhook(payload: any, signature?: string) {
+  async handleWebhook(
+    payload: unknown,
+    signature?: string,
+  ): Promise<WebhookEvent> {
     await this.ensureInitialized();
     return this.provider.handleWebhook(payload, signature);
   }

@@ -36,8 +36,8 @@ export class MockProvider implements PaymentProvider {
     };
   }
 
-  async cancelSubscription(subscriptionId: string): Promise<void> {
-    console.log(`Mock: Canceling subscription ${subscriptionId}`);
+  async cancelSubscription(_subscriptionId: string): Promise<void> {
+    return;
   }
 
   async getSubscription(subscriptionId: string): Promise<Subscription> {
@@ -51,7 +51,7 @@ export class MockProvider implements PaymentProvider {
     };
   }
 
-  async createCheckoutSession(data: CheckoutData): Promise<CheckoutUrl> {
+  async createCheckoutSession(_data: CheckoutData): Promise<CheckoutUrl> {
     const sessionId = Math.random().toString(36).substring(2, 15);
     return {
       url: `http://localhost:4000/checkout/${sessionId}`,
@@ -60,7 +60,7 @@ export class MockProvider implements PaymentProvider {
   }
 
   async handleWebhook(
-    payload: any,
+    payload: unknown,
     _signatureOrHeaders?: string | Record<string, string>,
   ): Promise<WebhookEvent> {
     return {

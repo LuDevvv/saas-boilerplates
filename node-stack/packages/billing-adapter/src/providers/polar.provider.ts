@@ -3,6 +3,7 @@ import {
   validateEvent,
   WebhookVerificationError,
 } from "@polar-sh/sdk/webhooks";
+
 import { CircuitBreaker } from "../circuit-breaker.js";
 import type {
   PaymentProvider,
@@ -23,6 +24,38 @@ export interface PolarProviderConfig {
   server?: "sandbox" | "production";
 }
 
+interface PolarCustomerLike {
+  id: string;
+  email?: string | null;
+  name?: string | null;
+  createdAt: string | Date;
+  metadata?: Record<string, string> | null;
+}
+
+interface PolarSubscriptionLike {
+  id: string;
+  status: string;
+  customerId?: string;
+  customer_id?: string;
+  productId?: string;
+  product_id?: string;
+  planId?: string;
+  priceId?: string;
+  price_id?: string;
+  variantId?: string;
+  currentPeriodStart?: string | Date;
+  currentPeriodEnd?: string | Date;
+  cancelAtPeriodEnd?: boolean;
+  createdAt?: string | Date;
+  metadata?: Record<string, string>;
+}
+
+interface PolarEventLike {
+  id?: string;
+  type?: string;
+  createdAt?: string | Date;
+}
+
 /**
  * Production-ready Polar.sh payment provider.
  *
@@ -33,7 +66,7 @@ export interface PolarProviderConfig {
 export class PolarProvider implements PaymentProvider {
   private readonly client: Polar;
   private readonly webhookSecret?: string;
-  private readonly circuitBreaker: CircuitBreaker;
+  private readonly circuitBreaker: CircuitBreaker<[CheckoutData], CheckoutUrl>;
 
   constructor(config: PolarProviderConfig);
   /** @deprecated Use the config object form instead */
@@ -52,7 +85,7 @@ export class PolarProvider implements PaymentProvider {
       server: config.server ?? "production",
     });
     this.webhookSecret = config.webhookSecret;
-    this.circuitBreaker = new CircuitBreaker(
+    this.circuitBreaker = new CircuitBreaker<[CheckoutData], CheckoutUrl>(
       this.createCheckoutSessionInternal.bind(this),
       { failureThreshold: 5, recoveryTimeout: 30_000 },
     );
@@ -68,8 +101,8 @@ export class PolarProvider implements PaymentProvider {
     });
 
     // Customer response is a discriminated union (Individual | Team).
-    // We cast to `any` to safely access fields that differ in nullability.
-    const c = result as any;
+    // Cast to a structural shape so downstream access is type-safe.
+    const c = result as unknown as PolarCustomerLike;
     return {
       id: c.id,
       email: c.email ?? data.email,
@@ -84,13 +117,10 @@ export class PolarProvider implements PaymentProvider {
   async createSubscription(
     data: CreateSubscriptionData,
   ): Promise<Subscription> {
-    // Polar's SDK creates subscriptions through checkout sessions,
-    // not directly. This maps to Polar's subscription model.
     const sub = await this.client.subscriptions.get({
-      id: data.customerId, // Workaround: resolve after checkout completes
+      id: data.customerId,
     });
-
-    return this.mapSubscription(sub);
+    return this.mapSubscription(sub as unknown as PolarSubscriptionLike);
   }
 
   async cancelSubscription(subscriptionId: string): Promise<void> {
@@ -106,7 +136,7 @@ export class PolarProvider implements PaymentProvider {
     const sub = await this.client.subscriptions.get({
       id: subscriptionId,
     });
-    return this.mapSubscription(sub);
+    return this.mapSubscription(sub as unknown as PolarSubscriptionLike);
   }
 
   // ─── Checkout ─────────────────────────────────────────────────────────
@@ -136,30 +166,19 @@ export class PolarProvider implements PaymentProvider {
 
   // ─── Webhook Handling ─────────────────────────────────────────────────
 
-  /**
-   * Verifies and parses an incoming webhook event from Polar.
-   *
-   * Uses the official `@polar-sh/sdk/webhooks` helper which validates
-   * the Standard Webhooks headers (webhook-id, webhook-timestamp, webhook-signature).
-   *
-   * @param payload  Raw request body as string or Buffer
-   * @param headers  Request headers object (must include Standard Webhooks headers)
-   */
   async handleWebhook(
-    payload: string | Buffer | Record<string, unknown>,
+    payload: unknown,
     signatureOrHeaders?: string | Record<string, string>,
   ): Promise<WebhookEvent> {
-    const headers = typeof signatureOrHeaders === "object" ? signatureOrHeaders : {};
-    // When no webhook secret is configured, skip verification (dev mode)
+    const headers =
+      typeof signatureOrHeaders === "object" ? signatureOrHeaders : {};
+
     if (!this.webhookSecret) {
-      const raw =
-        typeof payload === "string" || Buffer.isBuffer(payload)
-          ? JSON.parse(payload.toString())
-          : payload;
+      const raw = this.coerceToEventLike(payload);
       return {
-        id: raw?.id ?? `polar_evt_${Date.now()}`,
-        type: this.mapEventType(raw?.type),
-        timestamp: new Date(raw?.createdAt ?? Date.now()),
+        id: raw.id ?? `polar_evt_${Date.now()}`,
+        type: this.mapEventType(raw.type),
+        timestamp: new Date(raw.createdAt ?? Date.now()),
         data: raw,
         processed: true,
       };
@@ -171,22 +190,23 @@ export class PolarProvider implements PaymentProvider {
           ? payload.toString()
           : JSON.stringify(payload);
 
-      const event = validateEvent(
-        body,
-        headers as Record<string, string>,
-        this.webhookSecret,
-      );
+      const event = validateEvent(body, headers, this.webhookSecret) as
+        | PolarEventLike
+        | unknown;
+      const evt = event as PolarEventLike;
 
       return {
-        id: (event as any).id ?? `polar_evt_${Date.now()}`,
-        type: this.mapEventType((event as any).type),
-        timestamp: new Date((event as any).createdAt ?? Date.now()),
+        id: evt.id ?? `polar_evt_${Date.now()}`,
+        type: this.mapEventType(evt.type),
+        timestamp: new Date(evt.createdAt ?? Date.now()),
         data: event,
         processed: true,
       };
     } catch (error) {
       if (error instanceof WebhookVerificationError) {
-        throw new Error(`Webhook signature verification failed: ${error.message}`);
+        throw new Error(
+          `Webhook signature verification failed: ${error.message}`,
+        );
       }
       throw error;
     }
@@ -194,10 +214,21 @@ export class PolarProvider implements PaymentProvider {
 
   // ─── Helpers ──────────────────────────────────────────────────────────
 
-  private mapSubscription(sub: any): Subscription {
+  private coerceToEventLike(payload: unknown): PolarEventLike {
+    if (typeof payload === "string" || Buffer.isBuffer(payload)) {
+      try {
+        return JSON.parse(payload.toString()) as PolarEventLike;
+      } catch {
+        return {};
+      }
+    }
+    return (payload as PolarEventLike) ?? {};
+  }
+
+  private mapSubscription(sub: PolarSubscriptionLike): Subscription {
     return {
       id: sub.id,
-      customerId: sub.customerId ?? sub.customer_id,
+      customerId: sub.customerId ?? sub.customer_id ?? "",
       planId: sub.productId ?? sub.product_id ?? sub.planId ?? "",
       variantId: sub.priceId ?? sub.price_id ?? sub.variantId,
       status: this.mapSubscriptionStatus(sub.status),
@@ -207,17 +238,17 @@ export class PolarProvider implements PaymentProvider {
       currentPeriodEnd: sub.currentPeriodEnd
         ? new Date(sub.currentPeriodEnd)
         : undefined,
-      cancelAt: sub.cancelAtPeriodEnd ? sub.currentPeriodEnd
-        ? new Date(sub.currentPeriodEnd)
-        : undefined : undefined,
+      cancelAt: sub.cancelAtPeriodEnd
+        ? sub.currentPeriodEnd
+          ? new Date(sub.currentPeriodEnd)
+          : undefined
+        : undefined,
       createdAt: new Date(sub.createdAt ?? Date.now()),
       metadata: sub.metadata,
     };
   }
 
-  private mapSubscriptionStatus(
-    status: string,
-  ): Subscription["status"] {
+  private mapSubscriptionStatus(status: string): Subscription["status"] {
     const statusMap: Record<string, Subscription["status"]> = {
       active: "active",
       trialing: "trialing",
