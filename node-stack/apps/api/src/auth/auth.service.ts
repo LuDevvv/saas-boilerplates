@@ -23,19 +23,15 @@ import * as bcrypt from "bcrypt";
 
 import { AUTH_ERRORS } from "@/auth/constants.js";
 import type { RegisterDto, LoginDto, RefreshDto } from "@/auth/dto/index.js";
+import { PasswordService, type ValidateUserResult } from "@/auth/services/password.service.js";
 import { SessionService, type SessionListItem } from "@/auth/services/session.service.js";
 import { TokenService } from "@/auth/services/token.service.js";
 import { TwoFactorService } from "@/auth/two-factor/two-factor.service.js";
 
 export type { TokenPair } from "@/auth/services/token.service.js";
 export type { SessionListItem } from "@/auth/services/session.service.js";
+export type { ValidateUserResult } from "@/auth/services/password.service.js";
 import type { TokenPair } from "@/auth/services/token.service.js";
-
-export interface ValidateUserResult {
-  id: string;
-  email: string;
-  passwordHash: string;
-}
 
 interface ListCursor extends Record<string, unknown> {
   createdAt: string;
@@ -57,6 +53,7 @@ export class AuthService {
     private auditLog: AuditLogRepository,
     private tokenService: TokenService,
     private sessionService: SessionService,
+    private passwordService: PasswordService,
   ) { }
 
   getActiveSessions(
@@ -89,7 +86,7 @@ export class AuthService {
   ): Promise<
     TokenPair & { token: string; user: { id: string; email: string; firstName: string | null; lastName: string | null; phone: string | null } }
   > {
-    const passwordHash = await bcrypt.hash(dto.password, 12);
+    const passwordHash = await this.passwordService.hashPassword(dto.password);
     const sessionId = crypto.randomUUID();
 
     let outboxEventId: string | null = null;
@@ -178,7 +175,10 @@ export class AuthService {
   > {
     let user;
     try {
-      user = await this.validateUser(dto.email.toLowerCase(), dto.password);
+      user = await this.passwordService.validateUser(
+        dto.email.toLowerCase(),
+        dto.password,
+      );
     } catch (err) {
       // Log the failed attempt before re-throwing. Email is recorded but
       // the password is never touched here, satisfying the redaction rule
@@ -248,84 +248,12 @@ export class AuthService {
     return this.sessionService.refreshTokens(dto.refreshToken);
   }
 
-  async forgotPassword(email: string): Promise<void> {
-    const user = await this.authRepository.findUserByEmail(email.toLowerCase());
-    if (!user) return; // Silent return for security
-
-    const token = crypto.randomBytes(32).toString("hex");
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 1);
-
-    let outboxEventId: string | null = null;
-    await withSystemTx(async (tx: Database) => {
-      // Invalidate any previous reset tokens for this user
-      await this.authRepository.deleteVerificationTokensByUser(user.id, "password_reset", tx);
-
-      await this.authRepository.createVerificationToken({
-        identifier: "password_reset",
-        token,
-        expiresAt,
-        userId: user.id,
-      }, tx);
-
-      outboxEventId = await this.authRepository.createOutboxEvent(
-        "user.forgot_password",
-        { userId: user.id, email: user.email, token },
-        tx
-      );
-
-      await this.auditLog.create(
-        {
-          workspaceId: null,
-          userId: user.id,
-          action: "auth.password_reset_requested",
-          entityType: "user",
-          entityId: user.id,
-          metadata: { email: user.email },
-        },
-        tx,
-      );
-    }, this.authRepository.db);
-
-    if (outboxEventId) {
-      await OutboxProducer.addProcessOutboxJob(outboxEventId);
-    }
+  forgotPassword(email: string): Promise<void> {
+    return this.passwordService.forgotPassword(email);
   }
 
-  async resetPassword(token: string, newPassword: string): Promise<void> {
-    const verification = await this.authRepository.findVerificationToken("password_reset", token);
-
-    if (!verification || verification.expiresAt < new Date()) {
-      throw new BadRequestException("Invalid or expired reset token");
-    }
-
-    const passwordHash = await bcrypt.hash(newPassword, 12);
-
-    await withSystemTx(async (tx: Database) => {
-      await this.authRepository.updateUser(verification.userId, { passwordHash }, tx);
-      await this.authRepository.deleteVerificationToken(token, tx);
-
-      await this.authRepository.createOutboxEvent(
-        "user.password_changed",
-        { userId: verification.userId },
-        tx
-      );
-
-      await this.auditLog.create(
-        {
-          workspaceId: null,
-          userId: verification.userId,
-          action: "auth.password_reset_completed",
-          entityType: "user",
-          entityId: verification.userId,
-          metadata: { via: "reset_token" },
-        },
-        tx,
-      );
-    }, this.authRepository.db);
-
-    // Revoke all active sessions for security
-    await this.revokeAllOtherSessions(verification.userId, "");
+  resetPassword(token: string, newPassword: string): Promise<void> {
+    return this.passwordService.resetPassword(token, newPassword);
   }
 
   async sendVerificationEmail(userId: string): Promise<void> {
@@ -425,26 +353,11 @@ export class AuthService {
     await this.authRepository.deleteSessionById(sessionId);
   }
 
-  async validateUser(
+  validateUser(
     email: string,
     password: string,
   ): Promise<ValidateUserResult> {
-    const user = await this.authRepository.findUserByEmail(email);
-
-    if (!user || !user.passwordHash) {
-      throw new UnauthorizedException(AUTH_ERRORS.INVALID_CREDENTIALS);
-    }
-
-    const isValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isValid) {
-      throw new UnauthorizedException(AUTH_ERRORS.INVALID_CREDENTIALS);
-    }
-
-    return {
-      id: user.id,
-      email: user.email,
-      passwordHash: user.passwordHash,
-    };
+    return this.passwordService.validateUser(email, password);
   }
 
   async getUserById(userId: string) {
