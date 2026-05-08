@@ -1,5 +1,6 @@
 import * as fs from "fs/promises";
 import * as path from "path";
+
 import { IStorageProvider, FileMetadata } from "../interface.js";
 
 export interface LocalStorageConfig {
@@ -26,8 +27,8 @@ export class LocalStorageProvider implements IStorageProvider {
     const filePath = this.getFilePath(key);
     try {
       await fs.unlink(filePath);
-    } catch (error: any) {
-      if (error.code !== "ENOENT") throw error;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
     }
   }
 

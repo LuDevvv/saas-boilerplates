@@ -6,11 +6,13 @@ export interface NotificationPayload {
   userId: string;
   workspaceId?: string;
   template: EmailTemplate;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   channels?: NotificationChannel[];
 }
 
 export type ChannelHandler = (payload: NotificationPayload) => Promise<void>;
+
+type ChannelPreferences = Record<NotificationChannel, boolean>;
 
 export class NotificationService {
   private emailSender: EmailSender;
@@ -20,7 +22,7 @@ export class NotificationService {
     this.emailSender = new EmailSender();
   }
 
-  setChannelHandler(channel: NotificationChannel, handler: ChannelHandler) {
+  setChannelHandler(channel: NotificationChannel, handler: ChannelHandler): void {
     this.handlers[channel] = handler;
   }
 
@@ -34,9 +36,9 @@ export class NotificationService {
       }
 
       try {
-        // If a custom handler is registered, use it
-        if (this.handlers[channel]) {
-          await this.handlers[channel]!(payload);
+        const handler = this.handlers[channel];
+        if (handler) {
+          await handler(payload);
           return;
         }
 
@@ -55,13 +57,8 @@ export class NotificationService {
     await Promise.allSettled(promises);
   }
 
-
-  private async sendEmail(userId: string, template: EmailTemplate) {
-    // 1. Get user email (placeholder logic)
+  private async sendEmail(userId: string, template: EmailTemplate): Promise<void> {
     const userEmail = await this.getUserEmail(userId);
-
-    // 2. Wrap the new renderEmail into the legacy sender for now
-    // or use the provider directly if we refactor more.
     await this.emailSender.sendEmail({
       to: userEmail,
       subject: this.getSubject(template),
@@ -72,17 +69,18 @@ export class NotificationService {
 
   private getSubject(template: EmailTemplate): string {
     switch (template.name) {
-      case "WELCOME": return "Welcome to NodeStack!";
-      default: return "Notification from NodeStack";
+      case "WELCOME":
+        return "Welcome to NodeStack!";
+      default:
+        return "Notification from NodeStack";
     }
   }
 
   private async getUserEmail(userId: string): Promise<string> {
-    // In a real app, this would query the DB
     return `user_${userId}@example.com`;
   }
 
-  private async getUserPreferences(userId: string) {
+  private async getUserPreferences(_userId: string): Promise<ChannelPreferences> {
     return {
       EMAIL: true,
       PUSH: true,
@@ -90,7 +88,10 @@ export class NotificationService {
     };
   }
 
-  private isChannelEnabled(channel: NotificationChannel, preferences: any): boolean {
+  private isChannelEnabled(
+    channel: NotificationChannel,
+    preferences: ChannelPreferences,
+  ): boolean {
     return preferences[channel] !== false;
   }
 }

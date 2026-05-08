@@ -7,6 +7,7 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
 import { IStorageProvider, FileMetadata } from "../interface.js";
 import { StorageConfig } from "../storage.service.js";
 
@@ -101,7 +102,7 @@ export class S3StorageProvider implements IStorageProvider {
       });
       await this.client.send(command);
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }

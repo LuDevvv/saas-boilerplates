@@ -1,6 +1,6 @@
-import { S3StorageProvider } from "./providers/s3.js";
-import { LocalStorageProvider, LocalStorageConfig } from "./providers/local.js";
 import { IStorageProvider } from "./interface.js";
+import { LocalStorageProvider, LocalStorageConfig } from "./providers/local.js";
+import { S3StorageProvider } from "./providers/s3.js";
 
 export * from "./interface.js";
 export { S3StorageProvider } from "./providers/s3.js";

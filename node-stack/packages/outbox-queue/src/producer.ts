@@ -5,7 +5,7 @@ const QUEUE_NAME = "outbox";
 export class OutboxProducer {
   private static queue: Queue | null = null;
 
-  static init() {
+  static init(): void {
     this.queue = new Queue(QUEUE_NAME, {
       connection: {
         host: process.env.REDIS_HOST || "localhost",

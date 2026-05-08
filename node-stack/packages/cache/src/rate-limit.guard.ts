@@ -7,8 +7,20 @@ import {
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 
-import { RateLimitOptions, RateLimit } from "./rate-limit.decorator.js";
+import type { RateLimitOptions } from "./rate-limit.decorator.js";
 import { RateLimiterService } from "./rate-limiter.js";
+
+interface RateLimitedRequest {
+  method?: string;
+  ip?: string;
+  path?: string;
+  route?: { path?: string };
+  user?: { id?: string };
+}
+
+interface RateLimitedResponse {
+  setHeader(name: string, value: string | number): void;
+}
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {
@@ -24,19 +36,18 @@ export class RateLimitGuard implements CanActivate {
       undefined;
     if (!opts) return true;
 
-    const req = context.switchToHttp().getRequest();
-    const res = context.switchToHttp().getResponse();
+    const req = context.switchToHttp().getRequest<RateLimitedRequest>();
+    const res = context.switchToHttp().getResponse<RateLimitedResponse>();
     const route = req?.route?.path ?? req?.path ?? "/";
     let keyBase = `${req?.method ?? "GET"}:${route}`;
     if (opts.key === "user") {
       const id = req?.user?.id ?? req?.ip ?? "anonymous";
       keyBase = `${keyBase}:user:${id}`;
     } else if (opts.key === "ip") {
-      keyBase = `${keyBase}:ip:${req?.ip}`;
+      keyBase = `${keyBase}:ip:${req?.ip ?? "anonymous"}`;
     }
     const result = await this.limiter.check(keyBase, opts.max, opts.windowMs);
 
-    // Expose rate limit headers on every response
     try {
       res.setHeader("X-RateLimit-Limit", opts.max);
       const remaining = Math.max(
@@ -44,14 +55,12 @@ export class RateLimitGuard implements CanActivate {
         result.count > opts.max ? 0 : opts.max - result.count,
       );
       res.setHeader("X-RateLimit-Remaining", remaining);
-      // reset timestamp is in epoch seconds in header per example; convert ms to seconds
       res.setHeader("X-RateLimit-Reset", Math.ceil(result.resetAt / 1000));
     } catch {
       // If headers cannot be set for any reason, fail silently
     }
 
     if (!result.allowed) {
-      // If over the limit, tell client when to retry
       res.setHeader("Retry-After", Math.ceil(opts.windowMs / 1000));
       throw new HttpException("Rate limit exceeded", HttpStatus.TOO_MANY_REQUESTS);
     }

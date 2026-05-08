@@ -20,7 +20,7 @@ export class CacheService implements OnModuleDestroy {
     });
   }
 
-  async onModuleDestroy() {
+  async onModuleDestroy(): Promise<void> {
     await this.client.quit();
   }
 
@@ -93,7 +93,7 @@ export class CacheService implements OnModuleDestroy {
       await this.client.del(...toDelete);
     }
   }
-  async publish(channel: string, message: any): Promise<void> {
+  async publish(channel: string, message: unknown): Promise<void> {
     const data = typeof message === 'string' ? message : JSON.stringify(message);
     const prefixedChannel = this.namespace ? `${this.namespace}:${channel}` : channel;
     await this.client.publish(prefixedChannel, data);

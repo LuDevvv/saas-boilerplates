@@ -1,14 +1,25 @@
 import { Processor, WorkerHost } from "@nestjs/bullmq";
 import { db, schema, eq } from "@node-stack/db";
 import { EmailSender } from "@node-stack/emails";
-import { Job } from "bullmq";
+import type { Job } from "bullmq";
 
 const MAX_RETRIES = 5;
 
+interface OutboxJobData {
+  outboxId: string;
+}
+
+interface OutboxEventPayload {
+  email?: string;
+  token?: string;
+  [key: string]: unknown;
+}
+
 @Processor("outbox")
 export class OutboxProcessor extends WorkerHost {
-  async process(job: any, token?: string): Promise<any> {
-    const outboxId = job.data?.outboxId as string;
+  async process(job: Job<OutboxJobData>, _token?: string): Promise<void> {
+    const outboxId = job.data?.outboxId;
+    if (!outboxId) return;
 
     const event = await db.query.outbox.findFirst({
       where: eq(schema.outbox.id, outboxId),
@@ -19,48 +30,48 @@ export class OutboxProcessor extends WorkerHost {
     }
 
     try {
-      // Initialize the email sender 
       const emailSender = new EmailSender();
-
-      const payload = event.payload as Record<string, any>;
+      const payload = event.payload as OutboxEventPayload;
 
       switch (event.eventType) {
         case "user.registered":
-          // Implement user welcome logic, if needed
           break;
         case "user.forgot_password":
-          await emailSender.sendEmail({
-            to: payload.email,
-            subject: "Reset your password",
-            templateName: "reset_password",
-            templateData: { token: payload.token },
-          });
+          if (payload.email) {
+            await emailSender.sendEmail({
+              to: payload.email,
+              subject: "Reset your password",
+              templateName: "reset_password",
+              templateData: { token: payload.token },
+            });
+          }
           break;
         case "user.email_verification":
-          await emailSender.sendEmail({
-            to: payload.email,
-            subject: "Verify your email address",
-            templateName: "verify_email",
-            templateData: { token: payload.token },
-          });
+          if (payload.email) {
+            await emailSender.sendEmail({
+              to: payload.email,
+              subject: "Verify your email address",
+              templateName: "verify_email",
+              templateData: { token: payload.token },
+            });
+          }
           break;
         case "workspace.created":
-          // Implement workspace-related side effects
           break;
         default:
-          // Unknown event; just mark as processed to avoid stuck
           break;
       }
 
       await db
         .update(schema.outbox)
-        .set({ processed: true, processedAt: new Date() as any })
+        .set({ processed: true, processedAt: new Date() })
         .where(eq(schema.outbox.id, outboxId));
-    } catch (error: any) {
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
       const retryCount = (event.retryCount ?? 0) + 1;
       await db
         .update(schema.outbox)
-        .set({ retryCount, lastError: error?.message })
+        .set({ retryCount, lastError: message })
         .where(eq(schema.outbox.id, outboxId));
 
       if (retryCount >= MAX_RETRIES) {
@@ -70,7 +81,7 @@ export class OutboxProcessor extends WorkerHost {
           .where(eq(schema.outbox.id, outboxId));
       }
 
-      throw error; // BullMQ will retry according to its config
+      throw error;
     }
   }
 }
