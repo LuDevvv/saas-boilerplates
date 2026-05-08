@@ -8,12 +8,10 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
-import { CacheService } from "@node-stack/cache";
 import {
   withSystemTx,
   AuthRepository,
   AuditLogRepository,
-  SessionRepository,
 } from "@node-stack/db";
 import type { Database } from "@node-stack/db";
 import * as schema from "@node-stack/db/schema";
@@ -23,22 +21,15 @@ import { encodeCursor, decodeCursor } from "@node-stack/utils";
 import { buildPage, type PaginatedResponse } from "@node-stack/validators";
 import * as bcrypt from "bcrypt";
 
-import { TOKEN_TYPE, AUTH_ERRORS } from "@/auth/constants.js";
+import { AUTH_ERRORS } from "@/auth/constants.js";
 import type { RegisterDto, LoginDto, RefreshDto } from "@/auth/dto/index.js";
+import { SessionService, type SessionListItem } from "@/auth/services/session.service.js";
 import { TokenService } from "@/auth/services/token.service.js";
 import { TwoFactorService } from "@/auth/two-factor/two-factor.service.js";
 
 export type { TokenPair } from "@/auth/services/token.service.js";
+export type { SessionListItem } from "@/auth/services/session.service.js";
 import type { TokenPair } from "@/auth/services/token.service.js";
-
-export interface SessionListItem {
-  id: string;
-  userAgent: string;
-  ipAddress: string | null;
-  lastUsedAt: Date;
-  createdAt: Date;
-  isCurrent: boolean;
-}
 
 export interface ValidateUserResult {
   id: string;
@@ -62,109 +53,33 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private twoFactorService: TwoFactorService,
-    private sessionRepository: SessionRepository,
     private authRepository: AuthRepository,
     private auditLog: AuditLogRepository,
-    private cacheService: CacheService,
     private tokenService: TokenService,
+    private sessionService: SessionService,
   ) { }
 
-  async getActiveSessions(
+  getActiveSessions(
     userId: string,
     currentSessionId: string,
     options: ListPageOptions = {},
   ): Promise<PaginatedResponse<SessionListItem>> {
-    const limit = options.limit ?? 20;
-    const cursor = options.cursor
-      ? decodeCursor<ListCursor>(options.cursor)
-      : null;
-
-    const rows = await this.sessionRepository.findActiveByUserIdPaged(userId, {
-      limit: limit + 1,
-      cursorCreatedAt: cursor ? new Date(cursor.createdAt) : null,
-      cursorId: cursor?.id ?? null,
-    });
-
-    const mapped: SessionListItem[] = rows.map(
-      (s: typeof schema.sessions.$inferSelect) => ({
-        id: s.id,
-        userAgent: s.userAgent ?? "Unknown device",
-        ipAddress: s.ipAddress ?? null,
-        lastUsedAt: s.lastUsedAt ?? s.createdAt,
-        createdAt: s.createdAt,
-        isCurrent: s.id === currentSessionId,
-      }),
-    );
-
-    return buildPage(mapped, limit, (item) =>
-      encodeCursor({ createdAt: item.createdAt.toISOString(), id: item.id }),
-    );
+    return this.sessionService.getActiveSessions(userId, currentSessionId, options);
   }
 
-  async revokeSession(
+  revokeSession(
     sessionId: string,
     userId: string,
     currentSessionId: string,
   ): Promise<void> {
-    if (sessionId === currentSessionId) {
-      throw new BadRequestException(
-        "Cannot revoke your current session. Use logout instead.",
-      );
-    }
-    await this.sessionRepository.deleteById(sessionId, userId);
-    // Invalidate cache for this user's session
-    await this.cacheService.del(`session:${sessionId}`);
-
-    await withSystemTx(async (tx: Database) => {
-      await this.auditLog.create(
-        {
-          workspaceId: null,
-          userId,
-          action: "auth.session_revoked",
-          entityType: "session",
-          entityId: sessionId,
-          metadata: {},
-        },
-        tx,
-      );
-    }, this.authRepository.db);
+    return this.sessionService.revokeSession(sessionId, userId, currentSessionId);
   }
 
-  async revokeAllOtherSessions(
+  revokeAllOtherSessions(
     userId: string,
     currentSessionId?: string,
   ): Promise<{ count: number }> {
-    const before = await this.sessionRepository.findActiveByUserId(userId);
-
-    if (currentSessionId && currentSessionId !== "") {
-      await this.sessionRepository.deleteAllExcept(userId, currentSessionId);
-    } else {
-      await this.sessionRepository.deleteAll(userId);
-    }
-
-    // Clear cache for all revoked sessions
-    for (const s of before) {
-      if (s.id !== currentSessionId) {
-        await this.cacheService.del(`session:${s.id}`);
-      }
-    }
-    const count = (currentSessionId && currentSessionId !== "") ? before.length - 1 : before.length;
-
-    await withSystemTx(async (tx: Database) => {
-      await this.auditLog.create(
-        {
-          workspaceId: null,
-          userId,
-          action: "auth.session_revoked_all",
-          entityType: "session",
-          entityId: null,
-          metadata: { count, keptCurrent: currentSessionId !== undefined && currentSessionId !== "" },
-        },
-        tx,
-      );
-    }, this.authRepository.db);
-
-    return { count };
+    return this.sessionService.revokeAllOtherSessions(userId, currentSessionId);
   }
 
   async register(
@@ -293,34 +208,10 @@ export class AuthService {
       return { requires2FA: true, tempToken };
     }
 
-    const expiresAt = this.getSessionExpiry(dto.rememberMe);
-
-    // Reuse an active session for the same device (matched by exact userAgent)
-    // to prevent session proliferation when users log in repeatedly from the
-    // same browser. An empty/missing userAgent is treated as a new device.
-    const existingSession = userAgent
-      ? await this.authRepository.findActiveSessionByUserAgent(user.id, userAgent)
-      : undefined;
-
-    let sessionId: string;
-    if (existingSession) {
-      sessionId = existingSession.id;
-      await this.authRepository.updateSessionActivity(sessionId, {
-        lastUsedAt: new Date(),
-        expiresAt,
-        ipAddress,
-      });
-    } else {
-      sessionId = crypto.randomUUID();
-      await this.authRepository.createSession({
-        id: sessionId,
-        userId: user.id,
-        expiresAt,
-        rememberMe: dto.rememberMe ?? false,
-        userAgent,
-        ipAddress,
-      });
-    }
+    const { sessionId, reused } = await this.sessionService.findOrCreateSession(
+      user.id,
+      { userAgent, ipAddress, rememberMe: dto.rememberMe },
+    );
 
     const tokens = await this.generateTokens(user.id, user.email, sessionId);
 
@@ -332,7 +223,7 @@ export class AuthService {
           action: "auth.login_succeeded",
           entityType: "session",
           entityId: sessionId,
-          metadata: { reused: existingSession !== undefined },
+          metadata: { reused },
           ipAddress: ipAddress ?? null,
           userAgent: userAgent ?? null,
         },
@@ -353,56 +244,8 @@ export class AuthService {
     };
   }
 
-  async refresh(dto: RefreshDto): Promise<TokenPair> {
-    const refreshSecret = this.configService.getOrThrow<string>("JWT_REFRESH_SECRET");
-
-    try {
-      const payload = this.jwtService.verify(dto.refreshToken, {
-        secret: refreshSecret,
-      });
-
-      if (payload.type !== TOKEN_TYPE.REFRESH) {
-        throw new UnauthorizedException(AUTH_ERRORS.INVALID_TOKEN);
-      }
-
-      const session = await this.authRepository.findActiveSessionById(
-        payload.sessionId,
-      );
-
-      if (!session || session.expiresAt < new Date()) {
-        throw new UnauthorizedException(AUTH_ERRORS.TOKEN_EXPIRED);
-      }
-
-      const user = await this.authRepository.findUserById(payload.sub);
-
-      if (!user) {
-        throw new UnauthorizedException(AUTH_ERRORS.USER_NOT_FOUND);
-      }
-
-      // Refresh updates the session in-place rather than rotating the ID:
-      // rotating caused race conditions across tabs (one tab deletes the row
-      // while another still holds the old refresh token) and orphaned rows
-      // when transactions failed mid-rotation.
-      const expiresAt = this.getSessionExpiry(session.rememberMe);
-
-      await this.authRepository.updateSessionActivity(payload.sessionId, {
-        lastUsedAt: new Date(),
-        expiresAt,
-      });
-
-      const tokens = await this.generateTokens(
-        user.id,
-        user.email,
-        payload.sessionId,
-      );
-
-      return tokens;
-    } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-      throw new UnauthorizedException(AUTH_ERRORS.INVALID_TOKEN);
-    }
+  refresh(dto: RefreshDto): Promise<TokenPair> {
+    return this.sessionService.refreshTokens(dto.refreshToken);
   }
 
   async forgotPassword(email: string): Promise<void> {
