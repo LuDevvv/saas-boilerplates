@@ -13,6 +13,8 @@ export * from './ai.js';
 export * from './notifications.js';
 export * from './inbound-webhooks.js';
 export * from './system.js';
+export * from './notification-settings.js';
 export * from './portability.js';
 export * from './marketing.js';
 export * from './tickets.js';
+export * from './dead-letters.js';

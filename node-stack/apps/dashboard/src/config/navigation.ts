@@ -2,11 +2,14 @@ import {
   Building2,
   CreditCard,
   Crown,
+  HardDrive,
   Home,
   PieChart,
   Sparkles,
   User,
   Users,
+  ShieldAlert,
+  Activity,
 } from "lucide-react";
 import {
   DropdownItem,
@@ -19,7 +22,8 @@ export const getMenuSections = (): MenuSection[] => {
       title: "Principal",
       items: [
         { icon: Home, label: "Inicio", path: "/" },
-        { icon: PieChart, label: "Analíticas", path: "/analytics", badge: "Nuevo" },
+        { icon: PieChart, label: "Analíticas", path: "/analytics", badge: { label: "Nuevo", tone: "success" } },
+        { icon: HardDrive, label: "Archivos", path: "/storage", badge: { label: "Beta", tone: "warning" } },
       ],
     },
     {
@@ -33,8 +37,16 @@ export const getMenuSections = (): MenuSection[] => {
     {
       title: "Cuenta",
       items: [
-        { icon: CreditCard, label: "Suscripción", path: "/payments", badge: "3" },
-        { icon: Sparkles, label: "Planes", path: "/pricing" },
+        { icon: CreditCard, label: "Suscripción", path: "/payments", badge: { label: "3", tone: "primary" } },
+        { icon: Sparkles, label: "Planes", path: "/pricing", badge: { label: "Pro", tone: "primary" } },
+      ],
+    },
+    {
+      title: "Admin",
+      items: [
+        { icon: ShieldAlert, label: "Sistema", path: "/admin" },
+        { icon: Users, label: "Usuarios", path: "/admin/users" },
+        { icon: Activity, label: "Auditoría", path: "/admin/audit" },
       ],
     },
   ];

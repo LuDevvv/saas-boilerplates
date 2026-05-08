@@ -134,6 +134,20 @@
       "when": 1778421577000,
       "tag": "0018_soft_delete_users_workspaces",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1778259991701,
+      "tag": "0019_known_roxanne_simpson",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1746720000000,
+      "tag": "0020_dead_letters",
+      "breakpoints": true
     }
   ]
 }

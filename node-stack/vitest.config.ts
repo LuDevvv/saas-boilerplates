@@ -9,5 +9,23 @@ export default defineConfig({
       'apps/api/vitest.config.e2e.ts',
       'apps/worker/vitest.config.ts',
     ],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'html'],
+      thresholds: {
+        lines: 60,
+        branches: 40,
+        functions: 60,
+        statements: 60,
+      },
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/*.d.ts',
+        '**/test/**',
+        '**/*.config.*',
+        '**/migrations/**',
+      ],
+    },
   },
 });

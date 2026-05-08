@@ -1,18 +1,19 @@
 import axios from "axios";
 import { createClient } from "@node-stack/api-client";
 import { cookieTokenStorage } from "../cookie-storage";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
+import { useAuthStore } from "@/stores/authStore";
 
 const getActiveWorkspaceId = (): string | null => {
-  try {
-    const { useWorkspaceStore } = require("@/stores/workspaceStore");
-    return useWorkspaceStore.getState().activeWorkspaceId;
-  } catch {
-    return null;
-  }
+  return useWorkspaceStore.getState().activeWorkspaceId;
 };
 
+if (!import.meta.env.VITE_API_URL) {
+  console.warn("[api] VITE_API_URL is not set — requests will fail in production.");
+}
+
 export const axiosInstance = createClient({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000/api/v1",
+  baseURL: import.meta.env.VITE_API_URL ?? "",
   getToken: () => cookieTokenStorage.getToken(),
   getWorkspaceId: getActiveWorkspaceId,
 });
@@ -40,7 +41,7 @@ axiosInstance.interceptors.response.use(
         try {
           // Use direct axios to avoid interceptor loop
           const response = await axios.post(
-            `${import.meta.env.VITE_API_URL || "http://localhost:4000/api/v1"}/auth/refresh`,
+            `${import.meta.env.VITE_API_URL ?? ""}/auth/refresh`,
             { refreshToken },
             { withCredentials: true }
           );
@@ -60,7 +61,6 @@ axiosInstance.interceptors.response.use(
           if (rStatus === 401 || rStatus === 403) {
             cookieTokenStorage.clear();
             try {
-              const { useAuthStore } = require("@/stores/authStore");
               const authStore = useAuthStore.getState();
               authStore.logout();
               if (!window.location.pathname.startsWith("/auth")) {
@@ -74,7 +74,6 @@ axiosInstance.interceptors.response.use(
         // No refresh token, just logout
         cookieTokenStorage.clear();
         try {
-          const { useAuthStore } = require("@/stores/authStore");
           const authStore = useAuthStore.getState();
           if (authStore.isAuthenticated) {
             authStore.logout();

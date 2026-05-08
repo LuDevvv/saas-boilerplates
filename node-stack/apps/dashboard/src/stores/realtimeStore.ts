@@ -21,12 +21,17 @@ interface RealtimeState {
 }
 
 const getBaseUrl = () => {
-  const url = import.meta.env.VITE_SERVER_URL || "http://localhost:3000/api/v1";
+  const url = import.meta.env.VITE_SERVER_URL;
+  if (!url) {
+    console.warn("[realtime] VITE_SERVER_URL is not set — socket will not connect in production.");
+    return "";
+  }
   try {
     const parsed = new URL(url);
     return `${parsed.protocol}//${parsed.host}`;
   } catch (e) {
-    return "http://localhost:3000";
+    console.warn("[realtime] VITE_SERVER_URL is not a valid URL:", url);
+    return "";
   }
 };
 
@@ -43,7 +48,10 @@ export const useRealtimeStore = create<RealtimeState>((set, get) => ({
     const token = cookieTokenStorage.getToken();
     if (!token) return;
 
-    const newSocket = io(getBaseUrl(), {
+    const serverUrl = getBaseUrl();
+    if (!serverUrl) return;
+
+    const newSocket = io(serverUrl, {
       auth: { token },
       transports: ["websocket"],
       reconnectionDelay: 1000,

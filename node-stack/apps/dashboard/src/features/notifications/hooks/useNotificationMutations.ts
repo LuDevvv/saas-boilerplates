@@ -7,7 +7,7 @@ import { useUser } from "@/features/auth/hooks/useUser";
 export const useMarkAsRead = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<boolean, Error, string>({
+  return useMutation<{ success: boolean }, Error, string>({
     mutationFn: (id: string) => api.notifications.markAsRead(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });

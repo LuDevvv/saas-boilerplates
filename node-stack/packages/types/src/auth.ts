@@ -1,3 +1,5 @@
+import type { Subscription } from './domain/entities.js';
+
 export interface LoginDto {
   email: string;
   password: string;
@@ -51,7 +53,7 @@ export interface UserEntity {
   createdAt: string;
   twoFactorEnabled: boolean;
   emailVerified: boolean;
-  subscriptions?: unknown[];
+  subscriptions?: Subscription[];
 }
 
 export interface AuthTokens {

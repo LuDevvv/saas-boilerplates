@@ -4,7 +4,7 @@ import MainLayout from "@/layouts/MainLayout";
 import Loading from "@/components/ui/Loading";
 import { useAuth } from "@/hooks/stores/useAuth";
 import { ProfileLayoutSkeleton } from "@/features/profile";
-import { protectedGuard, guestGuard } from "./routeguards";
+import { protectedGuard, guestGuard, adminGuard } from "./routeguards";
 
 // Lazy load pages
 const SignInPage = lazy(() => import("@pages/_auth/SignInPage"));
@@ -46,6 +46,10 @@ const WorkspaceMembersPage = lazy(() => import("@pages/_settings/WorkspaceMember
 const ApiKeysPage = lazy(() => import("@pages/_settings/ApiKeysPage"));
 const WebhooksPage = lazy(() => import("@pages/_settings/WebhooksPage"));
 const PortabilityPage = lazy(() => import("@/features/workspaces/pages/PortabilityPage"));
+const StoragePage = lazy(() => import("@/features/storage/pages/StoragePage"));
+
+// Dev-only routes (only registered in development builds)
+const ComponentsCatalogPage = lazy(() => import("@pages/dev/ComponentsCatalog"));
 
 import { PageSkeleton } from "@/components/shared/ErrorBoundary";
 import {
@@ -104,11 +108,17 @@ export const AppRoutes = () => {
         <Route path="reports" element={<Suspense fallback={<LoadingFallback />} children={<ReportsPage />} />} />
         <Route path="news" element={<Suspense fallback={<LoadingFallback />} children={<NewsPage />} />} />
         <Route path="ai" element={<Suspense fallback={<LoadingFallback />} children={<AIPlaygroundPage />} />} />
+        <Route path="storage" element={<Suspense fallback={<LoadingFallback />} children={<StoragePage />} />} />
+
+        {/* Dev-only catalog route */}
+        {import.meta.env.DEV && (
+          <Route path="dev/components" element={<Suspense fallback={<LoadingFallback />} children={<ComponentsCatalogPage />} />} />
+        )}
 
         {/* Admin */}
-        <Route path="admin" element={<Suspense fallback={<LoadingFallback />} children={<AdminOverviewPage />} />} />
-        <Route path="admin/users" element={<Suspense fallback={<LoadingFallback />} children={<ManageUsersPage />} />} />
-        <Route path="admin/audit" element={<Suspense fallback={<LoadingFallback />} children={<AuditLogsPage />} />} />
+        <Route path="admin" element={<Suspense fallback={<LoadingFallback />} children={adminGuard(<AdminOverviewPage />)} />} />
+        <Route path="admin/users" element={<Suspense fallback={<LoadingFallback />} children={adminGuard(<ManageUsersPage />)} />} />
+        <Route path="admin/audit" element={<Suspense fallback={<LoadingFallback />} children={adminGuard(<AuditLogsPage />)} />} />
         
         {/* Settings */}
         <Route path="settings/members" element={<Suspense fallback={<MembersLayoutSkeleton />} children={<WorkspaceMembersPage />} />} />
