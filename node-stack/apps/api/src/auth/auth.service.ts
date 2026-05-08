@@ -23,6 +23,7 @@ import * as bcrypt from "bcrypt";
 
 import { AUTH_ERRORS } from "@/auth/constants.js";
 import type { RegisterDto, LoginDto, RefreshDto } from "@/auth/dto/index.js";
+import { OAuthService } from "@/auth/services/oauth.service.js";
 import { PasswordService, type ValidateUserResult } from "@/auth/services/password.service.js";
 import { SessionService, type SessionListItem } from "@/auth/services/session.service.js";
 import { TokenService } from "@/auth/services/token.service.js";
@@ -54,6 +55,7 @@ export class AuthService {
     private tokenService: TokenService,
     private sessionService: SessionService,
     private passwordService: PasswordService,
+    private oauthService: OAuthService,
   ) { }
 
   getActiveSessions(
@@ -443,86 +445,11 @@ export class AuthService {
     return this.tokenService.generateTokens(userId, email, sessionId);
   }
 
-  async handleOAuthLogin(profile: OAuthProfile): Promise<{
+  handleOAuthLogin(profile: OAuthProfile): Promise<{
     accessToken: string;
     refreshToken: string;
   }> {
-    return withSystemTx(async (tx: Database) => {
-      const existingLink = await this.authRepository.findOAuthLink(
-        profile.provider,
-        profile.providerAccountId,
-        tx,
-      );
-
-      let userId: string;
-      let userEmail: string;
-
-      if (existingLink) {
-        await this.authRepository.updateOAuthAccessToken(
-          existingLink.id,
-          profile.accessToken ?? "",
-          tx,
-        );
-        userId = existingLink.userId;
-        const existingUser = await this.authRepository.findUserById(userId, tx);
-        userEmail = existingUser?.email ?? profile.email;
-      } else {
-        const existingUser = await this.authRepository.findUserByEmail(
-          profile.email,
-          tx,
-        );
-        if (existingUser) {
-          await this.authRepository.createOAuthAccount(
-            {
-              userId: existingUser.id,
-              provider: profile.provider,
-              providerAccountId: profile.providerAccountId,
-              accessToken: profile.accessToken,
-              refreshToken: profile.refreshToken,
-            },
-            tx,
-          );
-          userId = existingUser.id;
-          userEmail = existingUser.email;
-        } else {
-          const newUser = await this.authRepository.createUser(
-            {
-              email: profile.email,
-              name: profile.name, // OAuth still uses 'name' as a single string usually
-              emailVerified: true,
-            },
-            tx,
-          );
-          await this.authRepository.createOAuthAccount(
-            {
-              userId: newUser.id,
-              provider: profile.provider,
-              providerAccountId: profile.providerAccountId,
-              accessToken: profile.accessToken,
-              refreshToken: profile.refreshToken,
-            },
-            tx,
-          );
-          await this.authRepository.createOutboxEvent(
-            "user.registered.oauth",
-            { userId: newUser.id, provider: profile.provider },
-            tx,
-          );
-          userId = newUser.id;
-          userEmail = newUser.email;
-        }
-      }
-
-      // Create session inside the transaction
-      const sessionId = crypto.randomUUID();
-      const expiresAt = this.getSessionExpiry(true); // Default OAuth to remember for UX
-      await this.authRepository.createSession(
-        { id: sessionId, userId, expiresAt, rememberMe: true },
-        tx,
-      );
-
-      return this.generateTokens(userId, userEmail, sessionId);
-    }, this.authRepository.db);
+    return this.oauthService.handleOAuthLogin(profile);
   }
 
   private getSessionExpiry(rememberMe?: boolean): Date {

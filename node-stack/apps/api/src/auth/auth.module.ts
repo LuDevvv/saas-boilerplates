@@ -9,6 +9,7 @@ import { ApiKeysModule } from '@/api-keys/api-keys.module.js';
 import { AuthController } from '@/auth/auth.controller.js';
 import { AuthService } from '@/auth/auth.service.js';
 import { JWT_EXPIRY } from '@/auth/constants.js';
+import { OAuthService } from '@/auth/services/oauth.service.js';
 import { PasswordService } from '@/auth/services/password.service.js';
 import { SessionService } from '@/auth/services/session.service.js';
 import { TokenService } from '@/auth/services/token.service.js';
@@ -43,6 +44,7 @@ import { AccountService } from '@/users/account.service.js';
     TokenService,
     SessionService,
     PasswordService,
+    OAuthService,
     TwoFactorService,
     TotpSecretCipher,
     JwtStrategy,
@@ -52,6 +54,12 @@ import { AccountService } from '@/users/account.service.js';
     ApiKeyStrategy,
   ],
 
-  exports: [AuthService, TokenService, SessionService, PasswordService],
+  exports: [
+    AuthService,
+    TokenService,
+    SessionService,
+    PasswordService,
+    OAuthService,
+  ],
 })
 export class AuthModule {}
