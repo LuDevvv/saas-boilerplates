@@ -9,6 +9,7 @@ import { ApiKeysModule } from '@/api-keys/api-keys.module.js';
 import { AuthController } from '@/auth/auth.controller.js';
 import { AuthService } from '@/auth/auth.service.js';
 import { JWT_EXPIRY } from '@/auth/constants.js';
+import { TokenService } from '@/auth/services/token.service.js';
 import { ApiKeyStrategy } from '@/auth/strategies/api-key.strategy.js';
 import { JwtStrategy, LocalStrategy, GoogleStrategy, GitHubStrategy } from '@/auth/strategies/index.js';
 import { TotpSecretCipher } from '@/auth/two-factor/totp-secret-cipher.js';
@@ -37,6 +38,7 @@ import { AccountService } from '@/users/account.service.js';
   providers: [
     AuthService,
     AccountService,
+    TokenService,
     TwoFactorService,
     TotpSecretCipher,
     JwtStrategy,
@@ -46,6 +48,6 @@ import { AccountService } from '@/users/account.service.js';
     ApiKeyStrategy,
   ],
 
-  exports: [AuthService],
+  exports: [AuthService, TokenService],
 })
 export class AuthModule {}

@@ -23,15 +23,13 @@ import { encodeCursor, decodeCursor } from "@node-stack/utils";
 import { buildPage, type PaginatedResponse } from "@node-stack/validators";
 import * as bcrypt from "bcrypt";
 
-import { TOKEN_TYPE, AUTH_ERRORS, JWT_EXPIRY } from "@/auth/constants.js";
+import { TOKEN_TYPE, AUTH_ERRORS } from "@/auth/constants.js";
 import type { RegisterDto, LoginDto, RefreshDto } from "@/auth/dto/index.js";
+import { TokenService } from "@/auth/services/token.service.js";
 import { TwoFactorService } from "@/auth/two-factor/two-factor.service.js";
 
-export interface TokenPair {
-  accessToken: string;
-  refreshToken: string;
-  sessionId: string;
-}
+export type { TokenPair } from "@/auth/services/token.service.js";
+import type { TokenPair } from "@/auth/services/token.service.js";
 
 export interface SessionListItem {
   id: string;
@@ -68,6 +66,7 @@ export class AuthService {
     private authRepository: AuthRepository,
     private auditLog: AuditLogRepository,
     private cacheService: CacheService,
+    private tokenService: TokenService,
   ) { }
 
   async getActiveSessions(
@@ -680,33 +679,12 @@ export class AuthService {
     return this.generateTokens(userId, user.email, sessionId);
   }
 
-  private async generateTokens(
+  private generateTokens(
     userId: string,
     email: string,
     sessionId?: string,
   ): Promise<TokenPair> {
-    const sid = sessionId || crypto.randomUUID();
-    const accessSecret = this.configService.getOrThrow<string>("JWT_SECRET");
-    const refreshSecret = this.configService.getOrThrow<string>("JWT_REFRESH_SECRET");
-
-    const [accessToken, refreshToken] = await Promise.all([
-      this.jwtService.signAsync(
-        { sub: userId, email, type: TOKEN_TYPE.ACCESS, sessionId: sid },
-        {
-          secret: accessSecret,
-          expiresIn: JWT_EXPIRY.ACCESS,
-        },
-      ),
-      this.jwtService.signAsync(
-        { sub: userId, email, type: TOKEN_TYPE.REFRESH, sessionId: sid },
-        {
-          secret: refreshSecret,
-          expiresIn: JWT_EXPIRY.REFRESH,
-        },
-      ),
-    ]);
-
-    return { accessToken, refreshToken, sessionId: sid };
+    return this.tokenService.generateTokens(userId, email, sessionId);
   }
 
   async handleOAuthLogin(profile: OAuthProfile): Promise<{
@@ -792,9 +770,6 @@ export class AuthService {
   }
 
   private getSessionExpiry(rememberMe?: boolean): Date {
-    const days = rememberMe ? 90 : 30;
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + days);
-    return expiresAt;
+    return this.tokenService.getSessionExpiry(rememberMe);
   }
 }
