@@ -1,5 +1,6 @@
 import { PaginatedResponse } from "./domain/entities.js";
-export type CreateCheckoutDto = any;
+
+export type CreateCheckoutDto = Record<string, unknown>;
 
 export interface CheckoutResponse {
   id: string;

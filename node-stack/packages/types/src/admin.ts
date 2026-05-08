@@ -2,7 +2,7 @@ export interface UpdateUserRoleDto {
   role: string;
 }
 
-export type SetConfigDto = any;
+export type SetConfigDto = Record<string, unknown>;
 
 export interface AuditLog {
   id: string;

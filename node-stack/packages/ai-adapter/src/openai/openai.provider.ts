@@ -1,17 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
-import {
-  AIProvider,
-  AICompletionParams,
-  AICompletionResult,
-  AIStreamChunk,
-} from '../interfaces/ai-provider.interface.js';
+
 import {
   AIError,
   AIInsufficientQuotaError,
   AIRateLimitError,
   AIAuthenticationError,
 } from '../errors/ai-errors.js';
+import {
+  AIProvider,
+  AICompletionParams,
+  AICompletionResult,
+  AIStreamChunk,
+} from '../interfaces/ai-provider.interface.js';
+
+interface UpstreamError {
+  status?: number;
+  code?: string;
+  message?: string;
+}
 
 @Injectable()
 export class OpenAIProvider implements AIProvider {
@@ -42,7 +49,7 @@ export class OpenAIProvider implements AIProvider {
         outputTokens: response.usage?.completion_tokens ?? 0,
         durationMs: Date.now() - start,
       };
-    } catch (error: any) {
+    } catch (error) {
       this.handleError(error);
     }
   }
@@ -76,23 +83,24 @@ export class OpenAIProvider implements AIProvider {
             : undefined,
         };
       }
-    } catch (error: any) {
+    } catch (error) {
       this.handleError(error);
     }
   }
 
-  private handleError(error: any): never {
-    if (error.status === 429) {
-      if (error.code === 'insufficient_quota') {
+  private handleError(error: unknown): never {
+    const err = error as UpstreamError;
+    if (err.status === 429) {
+      if (err.code === 'insufficient_quota') {
         throw new AIInsufficientQuotaError(this.providerName, error);
       }
       throw new AIRateLimitError(this.providerName, error);
     }
-    if (error.status === 401) {
+    if (err.status === 401) {
       throw new AIAuthenticationError(this.providerName, error);
     }
     throw new AIError(
-      error.message || 'Error communicating with OpenAI',
+      err.message || 'Error communicating with OpenAI',
       this.providerName,
       error,
     );

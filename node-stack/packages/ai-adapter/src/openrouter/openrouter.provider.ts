@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import OpenAI from 'openai';
+import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
+
 import {
   AIProvider,
   AICompletionParams,
@@ -28,7 +30,7 @@ export class OpenRouterProvider implements AIProvider {
 
     const response = await this.client.chat.completions.create({
       model: params.model ?? this.defaultModel,
-      messages: params.messages as any[], // cast to avoid SDK mismatch on types
+      messages: params.messages as ChatCompletionMessageParam[],
       max_tokens: params.maxTokens ?? 1000,
       temperature: params.temperature ?? 0.7,
     });
@@ -46,7 +48,7 @@ export class OpenRouterProvider implements AIProvider {
   async *stream(params: AICompletionParams): AsyncIterable<import('../interfaces/ai-provider.interface.js').AIStreamChunk> {
     const stream = await this.client.chat.completions.create({
       model: params.model ?? this.defaultModel,
-      messages: params.messages as any[],
+      messages: params.messages as ChatCompletionMessageParam[],
       max_tokens: params.maxTokens ?? 1000,
       temperature: params.temperature ?? 0.7,
       stream: true,

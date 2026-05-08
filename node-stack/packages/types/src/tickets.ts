@@ -10,7 +10,7 @@ export interface CreateTicketDto {
   category: TicketCategory;
 }
 
-export type UpdateTicketDto = any;
+export type UpdateTicketDto = Record<string, unknown>;
 
 export interface TicketMessage {
   id: string;

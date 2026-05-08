@@ -34,7 +34,7 @@ export interface AIJob {
   model?: string;
   workspaceId: string;
   userId: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface AIJobResult {

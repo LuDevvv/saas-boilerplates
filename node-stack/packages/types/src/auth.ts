@@ -19,13 +19,17 @@ export interface UpdateProfileDto {
   avatarUrl?: string;
 }
 
-export type RefreshDto = any;
-export type Verify2faDto = any;
-export type Login2faDto = any;
-export type RecoveryDto = any;
-export type ForgotPasswordDto = any;
-export type ResetPasswordDto = any;
-export type VerifyEmailDto = any;
+// Placeholder DTO shapes for auth flows whose canonical schema lives
+// in @node-stack/validators. Phase 4c (OpenAPI codegen) will replace
+// these with the generated types; until then Record<string, unknown>
+// keeps the api-client surface lint-clean without claiming a shape.
+export type RefreshDto = Record<string, unknown>;
+export type Verify2faDto = Record<string, unknown>;
+export type Login2faDto = Record<string, unknown>;
+export type RecoveryDto = Record<string, unknown>;
+export type ForgotPasswordDto = Record<string, unknown>;
+export type ResetPasswordDto = Record<string, unknown>;
+export type VerifyEmailDto = Record<string, unknown>;
 
 export interface OAuthProfile {
   provider: "google" | "github";
@@ -47,7 +51,7 @@ export interface UserEntity {
   createdAt: string;
   twoFactorEnabled: boolean;
   emailVerified: boolean;
-  subscriptions?: any[];
+  subscriptions?: unknown[];
 }
 
 export interface AuthTokens {

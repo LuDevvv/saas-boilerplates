@@ -3,8 +3,8 @@ export interface ChatMessageDto {
   content: string;
 }
 
-export type SubmitAIJobDto = any;
-export type ChatCompletionDto = any;
+export type SubmitAIJobDto = Record<string, unknown>;
+export type ChatCompletionDto = Record<string, unknown>;
 
 export type AIJobStatus = "pending" | "processing" | "completed" | "failed";
 

@@ -12,7 +12,7 @@ export interface WebhookLog {
   provider: string;
   status: number;
   message: string;
-  payload: any;
+  payload: unknown;
   headers: Record<string, string>;
   sourceIp: string;
   eventId?: string;

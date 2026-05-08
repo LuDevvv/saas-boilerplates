@@ -1,17 +1,23 @@
-import { Injectable } from '@nestjs/common';
 import Anthropic from '@anthropic-ai/sdk';
-import {
-  AIProvider,
-  AICompletionParams,
-  AICompletionResult,
-  AIStreamChunk,
-} from '../interfaces/ai-provider.interface.js';
+import { Injectable } from '@nestjs/common';
+
 import {
   AIError,
   AIInsufficientQuotaError,
   AIRateLimitError,
   AIAuthenticationError,
 } from '../errors/ai-errors.js';
+import {
+  AIProvider,
+  AICompletionParams,
+  AICompletionResult,
+  AIStreamChunk,
+} from '../interfaces/ai-provider.interface.js';
+
+interface UpstreamError {
+  status?: number;
+  message?: string;
+}
 
 @Injectable()
 export class AnthropicProvider implements AIProvider {
@@ -52,7 +58,7 @@ export class AnthropicProvider implements AIProvider {
         outputTokens: response.usage.output_tokens,
         durationMs: Date.now() - start,
       };
-    } catch (error: any) {
+    } catch (error) {
       this.handleError(error);
     }
   }
@@ -85,8 +91,6 @@ export class AnthropicProvider implements AIProvider {
         }
 
         if (event.type === 'message_stop') {
-          // message_stop doesn't have usage in the same event usually, 
-          // usage comes in message_start or message_delta
           yield {
             content: '',
             isDone: true,
@@ -94,35 +98,35 @@ export class AnthropicProvider implements AIProvider {
         }
 
         if (event.type === 'message_delta') {
-           // Anthropic sends usage here
-           if (event.usage) {
-             yield {
-               content: '',
-               isDone: false,
-               metadata: {
-                 outputTokens: event.usage.output_tokens,
-               }
-             };
-           }
+          if (event.usage) {
+            yield {
+              content: '',
+              isDone: false,
+              metadata: {
+                outputTokens: event.usage.output_tokens,
+              },
+            };
+          }
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       this.handleError(error);
     }
   }
 
-  private handleError(error: any): never {
-    if (error.status === 429) {
+  private handleError(error: unknown): never {
+    const err = error as UpstreamError;
+    if (err.status === 429) {
       throw new AIRateLimitError(this.providerName, error);
     }
-    if (error.status === 401) {
+    if (err.status === 401) {
       throw new AIAuthenticationError(this.providerName, error);
     }
-    if (error.message?.toLowerCase().includes('quota')) {
+    if (err.message?.toLowerCase().includes('quota')) {
       throw new AIInsufficientQuotaError(this.providerName, error);
     }
     throw new AIError(
-      error.message || 'Error communicating with Anthropic',
+      err.message || 'Error communicating with Anthropic',
       this.providerName,
       error,
     );
