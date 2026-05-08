@@ -14,6 +14,7 @@ export default [
       '**/node_modules/**',
       '**/*.js',
       '**/*.mjs',
+      '**/*.d.ts',
       '**/coverage/**',
     ],
   },

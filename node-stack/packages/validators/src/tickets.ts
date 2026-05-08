@@ -1,6 +1,6 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export const TicketStatusSchema = z.enum(["pending", "active", "inactive", "deleted"]);
 

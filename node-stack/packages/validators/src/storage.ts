@@ -1,3 +1,5 @@
+import { ApiProperty } from "@nestjs/swagger";
+import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
 
 export const UPLOAD_POLICIES = {
@@ -40,9 +42,6 @@ export const UPLOAD_POLICIES = {
 export type UploadContext = keyof typeof UPLOAD_POLICIES;
 export type MimeType =
   (typeof UPLOAD_POLICIES)[UploadContext]["allowedMimeTypes"][number];
-
-import { createZodDto } from "nestjs-zod";
-import { ApiProperty } from "@nestjs/swagger";
 
 export const GetPresignedUrlSchema = z.object({
   fileName: z

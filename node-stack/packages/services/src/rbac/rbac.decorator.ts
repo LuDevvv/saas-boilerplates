@@ -1,5 +1,4 @@
 import {
-  createParamDecorator,
   ExecutionContext,
   UseGuards,
   applyDecorators,
@@ -22,7 +21,9 @@ export interface WorkspaceRequest {
   user?: { id: string };
 }
 
-export const RequirePermission = (permission: Permission) => {
+export const RequirePermission = (
+  permission: Permission,
+): MethodDecorator & ClassDecorator => {
   return applyDecorators(UseGuards(new PermissionGuard(permission)));
 };
 

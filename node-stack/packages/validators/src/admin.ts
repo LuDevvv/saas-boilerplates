@@ -1,6 +1,6 @@
-import { z } from "zod";
-import { createZodDto } from "nestjs-zod";
 import { ApiProperty } from "@nestjs/swagger";
+import { createZodDto } from "nestjs-zod";
+import { z } from "zod";
 
 export const UpdateUserRoleSchema = z.object({
   role: z.enum(["user", "admin", "super_admin"]),
@@ -22,7 +22,7 @@ export class SetConfigDto extends createZodDto(SetConfigSchema) {
   key!: string;
 
   @ApiProperty({ example: true, description: "Config value (any JSON)" })
-  value: any;
+  value: unknown;
 
   @ApiProperty({ example: "Disables all write operations", required: false })
   description?: string;

@@ -1,7 +1,6 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
-import { ApiKeyScope } from "@node-stack/types";
-import { ApiProperty } from "@nestjs/swagger";
 
 export const CreateApiKeySchema = z.object({
   name: z

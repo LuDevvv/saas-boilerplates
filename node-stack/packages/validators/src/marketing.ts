@@ -1,6 +1,6 @@
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { createZodDto } from "nestjs-zod";
 import { z } from "zod";
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export const JoinWaitlistSchema = z.object({
   email: z.string().email("Invalid email address").trim().toLowerCase(),
