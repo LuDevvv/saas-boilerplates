@@ -2,10 +2,11 @@
 set -e
 
 # Bump Node heap so the cross-package tsc graph never OOMs mid-typecheck.
-# Phase 2.5 hit two transient OOMs on the in-flight working tree at the
-# default 4 GB; 4096 explicit + project-references incremental cache is
-# the working sweet spot for this monorepo.
-export NODE_OPTIONS="${NODE_OPTIONS:-} --max-old-space-size=4096"
+# Phase 4a confirmed ai-adapter + billing-adapter OOM under tsc -b at 4 GB
+# (transient v8 stack overflow during type instantiation on this monorepo's
+# graph). 8192 clears them; project-references incremental cache keeps
+# subsequent runs fast.
+export NODE_OPTIONS="${NODE_OPTIONS:-} --max-old-space-size=8192"
 
 # Project-references typecheck for the security-critical backend packages.
 # Avoids `pnpm test` from boilerplates root because the monorepo-of-monorepos
