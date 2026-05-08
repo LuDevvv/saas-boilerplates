@@ -63,6 +63,21 @@ export class S3StorageProvider implements IStorageProvider {
     };
   }
 
+  async getObjectBytes(key: string, length: number): Promise<Uint8Array> {
+    const command = new GetObjectCommand({
+      Bucket: this.config.bucket,
+      Key: key,
+      Range: `bytes=0-${Math.max(0, length - 1)}`,
+    });
+    const response = await this.client.send(command);
+    const body = response.Body;
+    if (!body) {
+      return new Uint8Array(0);
+    }
+    const bytes = await body.transformToByteArray();
+    return bytes;
+  }
+
   async upload(options: {
     key: string;
     body: Buffer | string;

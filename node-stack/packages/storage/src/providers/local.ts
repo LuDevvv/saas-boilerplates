@@ -41,6 +41,18 @@ export class LocalStorageProvider implements IStorageProvider {
     };
   }
 
+  async getObjectBytes(key: string, length: number): Promise<Uint8Array> {
+    const filePath = this.getFilePath(key);
+    const handle = await fs.open(filePath, "r");
+    try {
+      const buf = Buffer.alloc(length);
+      const { bytesRead } = await handle.read(buf, 0, length, 0);
+      return new Uint8Array(buf.buffer, buf.byteOffset, bytesRead);
+    } finally {
+      await handle.close();
+    }
+  }
+
   async upload(options: {
     key: string;
     body: Buffer | string;

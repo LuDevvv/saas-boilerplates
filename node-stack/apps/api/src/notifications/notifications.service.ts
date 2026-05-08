@@ -1,9 +1,16 @@
 import { Injectable, OnModuleInit, Inject, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { schema, eq, desc, and, DB_TOKEN, type Database } from '@node-stack/db';
+import { schema, eq, desc, and, lt, or, DB_TOKEN, type Database } from '@node-stack/db';
 import { NotificationService as SharedNotificationService, NotificationPayload } from '@node-stack/notifications';
+import { encodeCursor, decodeCursor } from '@node-stack/utils';
+import { buildPage, type PaginatedResponse } from '@node-stack/validators';
 
 import { RealtimeService } from '@/realtime/realtime.service.js';
+
+interface NotificationCursor extends Record<string, unknown> {
+  createdAt: string;
+  id: string;
+}
 
 @Injectable()
 export class NotificationService implements OnModuleInit {
@@ -80,15 +87,44 @@ export class NotificationService implements OnModuleInit {
     return this.sharedNotificationService.notify(payload);
   }
 
-  async listNotifications(userId: string, workspaceId?: string) {
-    return this.db.query.notifications.findMany({
+  async listNotifications(
+    userId: string,
+    options: { workspaceId?: string; cursor?: string; limit?: number } = {},
+  ): Promise<PaginatedResponse<typeof schema.notifications.$inferSelect>> {
+    const limit = options.limit ?? 20;
+    const decoded = options.cursor
+      ? decodeCursor<NotificationCursor>(options.cursor)
+      : null;
+
+    // Compound (createdAt DESC, id DESC) cursor: a row "comes after"
+    // the cursor row when its createdAt is older, OR createdAt ties
+    // and id is lower. Without the id tiebreaker, equal-timestamp
+    // rows can repeat across pages.
+    const cursorPredicate = decoded
+      ? or(
+          lt(schema.notifications.createdAt, new Date(decoded.createdAt)),
+          and(
+            eq(schema.notifications.createdAt, new Date(decoded.createdAt)),
+            lt(schema.notifications.id, decoded.id),
+          ),
+        )
+      : undefined;
+
+    const rows = await this.db.query.notifications.findMany({
       where: and(
         eq(schema.notifications.userId, userId),
-        workspaceId ? eq(schema.notifications.workspaceId, workspaceId) : undefined
+        options.workspaceId
+          ? eq(schema.notifications.workspaceId, options.workspaceId)
+          : undefined,
+        cursorPredicate,
       ),
-      orderBy: [desc(schema.notifications.createdAt)],
-      limit: 50,
+      orderBy: [desc(schema.notifications.createdAt), desc(schema.notifications.id)],
+      limit: limit + 1,
     });
+
+    return buildPage(rows, limit, (row) =>
+      encodeCursor({ createdAt: row.createdAt.toISOString(), id: row.id }),
+    );
   }
 
   async markAsRead(notificationId: string, userId: string) {

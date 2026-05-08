@@ -7,8 +7,7 @@
   "exports": {
     ".": "./dist/index.js",
     "./pagination": "./dist/pagination.js",
-    "./date": "./dist/date.js",
-    "./dto/*": "./dist/dto/*.js"
+    "./date": "./dist/date.js"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

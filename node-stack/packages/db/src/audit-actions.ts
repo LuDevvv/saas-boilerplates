@@ -41,6 +41,8 @@ export const AUDIT_ACTIONS = [
   // Admin
   "admin.user_role_changed",
   "admin.user_impersonated",
+  // Storage / uploads
+  "storage.upload_rejected",
   // Pre-Phase-3 events kept as taxonomy entries because their listeners
   // already wrote audit_logs rows under these names; renaming would
   // break analytics consumers downstream.

@@ -18,12 +18,12 @@ import {
   ApiResponse,
 } from "@nestjs/swagger";
 import { Role, Permission } from "@node-stack/types";
-import type { PaginationDto } from "@node-stack/utils";
-import { 
-  CreateWorkspaceDto, 
+import {
+  CreateWorkspaceDto,
   UpdateMemberRoleDto,
   CreateApiKeyDto,
   UpdateWorkspaceDto,
+  PaginationDto,
 } from "@node-stack/validators";
 
 import {

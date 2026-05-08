@@ -1,5 +1,6 @@
 import { Controller, Post, Body, Get, Param, Patch, Query, UseGuards, Delete } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { PaginationDto } from '@node-stack/validators';
 
 import { CurrentUser } from '@/auth/decorators/current-user.decorator.js';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard.js';
@@ -17,9 +18,14 @@ export class NotificationsController {
   @ApiOperation({ summary: 'List notifications for current user' })
   async listNotifications(
     @CurrentUser('id') userId: string,
+    @Query() page: PaginationDto,
     @Query('workspaceId') workspaceId?: string,
   ) {
-    return this.notificationService.listNotifications(userId, workspaceId);
+    return this.notificationService.listNotifications(userId, {
+      workspaceId,
+      cursor: page.cursor,
+      limit: page.limit,
+    });
   }
 
   @Patch(':id/read')

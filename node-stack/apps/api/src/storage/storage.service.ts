@@ -1,31 +1,44 @@
 import { randomUUID } from "crypto";
 
-import { Injectable, Inject, BadRequestException, NotFoundException } from "@nestjs/common";
-import { DB_TOKEN, FileRepository, withTenantTx } from "@node-stack/db";
-import type { Database } from "@node-stack/db";
-import type { IStorageProvider } from "@node-stack/storage";
 import {
+  Injectable,
+  Inject,
+  BadRequestException,
+  NotFoundException,
+  UnsupportedMediaTypeException,
+  Logger,
+} from "@nestjs/common";
+import {
+  AuditLogRepository,
+  DB_TOKEN,
+  FileRepository,
+  withTenantTx,
+} from "@node-stack/db";
+import type { Database, File } from "@node-stack/db";
+import type { FileMetadata, IStorageProvider } from "@node-stack/storage";
+import {
+  GetPresignedUrlDto,
+  MAGIC_BYTES_PROBE_SIZE,
   UPLOAD_POLICIES,
-  sanitizeFilename,
   getFileExtension,
-
-  GetPresignedUrlDto} from "@node-stack/validators";
-import type {
-  UploadContext,
+  sanitizeFilename,
+  verifyMagicBytes,
 } from "@node-stack/validators";
+import type { UploadContext } from "@node-stack/validators";
 
 import { UsageQuotaService } from "@/analytics/usage-quota.service.js";
 
-
 @Injectable()
 export class AppStorageService {
+  private readonly logger = new Logger(AppStorageService.name);
+
   constructor(
     @Inject("STORAGE_SERVICE") private readonly storage: IStorageProvider,
     private readonly fileRepo: FileRepository,
+    private readonly auditLog: AuditLogRepository,
     private readonly usageQuotaService: UsageQuotaService,
     @Inject(DB_TOKEN) private readonly db: Database,
   ) {}
-
 
   async getPresignedUploadUrl(
     dto: GetPresignedUrlDto,
@@ -34,7 +47,6 @@ export class AppStorageService {
   ): Promise<{ url: string; key: string; expiresAt: Date; fileId: string }> {
     await this.usageQuotaService.checkQuota(workspaceId, "storage");
     const policy = UPLOAD_POLICIES[dto.context as UploadContext];
-
 
     // CHECK 07-E: size
     if (dto.fileSize > policy.maxSizeBytes) {
@@ -76,7 +88,7 @@ export class AppStorageService {
         this.fileRepo.create(
           {
             workspaceId,
-            userId: userId,
+            userId,
             name: safeName,
             size: dto.fileSize,
             mimeType: dto.mimeType,
@@ -97,7 +109,23 @@ export class AppStorageService {
     };
   }
 
-  async completeUpload(fileId: string, workspaceId: string): Promise<any> {
+  /**
+   * Verifies the upload landed on the storage provider, then runs
+   * defense-in-depth checks before flipping the row to `uploaded`:
+   *
+   *   1. headObject — confirms presence and reports actual size.
+   *   2. Zero-byte rejection.
+   *   3. Size check — rejects if the storage-reported byte count
+   *      exceeds what the client declared at presign-time (the basis
+   *      for quota + policy decisions).
+   *   4. Magic-byte probe — range-fetches the first
+   *      `MAGIC_BYTES_PROBE_SIZE` bytes and matches them against the
+   *      declared MIME type.
+   *
+   * Any failure marks the row `failed`, attempts to delete the object,
+   * and writes a `storage.upload_rejected` audit row before throwing.
+   */
+  async completeUpload(fileId: string, workspaceId: string): Promise<File> {
     return withTenantTx(
       workspaceId,
       async (tx) => {
@@ -105,29 +133,123 @@ export class AppStorageService {
         if (!file || file.workspaceId !== workspaceId) {
           throw new NotFoundException("File not found");
         }
+
+        // Idempotent: a previously-confirmed row stays as it is.
+        if (file.status !== "pending") {
+          return file;
+        }
+
+        let head: FileMetadata;
         try {
-          await this.storage.headObject(file.key);
-          return await this.fileRepo.updateStatus(fileId, "uploaded", tx);
-        } catch (error) {
+          head = await this.storage.headObject(file.key);
+        } catch {
           throw new BadRequestException(
             "File not found on storage provider. Please upload first.",
           );
         }
+
+        const actualSize = head.contentLength ?? 0;
+
+        if (actualSize === 0) {
+          await this.rejectUpload(
+            tx,
+            file,
+            "empty_file",
+            "Upload is empty (zero bytes)",
+            workspaceId,
+          );
+          throw new BadRequestException("Upload is empty (zero bytes)");
+        }
+
+        if (actualSize > file.size) {
+          const reason =
+            `Upload size mismatch: declared ${file.size} bytes, ` +
+            `actual ${actualSize} bytes`;
+          await this.rejectUpload(
+            tx,
+            file,
+            "size_mismatch",
+            reason,
+            workspaceId,
+          );
+          throw new BadRequestException(reason);
+        }
+
+        const probe = await this.storage.getObjectBytes(
+          file.key,
+          MAGIC_BYTES_PROBE_SIZE,
+        );
+        const verdict = verifyMagicBytes(probe, file.mimeType);
+        if (!verdict.ok) {
+          await this.rejectUpload(
+            tx,
+            file,
+            "magic_byte_mismatch",
+            verdict.reason,
+            workspaceId,
+          );
+          throw new UnsupportedMediaTypeException(verdict.reason);
+        }
+
+        return await this.fileRepo.updateStatus(fileId, "uploaded", tx);
       },
       this.db,
     );
   }
 
-  async getDownloadUrl(fileId: string, workspaceId: string): Promise<{ url: string }> {
+  async getDownloadUrl(
+    fileId: string,
+    workspaceId: string,
+  ): Promise<{ url: string }> {
     const file = await withTenantTx(
       workspaceId,
       (tx) => this.fileRepo.findById(fileId, tx),
       this.db,
     );
-    if (!file || file.workspaceId !== workspaceId || file.status !== "uploaded") {
+    if (
+      !file ||
+      file.workspaceId !== workspaceId ||
+      file.status !== "uploaded"
+    ) {
       throw new NotFoundException("File not found or not uploaded yet");
     }
     const url = await this.storage.getDownloadUrl(file.key);
     return { url };
+  }
+
+  private async rejectUpload(
+    tx: Database,
+    file: File,
+    reasonCode: string,
+    reasonMessage: string,
+    workspaceId: string,
+  ): Promise<void> {
+    await this.fileRepo.updateStatus(file.id, "failed", tx);
+    await this.auditLog.create(
+      {
+        workspaceId,
+        userId: file.userId,
+        action: "storage.upload_rejected",
+        entityType: "file",
+        entityId: file.id,
+        metadata: {
+          reasonCode,
+          reason: reasonMessage,
+          mimeType: file.mimeType,
+          declaredSize: file.size,
+        },
+      },
+      tx,
+    );
+    // Best-effort delete; the row is already marked failed regardless.
+    try {
+      await this.storage.delete(file.key);
+    } catch (error) {
+      this.logger.warn(
+        `Failed to delete rejected upload key=${file.key}: ${
+          (error as Error).message
+        }`,
+      );
+    }
   }
 }

@@ -16,6 +16,7 @@ export default defineConfig({
       { find: '@node-stack/db/schema', replacement: resolve(__dirname, '../../packages/db/src/schema/index.ts') },
       { find: '@node-stack/db', replacement: resolve(__dirname, '../../packages/db/src/index.ts') },
       { find: '@node-stack/cache', replacement: resolve(__dirname, '../../packages/cache/src/index.ts') },
+      { find: '@node-stack/validators', replacement: resolve(__dirname, '../../packages/validators/src/index.ts') },
     ],
     exclude: ['**/node_modules/**', '**/dist/**', '**/test/e2e/**', '**/test/integration/**'],
   },

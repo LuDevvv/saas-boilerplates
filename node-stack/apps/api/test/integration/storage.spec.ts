@@ -66,8 +66,12 @@ describe('Storage Integration Tests', () => {
     .overrideProvider('STORAGE_SERVICE').useValue({
       getUploadUrl: vi.fn().mockResolvedValue('http://mock-upload-url'),
       getDownloadUrl: vi.fn().mockImplementation((key) => Promise.resolve(`http://mock-download-url/${key}`)),
-      headObject: vi.fn().mockResolvedValue({ size: 1024, contentType: 'application/pdf' }),
-      deleteObject: vi.fn().mockResolvedValue(true),
+      // Default: report a tiny text payload that matches the
+      // declared size + MIME used by the confirm-upload spec.
+      headObject: vi.fn().mockResolvedValue({ contentLength: 100, contentType: 'text/plain' }),
+      // 'hello world from test\n' as printable-text magic-byte probe.
+      getObjectBytes: vi.fn().mockResolvedValue(new TextEncoder().encode('hello world from test\n')),
+      delete: vi.fn().mockResolvedValue(undefined),
     })
     .compile();
 
