@@ -1,74 +1,123 @@
 import { AxiosInstance } from "axios";
-import { 
-  PaginatedResponse, 
-  SystemStats, 
-  AdminUser, 
-  UpdateUserRoleDto,
+import {
+  PaginatedResponse,
+  SystemStats,
+  AdminUser,
 } from "@node-stack/types";
 
 export const admin = (client: AxiosInstance) => ({
-  getStats: async () => {
-    const { data } = await client.get<{ data: SystemStats }>("/admin/stats/overview");
-    return data.data;
+  // ── Stats ──────────────────────────────────────────────────
+  getStats: async (): Promise<SystemStats> => {
+    return client.get("/admin/stats/overview").then((r) => r.data);
   },
 
-  listUsers: async (params?: { page?: number; limit?: number; search?: string }) => {
-    const { data } = await client.get<PaginatedResponse<AdminUser>>("/admin/users", { params });
-    return data;
+  // ── Users ─────────────────────────────────────────────────
+  listUsers: async (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }): Promise<PaginatedResponse<AdminUser>> => {
+    return client.get("/admin/users", { params }).then((r) => r.data);
   },
 
-  updateUserStatus: async (userId: string, status: string) => {
-    const { data: response } = await client.patch<{ data: AdminUser }>(`/admin/users/${userId}/status`, { status });
-    return response.data;
+  updateUserStatus: async (
+    userId: string,
+    status: "active" | "suspended" | "banned",
+    reason?: string,
+  ): Promise<{ success: boolean; status: string; userId: string }> => {
+    return client
+      .patch(`/admin/users/${userId}/status`, { status, reason })
+      .then((r) => r.data);
   },
 
-  updateUserRole: async (userId: string, role: string) => {
-    const { data: response } = await client.patch<{ data: AdminUser }>(`/admin/users/${userId}/role`, { role });
-    return response.data;
+  updateUserRole: async (
+    userId: string,
+    role: "user" | "admin" | "super_admin",
+  ): Promise<AdminUser> => {
+    return client
+      .patch(`/admin/users/${userId}/role`, { role })
+      .then((r) => r.data);
   },
 
-  getFeatureFlags: async () => {
-    const { data } = await client.get<{ data: any[] }>("/admin/feature-flags");
-    return data.data;
+  impersonateUser: async (
+    userId: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> => {
+    return client
+      .post(`/admin/users/${userId}/impersonate`)
+      .then((r) => r.data);
   },
 
-  toggleFeatureFlag: async (flagId: string, enabled: boolean) => {
-    const { data } = await client.post<{ data: any }>(`/admin/feature-flags/${flagId}/toggle`, { enabled });
-    return data.data;
+  // ── Audit Logs ─────────────────────────────────────────────
+  getAuditLogs: async (params?: {
+    page?: number;
+    limit?: number;
+    action?: string;
+    userId?: string;
+    workspaceId?: string;
+    from?: string;
+    to?: string;
+  }): Promise<{ data: any[]; meta: { total: number; page: number; limit: number; pages: number } }> => {
+    return client.get("/admin/audit-logs", { params }).then((r) => r.data);
   },
 
-  getAuditLogs: async () => {
-    const { data } = await client.get<{ data: any[] }>("/admin/audit-logs");
-    return data.data;
+  // ── Feature Flags ──────────────────────────────────────────
+  getFeatureFlags: async (): Promise<
+    Array<{ key: string; scope: string; scopeId: string | null; enabled: boolean }>
+  > => {
+    return client.get("/admin/feature-flags").then((r) => r.data);
   },
 
-  impersonateUser: async (userId: string) => {
-    const { data } = await client.post<{ data: { accessToken: string; refreshToken: string } }>(`/admin/users/${userId}/impersonate`);
-    return data.data;
+  enableFeatureFlag: async (
+    flagKey: string,
+    body?: {
+      scope?: "global" | "workspace" | "user";
+      workspaceId?: string;
+      userId?: string;
+    },
+  ) => {
+    return client
+      .post(`/admin/feature-flags/${flagKey}/enable`, body ?? {})
+      .then((r) => r.data);
   },
 
-  enableFeatureFlag: async (flagKey: string, body?: { scope?: "global" | "workspace" | "user"; workspaceId?: string; userId?: string }) => {
-    const { data } = await client.post<{ data: any }>(`/admin/feature-flags/${flagKey}/enable`, body || {});
-    return data.data;
+  disableFeatureFlag: async (
+    flagKey: string,
+    body?: {
+      scope?: "global" | "workspace" | "user";
+      workspaceId?: string;
+      userId?: string;
+    },
+  ) => {
+    return client
+      .post(`/admin/feature-flags/${flagKey}/disable`, body ?? {})
+      .then((r) => r.data);
   },
 
-  disableFeatureFlag: async (flagKey: string, body?: { scope?: "global" | "workspace" | "user"; workspaceId?: string; userId?: string }) => {
-    const { data } = await client.post<{ data: any }>(`/admin/feature-flags/${flagKey}/disable`, body || {});
-    return data.data;
+  toggleFeatureFlag: async (
+    flagKey: string,
+    enabled: boolean,
+    body?: { scope?: "global" | "workspace" | "user"; workspaceId?: string; userId?: string },
+  ) => {
+    const endpoint = enabled ? "enable" : "disable";
+    return client
+      .post(`/admin/feature-flags/${flagKey}/${endpoint}`, body ?? {})
+      .then((r) => r.data);
   },
 
-  getAllConfig: async () => {
-    const { data } = await client.get<{ data: any }>("/admin/config");
-    return data.data;
+  // ── System Config ──────────────────────────────────────────
+  getAllConfig: async (): Promise<Record<string, unknown>> => {
+    return client.get("/admin/config").then((r) => r.data);
   },
 
-  setConfig: async (data: { key: string; value: string; description?: string }) => {
-    const { data: response } = await client.post<{ data: any }>("/admin/config", data);
-    return response.data;
+  setConfig: async (data: {
+    key: string;
+    value: unknown;
+    description?: string;
+  }) => {
+    return client.post("/admin/config", data).then((r) => r.data);
   },
 
-  refreshConfigCache: async () => {
-    const { data } = await client.post<{ data: { success: boolean } }>("/admin/config/refresh");
-    return data.data;
+  refreshConfigCache: async (): Promise<{ success: boolean }> => {
+    return client.post("/admin/config/refresh").then((r) => r.data);
   },
 });

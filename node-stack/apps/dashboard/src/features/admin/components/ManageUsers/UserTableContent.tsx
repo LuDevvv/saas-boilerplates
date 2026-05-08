@@ -5,7 +5,7 @@ import {
   Shield,
   UserX,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/utils/classNames";
 import { type AdminUser } from "@/features/admin";
@@ -29,12 +29,13 @@ export const UserTableContent: FC<UserTableContentProps> = ({
   onBan,
   onPromote,
   searchTerm,
-  onSearchChange
+  onSearchChange,
 }) => {
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.id.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = users.filter(
+    (user) =>
+      (user.name ?? "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   if (users.length === 0) {
@@ -42,10 +43,10 @@ export const UserTableContent: FC<UserTableContentProps> = ({
   }
 
   return (
-    <div className="rounded-3xl border border-gray-100 bg-white shadow-sm dark:border-white/5 dark:bg-gray-900 overflow-hidden">
+    <div className="rounded-[20px] border border-border bg-surface shadow-[var(--shadow-card)] overflow-hidden">
       <div className="p-6 border-b border-border-subtle flex flex-col sm:flex-row gap-4">
         <UserSearch value={searchTerm} onChange={onSearchChange} />
-        <button className="inline-flex items-center gap-2 rounded-2xl border border-gray-100 px-4 py-2 text-sm font-heading text-gray-600 hover:bg-gray-50 dark:border-white/5 dark:text-gray-400 dark:hover:bg-white/10 transition-colors">
+        <button className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-[13px] font-medium text-fg-secondary hover:bg-surface-hover hover:text-fg hover:border-border-strong transition-colors">
           <Filter className="h-4 w-4" />
           Filters
         </button>
@@ -56,33 +57,49 @@ export const UserTableContent: FC<UserTableContentProps> = ({
           <UserRow key={user.id}>
             <td className="px-6 py-4">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-heading text-white shadow-sm transition-transform group-hover:scale-105">
-                  {user.name.charAt(0)}
+                <div className="h-10 w-10 rounded-2xl bg-primary/15 border border-primary/20 flex items-center justify-center font-heading text-primary transition-transform group-hover:scale-105">
+                  {(user.name ?? user.email).charAt(0).toUpperCase()}
                 </div>
-                <div>
-                  <div className="text-sm font-heading text-fg">{user.name}</div>
-                  <div className="text-xs text-gray-500 lowercase">{user.email}</div>
+                <div className="min-w-0">
+                  <div className="text-sm font-heading text-fg truncate">{user.name ?? user.email}</div>
+                  <div className="text-xs text-fg-muted lowercase truncate">{user.email}</div>
                 </div>
               </div>
             </td>
             <td className="px-6 py-4">
               <div className="flex items-center gap-1.5">
-                <Shield className={cn(
-                  "h-3.5 w-3.5",
-                  user.role === "admin" || user.role === "super_admin" ? "text-amber-500" : "text-gray-400"
-                )} />
-                <span className="text-sm font-label text-fg-secondary">
-                  {user.role}
-                </span>
+                <Shield
+                  className={cn(
+                    "h-3.5 w-3.5",
+                    user.role === "admin" || user.role === "super_admin"
+                      ? "text-amber-500"
+                      : "text-fg-muted"
+                  )}
+                />
+                <span className="text-sm font-label text-fg-secondary">{user.role}</span>
               </div>
             </td>
             <td className="px-6 py-4">
-              <span className={cn(
-                "inline-flex items-center rounded-xl px-2.5 py-1 text-xs font-label",
-                user.status === "Active" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400" :
-                  user.status === "Pending" ? "bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400" :
-                    "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400"
-              )}>
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase border",
+                  user.status === "active"
+                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                    : user.status === "suspended"
+                    ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                    : "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20"
+                )}
+              >
+                <span
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    user.status === "active"
+                      ? "bg-emerald-500"
+                      : user.status === "suspended"
+                      ? "bg-amber-500"
+                      : "bg-red-500"
+                  )}
+                />
                 {user.status}
               </span>
             </td>
@@ -93,23 +110,23 @@ export const UserTableContent: FC<UserTableContentProps> = ({
               <div className="flex items-center justify-end gap-2">
                 <button
                   onClick={() => onPromote(user.id)}
-                  className="px-2 py-1 text-xs font-label rounded-md bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-900/20 dark:text-amber-400 opacity-0 group-hover:opacity-100 transition-all"
+                  className="px-2 py-1 text-[11px] font-medium rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/15 opacity-0 group-hover:opacity-100 transition-all"
                 >
                   Promote
                 </button>
                 <button
                   onClick={() => onSuspend(user.id)}
-                  className="px-2 py-1 text-xs font-label rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 opacity-0 group-hover:opacity-100 transition-all"
+                  className="px-2 py-1 text-[11px] font-medium rounded-md bg-surface-hover text-fg-secondary hover:bg-surface-elevated hover:text-fg opacity-0 group-hover:opacity-100 transition-all"
                 >
                   Suspend
                 </button>
                 <button
                   onClick={() => onBan(user.id)}
-                  className="p-2 rounded-xl text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all opacity-0 group-hover:opacity-100"
+                  className="p-2 rounded-xl text-fg-muted hover:text-red-500 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
                 >
                   <UserX className="h-4 w-4" />
                 </button>
-                <button className="p-2 rounded-xl text-gray-400 hover:text-gray-950 dark:hover:text-white hover:bg-surface-hover transition-all">
+                <button className="p-2 rounded-xl text-fg-muted hover:text-fg hover:bg-surface-hover transition-all">
                   <MoreVertical className="h-4 w-4" />
                 </button>
               </div>
@@ -119,19 +136,26 @@ export const UserTableContent: FC<UserTableContentProps> = ({
       </UserTable>
 
       <div className="p-6 border-t border-border-subtle flex items-center justify-between">
-        <p className="text-sm font-label text-gray-500">
-          Showing <span className="text-fg font-heading">1 to {filteredUsers.length}</span> of {filteredUsers.length} users
+        <p className="text-sm font-label text-fg-muted">
+          Showing <span className="text-fg font-heading">1 to {filteredUsers.length}</span> of{" "}
+          {filteredUsers.length} users
         </p>
         <div className="flex items-center gap-2">
-          <button className="p-2 rounded-xl border border-gray-100 text-gray-400 hover:bg-gray-50 dark:border-white/5 disabled:opacity-50 transition-colors" disabled>
+          <button
+            className="p-2 rounded-xl border border-border text-fg-muted hover:bg-surface-hover hover:text-fg disabled:opacity-50 transition-colors"
+            disabled
+          >
             <ChevronLeft className="h-4 w-4" />
           </button>
           <div className="flex items-center gap-1">
-            <button className="h-8 w-8 rounded-xl text-sm font-heading transition-all bg-blue-600 text-white shadow-md shadow-blue-500/20">
+            <button className="h-8 w-8 rounded-xl text-sm font-heading transition-all bg-primary text-primary-foreground">
               1
             </button>
           </div>
-          <button className="p-2 rounded-xl border border-gray-100 text-gray-400 hover:bg-gray-50 dark:border-white/5 disabled:opacity-50 transition-colors" disabled>
+          <button
+            className="p-2 rounded-xl border border-border text-fg-muted hover:bg-surface-hover hover:text-fg disabled:opacity-50 transition-colors"
+            disabled
+          >
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>

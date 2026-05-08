@@ -1,5 +1,5 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, gte, lte, like, type SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import type { AuditAction } from "../audit-actions.js";
@@ -47,5 +47,42 @@ export class AuditLogRepository {
       offset: options.offset,
       orderBy: [desc(schema.auditLogs.createdAt)],
     });
+  }
+
+  /** Cross-workspace admin query — bypasses RLS via withSystemTx at call site. */
+  async findGlobal(
+    options: {
+      limit: number;
+      offset: number;
+      action?: string;
+      userId?: string;
+      workspaceId?: string;
+      from?: Date;
+      to?: Date;
+    },
+    tx?: Tx,
+  ): Promise<{ logs: AuditLog[]; total: number }> {
+    const database = tx ?? this.db;
+
+    const conditions: SQL[] = [];
+    if (options.action) conditions.push(like(schema.auditLogs.action, `%${options.action}%`));
+    if (options.userId) conditions.push(eq(schema.auditLogs.userId, options.userId));
+    if (options.workspaceId) conditions.push(eq(schema.auditLogs.workspaceId, options.workspaceId));
+    if (options.from) conditions.push(gte(schema.auditLogs.createdAt, options.from));
+    if (options.to) conditions.push(lte(schema.auditLogs.createdAt, options.to));
+
+    const where = conditions.length > 0 ? and(...(conditions as [SQL, ...SQL[]])) : undefined;
+
+    const [logs, countResult] = await Promise.all([
+      database.query.auditLogs.findMany({
+        where,
+        limit: options.limit,
+        offset: options.offset,
+        orderBy: [desc(schema.auditLogs.createdAt)],
+      }),
+      database.select({ count: schema.auditLogs.id }).from(schema.auditLogs).where(where),
+    ]);
+
+    return { logs, total: countResult.length };
   }
 }

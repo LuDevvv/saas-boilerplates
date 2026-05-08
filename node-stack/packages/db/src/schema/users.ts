@@ -16,6 +16,12 @@ export const userRoleEnum = pgEnum("user_role", [
   "super_admin",
 ]);
 
+export const userStatusEnum = pgEnum("user_status", [
+  "active",
+  "suspended",
+  "banned",
+]);
+
 export const users = pgTable(
   "users",
   {
@@ -27,6 +33,10 @@ export const users = pgTable(
     avatarUrl: text("avatar_url"),
     phone: text("phone"),
     role: userRoleEnum("role").notNull().default("user"),
+    status: userStatusEnum("status").notNull().default("active"),
+    statusReason: text("status_reason"),
+    statusChangedAt: timestamp("status_changed_at"),
+    statusChangedBy: uuid("status_changed_by"),
     emailVerified: boolean("email_verified").notNull().default(false),
     twoFactorEnabled: boolean("two_factor_enabled").notNull().default(false),
     twoFactorSecret: text("two_factor_secret"),

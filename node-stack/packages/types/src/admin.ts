@@ -26,11 +26,15 @@ export interface SystemStats {
 
 export interface AdminUser {
   id: string;
-  name: string;
+  name: string | null;
   email: string;
-  role: string;
-  status: "Active" | "Pending" | "Suspended" | "Banned";
+  role: "user" | "admin" | "super_admin";
+  status: "active" | "suspended" | "banned";
+  statusReason?: string | null;
+  statusChangedAt?: string | null;
   createdAt: string;
+  emailVerified: boolean;
+  twoFactorEnabled: boolean;
 }
 
 export interface FeatureFlag {

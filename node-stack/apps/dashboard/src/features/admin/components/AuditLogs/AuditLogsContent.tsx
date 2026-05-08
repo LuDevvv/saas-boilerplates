@@ -1,5 +1,5 @@
 import { FC, useState, useEffect } from "react";
-import { SectionHeader } from "@/components/layout/SectionHeader";
+import { PageHeader } from "@node-stack/ui";
 import { api } from "@/lib/api";
 import { type AuditLog } from "@/features/admin";
 import { AuditLogCard } from "./AuditLogCard";
@@ -14,8 +14,8 @@ export const AuditLogsContent: FC = () => {
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        const data = await api.admin.getAuditLogs();
-        setLogs(data);
+        const response = await api.admin.getAuditLogs();
+        setLogs(response?.data ?? []);
       } catch (error) {
         console.error("Error fetching audit logs:", error);
       } finally {
@@ -27,14 +27,14 @@ export const AuditLogsContent: FC = () => {
 
   return (
     <>
-      <SectionHeader
+      <PageHeader
+        eyebrow="AUDIT"
         title="Registro de Auditoría"
-        subtitle="Monitorea las acciones críticas realizadas en la plataforma."
-        tag="AUDIT"
-        className="mb-8"
+        description="Monitorea las acciones críticas realizadas en la plataforma."
+        className="mb-6"
       />
 
-      <div className="bg-slate-900/50 border border-slate-800 rounded-2xl overflow-hidden">
+      <div className="rounded-[20px] border border-border bg-surface shadow-[var(--shadow-card)] overflow-hidden">
         {loading ? (
           <AuditLogLoadingState />
         ) : logs.length === 0 ? (

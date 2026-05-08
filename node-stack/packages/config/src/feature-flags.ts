@@ -57,4 +57,22 @@ export class FeatureFlagService {
       : `${this.prefix}:${flagKey}:${scope}`;
     await this.redis.del(key);
   }
+
+  async listAll(): Promise<Array<{ key: string; scope: string; scopeId: string | null; enabled: boolean }>> {
+    const pattern = `${this.prefix}:*`;
+    const keys = await this.redis.keys(pattern);
+    const results = await Promise.all(
+      keys.map(async (redisKey) => {
+        const value = await this.redis.get(redisKey);
+        // Key format: feature:flag:<flagKey>:<scope>[:<id>]
+        const withoutPrefix = redisKey.slice(this.prefix.length + 1);
+        const parts = withoutPrefix.split(":");
+        const flagKey = parts[0];
+        const scope = parts[1] ?? "global";
+        const scopeId = parts[2] ?? null;
+        return { key: flagKey, scope, scopeId, enabled: value === "true" };
+      }),
+    );
+    return results;
+  }
 }

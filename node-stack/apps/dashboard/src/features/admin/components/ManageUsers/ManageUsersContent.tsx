@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
 import { Download } from "lucide-react";
+import { PageHeader } from "@node-stack/ui";
 import { useAdminUsers, useUpdateUserStatus, useUpdateUserRole } from "@/features/admin";
-import { SectionHeader } from "@/components/layout/SectionHeader";
 import { UserTableContent } from "./UserTableContent";
 
 export const ManageUsersContent: FC = () => {
@@ -12,13 +12,13 @@ export const ManageUsersContent: FC = () => {
 
   const handleSuspend = (userId: string) => {
     if (confirm("Are you sure you want to suspend this user?")) {
-      updateStatus.mutate({ userId, status: "Suspended" });
+      updateStatus.mutate({ userId, status: "suspended" });
     }
   };
 
   const handleBan = (userId: string) => {
     if (confirm("Are you sure you want to ban this user?")) {
-      updateStatus.mutate({ userId, status: "Banned" });
+      updateStatus.mutate({ userId, status: "banned" });
     }
   };
 
@@ -30,20 +30,22 @@ export const ManageUsersContent: FC = () => {
 
   return (
     <>
-      <SectionHeader
+      <PageHeader
+        eyebrow="ADMIN"
         title="Manage Users"
-        subtitle="View, filter, and manage permissions for all platform users."
+        description="View, filter, and manage permissions for all platform users."
         action={
-          <div className="flex items-center gap-3">
-            <button className="inline-flex items-center gap-2 rounded-2xl border border-gray-100 bg-white px-4 py-2.5 text-sm font-heading text-gray-950 hover:bg-gray-50 dark:border-white/5 dark:bg-gray-900 dark:text-white dark:hover:bg-white/10 transition-colors shadow-sm">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <button className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-[13px] font-medium text-fg-secondary hover:bg-surface-hover hover:text-fg hover:border-border-strong transition-colors">
               <Download className="h-4 w-4" />
               Export CSV
             </button>
-            <button className="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-heading text-white hover:bg-blue-700 transition-all shadow-md active:scale-95">
+            <button className="inline-flex items-center gap-2 rounded-xl bg-primary hover:bg-primary-600 px-5 py-2.5 text-[13px] font-medium text-primary-foreground transition-all shadow-[0_4px_14px_-2px_rgba(0,64,128,0.20)] dark:shadow-[0_4px_14px_-2px_rgba(91,168,229,0.20)] active:scale-95">
               Add New User
             </button>
           </div>
         }
+        className="mb-6"
       />
 
       <UserTableContent

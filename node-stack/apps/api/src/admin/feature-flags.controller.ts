@@ -1,20 +1,30 @@
 import {
   Controller,
+  Get,
   Post,
   Param,
   Body,
   UseGuards,
   BadRequestException,
 } from "@nestjs/common";
+import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { FeatureFlagService } from "@node-stack/config";
 
 import { JwtAuthGuard } from "@/auth/guards/jwt.guard.js";
 import { AdminGuard } from "@/common/guards/admin.guard.js";
 
+@ApiTags("admin-feature-flags")
 @Controller("admin/feature-flags")
 @UseGuards(JwtAuthGuard, AdminGuard)
 export class FeatureFlagsAdminController {
   constructor(private readonly flagService: FeatureFlagService) {}
+
+  @Get()
+  @ApiOperation({ summary: "List all feature flags (Admin only)" })
+  @ApiResponse({ status: 200, description: "Feature flags list" })
+  async listFlags() {
+    return this.flagService.listAll();
+  }
 
   @Post(":flagKey/enable")
   async enable(
