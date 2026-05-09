@@ -21,9 +21,10 @@ export const ProfileHero: FC<ProfileHeroProps> = ({ isEditing, onToggleEdit }) =
     if (!file) return;
 
     try {
-      const { fileUrl } = await upload(file);
+      const result = await upload(file);
+      if (!result?.fileUrl) return;
       await updateProfile({
-        avatarUrl: fileUrl
+        avatarUrl: result.fileUrl,
       });
       appToast.success({
         title: "Avatar actualizado",

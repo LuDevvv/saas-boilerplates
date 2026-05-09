@@ -1,6 +1,5 @@
 export { ProfileContent } from "./components/ProfileContent";
 export { CompanyContent } from "./components/CompanyContent";
-export { InfoItem } from "./components/InfoItem";
 export { SecurityCard } from "./components/SecurityCard";
 export { KycCard } from "./components/KycCard";
 export { PersonalEditForm } from "./components/PersonalEditForm";

@@ -90,11 +90,28 @@ export const SidebarItem: FC<SidebarItemProps> = ({
                 : "text-sidebar-text/50 group-hover:text-sidebar-text-active transition-colors duration-200"
             )}
           />
-          {isCollapsed && badge && badge !== "Nuevo" && (
-            <div className="absolute -right-3 -top-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[9px] font-label text-white shadow-md ring-2 ring-sidebar z-10">
-              {badge}
-            </div>
-          )}
+          {isCollapsed && badge && (() => {
+            const isObj = typeof badge === "object" && badge !== null;
+            const label = isObj ? badge.label : String(badge);
+            // Skip text labels in collapsed mode (only numeric counts make sense as a dot)
+            if (label.length > 2) return null;
+            const tone = (isObj ? badge.tone : "primary") ?? "primary";
+            const toneClass = {
+              primary: "bg-primary text-primary-foreground",
+              info:    "bg-blue-500 text-white",
+              warning: "bg-amber-500 text-white",
+              success: "bg-emerald-500 text-white",
+              neutral: "bg-surface-hover text-fg-secondary",
+            }[tone];
+            return (
+              <div className={cn(
+                "absolute -right-3 -top-2 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold ring-2 ring-sidebar z-10",
+                toneClass
+              )}>
+                {label}
+              </div>
+            );
+          })()}
         </div>
       )}
 
@@ -107,14 +124,27 @@ export const SidebarItem: FC<SidebarItemProps> = ({
           )}>
             {label}
           </span>
-          {badge && (
-            <span className={cn(
-              "flex h-5 min-w-[20px] items-center justify-center px-1.5 text-[9px] font-bold shadow-sm transition-colors uppercase bg-primary text-white shrink-0",
-              String(badge).length === 1 ? "rounded-full w-5" : "rounded-lg"
-            )}>
-              {badge}
-            </span>
-          )}
+          {badge && (() => {
+            const isObj = typeof badge === "object" && badge !== null;
+            const label = isObj ? badge.label : String(badge);
+            const tone = (isObj ? badge.tone : "primary") ?? "primary";
+            const toneClass = {
+              primary:  "bg-primary text-primary-foreground",
+              info:     "bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25",
+              warning:  "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25",
+              success: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25",
+              neutral:  "bg-surface-hover text-fg-secondary border border-border",
+            }[tone];
+            return (
+              <span className={cn(
+                "flex h-5 min-w-[20px] items-center justify-center px-1.5 text-[9px] font-bold tracking-wider transition-colors uppercase shrink-0",
+                toneClass,
+                label.length === 1 ? "rounded-full w-5" : "rounded-md"
+              )}>
+                {label}
+              </span>
+            );
+          })()}
           {hasSubItems && (
             <ChevronDown
               onClick={handleChevronClick}

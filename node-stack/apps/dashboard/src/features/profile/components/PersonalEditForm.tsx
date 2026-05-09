@@ -1,10 +1,9 @@
 import { FC } from "react";
 import { Mail, User, Phone } from "lucide-react";
-import { Button, Input, PhoneInput } from "@node-stack/ui";
+import { Button, InfoItem, Input, PhoneInput } from "@node-stack/ui";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ProfileFormValues, profileSchema } from "../types";
-import { InfoItem } from "./InfoItem.js";
 
 interface PersonalEditFormProps {
   isEditing: boolean;

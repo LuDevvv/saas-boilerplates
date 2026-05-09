@@ -1,66 +1,75 @@
 import { FC, useRef } from "react";
-import { Button, Progress } from "@node-stack/ui";
+import { Button } from "@node-stack/ui";
 import { Upload, Loader2 } from "lucide-react";
 
 interface FileUploadButtonProps {
-  onUpload: (file: File) => Promise<void>;
+  onUpload: (file: File) => Promise<void | { fileUrl: string } | undefined>;
   isUploading: boolean;
-  progress: number;
+  /** Mantained for backwards compatibility but no longer rendered (progress lives in the global UploadTray). */
+  progress?: number;
+  className?: string;
+  size?: "sm" | "md";
+  /** Allow selecting multiple files at once (each triggers its own upload). */
+  multiple?: boolean;
+  /** Optional file accept filter (e.g. "image/*"). */
+  accept?: string;
 }
 
-export const FileUploadButton: FC<FileUploadButtonProps> = ({ onUpload, isUploading, progress }) => {
+export const FileUploadButton: FC<FileUploadButtonProps> = ({
+  onUpload,
+  isUploading,
+  className,
+  size = "md",
+  multiple = true,
+  accept,
+}) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      await onUpload(file);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    } catch (err) {
-      // Error handled by hook
-    }
+  const resetInput = () => {
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    if (files.length === 0) return;
+
+    // CRITICAL: reset before kicking off uploads so a failed file can be re-selected.
+    resetInput();
+
+    // Fire each upload concurrently — they're tracked individually in the tray.
+    await Promise.allSettled(files.map((file) => onUpload(file)));
+  };
+
+  const heightClass = size === "sm" ? "h-9 px-4 text-[12px]" : "h-10 px-5 text-[13px]";
+
   return (
-    <div className="relative">
+    <div className={`relative ${className ?? ""}`}>
       <input
         type="file"
         ref={fileInputRef}
         onChange={handleFileChange}
+        multiple={multiple}
+        accept={accept}
         className="hidden"
       />
-      
+
       <Button
         onClick={() => fileInputRef.current?.click()}
         disabled={isUploading}
-        className="rounded-2xl bg-primary hover:bg-primary-600 text-white font-heading uppercase text-[10px] h-11 px-6 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]"
+        className={`rounded-xl bg-primary hover:bg-primary-600 text-primary-foreground font-medium ${heightClass} transition-all active:scale-[0.98]`}
       >
         {isUploading ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Subiendo...
+            <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+            Subiendo…
           </>
         ) : (
           <>
-            <Upload className="mr-2 h-4 w-4" />
-            Subir Archivo
+            <Upload className="mr-1.5 h-4 w-4" />
+            Subir archivo{multiple ? "s" : ""}
           </>
         )}
       </Button>
-
-      {isUploading && (
-        <div className="absolute top-full left-0 right-0 mt-3 p-3 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-border-subtle z-50 animate-in fade-in slide-in-from-top-2">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-[9px] font-heading uppercase text-slate-400">Progreso</span>
-            <span className="text-[9px] font-heading text-primary">{progress}%</span>
-          </div>
-          <Progress value={progress} className="h-1" />
-        </div>
-      )}
     </div>
   );
 };

@@ -1,6 +1,5 @@
 import { FC, useState, useMemo } from "react";
 import { Download, Eye, Users, MousePointer2, Target } from "lucide-react";
-import { Button } from "@node-stack/ui";
 import { cn } from "@/utils/classNames";
 import { KpiCard } from "./KpiCard";
 import { SalesChart, type TrendPoint } from "./SalesChart";

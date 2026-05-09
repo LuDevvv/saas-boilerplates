@@ -208,4 +208,102 @@ The dark mode is **neutral charcoal, slightly cool, never warm-brown, never pure
 - `dark:bg-[#121212]` — use `dark:bg-surface` instead
 - `border-white/10` / `border-slate-100` — use `border-border` (alias of `--border`)
 - Custom `box-shadow` literals — use the `shadow-*` tokens
+
+## 9. Shared UI Components
+
+All shared primitives live in `@node-stack/ui` (`packages/ui/src/components/ui/`). Before authoring a new component, check this list — if a primitive already covers the need, **use it**. Reinventing patterns inline causes the visual drift this design system is meant to prevent.
+
+### Layout primitives
+
+#### `PageHeader`
+
+Top-level page heading. Use for full pages (Billing, Pricing, Settings, Reports). Includes optional breadcrumbs trail and a larger title than `SectionHeader`. **Do not** use for profile/company hero pages — those use `HeroHeader` (avatar + banner).
+
+```tsx
+<PageHeader
+  eyebrow="CUENTA"
+  title="Pagos y Suscripción"
+  description="Gestiona tu plan, métodos de pago e historial de facturas."
+  breadcrumbs={[{ label: "Inicio", href: "/" }, { label: "Pagos", href: "/payments" }]}
+  action={<Button>Nueva acción</Button>}
+/>
+```
+
+#### `SectionHeader`
+
+Compact heading for sections inside a card or page. Stacks on mobile, becomes row + `justify-between` on `sm+`. Heading level configurable via `as` prop (defaults to `h2`).
+
+```tsx
+<SectionHeader
+  eyebrow="MIEMBROS"
+  title="Equipo"
+  description="Gestiona los accesos y roles."
+  action={<Button size="sm">Invitar</Button>}
+/>
+```
+
+#### `TwoColumnLayout`
+
+12-column responsive grid (compound component). Mobile = stacked. Desktop (`lg+`) = `Main` spans 8 cols, `Aside` spans 4 cols. Aside is sticky by default.
+
+```tsx
+<TwoColumnLayout>
+  <TwoColumnLayout.Main>{/* main content */}</TwoColumnLayout.Main>
+  <TwoColumnLayout.Aside>{/* sidebar */}</TwoColumnLayout.Aside>
+</TwoColumnLayout>
+
+// Variants
+<TwoColumnLayout gap="gap-8">
+  <TwoColumnLayout.Main>...</TwoColumnLayout.Main>
+  <TwoColumnLayout.Aside position="left" sticky={false}>...</TwoColumnLayout.Aside>
+</TwoColumnLayout>
+```
+
+### Content primitives
+
+#### `CalloutCard`
+
+Unified component for promotional / informational / status cards. Replaces the duplicated icon-+-title-+-description-+-CTA pattern across the app (KYC, Security 2FA, Support, Members upgrade, SOC2, etc.).
+
+Variants:
+- `variant`: `card` (bordered surface) · `muted` (inset) · `promo` (brand gradient with decorative circles)
+- `iconTone`: `primary` · `success` · `info` · `warning` · `neutral`
+- `layout`: `vertical` · `horizontal`
+
+```tsx
+<CalloutCard
+  icon={ShieldCheck}
+  iconTone="success"
+  variant="card"
+  eyebrow="SEGURIDAD LEGAL"
+  title="KYC Verificado"
+  description="Tu empresa cumple con las normativas vigentes."
+  status={{ label: "Activado", tone: "success", pulse: true }}
+  action={<Button>Documentación</Button>}
+/>
+```
+
+#### `StatusPill`
+
+Compact pill for status indicators (Active / Pending / Verified / Failed). Optional pulsing leading dot for "live" states. Tones: `success`, `warning`, `info`, `danger`, `neutral`.
+
+```tsx
+<StatusPill label="Activado y seguro" tone="success" pulse />
+<StatusPill label="Pendiente" tone="warning" />
+<StatusPill label="Solo lectura" tone="neutral" hideDot />
+```
+
+#### `InfoItem`
+
+Compact label / value pair used in profile and detail screens. Renders `icon + label + value` with an optional emerald verification check.
+
+```tsx
+<InfoItem icon={Mail} label="Correo electrónico" value="user@example.com" badge="Verificado" />
+```
+
+### When to extend vs. compose
+
+- **Extend** the primitive (add a new variant / tone) when the new use case is structurally identical.
+- **Compose** primitives (wrap a `CalloutCard` inside a feature-specific component) when the variation is only at the consumer level.
+- **Never** copy-paste a primitive's markup into a feature folder. Open a PR against `@node-stack/ui` instead.
 - Default browser focus outlines — already killed globally; do not re-enable

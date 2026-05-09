@@ -1,9 +1,18 @@
 import { FC, useState } from "react";
 import { Plus, Key, Terminal, Code2 } from "lucide-react";
-import { Button, Card, EmptyState } from "@node-stack/ui";
-import { SectionHeader } from "@/components/layout/SectionHeader";
+import {
+  Button,
+  CalloutCard,
+  EmptyState,
+  PageHeader,
+  TwoColumnLayout,
+} from "@node-stack/ui";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
-import { useApiKeys, useCreateApiKey, useRevokeApiKey } from "../../workspaces/hooks/useApiKeys";
+import {
+  useApiKeys,
+  useCreateApiKey,
+  useRevokeApiKey,
+} from "../../workspaces/hooks/useApiKeys";
 import { ApiKeyList } from "../components/ApiKeyList";
 import { CreateKeyDialog } from "../components/CreateKeyDialog";
 
@@ -16,35 +25,33 @@ const ApiKeysPage: FC = () => {
   const revokeMutation = useRevokeApiKey(activeWorkspaceId);
 
   return (
-    <div className="space-y-10 pb-20 animate-in fade-in duration-700">
-      <SectionHeader
+    <div className="pb-20 animate-in fade-in duration-500">
+      <PageHeader
+        eyebrow="WORKSPACE"
         title="Claves API"
-        subtitle="Gestiona las claves de acceso para integrar tus aplicaciones con nuestra API."
+        description="Gestiona credenciales programáticas, monitorea su uso y rota antes de la fecha de expiración."
         action={
-          <Button 
+          <Button
             onClick={() => setIsCreateModalOpen(true)}
-            className="rounded-2xl bg-cyan-600 hover:bg-cyan-700 text-white font-heading uppercase text-[10px] h-11 px-6 shadow-lg shadow-cyan-600/20"
+            className="rounded-xl bg-primary hover:bg-primary-600 px-5 h-10 text-[13px] font-medium text-primary-foreground transition-all active:scale-95 shadow-[0_4px_14px_-2px_rgba(0,64,128,0.20)] dark:shadow-[0_4px_14px_-2px_rgba(91,168,229,0.20)]"
           >
-            <Plus className="mr-2 h-4 w-4" />
-            Nueva Clave
+            <Plus className="mr-1.5 h-4 w-4" />
+            Nueva clave
           </Button>
         }
+        className="mb-6"
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
+      <TwoColumnLayout>
+        <TwoColumnLayout.Main>
           {!isLoading && keys?.length === 0 ? (
             <EmptyState
               title="Sin claves API"
               description="Genera tu primera clave para empezar a realizar peticiones autenticadas."
               icon={Key}
               action={
-                <Button 
-                  onClick={() => setIsCreateModalOpen(true)}
-                  variant="outline"
-                  className="rounded-xl border-cyan-200 text-cyan-700 hover:bg-cyan-50"
-                >
-                  Crear Clave
+                <Button onClick={() => setIsCreateModalOpen(true)} variant="outline" className="rounded-xl">
+                  Crear clave
                 </Button>
               }
             />
@@ -57,54 +64,66 @@ const ApiKeysPage: FC = () => {
               }}
             />
           )}
-        </div>
+        </TwoColumnLayout.Main>
 
-        <div className="space-y-8">
-          <Card className="p-8 rounded-[32px] border-border-subtle bg-white dark:bg-white/5 shadow-sm">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2.5 bg-cyan-50 dark:bg-cyan-500/5 rounded-xl">
-                <Terminal className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
+        <TwoColumnLayout.Aside className="flex flex-col gap-4">
+          {/* Quick start */}
+          <div className="rounded-[20px] border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-9 w-9 rounded-[10px] bg-primary/10 border border-primary/15 flex items-center justify-center">
+                <Terminal className="w-4 h-4 text-primary" />
               </div>
-              <h3 className="text-sm font-heading text-fg uppercase">Guía de Inicio</h3>
+              <h3 className="text-[13px] font-semibold text-fg uppercase tracking-wider">
+                Quick start
+              </h3>
             </div>
-            <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-slate-900 text-slate-300 font-mono text-[10px] leading-relaxed border border-slate-800">
-                <p className="text-cyan-400 mb-2"># Ejemplo de uso</p>
-                curl https://api.nodestack.com/v1/me \<br/>
-                &nbsp;&nbsp;-H "Authorization: Bearer <span className="text-white">YOUR_API_KEY</span>"
-              </div>
-              <p className="text-xs text-slate-500 font-label leading-relaxed">
-                Utiliza tus claves API en el header de Authorization para autenticar tus peticiones desde servidores externos.
-              </p>
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start text-[11px] font-heading uppercase text-cyan-600 p-0 h-auto hover:bg-transparent"
-                onClick={() => window.open('https://docs.nodestack.com', '_blank')}
-              >
-                Ver documentación <Plus className="ml-1 h-3 w-3 rotate-45" />
-              </Button>
-            </div>
-          </Card>
+            <pre className="bg-surface-elevated border border-border rounded-xl p-3 text-[11px] font-mono text-fg-secondary overflow-x-auto custom-scrollbar leading-relaxed">
+              <code>
+                <span className="text-fg-muted"># Ejemplo de uso</span>
+                {"\n"}
+                <span className="text-emerald-600 dark:text-emerald-400">curl</span> https://api.nodestack.com/v1/me \{"\n"}
+                {"  "}
+                <span className="text-blue-600 dark:text-blue-400">-H</span>{" "}
+                <span className="text-amber-600 dark:text-amber-400">"Authorization: Bearer </span>
+                <span className="text-fg">YOUR_API_KEY</span>
+                <span className="text-amber-600 dark:text-amber-400">"</span>
+              </code>
+            </pre>
+            <p className="text-[11px] text-fg-secondary leading-relaxed mt-3">
+              Usa el header <code className="text-primary font-mono">Authorization</code> para
+              autenticar peticiones desde servidores externos.
+            </p>
+            <Button
+              variant="ghost"
+              className="mt-3 w-full justify-start text-[11px] font-bold uppercase tracking-wider text-primary p-0 h-auto hover:bg-transparent"
+              onClick={() => window.open("https://docs.nodestack.com", "_blank")}
+            >
+              Ver documentación →
+            </Button>
+          </div>
 
-          <Card className="p-8 rounded-[32px] border-none bg-slate-900 text-white shadow-xl relative overflow-hidden group">
-            <div className="absolute right-0 top-0 w-32 h-32 bg-cyan-500/10 blur-3xl rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-700" />
-            <div className="relative z-10">
-              <div className="p-2.5 bg-white/10 w-fit rounded-xl mb-6">
-                <Code2 className="w-5 h-5 text-cyan-400" />
+          <CalloutCard
+            icon={Code2}
+            iconTone="primary"
+            variant="muted"
+            eyebrow="OFICIALES"
+            title="SDKs disponibles"
+            description="Integra más rápido con SDKs para Node.js, Python y Go. Soporte oficial y type-safe."
+            action={
+              <div className="flex gap-2">
+                {["JS", "PY", "GO"].map((lang) => (
+                  <span
+                    key={lang}
+                    className="h-8 w-8 rounded-lg bg-surface border border-border flex items-center justify-center text-[10px] font-bold text-fg-secondary tracking-wider"
+                  >
+                    {lang}
+                  </span>
+                ))}
               </div>
-              <h4 className="text-sm font-heading uppercase mb-2">SDKs Oficiales</h4>
-              <p className="text-[11px] text-white/50 leading-relaxed mb-6">
-                Integra más rápido utilizando nuestros SDKs para Node.js, Python y Go.
-              </p>
-              <div className="flex gap-3">
-                <div className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 text-[10px] font-bold">JS</div>
-                <div className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 text-[10px] font-bold">PY</div>
-                <div className="h-8 w-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/10 text-[10px] font-bold">GO</div>
-              </div>
-            </div>
-          </Card>
-        </div>
-      </div>
+            }
+          />
+        </TwoColumnLayout.Aside>
+      </TwoColumnLayout>
 
       <CreateKeyDialog
         isOpen={isCreateModalOpen}

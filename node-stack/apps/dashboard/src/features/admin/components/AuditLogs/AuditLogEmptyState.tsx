@@ -1,9 +1,12 @@
 import { FC } from "react";
+import { ScrollText } from "lucide-react";
+import { EmptyState } from "@node-stack/ui";
 
-export const AuditLogEmptyState: FC = () => {
-  return (
-    <div className="p-12 text-center">
-      <p className="text-slate-500 italic">No hay registros de auditoría recientes.</p>
-    </div>
-  );
-};
+export const AuditLogEmptyState: FC = () => (
+  <EmptyState
+    icon={ScrollText}
+    title="Sin registros recientes"
+    description="No hay actividad registrada en este momento. Las acciones críticas aparecerán aquí cuando se ejecuten."
+    compact
+  />
+);

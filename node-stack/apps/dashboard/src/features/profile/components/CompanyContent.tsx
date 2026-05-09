@@ -1,10 +1,9 @@
 import { FC, useMemo, useState } from "react";
 import { Building2, Hash, AlignLeft, ShieldCheck, Calendar } from "lucide-react";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
-import { CalloutCard, Card } from "@node-stack/ui";
+import { CalloutCard, Card, InfoItem } from "@node-stack/ui";
 import { useWorkspaces, useUpdateWorkspace } from "@/features/workspaces/hooks/useWorkspaces";
 import { useShallow } from "zustand/react/shallow";
-import { InfoItem } from "./InfoItem";
 import { KycCard } from "./KycCard";
 import { CompanyEditForm } from "./CompanyEditForm";
 import { AuditLog } from "./AuditLog";

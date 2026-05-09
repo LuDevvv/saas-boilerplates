@@ -9,15 +9,15 @@ export const UserTable: FC<UserTableProps> = ({ children }) => {
     <div className="overflow-x-auto">
       <table className="w-full text-left">
         <thead>
-          <tr className="bg-gray-50/50 dark:bg-white/[0.02]">
-            <th className="px-6 py-4 text-xs font-label uppercase text-gray-400">User Details</th>
-            <th className="px-6 py-4 text-xs font-label uppercase text-gray-400">Role</th>
-            <th className="px-6 py-4 text-xs font-label uppercase text-gray-400">Status</th>
-            <th className="px-6 py-4 text-xs font-label uppercase text-gray-400">Joined</th>
-            <th className="px-6 py-4 text-xs font-label uppercase text-gray-400 text-right">Actions</th>
+          <tr className="bg-surface-muted border-b border-border-subtle">
+            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-fg-muted">User Details</th>
+            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-fg-muted">Role</th>
+            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-fg-muted">Status</th>
+            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-fg-muted">Joined</th>
+            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-fg-muted text-right">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100 dark:divide-white/5">
+        <tbody className="divide-y divide-border-subtle">
           {children}
         </tbody>
       </table>

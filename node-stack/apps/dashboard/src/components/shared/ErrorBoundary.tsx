@@ -42,12 +42,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
       return (
         <div className="flex flex-col items-center justify-center min-h-[400px] w-full p-8 text-center animate-fade-in">
-          <div className="bg-white dark:bg-canvas-dark border border-rose-100 dark:border-rose-500/20 rounded-3xl p-8 md:p-12 max-w-lg shadow-xl shadow-rose-500/5 relative overflow-hidden">
+          <div className="bg-surface border border-border rounded-[20px] p-8 md:p-12 max-w-lg shadow-[var(--shadow-card)] relative overflow-hidden">
             {/* Decorative background */}
-            <div className="absolute -right-10 -top-10 w-32 h-32 bg-rose-50 dark:bg-rose-500/5 blur-3xl rounded-full"></div>
+            <div className="absolute -right-10 -top-10 w-32 h-32 bg-rose-500/[0.06] blur-3xl rounded-full pointer-events-none" />
 
             <div className="relative">
-              <div className="bg-rose-50 dark:bg-rose-500/10 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <div className="bg-rose-500/10 border border-rose-500/15 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6">
                 <AlertTriangle className="w-10 h-10 text-rose-500" />
               </div>
 
@@ -61,7 +61,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
               <button
                 onClick={this.handleReset}
-                className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-sm font-heading transition-all active:scale-95 shadow-lg shadow-rose-500/20 w-full sm:w-auto"
+                className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-rose-500 hover:bg-rose-600 text-white rounded-xl text-sm font-heading transition-all active:scale-95 shadow-[0_4px_14px_-2px_rgba(244,63,94,0.25)] w-full sm:w-auto"
               >
                 <RefreshCw className="w-4 h-4" />
                 Intentar de nuevo
@@ -69,7 +69,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
               {process.env.NODE_ENV === 'development' && this.state.error && (
                 <div className="mt-8 pt-6 border-t border-border-subtle text-left">
-                  <p className="text-[10px] font-mono text-rose-400 dark:text-rose-500/60 uppercase mb-2 ">Debug Info</p>
+                  <p className="text-[10px] font-mono text-rose-500 dark:text-rose-400 uppercase tracking-wider mb-2">
+                    Debug Info
+                  </p>
                   <p className="text-xs font-mono text-fg-muted overflow-auto max-h-32 p-3 bg-surface-muted rounded-lg border border-border-subtle">
                     {this.state.error.message}
                   </p>

@@ -1,6 +1,6 @@
 import { FC, useState, useMemo } from "react";
 import { FileText, Download, Receipt } from "lucide-react";
-import { Badge, SearchInput } from "@node-stack/ui";
+import { Badge, FilterTabs, SearchInput } from "@node-stack/ui";
 import { cn } from "@/utils/classNames";
 
 export interface PaymentRecord {
@@ -169,23 +169,14 @@ export const PaymentHistory: FC<PaymentHistoryProps> = ({
             placeholder="Buscar por referencia, monto o fecha..."
             size="sm"
           />
-          {/* Status pills */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {STATUS_FILTERS.map(opt => (
-              <button
-                key={opt.value}
-                onClick={() => setStatusFilter(opt.value)}
-                className={cn(
-                  "h-7 px-3 rounded-full text-[11px] font-medium transition-all duration-150",
-                  statusFilter === opt.value
-                    ? "bg-primary text-white shadow-sm"
-                    : "bg-surface-hover text-fg-secondary hover:bg-gray-200 dark:hover:bg-white/[0.12]"
-                )}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
+          {/* Status filter */}
+          <FilterTabs
+            size="sm"
+            value={statusFilter}
+            onChange={setStatusFilter}
+            ariaLabel="Filtrar facturas por estado"
+            options={STATUS_FILTERS}
+          />
         </div>
       )}
 

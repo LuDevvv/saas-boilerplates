@@ -24,10 +24,7 @@ export const useInvoices = () => {
   const workspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   return useQuery<Invoice[], Error>({
     queryKey: queryKeys.billing.invoices(),
-    queryFn: async () => {
-      const response = await api.billing.listInvoices();
-      return (response as any)?.data ?? response;
-    },
+    queryFn: () => api.billing.listInvoices() as any,
     enabled: !!workspaceId,
   });
 };
@@ -43,13 +40,15 @@ export const usePaymentMethods = () => {
 
 export const useCheckout = () => {
   return useMutation<CheckoutResponse, Error, CreateCheckoutDto>({
-    mutationFn: (data: CreateCheckoutDto) => api.billing.createCheckout(data),
+    mutationFn: (data: CreateCheckoutDto) =>
+      api.billing.createCheckout(data),
   });
 };
 
 export const useCustomerPortal = () => {
   return useMutation<PortalResponse, Error, { returnUrl: string }>({
-    mutationFn: () => api.billing.getPortalUrl(), // returnUrl is not accepted by the backend portal endpoint in this version
+    // returnUrl is not accepted by the backend portal endpoint in this version
+    mutationFn: () => api.billing.getPortalUrl(),
   });
 };
 

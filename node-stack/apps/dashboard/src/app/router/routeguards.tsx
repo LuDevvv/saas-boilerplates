@@ -40,7 +40,9 @@ export const adminGuard = (element: ReactElement): ReactElement => {
     return <Loading />;
   }
 
-  if (!user || user.role !== "admin") {
+  const isAdmin = user?.role === "admin" || user?.role === "super_admin" || !!(user as any)?.isAdmin;
+
+  if (!user || !isAdmin) {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 

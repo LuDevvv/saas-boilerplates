@@ -1,28 +1,23 @@
 import { FC } from "react";
 import { FileText } from "lucide-react";
+import { Button, EmptyState } from "@node-stack/ui";
 
 interface ReportEmptyStateProps {
   onCreateFirst: () => void;
 }
 
-export const ReportEmptyState: FC<ReportEmptyStateProps> = ({ onCreateFirst }) => {
-  return (
-    <div className="flex flex-col items-center justify-center py-16 px-8 text-center">
-      <div className="w-16 h-16 rounded-2xl bg-surface-muted flex items-center justify-center mb-6">
-        <FileText className="w-8 h-8 text-gray-300 dark:text-gray-600" />
-      </div>
-      <h3 className="text-lg font-heading text-fg mb-2">
-        No se encontraron reportes
-      </h3>
-      <p className="text-sm text-fg-secondary mb-6 max-w-sm">
-        Comienza a generar reportes para exportar tus datos de inteligencia de negocio.
-      </p>
-      <button
+export const ReportEmptyState: FC<ReportEmptyStateProps> = ({ onCreateFirst }) => (
+  <EmptyState
+    icon={FileText}
+    title="No se encontraron reportes"
+    description="Comienza a generar reportes para exportar tus datos de inteligencia de negocio."
+    action={
+      <Button
         onClick={onCreateFirst}
-        className="px-6 py-3 bg-primary hover:opacity-90 text-white text-sm font-heading rounded-2xl transition-all active:scale-95"
+        className="rounded-xl bg-primary hover:bg-primary-600 px-5 h-10 text-[13px] font-medium text-primary-foreground transition-all active:scale-95 shadow-[0_4px_14px_-2px_rgba(0,64,128,0.20)] dark:shadow-[0_4px_14px_-2px_rgba(91,168,229,0.20)]"
       >
-        Generar Primer Reporte
-      </button>
-    </div>
-  );
-};
+        Generar primer reporte
+      </Button>
+    }
+  />
+);

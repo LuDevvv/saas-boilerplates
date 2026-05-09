@@ -1,6 +1,6 @@
 import { FC, useState, useEffect } from "react";
 import { FileText } from "lucide-react";
-import { Button } from "@node-stack/ui";
+import { Button, PageHeader } from "@node-stack/ui";
 import { appToast } from "@/components/alerts/Toasts";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { useRealtimeStore } from "@/stores/realtimeStore";
@@ -8,7 +8,6 @@ import { useUploadFile, type StorageFile } from "@/features/storage";
 import { api } from "@/lib/api";
 import { useShallow } from "zustand/react/shallow";
 import { useQueryClient } from "@tanstack/react-query";
-import { SectionHeader } from "@/components/layout/SectionHeader";
 import { useReports, useDeleteReport } from "@/features/reports/hooks/useReports";
 import { ReportsFilterBar } from "./ReportsFilterBar";
 import { ReportList } from "./ReportList";
@@ -101,15 +100,16 @@ export const ReportsContent: FC = () => {
   );
 
   return (
-    <div className="flex flex-1 flex-col gap-10 w-full max-w-[1600px] mx-auto pb-20 px-4 md:px-6 animate-fade-in">
-      <SectionHeader
+    <div className="flex flex-1 flex-col gap-8 w-full max-w-[1600px] mx-auto pb-20 px-4 md:px-6 animate-fade-in">
+      <PageHeader
+        eyebrow="WORKSPACE"
         title="Reportes del Sistema"
-        subtitle="Gestiona y genera tus exportaciones de inteligencia de negocio."
+        description="Gestiona y genera tus exportaciones de inteligencia de negocio."
         action={
           <Button
             onClick={openCreateModal}
             disabled={isUploading || isLoading}
-            className="rounded-2xl bg-primary hover:opacity-90 px-6 h-11 text-[10px] font-heading uppercase text-white shadow-xl shadow-primary/20 transition-all active:scale-95"
+            className="rounded-xl bg-primary hover:bg-primary-600 px-5 h-11 text-[12px] font-medium text-primary-foreground transition-all shadow-[0_4px_14px_-2px_rgba(0,64,128,0.20)] dark:shadow-[0_4px_14px_-2px_rgba(91,168,229,0.20)] active:scale-95"
           >
             <FileText className="mr-2 h-4 w-4" />
             Nuevo Reporte
@@ -122,7 +122,9 @@ export const ReportsContent: FC = () => {
       <section className="space-y-4">
         <div className="flex items-center justify-between px-2">
           <h2 className="text-lg font-heading text-fg leading-none">Archivos Generados</h2>
-          <span className="text-[10px] font-label text-gray-400 uppercase">{filteredReports.length} REPORTES</span>
+          <span className="text-[10px] font-bold text-fg-muted uppercase tracking-wider">
+            {filteredReports.length} reportes
+          </span>
         </div>
 
         <ReportList
