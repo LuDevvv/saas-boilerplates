@@ -25,7 +25,7 @@ export class SystemProcessor extends BaseWorker {
     }
   }
 
-  private async cleanupPortabilityExports() {
+  private async cleanupPortabilityExports(): Promise<void> {
     this.logger.log("Running portability cleanup task...");
 
     // Find exports older than 7 days that are completed

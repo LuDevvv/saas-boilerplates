@@ -4,7 +4,7 @@ import type { NewOutboxEvent } from "@node-stack/db";
 
 @Injectable()
 export class OutboxWriter {
-  async write(event: NewOutboxEvent) {
+  async write(event: NewOutboxEvent): Promise<void> {
     await db.insert(schema.outbox).values(event);
   }
 }

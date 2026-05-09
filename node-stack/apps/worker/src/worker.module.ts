@@ -1,31 +1,32 @@
+import type { IncomingMessage, ServerResponse } from 'http';
+
 import { BullModule, InjectQueue } from "@nestjs/bullmq";
 import { Module, OnModuleInit } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { LoggerModule } from 'nestjs-pino';
-import type { IncomingMessage, ServerResponse } from 'http';
-import * as opentelemetry from '@opentelemetry/api';
-import { Queue } from "bullmq";
-
-import { OutboxProcessor } from "./processors/outbox.processor.js";
-import { AIProcessor } from "./processors/ai.processor.js";
-import { WebhookProcessor } from "./processors/webhook.processor.js";
-import { WebhookDispatcher } from "./processors/webhook-dispatcher.service.js";
-import { NotificationsProcessor } from "./processors/notifications.processor.js";
-import { DlqProcessor } from "./processors/dlq.processor.js";
-import { PortabilityProcessor } from "./processors/portability.processor.js";
-import { SystemProcessor } from "./processors/system.processor.js";
-import { PortabilityExporter } from "@node-stack/services";
-import { createStorageProvider } from "@node-stack/storage";
-import { 
-  AI_PROVIDER_TOKEN, 
-  OpenAIProvider, 
+import {
+  AI_PROVIDER_TOKEN,
+  OpenAIProvider,
   AnthropicProvider,
   OpenRouterProvider
 } from "@node-stack/ai-adapter";
 import { CacheModule } from "@node-stack/cache";
-import { DatabaseModule } from "@node-stack/db";
-
 import { validateEnv } from "@node-stack/config";
+import { DatabaseModule } from "@node-stack/db";
+import { PortabilityExporter } from "@node-stack/services";
+import { createStorageProvider } from "@node-stack/storage";
+import * as opentelemetry from '@opentelemetry/api';
+import { Queue } from "bullmq";
+import { LoggerModule } from 'nestjs-pino';
+
+import { AIProcessor } from "./processors/ai.processor.js";
+import { DlqProcessor } from "./processors/dlq.processor.js";
+import { NotificationsProcessor } from "./processors/notifications.processor.js";
+import { OutboxProcessor } from "./processors/outbox.processor.js";
+import { PortabilityProcessor } from "./processors/portability.processor.js";
+import { SystemProcessor } from "./processors/system.processor.js";
+import { WebhookDispatcher } from "./processors/webhook-dispatcher.service.js";
+import { WebhookProcessor } from "./processors/webhook.processor.js";
+
 
 /**
  * Worker module — registers all BullMQ queues and processors.
@@ -48,7 +49,7 @@ import { validateEnv } from "@node-stack/config";
                     colorize: true,
                   },
                 },
-            customProps: (req: IncomingMessage, res: ServerResponse) => {
+            customProps: (_req: IncomingMessage, _res: ServerResponse) => {
               const activeSpan = opentelemetry.trace.getSpan(opentelemetry.context.active());
               if (!activeSpan) return {};
               const spanContext = activeSpan.spanContext();
@@ -103,7 +104,7 @@ import { validateEnv } from "@node-stack/config";
     ),
   ],
   providers: [
-    OutboxProcessor, 
+    OutboxProcessor,
     AIProcessor,
     WebhookProcessor,
     NotificationsProcessor,
@@ -115,7 +116,7 @@ import { validateEnv } from "@node-stack/config";
       provide: "STORAGE_SERVICE",
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const provider = (config.get('STORAGE_PROVIDER', 'local')).toLowerCase() as "s3" | "local";
+        const provider = (config.get<string>('STORAGE_PROVIDER', 'local')).toLowerCase() as "s3" | "local";
         if (provider === "s3") {
           return createStorageProvider({
             provider: "s3",
@@ -143,7 +144,7 @@ import { validateEnv } from "@node-stack/config";
       provide: AI_PROVIDER_TOKEN,
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const provider = config.get('AI_PROVIDER', 'openai');
+        const provider = config.get<string>('AI_PROVIDER', 'openai');
         switch (provider) {
           case 'anthropic':
             return new AnthropicProvider(config.getOrThrow('ANTHROPIC_API_KEY'));
@@ -163,7 +164,7 @@ export class WorkerModule implements OnModuleInit {
     @InjectQueue("outbox") private readonly outboxQueue: Queue,
   ) {}
 
-  async onModuleInit() {
+  async onModuleInit(): Promise<void> {
     // Portability cleanup cron (daily)
     await this.systemQueue.add(
       "cleanup-portability",

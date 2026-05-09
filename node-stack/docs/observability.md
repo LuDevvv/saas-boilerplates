@@ -19,13 +19,28 @@ This allows you to find an error in Jaeger and immediately see all corresponding
 
 ## 2. Real-time Metrics (Prometheus)
 
-The `MetricsModule` exports a `/v1/metrics` endpoint in Prometheus format.
+The `MetricsModule` exports a `/api/v1/metrics` endpoint in standard Prometheus text format.
 
-### 2.1 Tracked Metrics
-- **HTTP**: Request counts and duration histograms (bucketed for p95/p99 analysis).
-- **Database**: Active connection pool stats.
-- **Queues**: Job success/failure rates and outbox processing speed.
-- **Runtime**: Default Node.js metrics (memory, GC, event loop lag).
+### 2.1 Security
+In production, this endpoint is protected by an API Key. You must provide the `METRICS_TOKEN` via the `Authorization` header:
+```bash
+curl -H "Authorization: Bearer your-metrics-token" http://api.example.com/api/v1/metrics
+```
+
+### 2.2 Tracked Metrics
+- **HTTP**: Request counts and duration histograms (`http_requests_total`, `http_request_duration_seconds`).
+- **Database**: 
+  - Connection pool stats (`db_pool_active_connections`, `db_pool_idle_connections`).
+  - Query latency histograms (`db_query_duration_seconds`) tracked via transaction wrappers.
+- **Cache**: Hits and misses counters (`cache_operations_total`).
+- **Queues**: Active, waiting, and failed job counts for BullMQ queues (`queue_jobs_total`).
+- **Runtime**: Default Node.js metrics (memory usage, CPU, GC, event loop lag).
+
+### 2.3 Local Setup
+To visualize these metrics locally:
+1. Start the stack: `docker-compose up -d`.
+2. Open Prometheus: `http://localhost:9090` (Configure it to scrape `api:4000/api/v1/metrics`).
+3. Open Grafana: `http://localhost:3000` (Add Prometheus as a data source).
 
 ---
 

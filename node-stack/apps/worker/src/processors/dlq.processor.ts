@@ -1,7 +1,17 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Inject, Logger, OnModuleDestroy } from '@nestjs/common';
-import { Job } from 'bullmq';
 import { DB_TOKEN, schema, type Database } from '@node-stack/db';
+import { Job } from 'bullmq';
+
+interface DlqJobData {
+  originalQueue: string;
+  originalJobType: string;
+  originalJobId: string | null;
+  payload: Record<string, unknown>;
+  failedReason: string | null;
+  attemptsMade: number;
+  failedAt: string | null;
+}
 
 @Processor('dlq')
 export class DlqProcessor extends WorkerHost implements OnModuleDestroy {
@@ -11,7 +21,7 @@ export class DlqProcessor extends WorkerHost implements OnModuleDestroy {
     super();
   }
 
-  async process(job: Job): Promise<void> {
+  async process(job: Job<DlqJobData>): Promise<void> {
     const {
       originalQueue,
       originalJobType,
@@ -43,7 +53,7 @@ export class DlqProcessor extends WorkerHost implements OnModuleDestroy {
     }
   }
 
-  async onModuleDestroy() {
+  async onModuleDestroy(): Promise<void> {
     this.logger.log('[DLQ] Gracefully closing DLQ worker...');
     await this.worker.close();
     this.logger.log('[DLQ] Worker closed.');
