@@ -3,6 +3,15 @@ import { Injectable, Logger, Inject } from "@nestjs/common";
 import { schema, eq, sql, and, DB_TOKEN, type Database } from "@node-stack/db";
 import { Queue } from "bullmq";
 
+interface WebhookEndpoint {
+  id: string;
+  workspaceId: string;
+  enabled: boolean;
+  url: string;
+  eventTypes: string[];
+  secret: string;
+}
+
 @Injectable()
 export class WebhookDispatcher {
   private readonly logger = new Logger(WebhookDispatcher.name);
@@ -12,7 +21,7 @@ export class WebhookDispatcher {
     @Inject(DB_TOKEN) private readonly db: Database,
   ) {}
 
-  async dispatch(eventType: string, payload: Record<string, unknown>, workspaceId?: string) {
+  async dispatch(eventType: string, payload: Record<string, unknown>, workspaceId?: string): Promise<void> {
     if (!workspaceId) {
       this.logger.warn(`No workspaceId provided for event ${eventType}. Skipping webhook dispatch.`);
       return;
@@ -25,7 +34,7 @@ export class WebhookDispatcher {
         eq(schema.webhookEndpoints.enabled, true),
         sql`${schema.webhookEndpoints.eventTypes} && ARRAY[${eventType}, '*']::text[]`
       ),
-    });
+    }) as WebhookEndpoint[];
 
     if (endpoints.length === 0) {
       this.logger.debug(`No active endpoints found for workspace ${workspaceId} and event ${eventType}.`);
@@ -36,7 +45,7 @@ export class WebhookDispatcher {
 
     // Enqueue a job for each endpoint
     await Promise.all(
-      endpoints.map((endpoint: any) =>
+      endpoints.map((endpoint: WebhookEndpoint) =>
         this.deliveryQueue.add(
           "deliver-webhook",
           {
