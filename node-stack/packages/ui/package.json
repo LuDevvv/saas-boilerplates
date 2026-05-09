@@ -7,7 +7,7 @@
     "license": "MIT",
     "type": "module",
     "scripts": {
-        "lint": "eslint src --ext .ts,.tsx",
+        "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
         "typecheck": "tsc --noEmit",
         "build": "tsc -b --clean && tsc -b"
     },
