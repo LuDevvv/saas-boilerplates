@@ -66,6 +66,53 @@ export class PasswordService {
   }
 
   /**
+   * Updates a user's password after verifying the current one.
+   * Also revokes all other sessions for security.
+   */
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+    ctx: { ipAddress?: string | null; userAgent?: string | null } = {},
+  ): Promise<void> {
+    const user = await this.authRepository.findUserById(userId);
+    if (!user || !user.passwordHash) {
+      throw new UnauthorizedException(AUTH_ERRORS.INVALID_CREDENTIALS);
+    }
+
+    const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isValid) {
+      throw new UnauthorizedException(AUTH_ERRORS.INVALID_CREDENTIALS);
+    }
+
+    const passwordHash = await this.hashPassword(newPassword);
+
+    await withSystemTx(async (tx: Database) => {
+      await this.authRepository.updateUser(userId, { passwordHash }, tx);
+      await this.authRepository.createOutboxEvent(
+        "user.password_changed",
+        { userId },
+        tx,
+      );
+      await this.auditLog.create(
+        {
+          workspaceId: null,
+          userId,
+          action: "auth.password_changed",
+          entityType: "user",
+          entityId: userId,
+          metadata: { via: "self_service" },
+          ipAddress: ctx.ipAddress ?? null,
+          userAgent: ctx.userAgent ?? null,
+        },
+        tx,
+      );
+    }, this.authRepository.db);
+
+    await this.sessionService.revokeAllOtherSessions(userId, "");
+  }
+
+  /**
    * Issues a one-hour password-reset token. Returns silently when
    * the email is not registered so that callers cannot enumerate
    * accounts; the audit row is also only written for known users.
@@ -124,7 +171,11 @@ export class PasswordService {
    * Session revocation runs *after* the password change transaction
    * commits so a transient failure leaves the password as-is.
    */
-  async resetPassword(token: string, newPassword: string): Promise<void> {
+  async resetPassword(
+    token: string, 
+    newPassword: string,
+    ctx: { ipAddress?: string | null; userAgent?: string | null } = {},
+  ): Promise<void> {
     const verification = await this.authRepository.findVerificationToken(
       "password_reset",
       token,
@@ -155,6 +206,8 @@ export class PasswordService {
           entityType: "user",
           entityId: verification.userId,
           metadata: { via: "reset_token" },
+          ipAddress: ctx.ipAddress ?? null,
+          userAgent: ctx.userAgent ?? null,
         },
         tx,
       );

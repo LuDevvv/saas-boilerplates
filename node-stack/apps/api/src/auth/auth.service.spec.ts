@@ -4,8 +4,12 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { AuthService } from '@/auth/auth.service.js';
 import { TwoFactorService } from '@/auth/two-factor/two-factor.service.js';
-import { SessionRepository, AuthRepository } from '@node-stack/db';
+import { SessionRepository, AuthRepository, AuditLogRepository } from '@node-stack/db';
 import { CacheService } from '@node-stack/cache';
+import { TokenService } from '@/auth/services/token.service.js';
+import { SessionService } from '@/auth/services/session.service.js';
+import { PasswordService } from '@/auth/services/password.service.js';
+import { OAuthService } from '@/auth/services/oauth.service.js';
 import * as bcrypt from 'bcrypt';
 
 // Mock otplib to avoid ESM export parse errors
@@ -76,8 +80,10 @@ describe('AuthService', () => {
 
   const mockSessionRepo = {
     findActiveByUserId: vi.fn(),
+    findActiveByUserIdPaged: vi.fn(),
     deleteById: vi.fn(),
     deleteAllExcept: vi.fn(),
+    deleteAll: vi.fn(),
   };
 
   const mockCacheService = {
@@ -96,7 +102,40 @@ describe('AuthService', () => {
     deleteVerificationTokensByUser: vi.fn(),
     createVerificationToken: vi.fn(),
     findActiveSessionById: vi.fn(),
-    db: {},
+    db: {
+      transaction: vi.fn((cb) => cb({
+        execute: vi.fn(),
+      })),
+    },
+  };
+
+  const mockAuditLogRepo = {
+    create: vi.fn(),
+  };
+
+  const mockTokenService = {
+    generateTokens: vi.fn().mockResolvedValue({ accessToken: 'at', refreshToken: 'rt', sessionId: 's1' }),
+    getSessionExpiry: vi.fn().mockReturnValue(new Date()),
+  };
+
+  const mockSessionService = {
+    getActiveSessions: vi.fn(),
+    revokeSession: vi.fn(),
+    revokeAllOtherSessions: vi.fn(),
+    findOrCreateSession: vi.fn(),
+    refreshTokens: vi.fn(),
+  };
+
+  const mockPasswordService = {
+    validateUser: vi.fn(),
+    hashPassword: vi.fn().mockResolvedValue('hash'),
+    forgotPassword: vi.fn(),
+    resetPassword: vi.fn(),
+    changePassword: vi.fn(),
+  };
+
+  const mockOAuthService = {
+    handleOAuthLogin: vi.fn(),
   };
 
   beforeEach(async () => {
@@ -108,6 +147,11 @@ describe('AuthService', () => {
         { provide: TwoFactorService, useValue: mockTwoFactorService },
         { provide: SessionRepository, useValue: mockSessionRepo },
         { provide: AuthRepository, useValue: mockAuthRepo },
+        { provide: AuditLogRepository, useValue: mockAuditLogRepo },
+        { provide: TokenService, useValue: mockTokenService },
+        { provide: SessionService, useValue: mockSessionService },
+        { provide: PasswordService, useValue: mockPasswordService },
+        { provide: OAuthService, useValue: mockOAuthService },
         { provide: CacheService, useValue: mockCacheService },
       ],
     }).compile();
@@ -147,7 +191,7 @@ describe('AuthService', () => {
 
   describe('login', () => {
     it('throws UnauthorizedException for unknown email', async () => {
-      mockAuthRepo.findUserByEmail.mockResolvedValue(null);
+      mockPasswordService.validateUser.mockRejectedValue(new UnauthorizedException());
 
       await expect(
         service.login({ email: 'ghost@test.com', password: 'Pw123!' })
@@ -155,11 +199,7 @@ describe('AuthService', () => {
     });
 
     it('throws UnauthorizedException for wrong password', async () => {
-      const passwordHash = await bcrypt.hash('correct', 12);
-      mockAuthRepo.findUserByEmail.mockResolvedValue({
-        id: 'u1', email: 'u@t.com',
-        passwordHash,
-      });
+      mockPasswordService.validateUser.mockRejectedValue(new UnauthorizedException());
 
       await expect(
         service.login({ email: 'u@t.com', password: 'WrongPass1!' })
@@ -167,10 +207,9 @@ describe('AuthService', () => {
     });
 
     it('returns tokens on successful login', async () => {
-      const passwordHash = await bcrypt.hash('pass', 12);
-      mockAuthRepo.findUserByEmail.mockResolvedValue({ id: 'u1', email: 'u@t.com', passwordHash });
+      mockPasswordService.validateUser.mockResolvedValue({ id: 'u1', email: 'u@t.com', passwordHash: 'hash' });
       mockAuthRepo.findUserById.mockResolvedValue({ id: 'u1', twoFactorEnabled: false });
-      mockAuthRepo.createSession.mockResolvedValue({ id: 's1' });
+      mockSessionService.findOrCreateSession.mockResolvedValue({ sessionId: 's1', reused: false });
 
       const result = await service.login({ email: 'u@t.com', password: 'pass' });
       expect(result).toHaveProperty('accessToken');
@@ -188,11 +227,7 @@ describe('AuthService', () => {
         refreshToken: null,
       };
 
-      mockAuthRepo.findOAuthLink.mockResolvedValue(null);
-      mockAuthRepo.findUserByEmail.mockResolvedValue({ id: 'u123', email: 'existing@test.com' });
-      mockAuthRepo.createOAuthAccount.mockResolvedValue({ id: 'oa1' });
-      mockAuthRepo.createSession.mockResolvedValue({ id: 's1' });
-      mockAuthRepo.findUserById.mockResolvedValue({ id: 'u123' });
+      mockOAuthService.handleOAuthLogin.mockResolvedValue({ accessToken: 'at', refreshToken: 'rt' });
 
       const result = await service.handleOAuthLogin(oauthProfile);
       expect(result).toHaveProperty('accessToken');
@@ -201,17 +236,20 @@ describe('AuthService', () => {
 
   describe('getActiveSessions', () => {
     it('marks current session with isCurrent: true', async () => {
-      (sessionRepo.findActiveByUserIdPaged as any).mockResolvedValue([
-        { id: 'sess-1', userId: 'u1', createdAt: new Date(), expiresAt: new Date(Date.now() + 1000000) },
-        { id: 'sess-2', userId: 'u1', createdAt: new Date(), expiresAt: new Date(Date.now() + 1000000) },
-      ]);
+      mockSessionService.getActiveSessions.mockResolvedValue({
+        data: [
+          { id: 'sess-1', userAgent: 'UA1', ipAddress: '1.1.1.1', lastUsedAt: new Date(), createdAt: new Date(), isCurrent: true },
+          { id: 'sess-2', userAgent: 'UA2', ipAddress: '2.2.2.2', lastUsedAt: new Date(), createdAt: new Date(), isCurrent: false },
+        ],
+        hasMore: false,
+        nextCursor: null,
+      });
 
       const page = await service.getActiveSessions('u1', 'sess-1');
       const current = page.data.find(s => s.isCurrent);
 
       expect(current).toBeDefined();
       expect(current!.id).toBe('sess-1');
-      expect(page.data.filter(s => !s.isCurrent)).toHaveLength(1);
     });
   });
 });

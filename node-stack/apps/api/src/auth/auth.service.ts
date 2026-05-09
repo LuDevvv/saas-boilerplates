@@ -70,15 +70,26 @@ export class AuthService {
     sessionId: string,
     userId: string,
     currentSessionId: string,
+    ctx: { ipAddress?: string | null; userAgent?: string | null } = {},
   ): Promise<void> {
-    return this.sessionService.revokeSession(sessionId, userId, currentSessionId);
+    return this.sessionService.revokeSession(
+      sessionId,
+      userId,
+      currentSessionId,
+      ctx,
+    );
   }
 
   revokeAllOtherSessions(
     userId: string,
     currentSessionId?: string,
+    ctx: { ipAddress?: string | null; userAgent?: string | null } = {},
   ): Promise<{ count: number }> {
-    return this.sessionService.revokeAllOtherSessions(userId, currentSessionId);
+    return this.sessionService.revokeAllOtherSessions(
+      userId,
+      currentSessionId,
+      ctx,
+    );
   }
 
   async register(
@@ -254,8 +265,25 @@ export class AuthService {
     return this.passwordService.forgotPassword(email);
   }
 
-  resetPassword(token: string, newPassword: string): Promise<void> {
-    return this.passwordService.resetPassword(token, newPassword);
+  resetPassword(
+    token: string, 
+    newPassword: string,
+    ctx: { ipAddress?: string | null; userAgent?: string | null } = {},
+  ): Promise<void> {
+    return this.passwordService.resetPassword(token, newPassword, ctx);
+  }
+
+  changePassword(
+    userId: string,
+    dto: { currentPassword: string; newPassword: string },
+    ctx: { ipAddress?: string | null; userAgent?: string | null } = {},
+  ): Promise<void> {
+    return this.passwordService.changePassword(
+      userId,
+      dto.currentPassword,
+      dto.newPassword,
+      ctx,
+    );
   }
 
   async sendVerificationEmail(userId: string): Promise<void> {

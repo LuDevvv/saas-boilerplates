@@ -38,6 +38,7 @@ import {
   Login2faDto,
   RecoveryDto,
   ResetPasswordDto,
+  ChangePasswordDto,
   VerifyEmailDto,
   UpdateProfileDto,
 } from "@/auth/dto/index.js";
@@ -213,8 +214,12 @@ export class AuthController {
   async revokeSession(
     @Param("id") sessionId: string,
     @CurrentUser() user: UserPayload,
+    @Req() req: Request,
   ): Promise<void> {
-    await this.authService.revokeSession(sessionId, user.id, user.sessionId);
+    await this.authService.revokeSession(sessionId, user.id, user.sessionId, {
+      ipAddress: extractClientIp(req),
+      userAgent: req.headers["user-agent"],
+    });
   }
 
   @Delete("sessions")
@@ -228,8 +233,12 @@ export class AuthController {
   @ApiResponse({ status: 200, description: "All other sessions revoked" })
   async revokeAllSessions(
     @CurrentUser() user: UserPayload,
+    @Req() req: Request,
   ): Promise<{ count: number }> {
-    return this.authService.revokeAllOtherSessions(user.id, user.sessionId);
+    return this.authService.revokeAllOtherSessions(user.id, user.sessionId, {
+      ipAddress: extractClientIp(req),
+      userAgent: req.headers["user-agent"],
+    });
   }
 
   @Post("2fa/enable")
@@ -255,8 +264,11 @@ export class AuthController {
   })
   @ApiResponse({ status: 200, description: "2FA successfully enabled" })
   @ApiResponse({ status: 400, description: "Invalid TOTP code" })
-  async verify2fa(@CurrentUser("id") userId: string, @Body() dto: Verify2faDto) {
-    await this.twoFactorService.enableTwoFactor(userId, dto.token);
+  async verify2fa(@CurrentUser("id") userId: string, @Body() dto: Verify2faDto, @Req() req: Request) {
+    await this.twoFactorService.enableTwoFactor(userId, dto.token, {
+      ipAddress: extractClientIp(req),
+      userAgent: req.headers["user-agent"],
+    });
     return { enabled: true };
   }
 
@@ -269,8 +281,11 @@ export class AuthController {
     description: "Removes two-factor authentication from the user's account.",
   })
   @ApiResponse({ status: 200, description: "2FA successfully disabled" })
-  async disable2fa(@CurrentUser("id") userId: string) {
-    await this.twoFactorService.disableTwoFactor(userId);
+  async disable2fa(@CurrentUser("id") userId: string, @Req() req: Request) {
+    await this.twoFactorService.disableTwoFactor(userId, {
+      ipAddress: extractClientIp(req),
+      userAgent: req.headers["user-agent"],
+    });
     return { disabled: true };
   }
 
@@ -318,9 +333,34 @@ export class AuthController {
     description: "Sets a new password using a valid reset token.",
   })
   @ApiResponse({ status: 200, description: "Password reset successfully." })
-  async resetPassword(@Body() dto: ResetPasswordDto) {
-    await this.authService.resetPassword(dto.token, dto.newPassword);
+  async resetPassword(@Body() dto: ResetPasswordDto, @Req() req: Request) {
+    await this.authService.resetPassword(dto.token, dto.newPassword, {
+      ipAddress: extractClientIp(req),
+      userAgent: req.headers["user-agent"],
+    });
     return { message: "Password reset successfully." };
+  }
+
+  @Post("change-password")
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth("JWT-auth")
+  @ApiOperation({
+    summary: "Change password",
+    description: "Updates the current user's password. Requires the current password for verification.",
+  })
+  @ApiResponse({ status: 200, description: "Password changed successfully." })
+  @ApiResponse({ status: 401, description: "Unauthorized or invalid current password" })
+  async changePassword(
+    @CurrentUser("id") userId: string,
+    @Body() dto: ChangePasswordDto,
+    @Req() req: Request,
+  ) {
+    await this.authService.changePassword(userId, dto, {
+      ipAddress: extractClientIp(req),
+      userAgent: req.headers["user-agent"],
+    });
+    return { message: "Password changed successfully." };
   }
 
   @Post("email/verification-link")

@@ -83,6 +83,20 @@ export class BillingService {
       },
     });
 
+    // Log the checkout attempt for security tracking
+    await this.auditLog.create({
+      workspaceId: data.workspaceId,
+      userId: data.userId,
+      action: "billing.checkout_created",
+      entityType: "checkout",
+      entityId: data.planId,
+      metadata: {
+        planId: data.planId,
+        variantId: data.variantId,
+        checkoutUrl: checkout.url,
+      },
+    });
+
     await this.outbox.transaction(async (tx) => {
       await this.outbox.createEvent(
         "checkout.created",
@@ -486,9 +500,9 @@ export class BillingService {
   }
 
   async invoices(workspaceId: string) {
-    // Polar doesn't expose invoices via API —
-    // return empty list with a portal link to the billing overview
-    return { invoices: [], message: "View invoices in the Polar portal" };
+    // Polar doesn't expose invoices via API — return empty list.
+    // Use the portal for history.
+    return [];
   }
 
   // ─── Helpers ──────────────────────────────────────────────────────────

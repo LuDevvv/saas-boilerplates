@@ -1,7 +1,10 @@
 import { Injectable, OnModuleInit, Inject, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { schema, eq, desc, and, lt, or, DB_TOKEN, type Database } from '@node-stack/db';
-import { NotificationService as SharedNotificationService, NotificationPayload } from '@node-stack/notifications';
+import { schema, eq, desc, and, lt, or, isNull, count, DB_TOKEN, type Database } from '@node-stack/db';
+import { 
+  NotificationService as SharedNotificationService, 
+  NotificationPayload 
+} from '@node-stack/notifications';
 import { encodeCursor, decodeCursor } from '@node-stack/utils';
 import { buildPage, type PaginatedResponse } from '@node-stack/validators';
 
@@ -122,7 +125,7 @@ export class NotificationService implements OnModuleInit {
       limit: limit + 1,
     });
 
-    return buildPage(rows, limit, (row) =>
+    return buildPage(rows, limit, (row: typeof schema.notifications.$inferSelect) =>
       encodeCursor({ createdAt: row.createdAt.toISOString(), id: row.id }),
     );
   }
@@ -154,5 +157,18 @@ export class NotificationService implements OnModuleInit {
         eq(schema.notifications.id, notificationId),
         eq(schema.notifications.userId, userId)
       ));
+  }
+
+  async getUnreadCount(userId: string, workspaceId?: string): Promise<number> {
+    const [result] = await this.db
+      .select({ value: count() })
+      .from(schema.notifications)
+      .where(and(
+        eq(schema.notifications.userId, userId),
+        workspaceId ? eq(schema.notifications.workspaceId, workspaceId) : undefined,
+        isNull(schema.notifications.readAt)
+      ));
+    
+    return Number(result?.value ?? 0);
   }
 }

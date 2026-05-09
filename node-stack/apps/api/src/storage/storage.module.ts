@@ -36,7 +36,9 @@ import { AppStorageService } from "@/storage/storage.service.js";
           provider: "local",
           local: {
             basePath: process.env.STORAGE_LOCAL_PATH || "./storage",
-            baseUrl: process.env.STORAGE_LOCAL_URL || "http://localhost:3000/api/storage",
+            baseUrl:
+              process.env.STORAGE_LOCAL_URL ||
+              "http://localhost:4000/api/v1/storage",
           },
         });
       },

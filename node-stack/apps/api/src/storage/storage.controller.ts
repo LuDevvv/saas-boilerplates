@@ -1,10 +1,12 @@
 import {
   Controller,
   Post,
+  Put,
   Get,
   Delete,
   Body,
   Param,
+  Req,
   UseGuards,
   Inject,
 } from "@nestjs/common";
@@ -26,6 +28,8 @@ import { WorkspaceGuard } from "@/common/guards/workspace.guard.js";
 import type { UserPayload, WorkspaceContext } from "@/common/types/index.js";
 import { AppStorageService } from "@/storage/storage.service.js";
 
+import { Public } from "@/common/decorators/public.decorator.js";
+
 @ApiTags("storage")
 @ApiBearerAuth("JWT-auth")
 @ApiHeader({
@@ -42,6 +46,33 @@ export class StorageController {
     private readonly appStorageService: AppStorageService,
   ) {}
 
+  @Public()
+  @Put("upload/*")
+  @ApiOperation({ summary: "Handle local storage upload (Dev only)" })
+  async uploadLocal(
+    @Param("0") key: string,
+    @Req() req: any,
+  ) {
+    // If we're using the local provider, we need to save the raw body to disk.
+    // The 'body' here might be a Buffer if we use a RawBody decorator or a custom middleware.
+    // But since this is a dev boilerplate, we'll assume the local provider's 'upload' 
+    // method is what we want to call.
+    
+    // We'll use a stream-to-buffer approach for simplicity in dev.
+    const chunks: any[] = [];
+    for await (const chunk of req) {
+      chunks.push(chunk);
+    }
+    const buffer = Buffer.concat(chunks);
+
+    await this.storage.upload({
+      key,
+      body: buffer,
+    });
+
+    return { ok: true };
+  }
+
   @Post("upload-url")
   @ApiOperation({
     summary: "Request a presigned upload URL",
@@ -53,24 +84,38 @@ export class StorageController {
     @Workspace() workspace: WorkspaceContext,
     @CurrentUser() user: UserPayload,
   ) {
-    return this.appStorageService.getPresignedUploadUrl(
+    const result = await this.appStorageService.getPresignedUploadUrl(
       body,
       workspace.id,
       user.id,
     );
+
+    return {
+      uploadUrl: result.url,
+      fileUrl: `${process.env.VITE_API_URL || "http://localhost:4000/api/v1"}/storage/${result.fileId}`,
+      expiresIn: 300,
+    };
   }
 
   @Post("confirm-upload")
-  @ApiOperation({ 
+  @ApiOperation({
     summary: "Confirm and Verify Upload",
-    description: "Verifies that the file was actually uploaded to the storage provider and updates its status in the DB."
+    description:
+      "Verifies that the file was actually uploaded to the storage provider and updates its status in the DB.",
   })
   @ApiResponse({ status: 200, description: "Upload confirmed" })
   async confirmUpload(
     @Body() body: { fileId: string },
     @Workspace() workspace: WorkspaceContext,
   ) {
-    return this.appStorageService.completeUpload(body.fileId, workspace.id);
+    const file = await this.appStorageService.completeUpload(
+      body.fileId,
+      workspace.id,
+    );
+    return {
+      success: file.status === "uploaded",
+      fileUrl: `${process.env.VITE_API_URL || "http://localhost:4000/api/v1"}/storage/${file.id}`,
+    };
   }
 
   @Get(":fileId")

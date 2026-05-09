@@ -103,7 +103,11 @@ export class TwoFactorService {
     }
   }
 
-  async enableTwoFactor(userId: string, token: string): Promise<void> {
+  async enableTwoFactor(
+    userId: string, 
+    token: string,
+    ctx: { ipAddress?: string | null; userAgent?: string | null } = {},
+  ): Promise<void> {
     const user = await this.db.query.users.findFirst({
       where: eq(schema.users.id, userId),
     });
@@ -138,13 +142,18 @@ export class TwoFactorService {
           entityType: "user",
           entityId: userId,
           metadata: {},
+          ipAddress: ctx.ipAddress ?? null,
+          userAgent: ctx.userAgent ?? null,
         },
         tx,
       );
     }, this.db);
   }
 
-  async disableTwoFactor(userId: string): Promise<void> {
+  async disableTwoFactor(
+    userId: string,
+    ctx: { ipAddress?: string | null; userAgent?: string | null } = {},
+  ): Promise<void> {
     await this.db
       .update(schema.users)
       .set({ twoFactorEnabled: false, twoFactorSecret: null })
@@ -159,6 +168,8 @@ export class TwoFactorService {
           entityType: "user",
           entityId: userId,
           metadata: {},
+          ipAddress: ctx.ipAddress ?? null,
+          userAgent: ctx.userAgent ?? null,
         },
         tx,
       );

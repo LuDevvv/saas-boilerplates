@@ -1,9 +1,11 @@
-import { NodeSDK } from '@opentelemetry/sdk-node';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import type { TextMapPropagator } from '@opentelemetry/api';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
-import { BullMQInstrumentation } from 'opentelemetry-instrumentation-bullmq';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import type { SpanProcessor } from '@opentelemetry/sdk-trace-base';
 import * as Sentry from '@sentry/node';
-import { SentrySpanProcessor, SentryPropagator } from '@sentry/opentelemetry';
+import { SentryPropagator, SentrySpanProcessor } from '@sentry/opentelemetry';
+import { BullMQInstrumentation } from 'opentelemetry-instrumentation-bullmq';
 
 // Initialize Sentry with 'otel' instrumenter so it doesn't try to patch things itself
 Sentry.init({
@@ -25,13 +27,16 @@ const traceExporter = new OTLPTraceExporter({
   url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318/v1/traces',
 });
 
+// SentrySpanProcessor and SentryPropagator implement the OTel interfaces but ship
+// their own interface versions; NodeSDK's type definitions include `any` internally,
+// so we cast through unknown to satisfy the strict types.
+const sentrySpanProcessor = new SentrySpanProcessor() as unknown as SpanProcessor;
+const sentryPropagator = new SentryPropagator() as unknown as TextMapPropagator;
+
 const sdk = new NodeSDK({
   traceExporter,
-  spanProcessors: [
-    // Add Sentry Span Processor to route traces to Sentry
-    new SentrySpanProcessor() as any,
-  ],
-  textMapPropagator: new SentryPropagator() as any,
+  spanProcessors: [sentrySpanProcessor],
+  textMapPropagator: sentryPropagator,
   instrumentations: [
     getNodeAutoInstrumentations({
       '@opentelemetry/instrumentation-fs': { enabled: false }, // Reduce noise
@@ -44,6 +49,6 @@ sdk.start();
 
 process.on('SIGTERM', () => {
   sdk.shutdown()
-    .then(() => console.log('Tracing terminated'))
-    .catch((error) => console.log('Error terminating tracing', error));
+    .then(() => console.warn('Tracing terminated'))
+    .catch((error) => console.error('Error terminating tracing', error));
 });

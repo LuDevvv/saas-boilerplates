@@ -87,6 +87,7 @@ export class SessionService {
     sessionId: string,
     userId: string,
     currentSessionId: string,
+    ctx: { ipAddress?: string | null; userAgent?: string | null } = {},
   ): Promise<void> {
     if (sessionId === currentSessionId) {
       throw new BadRequestException(
@@ -105,6 +106,8 @@ export class SessionService {
           entityType: "session",
           entityId: sessionId,
           metadata: {},
+          ipAddress: ctx.ipAddress ?? null,
+          userAgent: ctx.userAgent ?? null,
         },
         tx,
       );
@@ -114,6 +117,7 @@ export class SessionService {
   async revokeAllOtherSessions(
     userId: string,
     currentSessionId?: string,
+    ctx: { ipAddress?: string | null; userAgent?: string | null } = {},
   ): Promise<{ count: number }> {
     const before = await this.sessionRepository.findActiveByUserId(userId);
 
@@ -145,6 +149,8 @@ export class SessionService {
             count,
             keptCurrent: currentSessionId !== undefined && currentSessionId !== "",
           },
+          ipAddress: ctx.ipAddress ?? null,
+          userAgent: ctx.userAgent ?? null,
         },
         tx,
       );

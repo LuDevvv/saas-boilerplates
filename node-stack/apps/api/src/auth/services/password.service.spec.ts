@@ -15,7 +15,16 @@ interface Mocks {
 function buildMocks(): Mocks {
   const authRepo = {
     findUserByEmail: vi.fn(),
+    findUserById: vi.fn(),
     findVerificationToken: vi.fn(),
+    updateUser: vi.fn(),
+    deleteVerificationToken: vi.fn(),
+    createOutboxEvent: vi.fn(),
+    db: {
+      transaction: vi.fn((cb) => cb({
+        execute: vi.fn(),
+      })),
+    },
   } as unknown as AuthRepository;
   const auditLog = { create: vi.fn() } as unknown as AuditLogRepository;
   const sessionService = {
@@ -76,6 +85,69 @@ describe("PasswordService", () => {
       expect(hash).toMatch(/^\$2[aby]\$/);
       await expect(bcrypt.compare("plaintext-secret", hash)).resolves.toBe(
         true,
+      );
+    });
+  });
+
+  describe("changePassword", () => {
+    it("updates password and writes audit log when current password matches", async () => {
+      const oldHash = await svc.hashPassword("old-pass");
+      (mocks.authRepo.findUserById as any).mockResolvedValue({
+        id: "u-1",
+        passwordHash: oldHash,
+      });
+
+      await svc.changePassword("u-1", "old-pass", "new-pass", {
+        ipAddress: "1.2.3.4",
+        userAgent: "Agent",
+      });
+
+      expect(mocks.authRepo.updateUser).toHaveBeenCalledWith(
+        "u-1",
+        expect.objectContaining({ passwordHash: expect.any(String) }),
+        expect.anything(),
+      );
+      expect(mocks.auditLog.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: "auth.password_changed",
+          ipAddress: "1.2.3.4",
+          userAgent: "Agent",
+        }),
+        expect.anything(),
+      );
+      expect(mocks.sessionService.revokeAllOtherSessions).toHaveBeenCalled();
+    });
+
+    it("throws Unauthorized when current password mismatches", async () => {
+      const actualHash = await svc.hashPassword("correct");
+      (mocks.authRepo.findUserById as any).mockResolvedValue({
+        id: "u-1",
+        passwordHash: actualHash,
+      });
+
+      await expect(
+        svc.changePassword("u-1", "wrong", "new-pass"),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
+    });
+  });
+
+  describe("resetPassword", () => {
+    it("consumes token and logs completion with IP/UA", async () => {
+      (mocks.authRepo.findVerificationToken as any).mockResolvedValue({
+        userId: "u-1",
+        expiresAt: new Date(Date.now() + 10000),
+      });
+
+      await svc.resetPassword("tok-1", "new-pass", {
+        ipAddress: "8.8.8.8",
+      });
+
+      expect(mocks.auditLog.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          action: "auth.password_reset_completed",
+          ipAddress: "8.8.8.8",
+        }),
+        expect.anything(),
       );
     });
   });

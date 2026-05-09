@@ -8,6 +8,7 @@
         "build": "tsc -b tsconfig.build.json --clean && tsc -b tsconfig.build.json && tsc-alias -p tsconfig.build.json",
         "dev": "nest start --watch --exec \"node --env-file=/app/.env dist/src/main.js\"",
         "dev:local": "nest start --watch --exec \"node --import tsx --env-file=../../.env\"",
+        "start:test": "node --import tsx src/main.ts",
         "start": "node dist/main.js",
         "start:local": "node --env-file=../../.env dist/main.js",
         "db:migrate": "drizzle-kit migrate",

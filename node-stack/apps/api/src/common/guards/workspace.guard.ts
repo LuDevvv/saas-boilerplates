@@ -6,21 +6,33 @@ import {
   NotFoundException,
   Inject,
 } from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
 import { CacheService } from "@node-stack/cache";
 import { schema, eq, and, DB_TOKEN, RequestContextService } from "@node-stack/db";
 import type { Database } from "@node-stack/db";
 
+import { IS_PUBLIC_KEY } from "@/common/decorators/public.decorator.js";
 import type { WorkspaceContext } from "@/common/types/index.js";
 
 @Injectable()
 export class WorkspaceGuard implements CanActivate {
   constructor(
+    private readonly reflector: Reflector,
     private readonly cache: CacheService,
     private readonly contextService: RequestContextService,
     @Inject(DB_TOKEN) private readonly db: Database,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic) {
+      return true;
+    }
+
     const req = context.switchToHttp().getRequest() as any;
     
     // Extract workspace ID: Look for explicit workspaceId param first,
@@ -47,6 +59,20 @@ export class WorkspaceGuard implements CanActivate {
 
     // Skip workspace check if no workspaceId is found (allows public/non-workspace routes)
     if (!workspaceId) {
+      // If the route belongs to a workspace-dependent domain, require the ID
+      const isWorkspaceDomain =
+        req.url.includes("/storage") ||
+        req.url.includes("/ai") ||
+        req.url.includes("/billing") ||
+        req.url.includes("/portability") ||
+        req.url.includes("/workspaces/");
+
+      if (isWorkspaceDomain) {
+        throw new ForbiddenException(
+          "Missing workspace context. X-Workspace-ID header is required.",
+        );
+      }
+
       return true;
     }
 
