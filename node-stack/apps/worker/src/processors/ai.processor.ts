@@ -1,5 +1,4 @@
 import { Processor, InjectQueue } from '@nestjs/bullmq';
-import { Job, Queue } from 'bullmq';
 import { Logger, Inject } from '@nestjs/common';
 import {
   AI_PROVIDER_TOKEN,
@@ -12,6 +11,8 @@ import type {
 } from '@node-stack/ai-adapter';
 import { CacheService } from '@node-stack/cache';
 import { RequestContextService } from '@node-stack/db';
+import { Job, Queue } from 'bullmq';
+
 import { BaseWorker } from '../base.worker.js';
 
 const PROMPT_TEMPLATES: Record<string, (j: AIJob) => string> = {
@@ -96,7 +97,7 @@ export class AIProcessor extends BaseWorker {
       });
 
       return jobResult;
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof AIInsufficientQuotaError) {
         this.logger.error(
           `AI Job ${job.id} failed due to insufficient quota. Moving to FAILED without retry.`,

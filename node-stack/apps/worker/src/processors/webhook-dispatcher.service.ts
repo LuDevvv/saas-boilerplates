@@ -1,5 +1,5 @@
-import { Injectable, Logger, Inject } from "@nestjs/common";
 import { InjectQueue } from "@nestjs/bullmq";
+import { Injectable, Logger, Inject } from "@nestjs/common";
 import { schema, eq, sql, and, DB_TOKEN, type Database } from "@node-stack/db";
 import { Queue } from "bullmq";
 

@@ -1,8 +1,23 @@
 import { Processor, InjectQueue } from '@nestjs/bullmq';
-import { Job, Queue } from 'bullmq';
 import { Logger } from '@nestjs/common';
 import { RequestContextService } from '@node-stack/db';
+import { Job, Queue } from 'bullmq';
+
 import { BaseWorker } from '../base.worker.js';
+
+interface SendEmailJobData {
+  to: string;
+  subject: string;
+  template: string;
+  data?: Record<string, unknown>;
+}
+
+interface SendPushJobData {
+  userId: string;
+  title: string;
+  body: string;
+  data?: Record<string, unknown>;
+}
 
 /**
  * Notifications processor — handles email and push notification jobs.
@@ -30,16 +45,16 @@ export class NotificationsProcessor extends BaseWorker {
   async processJob(job: Job): Promise<unknown> {
     switch (job.name) {
       case 'send-email':
-        return this.handleSendEmail(job);
+        return this.handleSendEmail(job as Job<SendEmailJobData>);
       case 'send-push':
-        return this.handleSendPush(job);
+        return this.handleSendPush(job as Job<SendPushJobData>);
       default:
         this.logger.warn(`Unknown notification job type: ${job.name}`);
         return null;
     }
   }
 
-  private async handleSendEmail(job: Job): Promise<boolean> {
+  private async handleSendEmail(job: Job<SendEmailJobData>): Promise<boolean> {
     const { to, subject, template, data } = job.data;
 
     this.logger.log(
@@ -55,19 +70,20 @@ export class NotificationsProcessor extends BaseWorker {
         to,
         subject,
         templateName: template,
-        templateData: data || {},
+        templateData: data ?? {},
       });
 
       this.logger.log(`[Email] Successfully sent to ${to}`);
       return true;
-    } catch (error: any) {
-      this.logger.error(`[Email] Failed to send to ${to}: ${error.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`[Email] Failed to send to ${to}: ${message}`);
       throw error;
     }
   }
 
-  private async handleSendPush(job: Job): Promise<boolean> {
-    const { userId, title, body, data } = job.data;
+  private async handleSendPush(job: Job<SendPushJobData>): Promise<boolean> {
+    const { userId, title } = job.data;
 
     this.logger.log(
       `[Push] Sending push notification: userId=${userId} title="${title}"`,

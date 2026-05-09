@@ -34,6 +34,7 @@ import * as z from "zod";
 import { cn } from "@/utils/classNames";
 import { BackButton } from "@/components/shared/BackButton";
 import { useExchangeRate } from "@/hooks/useExchangeRate";
+import { useCheckout } from "@/features/billing/hooks/useBilling";
 
 // ─── Schema — Polar handles card / address; we only pre-fill email ────────────
 
@@ -47,24 +48,28 @@ type CheckoutForm = z.infer<typeof checkoutSchema>;
 
 const PLANS: Record<string, {
   name: string;
+  description: string;
   price: number;
   yearlyPrice: number;
   features: string[];
 }> = {
   free: {
     name: "Starter",
+    description: "Para individuos y proyectos pequeños.",
     price: 0,
     yearlyPrice: 0,
     features: ["Hasta 3 proyectos activos", "Analíticas básicas", "Soporte por email"],
   },
   pro: {
     name: "Growth",
+    description: "Para equipos en crecimiento que necesitan escalar.",
     price: 29,
     yearlyPrice: 290,
     features: ["Proyectos ilimitados", "Analíticas avanzadas", "Soporte prioritario 24/7"],
   },
   elite: {
     name: "Unlimited",
+    description: "Para organizaciones con necesidades dedicadas.",
     price: 99,
     yearlyPrice: 990,
     features: ["Todo lo de Growth", "Infraestructura dedicada", "Manager dedicado"],
@@ -101,7 +106,7 @@ const OrderSummary: FC<SummaryProps> = ({
   return (
     <div className={cn(
       "space-y-5",
-      isMobile && "bg-gray-50 dark:bg-white/[0.03] rounded-[18px] border border-border p-5"
+      isMobile && "bg-surface-muted rounded-[18px] border border-border p-5"
     )}>
       {/* Plan row */}
       <div className="flex items-start justify-between gap-3">
@@ -120,7 +125,7 @@ const OrderSummary: FC<SummaryProps> = ({
       {isYearly && savings > 0 && (
         <div className={cn(
           "flex items-center gap-2 px-3 py-1.5 rounded-[10px]",
-          isMobile ? "bg-emerald-50 dark:bg-emerald-500/10" : "bg-white/[0.07]"
+          isMobile ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-white/[0.07]"
         )}>
           <Tag className={cn("h-3.5 w-3.5 shrink-0", isMobile ? "text-emerald-600 dark:text-emerald-400" : "text-white/60")} />
           <p className={cn("text-[11px] font-semibold", isMobile ? "text-emerald-600 dark:text-emerald-400" : "text-white/60")}>
@@ -171,7 +176,6 @@ const OrderSummary: FC<SummaryProps> = ({
 const Checkout: FC = () => {
   const [searchParams]  = useSearchParams();
   const navigate        = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSummary,  setShowSummary]  = useState(false);
 
   const planId          = searchParams.get("plan")       || "pro";
@@ -190,25 +194,34 @@ const Checkout: FC = () => {
   const annualSavings = isYearly ? plan.price * 12 - plan.yearlyPrice : 0;
 
   const { toDOP } = useExchangeRate();
+  const { mutateAsync: createCheckout, isPending } = useCheckout();
 
   const { register, handleSubmit, formState: { errors } } = useForm<CheckoutForm>({
     resolver: zodResolver(checkoutSchema as any),
   });
 
   const onSubmit = async (_data: CheckoutForm) => {
-    setIsSubmitting(true);
     try {
-      /**
-       * Production: call api.billing.createCheckout() → get Polar checkout URL
-       * const result = await api.billing.createCheckout({
-       *   planId, billing, extraUsers, extraCompanies, email: _data.email,
-       * });
-       * window.location.href = result.url;
-       */
-      await new Promise(r => setTimeout(r, 1500)); // remove when API is wired
-      navigate(isOnboarding ? "/" : "/payments?success=true");
-    } finally {
-      setIsSubmitting(false);
+      const result = await createCheckout({
+        planId,
+        variantId: billing, // Using billing as variantId for now
+        successUrl: `${window.location.origin}/payments?success=true`,
+        cancelUrl: window.location.href,
+        metadata: {
+          extraUsers,
+          extraCompanies,
+          isOnboarding
+        }
+      });
+
+      if (window.polar) {
+        window.polar.checkout.open(result.url);
+      } else {
+        // Fallback to redirect if SDK not loaded
+        window.location.href = result.url;
+      }
+    } catch (err: any) {
+      alert(err.message || "Error al generar la sesión de pago");
     }
   };
 
@@ -390,20 +403,20 @@ const Checkout: FC = () => {
           <div className="lg:hidden mb-8">
             <button
               onClick={() => setShowSummary(v => !v)}
-              className="w-full flex items-center justify-between p-4 rounded-[16px] border border-border bg-gray-50/80 dark:bg-white/[0.03] hover:bg-gray-100 dark:hover:bg-white/[0.05] transition-colors"
+              className="w-full flex items-center justify-between p-4 rounded-[16px] border border-border bg-surface-muted hover:bg-surface-hover transition-colors"
             >
               <div className="flex items-center gap-3">
                 <div className="h-9 w-9 rounded-[10px] bg-primary/10 flex items-center justify-center shrink-0">
                   <Tag className="h-4 w-4 text-primary" />
                 </div>
                 <div className="text-left">
-                  <p className="text-[11px] text-gray-400">Resumen del pedido</p>
+                  <p className="text-[11px] text-fg-muted">Resumen del pedido</p>
                   <p className="text-[15px] font-semibold text-fg tabular-nums">
                     US$ {totalToday}.00
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-1 text-[12px] text-gray-400">
+              <div className="flex items-center gap-1 text-[12px] text-fg-muted">
                 {showSummary ? "Ocultar" : "Ver"}
                 {showSummary ? <ChevronUp className="h-4 w-4 ml-0.5" /> : <ChevronDown className="h-4 w-4 ml-0.5" />}
               </div>
@@ -417,13 +430,13 @@ const Checkout: FC = () => {
           </div>
 
           {/* Plan preview card */}
-          <div className="mb-8 rounded-[20px] border border-border bg-white dark:bg-surface overflow-hidden">
+          <div className="mb-8 rounded-[20px] border border-border bg-surface overflow-hidden">
             {/* Gradient accent */}
             <div className="h-[3px]" style={{ background: "linear-gradient(to right, #4D94DB, #004080)" }} />
             <div className="p-5">
               <div className="flex items-start justify-between gap-3 mb-4">
                 <div>
-                  <p className="text-[12px] text-gray-400 font-medium">Seleccionaste</p>
+                  <p className="text-[12px] text-fg-muted font-medium">Seleccionaste</p>
                   <h3 className="text-[18px] font-bold text-fg mt-0.5">
                     Plan {plan.name}
                   </h3>
@@ -431,10 +444,10 @@ const Checkout: FC = () => {
                 <div className="text-right shrink-0">
                   <p className="text-[22px] font-semibold text-fg tabular-nums leading-none">
                     ${isFree ? "0" : monthlyEquiv}
-                    <span className="text-[12px] font-normal text-gray-400 ml-1">/mes</span>
+                    <span className="text-[12px] font-normal text-fg-muted ml-1">/mes</span>
                   </p>
                   {isYearly && !isFree && (
-                    <p className="text-[10px] text-gray-400 mt-0.5">Pago anual · US$ {plan.yearlyPrice}</p>
+                    <p className="text-[10px] text-fg-muted mt-0.5">Pago anual · US$ {plan.yearlyPrice}</p>
                   )}
                 </div>
               </div>
@@ -457,7 +470,7 @@ const Checkout: FC = () => {
 
             {/* Email */}
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold uppercase text-gray-400">
+              <label className="text-[11px] font-bold uppercase text-fg-muted">
                 Correo electrónico
               </label>
               <Input
@@ -468,7 +481,7 @@ const Checkout: FC = () => {
                 error={errors.email?.message}
                 autoFocus
               />
-              <p className="text-[11px] text-gray-400">
+              <p className="text-[11px] text-fg-muted">
                 Usaremos este correo para enviarte el recibo y acceder a tu cuenta.
               </p>
             </div>
@@ -476,14 +489,14 @@ const Checkout: FC = () => {
             {/* CTA */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isPending}
               className={cn(
                 "w-full h-13 rounded-xl text-white text-[14px] font-semibold transition-all active:scale-[0.98] shadow-lg shadow-primary/20 disabled:opacity-70 disabled:cursor-not-allowed",
                 "flex items-center justify-center gap-2"
               )}
               style={{ background: "linear-gradient(to right, #4D94DB, #004080)", height: "52px" }}
             >
-              {isSubmitting ? (
+              {isPending ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
                   Redirigiendo a pago...
@@ -504,17 +517,17 @@ const Checkout: FC = () => {
             {/* Polar trust row */}
             {!isFree && (
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-1">
-                <div className="flex items-center gap-2 text-[11px] text-gray-400">
+                <div className="flex items-center gap-2 text-[11px] text-fg-muted">
                   <Lock className="h-3.5 w-3.5 shrink-0" />
                   Cifrado TLS 256-bit
                 </div>
-                <div className="hidden sm:block h-3 w-px bg-gray-200 dark:bg-white/10" />
-                <div className="flex items-center gap-2 text-[11px] text-gray-400">
+                <div className="hidden sm:block h-3 w-px bg-border" />
+                <div className="flex items-center gap-2 text-[11px] text-fg-muted">
                   <ShieldCheck className="h-3.5 w-3.5 shrink-0" />
                   Pago gestionado por Polar.sh
                 </div>
-                <div className="hidden sm:block h-3 w-px bg-gray-200 dark:bg-white/10" />
-                <div className="flex items-center gap-2 text-[11px] text-gray-400">
+                <div className="hidden sm:block h-3 w-px bg-border" />
+                <div className="flex items-center gap-2 text-[11px] text-fg-muted">
                   <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
                   Cancela cuando quieras
                 </div>

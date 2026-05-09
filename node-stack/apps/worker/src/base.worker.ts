@@ -1,7 +1,7 @@
-import { Logger, OnModuleDestroy, Injectable } from '@nestjs/common';
 import { WorkerHost } from '@nestjs/bullmq';
-import { Job, Queue } from 'bullmq';
+import { Logger, OnModuleDestroy, Injectable } from '@nestjs/common';
 import { RequestContextService } from '@node-stack/db';
+import { Job, Queue } from 'bullmq';
 
 @Injectable()
 export abstract class BaseWorker extends WorkerHost implements OnModuleDestroy {
@@ -33,8 +33,10 @@ export abstract class BaseWorker extends WorkerHost implements OnModuleDestroy {
       `[${this.queueName}] Processing job ${job.id} (${job.name}) attempt=${job.attemptsMade + 1}`,
     );
 
-    const workspaceId = job.data?.workspaceId || job.data?.payload?.workspaceId;
-    const userId = job.data?.userId || job.data?.payload?.userId;
+    const jobData = job.data as Record<string, unknown>;
+    const jobPayload = jobData?.payload as Record<string, unknown> | undefined;
+    const workspaceId = (jobData?.workspaceId ?? jobPayload?.workspaceId) as string | undefined;
+    const userId = (jobData?.userId ?? jobPayload?.userId) as string | undefined;
 
     return await this.contextService.run({ workspaceId, userId }, async () => {
       try {
@@ -71,7 +73,7 @@ export abstract class BaseWorker extends WorkerHost implements OnModuleDestroy {
    * Graceful shutdown — called by NestJS when app.close() is invoked.
    * Stops accepting new jobs and waits for active jobs to finish.
    */
-  async onModuleDestroy() {
+  async onModuleDestroy(): Promise<void> {
     this.logger.log(`[${this.queueName}] Gracefully closing worker...`);
     await this.worker.close();
     this.logger.log(`[${this.queueName}] Worker closed.`);
@@ -94,7 +96,7 @@ export abstract class BaseWorker extends WorkerHost implements OnModuleDestroy {
         originalQueue: this.queueName,
         originalJobType: job.name,
         originalJobId: String(job.id),
-        payload: job.data,
+        payload: job.data as unknown,
         failedReason,
         attemptsMade: job.attemptsMade + 1,
         failedAt: new Date().toISOString(),

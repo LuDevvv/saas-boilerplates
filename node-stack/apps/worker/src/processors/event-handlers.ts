@@ -1,15 +1,13 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { OutboxEvent } from "@node-stack/db";
 
-import { OutboxProcessor } from "./outbox.processor.js";
-
-export type EventHandlers = Record<string, (event: any) => Promise<void>>;
+export type EventHandlers = Record<string, (event: OutboxEvent) => Promise<void>>;
 
 @Injectable()
 export class UserEventHandler {
   private readonly logger = new Logger(UserEventHandler.name);
 
-  async handleUserCreated(event: OutboxEvent) {
+  async handleUserCreated(event: OutboxEvent): Promise<void> {
     this.logger.log(`Processing user.created event: ${event.id}`);
     const payload = event.payload as { userId: string; email: string };
 
@@ -20,7 +18,7 @@ export class UserEventHandler {
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
-  async handleSubscriptionActivated(event: OutboxEvent) {
+  async handleSubscriptionActivated(event: OutboxEvent): Promise<void> {
     this.logger.log(`Processing subscription.activated event: ${event.id}`);
     const payload = event.payload as {
       subscriptionId: string;
@@ -30,7 +28,7 @@ export class UserEventHandler {
     this.logger.log(`Subscription activated: ${payload.subscriptionId}`);
   }
 
-  async handleInvitationSent(event: OutboxEvent) {
+  async handleInvitationSent(event: OutboxEvent): Promise<void> {
     this.logger.log(`Processing invitation.sent event: ${event.id}`);
     const payload = event.payload as { invitationId: string; email: string };
 

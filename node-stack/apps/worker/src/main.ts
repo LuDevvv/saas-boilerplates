@@ -1,16 +1,16 @@
 import "./tracing.js";
-import { validateEnv } from "@node-stack/config";
-
-// Validate environment variables before anything else
-validateEnv(process.env);
 
 import { Logger as NestLogger } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import { validateEnv } from "@node-stack/config";
 import { Logger } from "nestjs-pino";
 
 import { WorkerModule } from "./worker.module.js";
 
-async function bootstrap() {
+// Validate environment variables before anything else
+validateEnv(process.env);
+
+async function bootstrap(): Promise<void> {
   const logger = new NestLogger("Worker");
 
   // Create app
@@ -31,10 +31,10 @@ async function bootstrap() {
   let shuttingDown = false;
   const GRACE_PERIOD_MS = 30000; // 30 seconds for BullMQ jobs
 
-  const shutdown = async (signal: string) => {
+  const shutdown = async (signal: string): Promise<void> => {
     if (shuttingDown) return;
     shuttingDown = true;
-    
+
     logger.log(`[Worker] ${signal} received. Starting graceful shutdown...`);
 
     const forceExitTimer = setTimeout(() => {
@@ -45,7 +45,7 @@ async function bootstrap() {
     try {
       logger.log("[Worker] Closing NestJS application context (this waits for workers to drain)...");
       await app.close();
-      
+
       try {
         const mod = await import('@node-stack/db') as Record<string, unknown>;
         if (typeof mod.endPool === 'function') await (mod.endPool as () => Promise<void>)();
@@ -66,8 +66,8 @@ async function bootstrap() {
     }
   };
 
-  process.on("SIGTERM", () => shutdown("SIGTERM"));
-  process.on("SIGINT", () => shutdown("SIGINT"));
+  process.on("SIGTERM", () => { void shutdown("SIGTERM"); });
+  process.on("SIGINT", () => { void shutdown("SIGINT"); });
 }
 
 bootstrap().catch((error) => {

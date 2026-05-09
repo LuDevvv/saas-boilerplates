@@ -1,10 +1,11 @@
 import { Processor, InjectQueue } from "@nestjs/bullmq";
 import { Logger, Inject } from "@nestjs/common";
 import { schema, eq, RequestContextService, DB_TOKEN, type Database } from "@node-stack/db";
-import { Job, Queue } from "bullmq";
-import { BaseWorker } from "../base.worker.js";
 import { PortabilityExporter } from "@node-stack/services";
 import type { IStorageProvider } from "@node-stack/storage";
+import { Job, Queue } from "bullmq";
+
+import { BaseWorker } from "../base.worker.js";
 
 interface PortabilityJobPayload {
   requestId: string;

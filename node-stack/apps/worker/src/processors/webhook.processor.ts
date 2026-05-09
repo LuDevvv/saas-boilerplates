@@ -1,15 +1,16 @@
 import { Processor, InjectQueue } from "@nestjs/bullmq";
 import { Logger, Inject } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { CacheService } from "@node-stack/cache";
 import { schema, eq, RequestContextService, DB_TOKEN, type Database } from "@node-stack/db";
+import { EncryptionUtils } from "@node-stack/services";
 import { 
   generateWebhookSignature, 
   formatWebhookHeader,
   validateWebhookUrl 
 } from "@node-stack/webhooks-utils";
 import { Job, Queue } from "bullmq";
-import { CacheService } from "@node-stack/cache";
-import { EncryptionUtils } from "@node-stack/services";
+
 import { BaseWorker } from "../base.worker.js";
 
 @Processor("webhooks.delivery")

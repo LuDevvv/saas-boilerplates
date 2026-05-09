@@ -2,8 +2,17 @@ import { Processor, InjectQueue } from "@nestjs/bullmq";
 import { Logger, Inject } from "@nestjs/common";
 import { schema, eq, RequestContextService, DB_TOKEN, type Database } from "@node-stack/db";
 import { Job, Queue } from "bullmq";
-import { WebhookDispatcher } from "./webhook-dispatcher.service.js";
+
 import { BaseWorker } from "../base.worker.js";
+import { WebhookDispatcher } from "./webhook-dispatcher.service.js";
+
+interface OutboxEventPayload {
+  email?: string;
+  token?: string;
+  userId?: string;
+  subscriptionId?: string;
+  invitationId?: string;
+}
 
 @Processor("outbox")
 export class OutboxProcessor extends BaseWorker {
@@ -109,7 +118,7 @@ export class OutboxProcessor extends BaseWorker {
     }
   }
 
-  private async relayOutbox() {
+  private async relayOutbox(): Promise<void> {
     const pendingEvents = await this.db.query.outbox.findMany({
       where: eq(schema.outbox.processed, false),
       limit: 100,
@@ -122,7 +131,7 @@ export class OutboxProcessor extends BaseWorker {
     for (const event of pendingEvents) {
       try {
         // We push to queue and mark as processed in DB.
-        // Even though Redis and Postgres aren't in a single transaction, 
+        // Even though Redis and Postgres aren't in a single transaction,
         // we can use a DB transaction to ensure consistency if the queue add fails.
         await this.jobQueue.add("process-outbox", { outboxId: event.id });
 
@@ -146,22 +155,21 @@ export class OutboxProcessor extends BaseWorker {
     switch (eventType) {
       case "user.registered":
         return async (event: Record<string, unknown>) => {
-          const payload = event.payload as any;
+          const payload = event.payload as OutboxEventPayload;
           this.logger.log(`[DEV: EMAIL MOCK] Welcome to the platform! Sent to: ${payload.email}`);
         };
       case "user.forgot_password":
         return async (event: Record<string, unknown>) => {
-          const payload = event.payload as any;
+          const payload = event.payload as OutboxEventPayload;
           this.logger.log(`\n==========================================\n[DEV: EMAIL MOCK] Password Reset\nTo: ${payload.email}\n[BODY]: You requested a password reset. Here is your secret token: ${payload.token}\n==========================================\n`);
         };
       case "user.email_verification":
         return async (event: Record<string, unknown>) => {
-          const payload = event.payload as any;
+          const payload = event.payload as OutboxEventPayload;
           this.logger.log(`\n==========================================\n[DEV: EMAIL MOCK] Email Verification\nTo: ${payload.email}\n[BODY]: Please verify your email. Here is your secret token: ${payload.token}\n==========================================\n`);
         };
       case "user.password_changed":
-        return async (event: Record<string, unknown>) => {
-          const payload = event.payload as any;
+        return async (_event: Record<string, unknown>) => {
           this.logger.log(`[DEV: EMAIL MOCK] Your password was successfully changed.`);
         };
       // Add more event types as needed
@@ -179,7 +187,7 @@ export class OutboxProcessor extends BaseWorker {
   }
 
   /** Override base onModuleDestroy to include worker stats */
-  async onModuleDestroy() {
+  async onModuleDestroy(): Promise<void> {
     this.logger.log(
       `[Worker] Gracefully closing BullMQ outbox worker...`,
     );
