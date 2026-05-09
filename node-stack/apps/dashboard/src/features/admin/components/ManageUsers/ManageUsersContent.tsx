@@ -2,6 +2,7 @@ import { FC, useState } from "react";
 import { Download } from "lucide-react";
 import { PageHeader } from "@node-stack/ui";
 import { useAdminUsers, useUpdateUserStatus, useUpdateUserRole } from "@/features/admin";
+import { useImpersonateUser } from "@/features/admin";
 import { UserTableContent } from "./UserTableContent";
 
 export const ManageUsersContent: FC = () => {
@@ -9,22 +10,29 @@ export const ManageUsersContent: FC = () => {
   const { data: users } = useAdminUsers();
   const updateStatus = useUpdateUserStatus();
   const updateRole = useUpdateUserRole();
+  const impersonate = useImpersonateUser();
 
   const handleSuspend = (userId: string) => {
-    if (confirm("Are you sure you want to suspend this user?")) {
+    if (confirm("¿Suspender este usuario? Se cerrarán todas sus sesiones activas.")) {
       updateStatus.mutate({ userId, status: "suspended" });
     }
   };
 
   const handleBan = (userId: string) => {
-    if (confirm("Are you sure you want to ban this user?")) {
+    if (confirm("¿Banear permanentemente este usuario? Se cerrarán todas sus sesiones activas.")) {
       updateStatus.mutate({ userId, status: "banned" });
     }
   };
 
   const handlePromoteAdmin = (userId: string) => {
-    if (confirm("Promote this user to Admin?")) {
+    if (confirm("¿Promover a Admin? Se invalidarán todas sus sesiones activas.")) {
       updateRole.mutate({ userId, role: "admin" });
+    }
+  };
+
+  const handleImpersonate = (userId: string) => {
+    if (confirm("¿Iniciar sesión como este usuario? Podrás actuar en su nombre durante 24h.")) {
+      impersonate.mutate(userId);
     }
   };
 
@@ -53,6 +61,7 @@ export const ManageUsersContent: FC = () => {
         onSuspend={handleSuspend}
         onBan={handleBan}
         onPromote={handlePromoteAdmin}
+        onImpersonate={handleImpersonate}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
       />

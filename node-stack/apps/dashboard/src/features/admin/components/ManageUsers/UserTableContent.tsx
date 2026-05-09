@@ -1,11 +1,11 @@
 import { FC } from "react";
 import {
   Filter,
-  MoreVertical,
-  Shield,
   UserX,
   ChevronLeft,
   ChevronRight,
+  LogIn,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/utils/classNames";
 import { type AdminUser } from "@/features/admin";
@@ -19,6 +19,7 @@ interface UserTableContentProps {
   onSuspend: (userId: string) => void;
   onBan: (userId: string) => void;
   onPromote: (userId: string) => void;
+  onImpersonate: (userId: string) => void;
   searchTerm: string;
   onSearchChange: (value: string) => void;
 }
@@ -28,6 +29,7 @@ export const UserTableContent: FC<UserTableContentProps> = ({
   onSuspend,
   onBan,
   onPromote,
+  onImpersonate,
   searchTerm,
   onSearchChange,
 }) => {
@@ -121,13 +123,19 @@ export const UserTableContent: FC<UserTableContentProps> = ({
                   Suspend
                 </button>
                 <button
+                  onClick={() => onImpersonate(user.id)}
+                  className="px-2 py-1 text-[11px] font-medium rounded-md bg-surface-hover text-fg-secondary hover:bg-primary/10 hover:text-primary opacity-0 group-hover:opacity-100 transition-all flex items-center gap-1"
+                  title="Impersonar usuario"
+                >
+                  <LogIn className="h-3 w-3" />
+                  Impersonar
+                </button>
+                <button
                   onClick={() => onBan(user.id)}
                   className="p-2 rounded-xl text-fg-muted hover:text-red-500 hover:bg-red-500/10 transition-all opacity-0 group-hover:opacity-100"
+                  title="Banear usuario"
                 >
                   <UserX className="h-4 w-4" />
-                </button>
-                <button className="p-2 rounded-xl text-fg-muted hover:text-fg hover:bg-surface-hover transition-all">
-                  <MoreVertical className="h-4 w-4" />
                 </button>
               </div>
             </td>

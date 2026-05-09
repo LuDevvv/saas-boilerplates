@@ -34,6 +34,9 @@ const AIPlaygroundPage = lazy(() => import("@pages/_ai/AIPlaygroundPage"));
 const AdminOverviewPage = lazy(() => import("@pages/_admin/AdminOverviewPage"));
 const ManageUsersPage = lazy(() => import("@pages/_admin/ManageUsersPage"));
 const AuditLogsPage = lazy(() => import("@pages/_admin/AuditLogsPage"));
+const SystemConfigPage = lazy(() => import("@/pages/admin/SystemConfigPage"));
+const FeatureFlagsPage = lazy(() => import("@/pages/admin/FeatureFlagsPage"));
+const WorkspacesAdminPage = lazy(() => import("@/pages/admin/WorkspacesAdminPage"));
 
 const OnboardingPage = lazy(() => import("@pages/_onboarding/OnboardingPage"));
 const OnboardingPricingPage = lazy(() => import("@pages/_onboarding/OnboardingPricingPage"));
@@ -119,6 +122,9 @@ export const AppRoutes = () => {
         <Route path="admin" element={<Suspense fallback={<LoadingFallback />} children={adminGuard(<AdminOverviewPage />)} />} />
         <Route path="admin/users" element={<Suspense fallback={<LoadingFallback />} children={adminGuard(<ManageUsersPage />)} />} />
         <Route path="admin/audit" element={<Suspense fallback={<LoadingFallback />} children={adminGuard(<AuditLogsPage />)} />} />
+        <Route path="admin/config" element={<Suspense fallback={<LoadingFallback />} children={adminGuard(<SystemConfigPage />)} />} />
+        <Route path="admin/feature-flags" element={<Suspense fallback={<LoadingFallback />} children={adminGuard(<FeatureFlagsPage />)} />} />
+        <Route path="admin/workspaces" element={<Suspense fallback={<LoadingFallback />} children={adminGuard(<WorkspacesAdminPage />)} />} />
         
         {/* Settings */}
         <Route path="settings/members" element={<Suspense fallback={<MembersLayoutSkeleton />} children={<WorkspaceMembersPage />} />} />

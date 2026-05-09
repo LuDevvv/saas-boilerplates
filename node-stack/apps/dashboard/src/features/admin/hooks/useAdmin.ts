@@ -115,6 +115,17 @@ export const useAuditLogs = (params?: {
   });
 };
 
+export const useAdminWorkspaces = (params?: {
+  page?: number;
+  limit?: number;
+  includeDeleted?: boolean;
+}) => {
+  return useQuery({
+    queryKey: ["admin", "workspaces", params],
+    queryFn: () => api.admin.listWorkspaces(params),
+  });
+};
+
 export const useImpersonateUser = () => {
   return useMutation({
     mutationFn: (userId: string) => api.admin.impersonateUser(userId),

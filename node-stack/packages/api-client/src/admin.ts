@@ -104,6 +104,19 @@ export const admin = (client: AxiosInstance) => ({
       .then((r) => r.data);
   },
 
+  // ── Workspaces ─────────────────────────────────────────────
+  listWorkspaces: async (params?: {
+    page?: number;
+    limit?: number;
+    includeDeleted?: boolean;
+  }): Promise<{ data: any[]; meta: { total: number; page: number; limit: number; pages: number } }> => {
+    return client.get("/admin/workspaces", { params }).then((r) => r.data);
+  },
+
+  getWorkspace: async (id: string): Promise<any> => {
+    return client.get(`/admin/workspaces/${id}`).then((r) => r.data);
+  },
+
   // ── System Config ──────────────────────────────────────────
   getAllConfig: async (): Promise<Record<string, unknown>> => {
     return client.get("/admin/config").then((r) => r.data);

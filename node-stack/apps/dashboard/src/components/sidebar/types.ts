@@ -13,13 +13,21 @@ export interface SidebarProps {
   currentPath?: string;
 }
 
+export type SidebarBadgeTone = "primary" | "info" | "warning" | "success" | "neutral";
+
+export interface SidebarBadge {
+  label: string;
+  tone?: SidebarBadgeTone;
+}
+
 export interface SidebarItemProps {
   id?: string;
   level?: number;
   icon?: LucideIcon;
   label: string;
   path?: string;
-  badge?: string | number;
+  /** String for legacy support, object form for tonal control. */
+  badge?: string | number | SidebarBadge;
   subItems?: SubMenuItem[];
   isCollapsed?: boolean;
   isActive?: boolean;
@@ -38,6 +46,8 @@ export interface MenuSection {
   title?: string;
   items: SidebarItemProps[];
   isCollapsed?: boolean;
+  /** When true, only renders for admin/super_admin roles */
+  adminOnly?: boolean;
 }
 
 export interface SidebarSectionProps {

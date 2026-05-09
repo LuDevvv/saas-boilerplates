@@ -1,21 +1,23 @@
 import { FC } from "react";
-import { UserPlus, ShieldCheck, Zap } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Users, Settings, Zap, LayoutGrid, Activity } from "lucide-react";
 
-export const AdminQuickActions: FC = () => {
-  return (
-    <div className="flex items-center gap-3">
-      <button className="rounded-2xl border border-gray-200 bg-white px-5 py-3 text-sm font-heading text-gray-700 shadow-sm hover:bg-gray-50 transition-all active:scale-95 flex items-center gap-2 dark:bg-gray-900 dark:border-white/10 dark:text-gray-300">
-        <UserPlus className="h-4 w-4" />
-        Add User
-      </button>
-      <button className="rounded-2xl border border-gray-200 bg-white px-5 py-3 text-sm font-heading text-gray-700 shadow-sm hover:bg-gray-50 transition-all active:scale-95 flex items-center gap-2 dark:bg-gray-900 dark:border-white/10 dark:text-gray-300">
-        <ShieldCheck className="h-4 w-4" />
-        Security
-      </button>
-      <button className="rounded-2xl border border-gray-200 bg-white px-5 py-3 text-sm font-heading text-gray-700 shadow-sm hover:bg-gray-50 transition-all active:scale-95 flex items-center gap-2 dark:bg-gray-900 dark:border-white/10 dark:text-gray-300">
-        <Zap className="h-4 w-4" />
-        Settings
-      </button>
-    </div>
-  );
-};
+const QuickLink: FC<{ to: string; icon: typeof Users; label: string }> = ({ to, icon: Icon, label }) => (
+  <Link
+    to={to}
+    className="rounded-xl border border-border bg-surface px-4 py-2.5 text-[13px] font-medium text-fg-secondary hover:bg-surface-hover hover:text-fg hover:border-border-strong transition-all active:scale-95 flex items-center gap-2"
+  >
+    <Icon className="h-4 w-4" />
+    {label}
+  </Link>
+);
+
+export const AdminQuickActions: FC = () => (
+  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+    <QuickLink to="/admin/users" icon={Users} label="Usuarios" />
+    <QuickLink to="/admin/workspaces" icon={LayoutGrid} label="Workspaces" />
+    <QuickLink to="/admin/feature-flags" icon={Zap} label="Feature Flags" />
+    <QuickLink to="/admin/config" icon={Settings} label="Config" />
+    <QuickLink to="/admin/audit" icon={Activity} label="Auditoría" />
+  </div>
+);

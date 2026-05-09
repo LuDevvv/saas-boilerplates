@@ -39,8 +39,10 @@ export const Sidebar: FC<SidebarProps> = ({
   const menuSections = useMemo(() => {
     const rawSections = propMenuSections || getMenuSections();
 
-    if (user?.role !== "super_admin") {
-      return rawSections.filter(section => section.title !== "Admin");
+    const isAdmin = user?.role === "admin" || user?.role === "super_admin" || !!(user as any)?.isAdmin;
+
+    if (!isAdmin) {
+      return rawSections.filter(section => !section.adminOnly);
     }
 
     return rawSections;

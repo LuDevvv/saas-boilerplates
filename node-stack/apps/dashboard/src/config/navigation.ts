@@ -10,6 +10,9 @@ import {
   Users,
   ShieldAlert,
   Activity,
+  Settings,
+  Zap,
+  LayoutGrid,
 } from "lucide-react";
 import {
   DropdownItem,
@@ -43,10 +46,14 @@ export const getMenuSections = (): MenuSection[] => {
     },
     {
       title: "Admin",
+      adminOnly: true,
       items: [
         { icon: ShieldAlert, label: "Sistema", path: "/admin" },
         { icon: Users, label: "Usuarios", path: "/admin/users" },
+        { icon: LayoutGrid, label: "Workspaces", path: "/admin/workspaces" },
         { icon: Activity, label: "Auditoría", path: "/admin/audit" },
+        { icon: Zap, label: "Feature Flags", path: "/admin/feature-flags" },
+        { icon: Settings, label: "Configuración", path: "/admin/config" },
       ],
     },
   ];

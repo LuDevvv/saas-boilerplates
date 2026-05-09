@@ -8,4 +8,6 @@ export {
   useFeatureFlags,
   useToggleFeatureFlag,
   useAuditLogs,
+  useImpersonateUser,
+  useAdminWorkspaces,
 } from "./hooks";
