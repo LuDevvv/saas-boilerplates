@@ -19,16 +19,17 @@ import {
 } from "@nestjs/swagger";
 import type { IStorageProvider } from "@node-stack/storage";
 import { GetPresignedUrlDto } from "@node-stack/validators";
+import { Request } from "express";
 
 import { CurrentUser } from "@/auth/decorators/index.js";
 import { JwtAuthGuard } from "@/auth/guards/jwt.guard.js";
 import { Idempotent } from "@/common/decorators/idempotent.decorator.js";
+import { Public } from "@/common/decorators/public.decorator.js";
 import { Workspace } from "@/common/decorators/workspace.decorator.js";
 import { WorkspaceGuard } from "@/common/guards/workspace.guard.js";
 import type { UserPayload, WorkspaceContext } from "@/common/types/index.js";
 import { AppStorageService } from "@/storage/storage.service.js";
 
-import { Public } from "@/common/decorators/public.decorator.js";
 
 @ApiTags("storage")
 @ApiBearerAuth("JWT-auth")
@@ -51,17 +52,17 @@ export class StorageController {
   @ApiOperation({ summary: "Handle local storage upload (Dev only)" })
   async uploadLocal(
     @Param("0") key: string,
-    @Req() req: any,
-  ) {
+    @Req() req: Request,
+  ): Promise<{ ok: boolean }> {
     // If we're using the local provider, we need to save the raw body to disk.
     // The 'body' here might be a Buffer if we use a RawBody decorator or a custom middleware.
-    // But since this is a dev boilerplate, we'll assume the local provider's 'upload' 
+    // But since this is a dev boilerplate, we'll assume the local provider's 'upload'
     // method is what we want to call.
-    
+
     // We'll use a stream-to-buffer approach for simplicity in dev.
-    const chunks: any[] = [];
+    const chunks: Buffer[] = [];
     for await (const chunk of req) {
-      chunks.push(chunk);
+      chunks.push(chunk as Buffer);
     }
     const buffer = Buffer.concat(chunks);
 
@@ -83,7 +84,7 @@ export class StorageController {
     @Body() body: GetPresignedUrlDto,
     @Workspace() workspace: WorkspaceContext,
     @CurrentUser() user: UserPayload,
-  ) {
+  ): Promise<{ uploadUrl: string; fileUrl: string; expiresIn: number }> {
     const result = await this.appStorageService.getPresignedUploadUrl(
       body,
       workspace.id,
@@ -107,7 +108,7 @@ export class StorageController {
   async confirmUpload(
     @Body() body: { fileId: string },
     @Workspace() workspace: WorkspaceContext,
-  ) {
+  ): Promise<{ success: boolean; fileUrl: string }> {
     const file = await this.appStorageService.completeUpload(
       body.fileId,
       workspace.id,
@@ -124,7 +125,7 @@ export class StorageController {
   async getFile(
     @Param("fileId") fileId: string,
     @Workspace() workspace: WorkspaceContext,
-  ) {
+  ): Promise<unknown> {
     return this.appStorageService.getDownloadUrl(fileId, workspace.id);
   }
 
@@ -132,9 +133,9 @@ export class StorageController {
   @ApiOperation({ summary: "Delete file" })
   @ApiResponse({ status: 200, description: "File deletion initiated" })
   async delete(
-    @Param("fileId") fileId: string,
-    @Workspace() workspace: WorkspaceContext,
-  ) {
+    @Param("fileId") _fileId: string,
+    @Workspace() _workspace: WorkspaceContext,
+  ): Promise<{ ok: boolean; message: string }> {
     return { ok: true, message: "Deletion not fully implemented in DB layer yet" };
   }
 }

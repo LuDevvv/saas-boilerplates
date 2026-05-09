@@ -14,7 +14,7 @@ import {
   verifyApiKey,
   DB_TOKEN,
 } from '@node-stack/db';
-import type { Database } from '@node-stack/db';
+import type { ApiKey, Database } from '@node-stack/db';
 import { CreateApiKeyDto } from '@node-stack/validators';
 
 import {
@@ -48,7 +48,6 @@ export class ApiKeysService {
     const prefix = extractPrefix(plainKey);
     const expiresAt = dto.expiresAt ? new Date(dto.expiresAt) : null;
 
-    let outboxEventId: string | null = null;
     const record = await withTenantTx(workspaceId, async (tx) => {
       const key = await this.repo.create({
         workspaceId,
@@ -58,17 +57,16 @@ export class ApiKeysService {
         keyPreview,
         prefix,
         expiresAt,
-      }, tx as any);
+      }, tx);
 
       // maintain consistency with existing outbox pattern
-      const [outboxRecord] = await tx
+      await tx
         .insert(schema.outbox)
         .values({
           eventType: 'api_key.created',
           payload: { apiKeyId: key.id, workspaceId: key.workspaceId },
         })
         .returning();
-      outboxEventId = outboxRecord.id;
 
       await this.auditLog.create(
         {
@@ -79,7 +77,7 @@ export class ApiKeysService {
           entityId: key.id,
           metadata: { name: key.name, prefix: key.prefix },
         },
-        tx as any,
+        tx,
       );
 
       return key;
@@ -94,13 +92,13 @@ export class ApiKeysService {
   /**
    * High-performance validation with caching and timing-safe checks
    */
-  async validateKey(rawKey: string): Promise<any> {
+  async validateKey(rawKey: string): Promise<unknown> {
     const prefix = extractPrefix(rawKey);
     const tempHash = hashKey(rawKey, this.pepper); // For cache key
     const cacheKey = `api-key:v1:${tempHash}`;
 
     // 1. L1 Cache lookup
-    const cached = await this.cache.get<any>(cacheKey);
+    const cached = await this.cache.get<unknown>(cacheKey);
     if (cached) return cached;
 
     // 2. DB lookup by prefix (indexed)
@@ -123,7 +121,7 @@ export class ApiKeysService {
   }
 
   @OnEvent('api_key.used')
-  async handleUsage(apiKeyId: string) {
+  async handleUsage(apiKeyId: string): Promise<void> {
     // Non-blocking background update
     await this.repo.updateLastUsed(apiKeyId);
   }
@@ -144,7 +142,7 @@ export class ApiKeysService {
     }
 
     await withTenantTx(workspaceId, async (tx) => {
-      await this.repo.revoke(id, workspaceId, tx as any);
+      await this.repo.revoke(id, workspaceId, tx);
 
       await tx
         .insert(schema.outbox)
@@ -162,7 +160,7 @@ export class ApiKeysService {
           entityId: id,
           metadata: { name: apiKey.name, prefix: apiKey.prefix },
         },
-        tx as any,
+        tx,
       );
     }, this.db);
 
@@ -173,7 +171,7 @@ export class ApiKeysService {
     await this.cache.del(cacheKey);
   }
 
-  private mapToDto(apiKey: any): ApiKeyResponseDto {
+  private mapToDto(apiKey: ApiKey): ApiKeyResponseDto {
     return {
       id: apiKey.id,
       name: apiKey.name,

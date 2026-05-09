@@ -12,10 +12,11 @@ export class RedisHealthIndicator extends HealthIndicator {
     try {
       await this.cacheService.ping();
       return this.getStatus(key, true);
-    } catch (error: any) {
+    } catch (error) {
+      const err = error as Error;
       throw new HealthCheckError(
         'Redis connection failed',
-        this.getStatus(key, false, { message: error.message }),
+        this.getStatus(key, false, { message: err.message }),
       );
     }
   }

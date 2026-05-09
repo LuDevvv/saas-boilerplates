@@ -1,9 +1,14 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from "@nestjs/common";
+import type { Request } from "express";
+
+interface SuperAdminRequest extends Request {
+  user?: { role?: string };
+}
 
 @Injectable()
 export class SuperAdminGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<SuperAdminRequest>();
     const user = request.user;
 
     if (!user) {

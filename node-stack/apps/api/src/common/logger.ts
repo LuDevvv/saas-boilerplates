@@ -8,14 +8,16 @@ export const logger = pino({
       : undefined,
 });
 
+type LogLevel = "info" | "warn" | "error";
+
 export function logWithContext(
-  level: "info" | "warn" | "error",
+  level: LogLevel,
   message: string,
   context?: Record<string, unknown>,
-) {
+): void {
   // Delegate to internal logger with context as metadata
   if (context) {
-    (logger as any)[level](context, message);
+    logger[level](context, message);
   } else {
     logger[level](message);
   }

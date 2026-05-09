@@ -5,6 +5,13 @@ import { Socket } from 'socket.io';
 
 import { TOKEN_TYPE } from '@/auth/constants.js';
 
+interface JwtPayload {
+  sub: string;
+  email: string;
+  sessionId: string;
+  type: string;
+}
+
 @Injectable()
 export class WsJwtGuard implements CanActivate {
   private readonly logger = new Logger(WsJwtGuard.name);
@@ -14,29 +21,34 @@ export class WsJwtGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
       const client: Socket = context.switchToWs().getClient<Socket>();
-      const authHeader = client.handshake.auth.token || client.handshake.headers.authorization;
+      const authHeader = (client.handshake.auth as Record<string, string>)['token'] as string | undefined
+        ?? client.handshake.headers.authorization;
 
       if (!authHeader) {
         throw new WsException('Unauthorized connection');
       }
 
-      const token = authHeader.split(' ')[1] || authHeader;
-      const payload = await this.jwtService.verifyAsync(token);
+      const parts = authHeader.split(' ');
+      const token = parts[1] ?? authHeader;
+      const payload = await this.jwtService.verifyAsync<JwtPayload>(token);
 
       if (payload.type !== TOKEN_TYPE.ACCESS) {
         throw new WsException('Invalid token type');
       }
 
       // Attach user to socket
-      client.data.user = {
-        id: payload.sub,
-        email: payload.email,
-        sessionId: payload.sessionId,
+      client.data = {
+        ...client.data as Record<string, unknown>,
+        user: {
+          id: payload.sub,
+          email: payload.email,
+          sessionId: payload.sessionId,
+        },
       };
 
       return true;
-    } catch (err) {
-      this.logger.error(`WS Authentication failed: ${err.message}`);
+    } catch (err: unknown) {
+      this.logger.error(`WS Authentication failed: ${(err as Error).message}`);
       return false;
     }
   }

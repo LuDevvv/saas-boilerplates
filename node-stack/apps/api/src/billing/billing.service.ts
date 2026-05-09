@@ -3,7 +3,6 @@ import {
   UnauthorizedException,
   Logger,
   Inject,
-  forwardRef,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { EventEmitter2 } from "@nestjs/event-emitter";
@@ -11,7 +10,6 @@ import type {
   PaymentProvider,
   CheckoutUrl,
   WebhookEvent,
-  Subscription as ProviderSubscription,
 } from "@node-stack/billing-adapter";
 import { CacheService } from "@node-stack/cache";
 import {
@@ -20,8 +18,7 @@ import {
   DB_TOKEN,
   withTenantTx,
   type Subscription,
-} from "@node-stack/db";
-import type { Database } from "@node-stack/db";
+ Database } from "@node-stack/db";
 import { CreateCheckoutDto } from "@node-stack/validators";
 
 import { EncryptionService } from "@/common/services/encryption.service.js";
@@ -129,8 +126,9 @@ export class BillingService {
 
     try {
       event = await this.provider.handleWebhook(payload, headers);
-    } catch (err: any) {
-      this.logger.error(`Webhook verification failed: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.error(`Webhook verification failed: ${message}`);
       throw new UnauthorizedException("Invalid webhook signature");
     }
 
@@ -150,10 +148,12 @@ export class BillingService {
     // Dispatch to the correct handler
     try {
       await this.dispatchWebhookEvent(event);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      const stack = err instanceof Error ? err.stack : undefined;
       this.logger.error(
-        `Error processing event ${event.type} (${event.id}): ${err.message}`,
-        err.stack,
+        `Error processing event ${event.type} (${event.id}): ${message}`,
+        stack,
       );
       // Re-throw only if it's a programmer error, not a data issue
       throw err;
@@ -163,7 +163,7 @@ export class BillingService {
   }
 
   private async dispatchWebhookEvent(event: WebhookEvent): Promise<void> {
-    const eventData = event.data as Record<string, any>;
+    const eventData = event.data as Record<string, unknown>;
 
     switch (event.type) {
       case "subscription.created":
@@ -192,7 +192,7 @@ export class BillingService {
 
   private async handleSubscriptionCreated(
     eventId: string,
-    data: Record<string, any>,
+    data: Record<string, unknown>,
   ): Promise<void> {
     const sub = this.extractSubscriptionData(data);
     if (!sub) {
@@ -275,7 +275,7 @@ export class BillingService {
 
   private async handleSubscriptionUpdated(
     eventId: string,
-    data: Record<string, any>,
+    data: Record<string, unknown>,
   ): Promise<void> {
     const sub = this.extractSubscriptionData(data);
     if (!sub) return;
@@ -347,7 +347,7 @@ export class BillingService {
 
   private async handleSubscriptionCanceled(
     eventId: string,
-    data: Record<string, any>,
+    data: Record<string, unknown>,
   ): Promise<void> {
     const sub = this.extractSubscriptionData(data);
     if (!sub) return;
@@ -413,13 +413,17 @@ export class BillingService {
 
   private async handleCustomerCreated(
     eventId: string,
-    data: Record<string, any>,
+    data: Record<string, unknown>,
   ): Promise<void> {
+    const inner = data.data as Record<string, unknown> | undefined;
+    const innerMeta = inner?.metadata as Record<string, unknown> | undefined;
+    const outerMeta = data.metadata as Record<string, unknown> | undefined;
     const customerId =
-      data.data?.id ?? data.id;
+      (typeof inner?.id === "string" ? inner.id : undefined) ??
+      (typeof data.id === "string" ? data.id : undefined);
     const workspaceId =
-      data.data?.metadata?.workspace_id ??
-      data.metadata?.workspace_id;
+      (typeof innerMeta?.workspace_id === "string" ? innerMeta.workspace_id : undefined) ??
+      (typeof outerMeta?.workspace_id === "string" ? outerMeta.workspace_id : undefined);
 
     if (!customerId || !workspaceId) {
       this.logger.warn(`customer.created: missing customerId or workspaceId`);
@@ -452,7 +456,7 @@ export class BillingService {
    * Retrieves subscription for a workspace.
    * Cached for 5 minutes (invalidated on webhooks).
    */
-  async getSubscription(workspaceId: string) {
+  async getSubscription(workspaceId: string): Promise<Record<string, unknown>> {
     return this.cache.getOrSet(
       `billing:ws:${workspaceId}:subscription`,
       async () => {
@@ -482,7 +486,7 @@ export class BillingService {
     );
   }
 
-  async portal(workspaceId: string) {
+  async portal(workspaceId: string): Promise<{ url: string | null }> {
     const customer = await withTenantTx(
       workspaceId,
       (tx) => this.billingRepo.findCustomerByWorkspaceId(workspaceId, tx),
@@ -499,7 +503,7 @@ export class BillingService {
     return { url: `${polarDashboard}/purchases/subscriptions` };
   }
 
-  async invoices(workspaceId: string) {
+  async invoices(_workspaceId: string): Promise<never[]> {
     // Polar doesn't expose invoices via API — return empty list.
     // Use the portal for history.
     return [];
@@ -507,38 +511,61 @@ export class BillingService {
 
   // ─── Helpers ──────────────────────────────────────────────────────────
 
-  private extractSubscriptionData(data: Record<string, any>) {
+  private extractSubscriptionData(data: Record<string, unknown>): {
+    subscriptionId: string;
+    customerId: string | undefined;
+    workspaceId: string | undefined;
+    planId: string;
+    variantId: string;
+    status: string;
+    currentPeriodStart: Date | undefined;
+    currentPeriodEnd: Date | undefined;
+    cancelAt: Date | undefined;
+  } | null {
     // Polar wraps event data in a `data` object
-    const payload = data.data ?? data;
+    const raw = (data.data ?? data) as Record<string, unknown>;
+    const meta = raw.metadata as Record<string, unknown> | undefined;
+    const customer = raw.customer as Record<string, unknown> | undefined;
+    const customerMeta = customer?.metadata as Record<string, unknown> | undefined;
+    const dataMeta = data.metadata as Record<string, unknown> | undefined;
 
-    const subscriptionId = payload.id;
-    const customerId = payload.customerId ?? payload.customer_id;
-    
+    const subscriptionId = typeof raw.id === "string" ? raw.id : undefined;
+    const customerId =
+      typeof raw.customerId === "string" ? raw.customerId :
+      typeof raw.customer_id === "string" ? raw.customer_id :
+      undefined;
+
     // Resolve workspace_id from multiple possible locations (Polar metadata or Customer metadata)
     const workspaceId =
-      payload.metadata?.workspace_id ??
-      payload.customer?.metadata?.workspace_id ??
-      payload.metadata?.workspaceId ??
-      data.metadata?.workspace_id;
+      (typeof meta?.workspace_id === "string" ? meta.workspace_id : undefined) ??
+      (typeof customerMeta?.workspace_id === "string" ? customerMeta.workspace_id : undefined) ??
+      (typeof meta?.workspaceId === "string" ? meta.workspaceId : undefined) ??
+      (typeof dataMeta?.workspace_id === "string" ? dataMeta.workspace_id : undefined);
 
     const planId =
-      payload.productId ?? payload.product_id ?? payload.planId ?? "";
+      typeof raw.productId === "string" ? raw.productId :
+      typeof raw.product_id === "string" ? raw.product_id :
+      typeof raw.planId === "string" ? raw.planId :
+      "";
     const variantId =
-      payload.priceId ?? payload.price_id ?? payload.variantId ?? "";
-    const status = payload.status ?? "active";
+      typeof raw.priceId === "string" ? raw.priceId :
+      typeof raw.price_id === "string" ? raw.price_id :
+      typeof raw.variantId === "string" ? raw.variantId :
+      "";
+    const status = typeof raw.status === "string" ? raw.status : "active";
 
-    const currentPeriodStart = payload.currentPeriodStart
-      ? new Date(payload.currentPeriodStart)
+    const currentPeriodStart = raw.currentPeriodStart
+      ? new Date(raw.currentPeriodStart as string)
       : undefined;
-    const currentPeriodEnd = payload.currentPeriodEnd
-      ? new Date(payload.currentPeriodEnd)
+    const currentPeriodEnd = raw.currentPeriodEnd
+      ? new Date(raw.currentPeriodEnd as string)
       : undefined;
-    
+
     // If specifically canceled at period end, set cancelAt
-    const cancelAt = payload.cancelAtPeriodEnd || payload.cancel_at_period_end
+    const cancelAt = raw.cancelAtPeriodEnd || raw.cancel_at_period_end
       ? currentPeriodEnd
-      : payload.endsAt ?? payload.ends_at
-        ? new Date(payload.endsAt ?? payload.ends_at)
+      : raw.endsAt ?? raw.ends_at
+        ? new Date((raw.endsAt ?? raw.ends_at) as string)
         : undefined;
 
     if (!subscriptionId) {

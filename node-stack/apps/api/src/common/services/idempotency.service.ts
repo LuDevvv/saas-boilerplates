@@ -8,7 +8,7 @@ const LOCK_TTL_SECONDS = 300; // 5 minutes lock expiry
 
 interface CachedResponse {
   statusCode: number;
-  data: any;
+  data: unknown;
 }
 
 @Injectable()

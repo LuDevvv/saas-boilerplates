@@ -5,8 +5,22 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import type { Request } from 'express';
 
 import { ApiKeysService } from '@/api-keys/api-keys.service.js';
+
+interface ApiKeyRequest extends Request {
+  user?: {
+    id: string;
+    workspaceId: string;
+    workspaceRole: string;
+    isApiKey: boolean;
+  };
+  workspace?: {
+    workspaceId: string;
+    role: string;
+  };
+}
 
 @Injectable()
 export class ApiKeyGuard implements CanActivate {
@@ -16,18 +30,20 @@ export class ApiKeyGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<ApiKeyRequest>();
     const rawKey = request.headers['x-api-key'] as string;
 
     if (!rawKey) {
       throw new UnauthorizedException('API key is missing');
     }
 
-    const apiKey = await this.apiKeysService.validateKey(rawKey);
+    const apiKeyRaw = await this.apiKeysService.validateKey(rawKey);
 
-    if (!apiKey) {
+    if (!apiKeyRaw) {
       throw new UnauthorizedException('Invalid or expired API key');
     }
+
+    const apiKey = apiKeyRaw as { userId: string; workspaceId: string; id: string };
 
     // Populate context for compatibility
     request.user = {

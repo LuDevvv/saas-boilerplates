@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 
 import { AuthService } from "@/auth/auth.service.js";
+import type { TokenPair } from "@/auth/services/token.service.js";
 
 @Injectable()
 export class ImpersonationService {
@@ -20,7 +21,7 @@ export class ImpersonationService {
    * @param targetUserId The ID of the user to impersonate.
    * @param context Metadata about the request (IP, UA)
    */
-  async impersonate(adminId: string, targetUserId: string, context: { ipAddress?: string; userAgent?: string } = {}) {
+  async impersonate(adminId: string, targetUserId: string, context: { ipAddress?: string; userAgent?: string } = {}): Promise<TokenPair> {
     this.logger.log(`Admin ${adminId} is impersonating user ${targetUserId}`);
 
     const tokens = await this.authService.createImpersonationSession(targetUserId);

@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { ConfigService, ConfigModule } from "@nestjs/config";
+import { ConfigService } from "@nestjs/config";
 import type { PaymentProvider } from "@node-stack/billing-adapter";
 import { MockProvider } from "@node-stack/billing-adapter";
 import { DatabaseModule } from "@node-stack/db";
@@ -15,7 +15,7 @@ import { BillingService } from "@/billing/billing.service.js";
     {
       provide: "PAYMENT_PROVIDER",
       useFactory: async (config: ConfigService): Promise<PaymentProvider> => {
-        const provider = config.get("BILLING_PROVIDER", "mock");
+        const provider = config.get<string>("BILLING_PROVIDER", "mock");
 
         switch (provider) {
           case "polar": {

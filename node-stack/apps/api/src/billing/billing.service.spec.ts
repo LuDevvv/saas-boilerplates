@@ -1,13 +1,15 @@
-import { Test, TestingModule } from "@nestjs/testing";
-import { BillingService } from "@/billing/billing.service.js";
-import { ConfigService } from "@nestjs/config";
-import { OutboxService } from "@/common/services/outbox.service.js";
-import { EncryptionService } from "@/common/services/encryption.service.js";
-import { BillingRepository } from "@node-stack/db";
-import { CacheService } from "@node-stack/cache";
 import { UnauthorizedException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { EventEmitter2 } from "@nestjs/event-emitter";
+import { Test, TestingModule } from "@nestjs/testing";
+import { CacheService } from "@node-stack/cache";
+import { BillingRepository } from "@node-stack/db";
 import { Mocked } from "vitest";
+
+import { BillingService } from "@/billing/billing.service.js";
+import { EncryptionService } from "@/common/services/encryption.service.js";
+import { OutboxService } from "@/common/services/outbox.service.js";
+
 
 describe("BillingService", () => {
   let service: BillingService;

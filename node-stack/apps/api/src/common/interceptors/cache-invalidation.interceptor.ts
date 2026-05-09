@@ -6,9 +6,15 @@ import {
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { CacheService } from "@node-stack/cache";
-import { tap } from "rxjs";
+import { Observable, tap } from "rxjs";
 
 import { CACHE_INVALIDATE_KEY } from "@/common/decorators/cache-invalidate.decorator.js";
+
+interface CacheRequest {
+  params?: { workspaceId?: string; id?: string };
+  body?: { workspaceId?: string };
+  workspace?: { id?: string };
+}
 
 @Injectable()
 export class CacheInvalidationInterceptor implements NestInterceptor {
@@ -17,7 +23,7 @@ export class CacheInvalidationInterceptor implements NestInterceptor {
     private cacheService: CacheService,
   ) {}
 
-  intercept(context: ExecutionContext, next: CallHandler) {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const patterns = this.reflector.get<string[]>(
       CACHE_INVALIDATE_KEY,
       context.getHandler(),
@@ -27,11 +33,11 @@ export class CacheInvalidationInterceptor implements NestInterceptor {
       return next.handle();
     }
 
-    const req = context.switchToHttp().getRequest();
+    const req = context.switchToHttp().getRequest<CacheRequest>();
     const workspaceId =
-      req.params?.workspaceId ||
-      req.params?.id ||
-      req.body?.workspaceId ||
+      req.params?.["workspaceId"] ??
+      req.params?.["id"] ??
+      req.body?.workspaceId ??
       req.workspace?.id;
 
     return next.handle().pipe(

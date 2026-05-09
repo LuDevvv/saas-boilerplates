@@ -7,7 +7,7 @@ import { IdempotencyInterceptor } from '@/common/interceptors/idempotency.interc
  * Decorator that enables idempotency for the endpoint.
  * Requires the 'Idempotency-Key' header.
  */
-export function Idempotent() {
+export function Idempotent(): MethodDecorator & ClassDecorator {
   return applyDecorators(
     UseInterceptors(IdempotencyInterceptor),
     ApiHeader({

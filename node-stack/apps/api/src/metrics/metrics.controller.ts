@@ -2,8 +2,8 @@ import { Controller, Get, Header, UnauthorizedException, Req } from "@nestjs/com
 import { ConfigService } from "@nestjs/config";
 import { Request } from "express";
 
-import { MetricsService } from "@/metrics/metrics.service.js";
 import { Public } from "@/common/decorators/public.decorator.js";
+import { MetricsService } from "@/metrics/metrics.service.js";
 
 @Controller("metrics")
 export class MetricsController {

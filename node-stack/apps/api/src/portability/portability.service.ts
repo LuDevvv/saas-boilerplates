@@ -6,6 +6,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { JobService } from "@/common/queues/job.service.js";
 
+type PortabilityRequest = typeof schema.portabilityRequests.$inferSelect;
+
 @Injectable()
 export class PortabilityService {
   private readonly logger = new Logger(PortabilityService.name);
@@ -19,7 +21,7 @@ export class PortabilityService {
   /**
    * Triggers a new data export request.
    */
-  async requestExport(workspaceId: string, userId: string) {
+  async requestExport(workspaceId: string, userId: string): Promise<{ requestId: string; status: string }> {
     const requestId = uuidv4();
 
     // 1. Create request in DB
@@ -41,14 +43,14 @@ export class PortabilityService {
     return { requestId, status: 'pending' };
   }
 
-  async listRequests(workspaceId: string) {
+  async listRequests(workspaceId: string): Promise<PortabilityRequest[]> {
     return this.db.query.portabilityRequests.findMany({
       where: eq(schema.portabilityRequests.workspaceId, workspaceId),
       orderBy: [desc(schema.portabilityRequests.createdAt)],
     });
   }
 
-  async getRequest(id: string, workspaceId: string) {
+  async getRequest(id: string, workspaceId: string): Promise<PortabilityRequest> {
     const request = await this.db.query.portabilityRequests.findFirst({
       where: and(
         eq(schema.portabilityRequests.id, id),
@@ -63,7 +65,7 @@ export class PortabilityService {
     return request;
   }
 
-  async getDownloadUrl(id: string, workspaceId: string, userId: string) {
+  async getDownloadUrl(id: string, workspaceId: string, userId: string): Promise<{ url: string }> {
     const request = await this.getRequest(id, workspaceId);
 
     if (request.status !== "completed") {

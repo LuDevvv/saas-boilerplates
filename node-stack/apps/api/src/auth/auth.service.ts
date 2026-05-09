@@ -19,20 +19,19 @@ import { OutboxProducer } from "@node-stack/outbox-queue";
 import type { OAuthProfile } from "@node-stack/types";
 import { encodeCursor, decodeCursor } from "@node-stack/utils";
 import { buildPage, type PaginatedResponse } from "@node-stack/validators";
-import * as bcrypt from "bcrypt";
 
 import { AUTH_ERRORS } from "@/auth/constants.js";
 import type { RegisterDto, LoginDto, RefreshDto } from "@/auth/dto/index.js";
 import { OAuthService } from "@/auth/services/oauth.service.js";
 import { PasswordService, type ValidateUserResult } from "@/auth/services/password.service.js";
 import { SessionService, type SessionListItem } from "@/auth/services/session.service.js";
+import type { TokenPair } from "@/auth/services/token.service.js";
 import { TokenService } from "@/auth/services/token.service.js";
 import { TwoFactorService } from "@/auth/two-factor/two-factor.service.js";
 
 export type { TokenPair } from "@/auth/services/token.service.js";
 export type { SessionListItem } from "@/auth/services/session.service.js";
 export type { ValidateUserResult } from "@/auth/services/password.service.js";
-import type { TokenPair } from "@/auth/services/token.service.js";
 
 interface ListCursor extends Record<string, unknown> {
   createdAt: string;
@@ -390,7 +389,18 @@ export class AuthService {
     return this.passwordService.validateUser(email, password);
   }
 
-  async getUserById(userId: string) {
+  async getUserById(userId: string): Promise<{
+    id: string;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+    phone: string | null;
+    avatarUrl: string | null;
+    role: string;
+    createdAt: Date;
+    twoFactorEnabled: boolean;
+    emailVerified: boolean;
+  }> {
     const user = await this.authRepository.findUserById(userId);
 
     if (!user) {
@@ -411,7 +421,18 @@ export class AuthService {
     };
   }
 
-  async updateProfile(userId: string, data: { firstName?: string; lastName?: string; phone?: string; avatarUrl?: string }) {
+  async updateProfile(userId: string, data: { firstName?: string; lastName?: string; phone?: string; avatarUrl?: string }): Promise<{
+    id: string;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+    phone: string | null;
+    avatarUrl: string | null;
+    role: string;
+    createdAt: Date;
+    twoFactorEnabled: boolean;
+    emailVerified: boolean;
+  }> {
     const updateData: Partial<schema.User> = {};
     if (data.firstName) {
       updateData.name = data.firstName;

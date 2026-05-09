@@ -1,3 +1,5 @@
+import { randomUUID } from "crypto";
+
 import {
   Injectable,
   UnauthorizedException,
@@ -52,16 +54,16 @@ export class TwoFactorService {
       throw new UnauthorizedException("User not found");
     }
 
-    const secret = this.otp.generateSecret();
-    const appName = this.configService.get("APP_NAME", "NodeStack");
+    const secret = this.otp.generateSecret() as string;
+    const appName = this.configService.get<string>("APP_NAME") ?? "NodeStack";
 
     const otpAuthUrl = this.otp.generateURI({
       issuer: appName,
       label: `${appName}:${user.email}`,
       secret,
-    });
+    }) as string;
 
-    const qrCodeUrl = await QRCode.toDataURL(otpAuthUrl);
+    const qrCodeUrl = (await QRCode.toDataURL(otpAuthUrl)) as string;
 
     await this.db
       .update(schema.users)
@@ -98,7 +100,7 @@ export class TwoFactorService {
       }
 
       return result.valid;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -220,7 +222,7 @@ export class TwoFactorService {
         ipAddress,
       });
     } else {
-      sessionId = (crypto as any).randomUUID();
+      sessionId = randomUUID();
       await this.authRepository.createSession({
         id: sessionId,
         userId: user.id,
@@ -267,7 +269,7 @@ export class TwoFactorService {
 
   verifyTempToken(token: string): string {
     try {
-      const payload = this.jwtService.verify(token, {
+      const payload = this.jwtService.verify<{ sub: string; type: string }>(token, {
         secret: this.configService.getOrThrow<string>("JWT_SECRET"),
       });
 

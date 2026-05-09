@@ -27,8 +27,7 @@ import type { OAuthProfile } from "@node-stack/types";
 import { PaginationDto } from "@node-stack/validators";
 import type { Request, Response } from "express";
 
-import { AuthService, SessionListItem } from "@/auth/auth.service.js";
-import { AccountService } from "@/users/account.service.js";
+import { AuthService } from "@/auth/auth.service.js";
 import { CurrentUser } from "@/auth/decorators/index.js";
 import {
   RegisterDto,
@@ -46,6 +45,7 @@ import { JwtAuthGuard } from "@/auth/guards/index.js";
 import { TwoFactorService } from "@/auth/two-factor/two-factor.service.js";
 import { Public } from "@/common/decorators/public.decorator.js";
 import type { UserPayload } from "@/common/types/index.js";
+import { AccountService } from "@/users/account.service.js";
 
 
 function extractClientIp(req: Request): string | undefined {
@@ -78,7 +78,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 201, description: "User registered successfully" })
   @ApiResponse({ status: 400, description: "Email already in use or validation failed" })
-  async register(@Body() dto: RegisterDto, @Req() req: Request) {
+  async register(@Body() dto: RegisterDto, @Req() req: Request): Promise<unknown> {
     const userAgent = req.headers["user-agent"];
     const ipAddress = extractClientIp(req);
     return this.authService.register(dto, userAgent, ipAddress);
@@ -98,7 +98,7 @@ export class AuthController {
     description: "Login successful. May return a tempToken if 2FA is required.",
   })
   @ApiResponse({ status: 401, description: "Invalid credentials" })
-  async login(@Body() dto: LoginDto, @Req() req: Request) {
+  async login(@Body() dto: LoginDto, @Req() req: Request): Promise<unknown> {
     const userAgent = req.headers["user-agent"];
     const ipAddress = extractClientIp(req);
     return this.authService.login(dto, userAgent, ipAddress);
@@ -113,7 +113,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 200, description: "Tokens rotated successfully" })
   @ApiResponse({ status: 401, description: "Invalid or expired refresh token" })
-  async refresh(@Body() dto: RefreshDto) {
+  async refresh(@Body() dto: RefreshDto): Promise<unknown> {
     return this.authService.refresh(dto);
   }
 
@@ -127,7 +127,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 200, description: "Logged out successfully" })
   @ApiResponse({ status: 401, description: "Unauthorized" })
-  async logout(@CurrentUser("sessionId") sessionId: string) {
+  async logout(@CurrentUser("sessionId") sessionId: string): Promise<{ message: string }> {
     await this.authService.logout(sessionId);
     return { message: "Logged out successfully" };
   }
@@ -141,7 +141,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 200, description: "User profile retrieved" })
   @ApiResponse({ status: 401, description: "Unauthorized" })
-  async me(@CurrentUser("id") userId: string) {
+  async me(@CurrentUser("id") userId: string): Promise<unknown> {
     return this.authService.getUserById(userId);
   }
 
@@ -179,7 +179,7 @@ export class AuthController {
   async updateProfile(
     @CurrentUser("id") userId: string,
     @Body() dto: UpdateProfileDto,
-  ) {
+  ): Promise<unknown> {
     return this.authService.updateProfile(userId, dto);
   }
 
@@ -194,7 +194,7 @@ export class AuthController {
   async getSessions(
     @CurrentUser() user: UserPayload,
     @Query() page: PaginationDto,
-  ) {
+  ): Promise<unknown> {
     return this.authService.getActiveSessions(
       user.id,
       user.sessionId,
@@ -249,7 +249,7 @@ export class AuthController {
     description: "Generates a TOTP secret and a QR code URL for the user to scan with their authenticator app.",
   })
   @ApiResponse({ status: 200, description: "2FA secret and QR code generated" })
-  async enable2fa(@CurrentUser("id") userId: string) {
+  async enable2fa(@CurrentUser("id") userId: string): Promise<unknown> {
     return this.twoFactorService.generateSecret(userId);
   }
 
@@ -264,7 +264,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 200, description: "2FA successfully enabled" })
   @ApiResponse({ status: 400, description: "Invalid TOTP code" })
-  async verify2fa(@CurrentUser("id") userId: string, @Body() dto: Verify2faDto, @Req() req: Request) {
+  async verify2fa(@CurrentUser("id") userId: string, @Body() dto: Verify2faDto, @Req() req: Request): Promise<{ enabled: boolean }> {
     await this.twoFactorService.enableTwoFactor(userId, dto.token, {
       ipAddress: extractClientIp(req),
       userAgent: req.headers["user-agent"],
@@ -281,7 +281,7 @@ export class AuthController {
     description: "Removes two-factor authentication from the user's account.",
   })
   @ApiResponse({ status: 200, description: "2FA successfully disabled" })
-  async disable2fa(@CurrentUser("id") userId: string, @Req() req: Request) {
+  async disable2fa(@CurrentUser("id") userId: string, @Req() req: Request): Promise<{ disabled: boolean }> {
     await this.twoFactorService.disableTwoFactor(userId, {
       ipAddress: extractClientIp(req),
       userAgent: req.headers["user-agent"],
@@ -299,7 +299,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 200, description: "Login successful" })
   @ApiResponse({ status: 401, description: "Invalid or expired temp token / TOTP code" })
-  async login2fa(@Body() dto: Login2faDto, @Req() req: Request) {
+  async login2fa(@Body() dto: Login2faDto, @Req() req: Request): Promise<unknown> {
     const userId = this.twoFactorService.verifyTempToken(dto.tempToken);
     const userAgent = req.headers["user-agent"];
     const ipAddress = extractClientIp(req);
@@ -320,7 +320,7 @@ export class AuthController {
     description: "Sends a password reset email if the user exists.",
   })
   @ApiResponse({ status: 200, description: "If the email was found, a recovery link was sent." })
-  async forgotPassword(@Body() dto: RecoveryDto) {
+  async forgotPassword(@Body() dto: RecoveryDto): Promise<{ message: string }> {
     await this.authService.forgotPassword(dto.email);
     return { message: "If the email was found, a recovery link was sent." };
   }
@@ -333,7 +333,7 @@ export class AuthController {
     description: "Sets a new password using a valid reset token.",
   })
   @ApiResponse({ status: 200, description: "Password reset successfully." })
-  async resetPassword(@Body() dto: ResetPasswordDto, @Req() req: Request) {
+  async resetPassword(@Body() dto: ResetPasswordDto, @Req() req: Request): Promise<{ message: string }> {
     await this.authService.resetPassword(dto.token, dto.newPassword, {
       ipAddress: extractClientIp(req),
       userAgent: req.headers["user-agent"],
@@ -355,7 +355,7 @@ export class AuthController {
     @CurrentUser("id") userId: string,
     @Body() dto: ChangePasswordDto,
     @Req() req: Request,
-  ) {
+  ): Promise<{ message: string }> {
     await this.authService.changePassword(userId, dto, {
       ipAddress: extractClientIp(req),
       userAgent: req.headers["user-agent"],
@@ -372,7 +372,7 @@ export class AuthController {
     description: "Generates and sends an email verification link to the logged-in user.",
   })
   @ApiResponse({ status: 200, description: "Verification email sent if not already verified." })
-  async sendVerificationEmail(@CurrentUser("id") userId: string) {
+  async sendVerificationEmail(@CurrentUser("id") userId: string): Promise<{ message: string }> {
     await this.authService.sendVerificationEmail(userId);
     return { message: "Verification email sent if not already verified." };
   }
@@ -385,7 +385,7 @@ export class AuthController {
     description: "Confirms a user's email address using a valid verification token.",
   })
   @ApiResponse({ status: 200, description: "Email verified successfully." })
-  async verifyEmail(@Body() dto: VerifyEmailDto) {
+  async verifyEmail(@Body() dto: VerifyEmailDto): Promise<{ message: string }> {
     await this.authService.verifyEmail(dto.token, dto.email, dto.code);
     return { message: "Email verified successfully." };
   }
@@ -401,7 +401,7 @@ export class AuthController {
   async getAuditLogs(
     @CurrentUser("id") userId: string,
     @Query() page: PaginationDto,
-  ) {
+  ): Promise<unknown> {
     return this.authService.getAuditLogs(userId, {
       cursor: page.cursor,
       limit: page.limit,
@@ -428,7 +428,7 @@ export class AuthController {
     @Res() res: Response,
   ): Promise<void> {
     const tokens = await this.authService.handleOAuthLogin(profile);
-    const base = this.configService.getOrThrow("FRONTEND_URL");
+    const base = this.configService.getOrThrow<string>("FRONTEND_URL");
     const url = new URL("/auth/callback", base);
     url.searchParams.set("token", tokens.accessToken);
     res.redirect(url.toString());
@@ -454,7 +454,7 @@ export class AuthController {
     @Res() res: Response,
   ): Promise<void> {
     const tokens = await this.authService.handleOAuthLogin(profile);
-    const base = this.configService.getOrThrow("FRONTEND_URL");
+    const base = this.configService.getOrThrow<string>("FRONTEND_URL");
     const url = new URL("/auth/callback", base);
     url.searchParams.set("token", tokens.accessToken);
     res.redirect(url.toString());

@@ -9,9 +9,9 @@ export class OutboxService {
   async createEvent(
     eventType: string,
     payload: Record<string, unknown> | unknown,
-    tx?: any,
+    tx?: Database,
     workspaceId?: string,
-  ) {
+  ): Promise<void> {
     const database = tx ?? this.db;
     await database.insert(schema.outbox).values({
       eventType,
@@ -20,7 +20,7 @@ export class OutboxService {
     });
   }
 
-  async transaction<T>(callback: (tx: any) => Promise<T>): Promise<T> {
+  async transaction<T>(callback: (tx: Database) => Promise<T>): Promise<T> {
     return this.db.transaction(callback);
   }
 }

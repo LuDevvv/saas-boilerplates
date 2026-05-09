@@ -6,7 +6,7 @@ import { RealtimeGateway } from '@/realtime/realtime.gateway.js';
 export interface RealtimeEventPayload {
   userId: string;
   workspaceId?: string;
-  data: any;
+  data: unknown;
 }
 
 @Injectable()
@@ -18,12 +18,12 @@ export class RealtimeService implements OnModuleInit {
     private readonly realtimeGateway: RealtimeGateway,
   ) {}
 
-  onModuleInit() {
+  onModuleInit(): void {
     this.logger.log('RealtimeService initialized - listening for internal events');
   }
 
   @OnEvent('ai_job.completed')
-  async handleAiJobCompleted(payload: { userId: string; workspaceId: string; jobId: string; result: any }) {
+  async handleAiJobCompleted(payload: { userId: string; workspaceId: string; jobId: string; result: unknown }): Promise<void> {
     this.logger.log(`AI job completed for user ${payload.userId}, job ${payload.jobId}`);
     
     // Transient real-time update
@@ -44,7 +44,7 @@ export class RealtimeService implements OnModuleInit {
   }
 
   @OnEvent('webhook.delivery.failed')
-  async handleWebhookDeliveryFailed(payload: { workspaceId: string; webhookId: string; error: string; attempts: number }) {
+  async handleWebhookDeliveryFailed(payload: { workspaceId: string; webhookId: string; error: string; attempts: number }): Promise<void> {
     this.logger.log(`Webhook delivery failed for workspace ${payload.workspaceId}, webhook ${payload.webhookId}`);
     
     this.emitToWorkspace(payload.workspaceId, 'webhook.delivery.failed', {
@@ -55,11 +55,11 @@ export class RealtimeService implements OnModuleInit {
     });
   }
 
-  emitToUser(userId: string, event: string, data: any) {
+  emitToUser(userId: string, event: string, data: unknown): void {
     this.realtimeGateway.emitToUser(userId, event, data);
   }
 
-  emitToWorkspace(workspaceId: string, event: string, data: any) {
+  emitToWorkspace(workspaceId: string, event: string, data: unknown): void {
     this.realtimeGateway.emitToWorkspace(workspaceId, event, data);
   }
 }

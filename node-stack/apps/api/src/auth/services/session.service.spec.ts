@@ -3,10 +3,11 @@ import type { CacheService } from "@node-stack/cache";
 import type { AuditLogRepository, AuthRepository, SessionRepository } from "@node-stack/db";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AUTH_ERRORS } from "@/auth/constants.js";
 
 import { SessionService } from "./session.service.js";
 import { TokenService } from "./token.service.js";
+
+import { AUTH_ERRORS } from "@/auth/constants.js";
 
 vi.mock("@node-stack/db", async () => {
   const actual = await vi.importActual<typeof import("@node-stack/db")>(

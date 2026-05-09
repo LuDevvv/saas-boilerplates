@@ -1,8 +1,9 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { InvitationsService } from '@/workspaces/invitations.service.js';
-import { WorkspaceRepository, InvitationRepository, UserRepository } from '@node-stack/db';
-import { OutboxService } from '@/common/services/outbox.service.js';
 import { NotFoundException, ConflictException, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import { WorkspaceRepository, InvitationRepository, UserRepository } from '@node-stack/db';
+
+import { OutboxService } from '@/common/services/outbox.service.js';
+import { InvitationsService } from '@/workspaces/invitations.service.js';
 
 describe('InvitationsService', () => {
   let service: InvitationsService;

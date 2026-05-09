@@ -6,8 +6,8 @@ import {
   DB_TOKEN,
   withSystemTx,
   type AuditAction,
-} from "@node-stack/db";
-import type { Database } from "@node-stack/db";
+ Database } from "@node-stack/db";
+
 
 // Set of valid taxonomy strings for runtime guard in handleAuditLog.
 const AUDIT_ACTION_SET = new Set<string>(AUDIT_ACTIONS);
@@ -20,7 +20,7 @@ export interface AuditEventPayload {
   action: string;
   userId?: string | null;
   workspaceId?: string | null;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   entityId?: string | null;
   entityType?: string | null;
   ipAddress?: string | null;
@@ -39,8 +39,8 @@ export class AuditService {
   ) {}
 
   @OnEvent("audit.log", { async: true })
-  async handleAuditLog(payload: AuditEventPayload) {
-    const sanitizedMetadata = this.sanitize(payload.metadata || {});
+  async handleAuditLog(payload: AuditEventPayload): Promise<void> {
+    const sanitizedMetadata = this.sanitize(payload.metadata ?? {}) as Record<string, unknown>;
     const action = this.narrowAction(payload.action);
 
     try {
@@ -65,7 +65,7 @@ export class AuditService {
           ),
         this.db,
       );
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to persist audit log:", error);
     }
   }
@@ -107,27 +107,27 @@ export class AuditService {
     actorId?: string | null;
     actorType?: string;
     payload?: unknown;
-  }) {
+  }): Promise<void> {
     await this.handleAuditLog({
       action: args.event,
       userId: args.actorId,
       entityType: args.actorType,
-      metadata: (args.payload as Record<string, any>) ?? {},
+      metadata: (args.payload as Record<string, unknown>) ?? {},
     });
   }
 
   /**
    * Recursively masks sensitive keys in an object.
    */
-  private sanitize(data: any): any {
+  private sanitize(data: unknown): unknown {
     if (!data || typeof data !== "object") return data;
 
     if (Array.isArray(data)) {
-      return data.map((item) => this.sanitize(item));
+      return data.map((item: unknown) => this.sanitize(item));
     }
 
-    const sanitized: any = {};
-    for (const [key, value] of Object.entries(data)) {
+    const sanitized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
       const isSensitive = SENSITIVE_KEYS.some((sk) =>
         key.toLowerCase().includes(sk.toLowerCase()),
       );

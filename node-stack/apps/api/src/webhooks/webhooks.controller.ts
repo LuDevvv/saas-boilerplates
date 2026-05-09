@@ -56,8 +56,8 @@ export class WebhooksController {
     @Param("provider") provider: string,
     @Req() req: Request,
     @Res() res: Response,
-  ) {
-    const rawBody: Buffer = req.body;
+  ): Promise<Response> {
+    const rawBody = req.body as Buffer;
     const headers = req.headers as Record<string, string>;
     const sourceIp =
       (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ??
@@ -102,7 +102,7 @@ export class WebhooksController {
   async getRecentLogs(
     @Query("provider") provider?: string,
     @Query("limit") limit?: string,
-  ) {
+  ): Promise<unknown> {
     const parsedLimit = limit ? parseInt(limit, 10) : undefined;
     return this.webhookService.getRecentLogs(provider, parsedLimit);
   }
@@ -129,7 +129,7 @@ export class WebhooksController {
   async getFailedLogs(
     @Query("provider") provider?: string,
     @Query("limit") limit?: string,
-  ) {
+  ): Promise<unknown> {
     const parsedLimit = limit ? parseInt(limit, 10) : undefined;
     return this.webhookService.getFailedLogs(provider, parsedLimit);
   }
@@ -141,7 +141,7 @@ export class WebhooksController {
   })
   @ApiParam({ name: "id", description: "The webhook log UUID" })
   @ApiResponse({ status: 200, description: "Webhook log details" })
-  async getLogById(@Param("id") id: string) {
+  async getLogById(@Param("id") id: string): Promise<unknown> {
     return this.webhookService.getLogById(id);
   }
 
@@ -151,7 +151,7 @@ export class WebhooksController {
     description: "Returns the list of currently registered webhook provider handlers.",
   })
   @ApiResponse({ status: 200, description: "List of provider names" })
-  async getProviders() {
+  async getProviders(): Promise<{ providers: string[] }> {
     return {
       providers: this.webhookService.getRegisteredProviders(),
     };

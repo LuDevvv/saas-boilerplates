@@ -6,10 +6,11 @@ import {
   Delete,
   Param,
   Body,
-  UseGuards,
-  UseInterceptors,
   ParseUUIDPipe,
   Query,
+  HttpCode,
+  HttpStatus,
+  Req,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -25,13 +26,8 @@ import {
   UpdateWorkspaceDto,
   PaginationDto,
 } from "@node-stack/validators";
-
-import {
-  HttpCode,
-  HttpStatus,
-} from "@nestjs/common";
 import type { Request } from "express";
-import { Req } from "@nestjs/common";
+
 
 import { ApiKeysService } from "@/api-keys/api-keys.service.js";
 import { CurrentUser } from "@/auth/decorators/index.js";
@@ -67,7 +63,7 @@ export class WorkspacesController {
     @TenantId() workspaceId: string,
     @CurrentUser("id") userId: string,
     @Body() dto: CreateApiKeyDto,
-  ) {
+  ): Promise<unknown> {
     return this.apiKeysService.create(workspaceId, userId, dto);
   }
 
@@ -78,7 +74,7 @@ export class WorkspacesController {
     summary: "List workspace API keys",
   })
   @ApiResponse({ status: 200, description: "List of API keys retrieved" })
-  async listApiKeys(@TenantId() workspaceId: string) {
+  async listApiKeys(@TenantId() workspaceId: string): Promise<unknown> {
     return this.apiKeysService.list(workspaceId);
   }
 
@@ -93,7 +89,7 @@ export class WorkspacesController {
     @TenantId() workspaceId: string,
     @Param("keyId", ParseUUIDPipe) keyId: string,
     @CurrentUser("id") userId: string,
-  ) {
+  ): Promise<unknown> {
     return this.apiKeysService.revoke(workspaceId, keyId, userId);
   }
 
@@ -106,7 +102,7 @@ export class WorkspacesController {
   async createWorkspace(
     @Body() dto: CreateWorkspaceDto,
     @CurrentUser("id") userId: string,
-  ) {
+  ): Promise<unknown> {
     return this.workspacesService.createWorkspace(dto.name, dto.slug, userId);
   }
 
@@ -118,7 +114,7 @@ export class WorkspacesController {
   async listWorkspaces(
     @Query() query: PaginationDto,
     @CurrentUser("id") userId: string,
-  ) {
+  ): Promise<unknown> {
     return this.workspacesService.listWorkspaces(
       userId,
       query.cursor,
@@ -131,7 +127,7 @@ export class WorkspacesController {
   @RequirePermissions(Permission.WORKSPACE_READ)
   @ApiOperation({ summary: "Get workspace details" })
   @ApiResponse({ status: 200, description: "Workspace details retrieved" })
-  async getWorkspace(@Workspace() workspace: WorkspaceContext) {
+  async getWorkspace(@Workspace() workspace: WorkspaceContext): Promise<WorkspaceContext> {
     return workspace;
   }
 
@@ -173,7 +169,7 @@ export class WorkspacesController {
     @TenantId() workspaceId: string,
     @Body() dto: UpdateWorkspaceDto,
     @CurrentUser("id") userId: string,
-  ) {
+  ): Promise<unknown> {
     return this.workspacesService.updateWorkspace(workspaceId, dto, userId);
   }
 
@@ -185,7 +181,7 @@ export class WorkspacesController {
   async getMembers(
     @TenantId() workspaceId: string,
     @CurrentUser("id") userId: string,
-  ) {
+  ): Promise<unknown> {
     return this.workspacesService.getMembers(workspaceId, userId);
   }
 
@@ -199,7 +195,7 @@ export class WorkspacesController {
     @Param("userId", ParseUUIDPipe) targetUserId: string,
     @Body() dto: UpdateMemberRoleDto,
     @CurrentUser("id") userId: string,
-  ) {
+  ): Promise<{ message: string }> {
     await this.workspacesService.updateMemberRole(
       workspaceId,
       targetUserId,
@@ -218,7 +214,7 @@ export class WorkspacesController {
     @TenantId() workspaceId: string,
     @Param("userId", ParseUUIDPipe) targetUserId: string,
     @CurrentUser("id") userId: string,
-  ) {
+  ): Promise<{ message: string }> {
     await this.workspacesService.removeMember(
       workspaceId,
       targetUserId,

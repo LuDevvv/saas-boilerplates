@@ -6,7 +6,7 @@ import { cleanupOpenApiDoc } from 'nestjs-zod';
 /**
  * Configure Swagger and Reference UI (Scalar) for the API.
  */
-export function setupSwagger(app: INestApplication) {
+export function setupSwagger(app: INestApplication): ReturnType<typeof SwaggerModule.createDocument> {
   const config = new DocumentBuilder()
     .setTitle('Node Stack API')
     .setDescription(
@@ -47,7 +47,7 @@ export function setupSwagger(app: INestApplication) {
       },
       theme: 'purple',
       darkMode: true,
-    } as any),
+    } as unknown as Parameters<typeof apiReference>[0]),
   );
 
   return document;

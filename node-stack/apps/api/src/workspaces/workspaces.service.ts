@@ -53,21 +53,21 @@ export class WorkspacesService {
     return withTenantTx(workspaceId, async (tx: NodePgDatabase<typeof schema>) => {
       await this.validateMembership(workspaceId, currentUserId, tx);
       const members = await this.workspaceRepo.findMembersByWorkspaceId(workspaceId, tx);
-      return members.map((m: any) => ({
-        userId: m.userId,
-        role: m.role as WorkspaceRole,
-        createdAt: m.createdAt,
+      return members.map((m: Record<string, unknown>) => ({
+        userId: m["userId"] as string,
+        role: m["role"] as WorkspaceRole,
+        createdAt: m["createdAt"] as Date,
         user: {
-          id: m.id,
-          email: m.email,
-          name: m.name,
-          avatarUrl: m.avatarUrl,
+          id: m["id"] as string,
+          email: m["email"] as string,
+          name: m["name"] as string | null,
+          avatarUrl: m["avatarUrl"] as string | null,
         },
       }));
     }, this.db);
   }
 
-  async getMyMembership(workspaceId: string, userId: string) {
+  async getMyMembership(workspaceId: string, userId: string): Promise<unknown> {
     return withTenantTx(workspaceId, async (tx: NodePgDatabase<typeof schema>) => {
       const membership = await this.workspaceRepo.findMembership(workspaceId, userId, tx);
       if (!membership) throw new NotFoundException("Membership not found");
@@ -175,13 +175,13 @@ export class WorkspacesService {
     workspaceId: string,
     userId: string,
     tx?: NodePgDatabase<typeof schema>,
-  ) {
+  ): Promise<{ role: string; [key: string]: unknown }> {
     const membership = await this.workspaceRepo.findMembership(workspaceId, userId, tx);
     if (!membership) throw new ForbiddenException("Not a member of this workspace");
     return membership;
   }
 
-  async createWorkspace(name: string, slug: string, userId: string) {
+  async createWorkspace(name: string, slug: string, userId: string): Promise<unknown> {
     // No workspaceId yet — withSystemTx so the inserts into workspaces +
     // memberships + outbox satisfy the system-bypass RLS policy.
     const workspace = await withSystemTx(async (tx: NodePgDatabase<typeof schema>) => {
@@ -261,7 +261,7 @@ export class WorkspacesService {
     await this.cache.invalidate(`workspaces:${workspaceId}:members`);
   }
 
-  async updateWorkspace(workspaceId: string, data: UpdateWorkspaceDto, currentUserId: string) {
+  async updateWorkspace(workspaceId: string, data: UpdateWorkspaceDto, currentUserId: string): Promise<unknown> {
     const updated = await withTenantTx(workspaceId, async (tx: NodePgDatabase<typeof schema>) => {
       const currentMembership = await this.validateMembership(workspaceId, currentUserId, tx);
       if (currentMembership.role !== "owner" && currentMembership.role !== "admin") {
@@ -287,7 +287,7 @@ export class WorkspacesService {
     return updated;
   }
 
-  async listWorkspaces(userId: string, cursor?: string, limit?: number) {
+  async listWorkspaces(userId: string, cursor?: string, limit?: number): Promise<unknown> {
     // Cross-tenant query (a user's workspaces span multiple tenants);
     // withSystemTx so the JOIN against memberships+workspaces is not
     // filtered by a single workspace GUC. The existing user_id WHERE
@@ -299,7 +299,7 @@ export class WorkspacesService {
     );
   }
 
-  async getUserWorkspaces(userId: string) {
+  async getUserWorkspaces(userId: string): Promise<unknown> {
     const { workspaces } = await withSystemTx(
       (tx: NodePgDatabase<typeof schema>) =>
         this.workspaceRepo.findAllByUserId(userId, undefined, undefined, tx),

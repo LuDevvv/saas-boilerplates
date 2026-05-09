@@ -19,7 +19,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
 
   constructor(private readonly idempotency: IdempotencyService) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const req = context.switchToHttp().getRequest<Request>();
     const res = context.switchToHttp().getResponse<Response>();
 
@@ -38,7 +38,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
           this.logger.log(`Idempotency cache hit for key: ${idempotencyKey}`);
           res.status(cached.statusCode);
           res.setHeader("X-Idempotency-Hit", "true");
-          return of(cached.data);
+          return of(cached.data as unknown);
         }
 
         return from(this.idempotency.setWithLock(idempotencyKey)).pipe(
@@ -60,7 +60,7 @@ export class IdempotencyInterceptor implements NestInterceptor {
                 }
                 await this.idempotency.releaseLock(idempotencyKey);
               }),
-              catchError((err) => {
+              catchError((err: unknown) => {
                 // Release lock on error but don't cache (or cache if it's a 4xx)
                 return from(this.idempotency.releaseLock(idempotencyKey)).pipe(
                   switchMap(() => throwError(() => err)),

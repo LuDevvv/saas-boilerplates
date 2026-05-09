@@ -10,9 +10,16 @@ import { Reflector } from "@nestjs/core";
 import { CacheService } from "@node-stack/cache";
 import { schema, eq, and, DB_TOKEN, RequestContextService } from "@node-stack/db";
 import type { Database } from "@node-stack/db";
+import type { Request } from "express";
 
 import { IS_PUBLIC_KEY } from "@/common/decorators/public.decorator.js";
 import type { WorkspaceContext } from "@/common/types/index.js";
+
+interface WorkspaceRequest extends Request {
+  user?: { id?: string; workspaceRole?: string };
+  workspace?: WorkspaceContext;
+  tenantId?: string;
+}
 
 @Injectable()
 export class WorkspaceGuard implements CanActivate {
@@ -33,29 +40,31 @@ export class WorkspaceGuard implements CanActivate {
       return true;
     }
 
-    const req = context.switchToHttp().getRequest() as any;
-    
+    const req = context.switchToHttp().getRequest<WorkspaceRequest>();
+
     // Extract workspace ID: Look for explicit workspaceId param first,
     // then headers (x-workspace-id or x-tenant-id), then fallback to id
     // only if the request context suggests a workspace-related resource.
-    const params = req.params || {};
-    const headers = req.headers || {};
-    
+    const params = req.params ?? {};
+    const headers = req.headers ?? {};
+
+    const firstHeader = (v: string | string[] | undefined): string | undefined =>
+      Array.isArray(v) ? v[0] : v;
     const workspaceId: string | undefined =
-      params.workspaceId ||
-      headers["x-workspace-id"] ||
-      headers["x-tenant-id"] ||
-      (params.id &&
+      (params["workspaceId"] as string | undefined) ??
+      firstHeader(headers["x-workspace-id"]) ??
+      firstHeader(headers["x-tenant-id"]) ??
+      ((params["id"] as string | undefined) &&
         (req.url.includes("/workspaces") ||
           req.url.includes("/api-keys") ||
           req.url.includes("/storage") ||
           req.url.includes("/ai") ||
           req.url.includes("/billing") ||
           req.url.includes("/portability"))
-        ? params.id
+        ? (params["id"] as string)
         : undefined);
 
-    const user = req?.user;
+    const user = req.user;
 
     // Skip workspace check if no workspaceId is found (allows public/non-workspace routes)
     if (!workspaceId) {
@@ -103,7 +112,7 @@ export class WorkspaceGuard implements CanActivate {
         const result = await this.db.query.memberships.findFirst({
           where: and(
             eq(schema.memberships.workspaceId, workspaceId),
-            eq(schema.memberships.userId, user.id),
+            eq(schema.memberships.userId, user.id as string),
           ),
         });
         return result ?? null;
@@ -127,7 +136,7 @@ export class WorkspaceGuard implements CanActivate {
     } as WorkspaceContext;
 
     // Attach workspace role to user for downstream RBAC
-    (req.user as any).workspaceRole = membership.role;
+    req.user = { ...req.user, workspaceRole: membership.role };
 
     // Set workspace in request context for RLS
     this.contextService.workspaceId = ws.id;

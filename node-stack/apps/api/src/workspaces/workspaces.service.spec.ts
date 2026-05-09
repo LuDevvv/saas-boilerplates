@@ -1,10 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { WorkspacesService } from '@/workspaces/workspaces.service.js';
-import { WorkspaceRepository } from '@node-stack/db';
-import { CacheService } from '@node-stack/cache';
-import { OutboxService } from '@/common/services/outbox.service.js';
 import { ForbiddenException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Test, TestingModule } from '@nestjs/testing';
+import { CacheService } from '@node-stack/cache';
+import { WorkspaceRepository } from '@node-stack/db';
+
+import { OutboxService } from '@/common/services/outbox.service.js';
+import { WorkspacesService } from '@/workspaces/workspaces.service.js';
 
 describe('WorkspacesService', () => {
   let service: WorkspacesService;

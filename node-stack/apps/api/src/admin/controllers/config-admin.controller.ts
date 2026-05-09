@@ -5,6 +5,11 @@ import { ZodValidationPipe } from "nestjs-zod";
 
 import { DynamicConfigService } from "@/admin/services/dynamic-config.service.js";
 import { AdminOnly } from "@/common/decorators/admin.decorator.js";
+import type { UserPayload } from "@/common/types/index.js";
+
+interface AdminConfigRequest {
+  user?: UserPayload;
+}
 
 @ApiTags("admin-config")
 @Controller("admin/config")
@@ -15,7 +20,7 @@ export class ConfigAdminController {
   @Get()
   @ApiOperation({ summary: "Get all dynamic configuration (Admin only)" })
   @ApiResponse({ status: 200, description: "Configuration retrieved" })
-  async getAllConfig() {
+  async getAllConfig(): Promise<ReturnType<DynamicConfigService["getAll"]>> {
     return this.dynamicConfigService.getAll();
   }
 
@@ -24,8 +29,8 @@ export class ConfigAdminController {
   @ApiResponse({ status: 201, description: "Configuration updated" })
   async setConfig(
     @Body(new ZodValidationPipe(SetConfigSchema)) data: SetConfigDto,
-    @Request() req: any,
-  ) {
+    @Request() req: AdminConfigRequest,
+  ): Promise<void> {
     const adminId = req.user?.id;
     return this.dynamicConfigService.set(
       data.key,
@@ -38,7 +43,7 @@ export class ConfigAdminController {
   @Post("refresh")
   @ApiOperation({ summary: "Manually refresh configuration cache (Admin only)" })
   @ApiResponse({ status: 201, description: "Cache refreshed" })
-  async refreshCache() {
+  async refreshCache(): Promise<{ success: boolean }> {
     await this.dynamicConfigService.warmCache();
     return { success: true };
   }

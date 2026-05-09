@@ -3,12 +3,12 @@ import { vi } from "vitest";
 
 export function mockExecutionContext(
   overrides: {
-    user?: Record<string, any>;
+    user?: Record<string, unknown>;
     headers?: Record<string, string>;
     method?: string;
     url?: string;
-    handlerMetadata?: Record<string, any>;
-    classMetadata?: Record<string, any>;
+    handlerMetadata?: Record<string, unknown>;
+    classMetadata?: Record<string, unknown>;
   } = {},
 ): ExecutionContext {
   const request = {
@@ -38,4 +38,3 @@ export function mockExecutionContext(
     }),
   } as unknown as ExecutionContext;
 }
-

@@ -1,9 +1,5 @@
 import { Module } from "@nestjs/common";
-import { 
-  InvitationRepository, 
-  WorkspaceRepository, 
-  UserRepository 
-, DatabaseModule } from "@node-stack/db";
+import { DatabaseModule } from "@node-stack/db";
 
 import { OutboxService } from "@/common/services/outbox.service.js";
 import { InvitationsController } from "@/workspaces/invitations.controller.js";

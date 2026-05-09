@@ -25,9 +25,9 @@ export class NotificationService implements OnModuleInit {
     private readonly realtimeService: RealtimeService,
   ) {}
 
-  onModuleInit() {
+  onModuleInit(): void {
     this.logger.log('Initializing API Notification handlers (Persistence + Realtime)');
-    
+
     // Register the IN_APP channel handler
     this.sharedNotificationService.setChannelHandler('IN_APP', async (payload) => {
       await this.handleInAppNotification(payload);
@@ -35,7 +35,7 @@ export class NotificationService implements OnModuleInit {
   }
 
   @OnEvent('ai_job.completed')
-  async handleAiJobCompleted(payload: { userId: string; workspaceId: string; jobId: string; result: any }) {
+  async handleAiJobCompleted(payload: { userId: string; workspaceId: string; jobId: string; result: unknown }): Promise<void> {
     await this.notify({
       userId: payload.userId,
       workspaceId: payload.workspaceId,
@@ -50,7 +50,7 @@ export class NotificationService implements OnModuleInit {
     });
   }
 
-  private async handleInAppNotification(payload: NotificationPayload) {
+  private async handleInAppNotification(payload: NotificationPayload): Promise<void> {
     const { userId, workspaceId, template } = payload;
     
     this.logger.log(`Handling IN_APP notification for user ${userId}`);
@@ -86,7 +86,7 @@ export class NotificationService implements OnModuleInit {
   }
 
   // Wrapper methods for the controller/other services
-  async notify(payload: NotificationPayload) {
+  async notify(payload: NotificationPayload): Promise<void> {
     return this.sharedNotificationService.notify(payload);
   }
 
@@ -130,8 +130,8 @@ export class NotificationService implements OnModuleInit {
     );
   }
 
-  async markAsRead(notificationId: string, userId: string) {
-    return this.db
+  async markAsRead(notificationId: string, userId: string): Promise<void> {
+    await this.db
       .update(schema.notifications)
       .set({ readAt: new Date() })
       .where(and(
@@ -140,8 +140,8 @@ export class NotificationService implements OnModuleInit {
       ));
   }
 
-  async markAllAsRead(userId: string, workspaceId?: string) {
-    return this.db
+  async markAllAsRead(userId: string, workspaceId?: string): Promise<void> {
+    await this.db
       .update(schema.notifications)
       .set({ readAt: new Date() })
       .where(and(
@@ -150,8 +150,8 @@ export class NotificationService implements OnModuleInit {
       ));
   }
 
-  async deleteNotification(notificationId: string, userId: string) {
-    return this.db
+  async deleteNotification(notificationId: string, userId: string): Promise<void> {
+    await this.db
       .delete(schema.notifications)
       .where(and(
         eq(schema.notifications.id, notificationId),

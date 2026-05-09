@@ -11,18 +11,18 @@ export class EventBridgeService implements OnModuleInit {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  async onModuleInit() {
+  async onModuleInit(): Promise<void> {
     this.logger.log('Initializing Cross-Process Event Bridge via Redis...');
-    
-    await this.cacheService.psubscribe('internal_events:*', (channel, message) => {
+
+    await this.cacheService.psubscribe('internal_events:*', (channel: string, message: string) => {
       try {
-        const { type, payload } = JSON.parse(message);
-        this.logger.log(`Received cross-process event on [${channel}]: ${type}`);
-        
+        const parsed = JSON.parse(message) as { type: string; payload: unknown };
+        this.logger.log(`Received cross-process event on [${channel}]: ${parsed.type}`);
+
         // Forward to local lifecycle
-        this.eventEmitter.emit(type, payload);
-      } catch (err) {
-        this.logger.error(`Error parsing message on [${channel}]: ${err.message}`);
+        this.eventEmitter.emit(parsed.type, parsed.payload);
+      } catch (err: unknown) {
+        this.logger.error(`Error parsing message on [${channel}]: ${(err as Error).message}`);
       }
     });
   }

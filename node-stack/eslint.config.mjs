@@ -117,18 +117,33 @@ export default [
         },
       ],
       'import/no-duplicates': 'error',
-      'react-hooks/rules-of-hooks':  'error',
-      'react-hooks/exhaustive-deps': 'warn',
+      // react-hooks v4 is incompatible with ESLint v9 (context.getSource removed).
+      // Re-enable once plugin is upgraded to v5+.
+      // 'react-hooks/rules-of-hooks':  'error',
+      // 'react-hooks/exhaustive-deps': 'warn',
     },
   },
   {
     // Relax rules for test and migration files
+    // Also disable typed-linting for spec files that are excluded from tsconfig
     files: ['**/*.spec.ts', '**/*.e2e-spec.ts', '**/test-*.ts', '**/migrate.ts'],
+    languageOptions: {
+      parserOptions: {
+        project: false,
+      },
+    },
     rules: {
-      '@typescript-eslint/no-explicit-any':           'off',
-      '@typescript-eslint/no-unsafe-assignment':      'off',
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      'no-console':                                   'off',
+      '@typescript-eslint/no-explicit-any':                    'off',
+      '@typescript-eslint/no-unsafe-assignment':               'off',
+      '@typescript-eslint/no-unsafe-member-access':            'off',
+      '@typescript-eslint/no-unsafe-call':                     'off',
+      '@typescript-eslint/no-unsafe-return':                   'off',
+      '@typescript-eslint/no-unsafe-argument':                 'off',
+      '@typescript-eslint/explicit-function-return-type':      'off',
+      '@typescript-eslint/no-floating-promises':               'off',
+      '@typescript-eslint/restrict-template-expressions':      'off',
+      '@typescript-eslint/no-unused-vars':                     'off',
+      'no-console':                                            'off',
     },
   },
 ];

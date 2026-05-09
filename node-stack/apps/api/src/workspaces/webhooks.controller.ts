@@ -11,7 +11,6 @@ import {
   ApiTags,
   ApiBearerAuth,
   ApiOperation,
-  ApiResponse,
 } from "@nestjs/swagger";
 import { Role, Permission } from "@node-stack/types";
 
@@ -33,14 +32,14 @@ export class WebhooksController {
   async create(
     @TenantId() workspaceId: string,
     @Body() body: { url: string; eventTypes: string[] }
-  ) {
+  ): Promise<unknown> {
     return this.webhooksService.create(workspaceId, body);
   }
 
   @Get()
   @RequirePermissions(Permission.WORKSPACE_READ)
   @ApiOperation({ summary: "List webhook endpoints" })
-  async list(@TenantId() workspaceId: string) {
+  async list(@TenantId() workspaceId: string): Promise<unknown> {
     return this.webhooksService.list(workspaceId);
   }
 
@@ -49,7 +48,7 @@ export class WebhooksController {
   async delete(
     @TenantId() workspaceId: string,
     @Param("webhookId", ParseUUIDPipe) webhookId: string
-  ) {
+  ): Promise<unknown> {
     return this.webhooksService.delete(workspaceId, webhookId);
   }
 
@@ -59,7 +58,7 @@ export class WebhooksController {
   async getDeliveries(
     @TenantId() workspaceId: string,
     @Param("webhookId", ParseUUIDPipe) webhookId: string
-  ) {
+  ): Promise<unknown> {
     return this.webhooksService.getDeliveries(workspaceId, webhookId);
   }
 
@@ -68,7 +67,7 @@ export class WebhooksController {
   async test(
     @TenantId() workspaceId: string,
     @Param("webhookId", ParseUUIDPipe) webhookId: string
-  ) {
+  ): Promise<unknown> {
     return this.webhooksService.test(workspaceId, webhookId);
   }
 
@@ -77,7 +76,7 @@ export class WebhooksController {
   async rotateSecret(
     @TenantId() workspaceId: string,
     @Param("webhookId", ParseUUIDPipe) webhookId: string
-  ) {
+  ): Promise<unknown> {
     return this.webhooksService.rotateSecret(workspaceId, webhookId);
   }
 }

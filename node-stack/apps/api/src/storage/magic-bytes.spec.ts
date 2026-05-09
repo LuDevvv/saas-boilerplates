@@ -1,6 +1,5 @@
-import { describe, expect, it } from "vitest";
-
 import { verifyMagicBytes } from "@node-stack/storage";
+import { describe, expect, it } from "vitest";
 
 const bytes = (...nums: number[]): Uint8Array => Uint8Array.from(nums);
 const text = (s: string): Uint8Array => new TextEncoder().encode(s);

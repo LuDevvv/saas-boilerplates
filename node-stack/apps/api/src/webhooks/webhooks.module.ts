@@ -57,7 +57,7 @@ export class WebhooksModule implements OnModuleInit {
     private readonly config: ConfigService,
   ) {}
 
-  onModuleInit() {
+  onModuleInit(): void {
     // ── Register all provider handlers ───────────────────────────────
     // Only register handlers whose secrets are configured.
     // This prevents 404s for providers that aren't set up yet.

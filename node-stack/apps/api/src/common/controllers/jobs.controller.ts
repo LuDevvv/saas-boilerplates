@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Param,
-  Query,
   UseGuards,
   NotFoundException,
 } from '@nestjs/common';
@@ -11,7 +10,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@ne
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard.js';
 import { AdminGuard } from '@/common/guards/admin.guard.js';
 import { JobService } from '@/common/queues/job.service.js';
-import { QUEUE_NAMES, type QueueName } from '@/common/queues/queue.constants.js';
+import { QUEUE_NAMES } from '@/common/queues/queue.constants.js';
 
 /**
  * Admin-only endpoint for job tracking and queue observability.
@@ -29,7 +28,7 @@ export class JobsController {
   @Get('queues')
   @ApiOperation({ summary: 'Get all queue stats (Admin only)' })
   @ApiResponse({ status: 200, description: 'Queue statistics' })
-  async getQueueStats() {
+  async getQueueStats(): Promise<{ queues: unknown[]; timestamp: string }> {
     const queueNames = Object.values(QUEUE_NAMES);
     const stats = await Promise.all(
       queueNames.map((name) => this.jobService.getQueueStats(name)),
@@ -43,7 +42,7 @@ export class JobsController {
   @Get('queues/:queueName')
   @ApiOperation({ summary: 'Get stats for a specific queue (Admin only)' })
   @ApiResponse({ status: 200, description: 'Queue statistics' })
-  async getQueueStatsByName(@Param('queueName') queueName: string) {
+  async getQueueStatsByName(@Param('queueName') queueName: string): Promise<unknown> {
     const stats = await this.jobService.getQueueStats(queueName);
     if (!stats) {
       throw new NotFoundException(`Queue "${queueName}" not found`);
@@ -61,7 +60,7 @@ export class JobsController {
   async getJobStatus(
     @Param('queueName') queueName: string,
     @Param('jobId') jobId: string,
-  ) {
+  ): Promise<unknown> {
     const status = await this.jobService.getJobStatus(queueName, jobId);
     if (!status) {
       throw new NotFoundException(

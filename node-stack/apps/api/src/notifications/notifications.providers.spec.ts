@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { NotificationProviders } from './notifications.providers.js';
-import { eq } from '@node-stack/db';
 
 describe('NotificationProviders', () => {
   let providers: NotificationProviders;

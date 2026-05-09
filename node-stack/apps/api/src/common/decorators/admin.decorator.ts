@@ -8,7 +8,7 @@ import { AdminGuard } from "@/common/guards/admin.guard.js";
  * Decorator that applies JwtAuthGuard and AdminGuard.
  * Restricted to users with administrative roles (admin, super_admin).
  */
-export function AdminOnly() {
+export function AdminOnly(): MethodDecorator & ClassDecorator {
   return applyDecorators(
     UseGuards(JwtAuthGuard, AdminGuard),
     ApiBearerAuth("JWT-auth"),

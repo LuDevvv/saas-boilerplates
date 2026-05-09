@@ -5,11 +5,16 @@ import {
   ConflictException,
   Logger,
 } from "@nestjs/common";
-import { Reflector } from "@nestjs/core";
+import type { Request } from "express";
 
 import { IdempotencyService } from "@/common/services/idempotency.service.js";
 
 export const IDEMPOTENCY_KEY_HEADER = "Idempotency-Key";
+
+interface IdempotencyRequest extends Request {
+  idempotencyCachedResponse?: unknown;
+  idempotencyKey?: string;
+}
 
 @Injectable()
 export class IdempotencyGuard implements CanActivate {
@@ -18,9 +23,9 @@ export class IdempotencyGuard implements CanActivate {
   constructor(private readonly idempotency: IdempotencyService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req = context.switchToHttp().getRequest();
+    const req = context.switchToHttp().getRequest<IdempotencyRequest>();
     const idempotencyKey: string | undefined =
-      req.headers?.[IDEMPOTENCY_KEY_HEADER.toLowerCase()];
+      req.headers?.[IDEMPOTENCY_KEY_HEADER.toLowerCase()] as string | undefined;
 
     if (!idempotencyKey) {
       return true;

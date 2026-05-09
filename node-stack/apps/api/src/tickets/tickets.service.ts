@@ -1,7 +1,6 @@
 import { Injectable, Logger, NotFoundException, ForbiddenException, Inject } from "@nestjs/common";
 import { DB_TOKEN, TicketRepository, withTenantTx } from "@node-stack/db";
-import { type Ticket, type NewTicket } from "@node-stack/db";
-import type { Database } from "@node-stack/db";
+import { type Ticket, type NewTicket , Database } from "@node-stack/db";
 import {
   CreateTicketDto,
   UpdateTicketDto,

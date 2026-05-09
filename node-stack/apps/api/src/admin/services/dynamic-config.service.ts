@@ -3,6 +3,8 @@ import { EventEmitter2 } from "@nestjs/event-emitter";
 import { CacheService } from "@node-stack/cache";
 import { SystemConfigRepository } from "@node-stack/db";
 
+type SystemConfig = Awaited<ReturnType<SystemConfigRepository["get"]>>;
+
 @Injectable()
 export class DynamicConfigService implements OnModuleInit {
   private readonly logger = new Logger(DynamicConfigService.name);
@@ -15,20 +17,20 @@ export class DynamicConfigService implements OnModuleInit {
     private eventEmitter: EventEmitter2,
   ) {}
 
-  async onModuleInit() {
+  async onModuleInit(): Promise<void> {
     await this.warmCache();
   }
 
   /**
    * Warms up the cache with current system configuration.
    */
-  async warmCache() {
+  async warmCache(): Promise<void> {
     try {
       const config = await this.systemConfigRepository.all();
-      const configMap = config.reduce((acc, curr) => {
+      const configMap = config.reduce<Record<string, unknown>>((acc, curr) => {
         acc[curr.key] = curr.value;
         return acc;
-      }, {} as Record<string, any>);
+      }, {});
 
       await this.cacheService.set(this.CACHE_KEY, configMap, this.CACHE_TTL);
       this.logger.log("System configuration cache warmed up");
@@ -41,9 +43,9 @@ export class DynamicConfigService implements OnModuleInit {
    * Retrieves a configuration value by key.
    * Checks cache first, then DB (via getOrSet logic).
    */
-  async get<T = any>(key: string, defaultValue?: T): Promise<T> {
-    const cachedMap = await this.cacheService.get<Record<string, any>>(this.CACHE_KEY);
-    
+  async get<T = unknown>(key: string, defaultValue?: T): Promise<T> {
+    const cachedMap = await this.cacheService.get<Record<string, unknown>>(this.CACHE_KEY);
+
     if (cachedMap && cachedMap[key] !== undefined) {
       return cachedMap[key] as T;
     }
@@ -65,7 +67,7 @@ export class DynamicConfigService implements OnModuleInit {
    * Updates or creates a configuration value.
    * Invalidates cache and logs an audit event.
    */
-  async set(key: string, value: any, description?: string, adminId?: string) {
+  async set(key: string, value: unknown, description?: string, adminId?: string): Promise<void> {
     const oldValue = await this.get(key);
 
     await this.systemConfigRepository.set(key, value);
@@ -92,7 +94,7 @@ export class DynamicConfigService implements OnModuleInit {
   /**
    * Gets all configuration keys and values.
    */
-  async getAll() {
-    return this.systemConfigRepository.all();
+  async getAll(): Promise<SystemConfig[]> {
+    return this.systemConfigRepository.all() as Promise<SystemConfig[]>;
   }
 }

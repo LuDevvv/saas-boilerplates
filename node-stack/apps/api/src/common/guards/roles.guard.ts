@@ -21,7 +21,7 @@ export class RolesGuard implements CanActivate {
 
     if (!requiredRoles || requiredRoles.length === 0) return true;
 
-    const { user } = context.switchToHttp().getRequest();
+    const { user } = context.switchToHttp().getRequest<{ user?: { workspaceRole?: Role } }>();
     if (!user) throw new ForbiddenException("Authentication required");
 
     const userRole = user.workspaceRole as Role;

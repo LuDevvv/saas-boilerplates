@@ -2,9 +2,9 @@
  * Safe Tracing initialization with dynamic imports to avoid ESM resolution crashes
  * during build steps or OpenAPI export.
  */
-export async function initTracing() {
+export async function initTracing(): Promise<void> {
   if (process.env.SKIP_TRACING === 'true' || process.env.NODE_ENV === 'test') {
-    console.log('⏩ Tracing skipped (SKIP_TRACING=true or NODE_ENV=test)');
+    console.warn('Tracing skipped (SKIP_TRACING=true or NODE_ENV=test)');
     return;
   }
 
@@ -32,15 +32,20 @@ export async function initTracing() {
     });
 
     const traceExporter = new OTLPTraceExporter({
-      url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318/v1/traces',
+      url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT ?? 'http://localhost:4318/v1/traces',
     });
+
+    // SentrySpanProcessor and SentryPropagator do not implement the exact
+    // OpenTelemetry interfaces expected by NodeSDK due to the Sentry/OTel bridge.
+    // We use `as unknown as` to satisfy the type system without suppressing
+    // entire files.
+    type OtelSpanProcessor = ConstructorParameters<typeof NodeSDK>[0] extends { spanProcessors?: infer A } ? NonNullable<A> extends Array<infer E> ? E : never : never;
+    type OtelPropagator = ConstructorParameters<typeof NodeSDK>[0] extends { textMapPropagator?: infer P } ? NonNullable<P> : never;
 
     const sdk = new NodeSDK({
       traceExporter,
-      spanProcessors: [
-        new SentrySpanProcessor() as any,
-      ],
-      textMapPropagator: new SentryPropagator() as any,
+      spanProcessors: [new SentrySpanProcessor() as unknown as OtelSpanProcessor],
+      textMapPropagator: new SentryPropagator() as unknown as OtelPropagator,
       instrumentations: [
         getNodeAutoInstrumentations({
           '@opentelemetry/instrumentation-fs': { enabled: false },
@@ -53,13 +58,13 @@ export async function initTracing() {
 
     process.on('SIGTERM', () => {
       sdk.shutdown()
-        .then(() => console.log('Tracing terminated'))
-        .catch((error) => console.log('Error terminating tracing', error));
+        .then(() => { console.warn('Tracing terminated'); })
+        .catch((error: unknown) => { console.error('Error terminating tracing', error); });
     });
-    
-    console.log('✅ Tracing and Sentry initialized');
-  } catch (err) {
-    console.warn('⚠️ Failed to initialize tracing:', err.message);
+
+    console.warn('Tracing and Sentry initialized');
+  } catch (err: unknown) {
+    console.warn('Failed to initialize tracing:', (err as Error).message);
     // Do not crash the process in dev/export
     if (process.env.NODE_ENV === 'production') {
       throw err;

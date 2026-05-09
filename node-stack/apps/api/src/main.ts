@@ -1,38 +1,34 @@
 import 'reflect-metadata';
-import { initTracing } from '@/tracing.js';
-
-import { validateEnv } from '@node-stack/config';
-
-// Validate environment variables before anything else
-validateEnv(process.env);
 
 import { Logger as NestLogger, UnprocessableEntityException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { validateEnv } from '@node-stack/config';
 import compression from 'compression';
 import express from 'express';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
-import { cleanupOpenApiDoc, createZodValidationPipe } from 'nestjs-zod';
+import { createZodValidationPipe } from 'nestjs-zod';
 
 import { AppModule } from '@/app.module.js';
 import { setupSwagger } from '@/common/docs/swagger.config.js';
 import { HttpExceptionFilter } from '@/common/filters/http-exception.filter.js';
-import { ApiVersionMiddleware } from '@/common/middleware/api-version.middleware.js';
-import { RequestIdMiddleware } from '@/common/middleware/request-id.middleware.js';
 import { RedisIoAdapter } from '@/realtime/redis-io.adapter.js';
+import { initTracing } from '@/tracing.js';
+
+// Validate environment variables before anything else
+validateEnv(process.env);
 
 // Global error handlers — MUST be before bootstrap() to catch silent crashes
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason: unknown, promise: Promise<unknown>) => {
   console.error('[FATAL] Unhandled Rejection at:', promise, 'reason:', reason);
 });
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', (error: Error) => {
   console.error('[FATAL] Uncaught Exception:', error);
   process.exit(1);
 });
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   await initTracing();
   const logger = new NestLogger('Bootstrap');
 
@@ -48,11 +44,11 @@ async function bootstrap() {
   // (127.0.0.1, ::1) silently disables rate limiting in any deployment
   // sitting behind nginx, a load balancer, or PgBouncer's connection
   // forwarder. Default 1 covers a single proxy in front of the app.
-  app.getHttpAdapter().getInstance().set('trust proxy', Number(process.env.TRUST_PROXY ?? 1));
+  (app.getHttpAdapter().getInstance() as express.Application).set('trust proxy', Number(process.env.TRUST_PROXY ?? 1));
 
   // Enable NestJS shutdown hooks (OnModuleDestroy, etc.)
   app.enableShutdownHooks();
-  
+
   logger.log('NestJS application created successfully.');
   const configService = app.get(ConfigService);
 
@@ -78,16 +74,16 @@ async function bootstrap() {
 
   // Defensive cookie configuration: force secure defaults on all res.cookie calls
   app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const originalCookie = res.cookie;
-    res.cookie = function (this: express.Response, name: string, value: any, options?: express.CookieOptions) {
+    const originalCookie = res.cookie.bind(res) as (name: string, value: unknown, options?: express.CookieOptions) => express.Response;
+    res.cookie = function (this: express.Response, name: string, value: unknown, options?: express.CookieOptions): express.Response {
       const secureOptions: express.CookieOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        ...(options || {}),
+        ...(options ?? {}),
       };
-      return (originalCookie as any).call(this, name, value, secureOptions);
-    } as any;
+      return originalCookie(name, value, secureOptions);
+    };
     next();
   });
 
@@ -110,9 +106,10 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalPipes(
     new (createZodValidationPipe({
-      createValidationException: (error: any) => {
-        const errors = Array.isArray(error.errors)
-          ? error.errors.map((e: any) => ({
+      createValidationException: (error: unknown) => {
+        const zodError = error as { errors?: Array<{ path: unknown; message: string }> };
+        const errors = Array.isArray(zodError.errors)
+          ? zodError.errors.map((e: { path: unknown; message: string }) => ({
               path: e.path,
               message: e.message,
             }))
@@ -134,11 +131,11 @@ async function bootstrap() {
   // Swagger configuration
   setupSwagger(app);
 
-  const port = process.env.PORT || 4000;
+  const port = process.env.PORT ?? 4000;
 
   // CORS configuration
   app.enableCors({
-    origin: process.env.CORS_ORIGINS?.split(',') || [
+    origin: process.env.CORS_ORIGINS?.split(',') ?? [
       'http://localhost:3000',
       'http://localhost:3001',
       'http://localhost:5173',
@@ -175,9 +172,9 @@ async function bootstrap() {
   // Graceful shutdown handlers
   const SHUTDOWN_TIMEOUT_MS = 10000;
   let shuttingDown = false;
-  let shutdownTimer: any;
+  let shutdownTimer: ReturnType<typeof setTimeout> | undefined;
 
-  const upgradeShutdown = async (signal: string) => {
+  const upgradeShutdown = async (signal: string): Promise<void> => {
     if (shuttingDown) return;
     shuttingDown = true;
     logger.log(`${signal} received. Starting graceful shutdown...`);
@@ -209,7 +206,7 @@ async function bootstrap() {
   logger.log(`API is running on: http://localhost:${port}`);
 }
 
-bootstrap().catch((err) => {
+bootstrap().catch((err: unknown) => {
   console.error('Failed to start API:', err);
   process.exit(1);
 });

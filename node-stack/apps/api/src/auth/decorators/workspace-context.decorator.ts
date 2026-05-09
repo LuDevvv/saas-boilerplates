@@ -1,4 +1,5 @@
 import { createParamDecorator, ExecutionContext } from "@nestjs/common";
+import type { Request } from "express";
 
 export interface WorkspaceContextData {
   workspaceId: string;
@@ -7,8 +8,8 @@ export interface WorkspaceContextData {
 
 export const WorkspaceContext = createParamDecorator(
   (data: keyof WorkspaceContextData | undefined, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest();
-    const workspace = request.workspace as WorkspaceContextData;
+    const request = ctx.switchToHttp().getRequest<Request & { workspace?: WorkspaceContextData }>();
+    const workspace = request.workspace;
     return data ? workspace?.[data] : workspace;
   },
 );

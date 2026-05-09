@@ -5,6 +5,7 @@ import {
   HealthCheck,
   MemoryHealthIndicator,
   DiskHealthIndicator,
+  HealthCheckResult,
 } from "@nestjs/terminus";
 
 import { Public } from "@/common/decorators/public.decorator.js";
@@ -35,7 +36,7 @@ export class HealthController {
   })
   @ApiResponse({ status: 200, description: "All systems operational" })
   @ApiResponse({ status: 503, description: "One or more systems are degraded or down" })
-  check() {
+  check(): Promise<HealthCheckResult> {
     return this.health.check([
       () => this.drizzle.isHealthy("database"),
       () => this.redis.isHealthy("redis"),
@@ -52,7 +53,7 @@ export class HealthController {
     description: "Simple indicator that the API process is running.",
   })
   @ApiResponse({ status: 200, description: "Service process is alive" })
-  liveness() {
+  liveness(): { status: string } {
     return { status: "ok" };
   }
 
@@ -65,7 +66,7 @@ export class HealthController {
   })
   @ApiResponse({ status: 200, description: "Service is ready to handle requests" })
   @ApiResponse({ status: 503, description: "Service dependencies are not ready" })
-  readiness() {
+  readiness(): Promise<HealthCheckResult> {
     return this.health.check([
       () => this.drizzle.isHealthy("database"),
       () => this.redis.isHealthy("redis"),
@@ -79,7 +80,7 @@ export class HealthController {
     summary: "Get PgBouncer pool statistics",
     description: "Retrieves internal connection pooling metrics from PgBouncer.",
   })
-  async getPgbouncerPools() {
+  async getPgbouncerPools(): Promise<{ status: string; pools: unknown[] }> {
     return this.healthService.getPgBouncerPools();
   }
 }

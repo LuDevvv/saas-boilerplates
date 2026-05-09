@@ -105,7 +105,7 @@ export class JobService {
   }
 
   // ─── Job Tracking ──────────────────────────────────────────────────
-  async getJobStatus(queueName: string, jobId: string) {
+  async getJobStatus(queueName: string, jobId: string): Promise<Record<string, unknown> | null> {
     const queue = this.getQueueByName(queueName);
     if (!queue) return null;
 
@@ -121,14 +121,14 @@ export class JobService {
       progress: job.progress,
       attemptsMade: job.attemptsMade,
       failedReason: job.failedReason,
-      returnvalue: job.returnvalue,
+      returnvalue: job.returnvalue as unknown,
       timestamp: job.timestamp,
       finishedOn: job.finishedOn,
       processedOn: job.processedOn,
     };
   }
 
-  async getQueueStats(queueName: string) {
+  async getQueueStats(queueName: string): Promise<Record<string, unknown> | null> {
     const queue = this.getQueueByName(queueName);
     if (!queue) return null;
 

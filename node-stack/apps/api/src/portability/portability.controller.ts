@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Param,
-  UseGuards,
   ParseUUIDPipe,
 } from "@nestjs/common";
 import {
@@ -39,7 +38,7 @@ export class PortabilityController {
   async requestExport(
     @TenantId() workspaceId: string,
     @CurrentUser("id") userId: string,
-  ) {
+  ): Promise<{ requestId: string; status: string }> {
     return this.portabilityService.requestExport(workspaceId, userId);
   }
 
@@ -51,8 +50,8 @@ export class PortabilityController {
     summary: "List all export requests for this workspace",
   })
   @ApiResponse({ status: 200, description: "List of export requests retrieved" })
-  async listRequests(@TenantId() workspaceId: string) {
-    return this.portabilityService.listRequests(workspaceId);
+  async listRequests(@TenantId() workspaceId: string): Promise<Record<string, unknown>[]> {
+    return this.portabilityService.listRequests(workspaceId) as Promise<Record<string, unknown>[]>;
   }
 
   @Get(":requestId")
@@ -66,8 +65,8 @@ export class PortabilityController {
   async getRequest(
     @TenantId() workspaceId: string,
     @Param("requestId", ParseUUIDPipe) requestId: string,
-  ) {
-    return this.portabilityService.getRequest(requestId, workspaceId);
+  ): Promise<Record<string, unknown>> {
+    return this.portabilityService.getRequest(requestId, workspaceId) as Promise<Record<string, unknown>>;
   }
 
   @Get(":requestId/download")
@@ -83,7 +82,7 @@ export class PortabilityController {
     @TenantId() workspaceId: string,
     @CurrentUser("id") userId: string,
     @Param("requestId", ParseUUIDPipe) requestId: string,
-  ) {
+  ): Promise<{ url: string }> {
     return this.portabilityService.getDownloadUrl(requestId, workspaceId, userId);
   }
 }

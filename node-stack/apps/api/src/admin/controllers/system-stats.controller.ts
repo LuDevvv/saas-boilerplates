@@ -1,7 +1,6 @@
 import { Controller, Get, Query } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiQuery, ApiResponse } from "@nestjs/swagger";
-import { AnalyticsRepository, withSystemTx } from "@node-stack/db";
-import type { Database } from "@node-stack/db";
+import { AnalyticsRepository } from "@node-stack/db";
 
 import { AdminOnly } from "@/common/decorators/admin.decorator.js";
 
@@ -14,7 +13,7 @@ export class SystemStatsController {
   @Get("overview")
   @ApiOperation({ summary: "Rich system-wide overview stats (Admin only)" })
   @ApiResponse({ status: 200, description: "Full control-center stats" })
-  async getOverview() {
+  async getOverview(): Promise<Record<string, unknown>> {
     // Run independent queries concurrently
     const [
       totalUsers,
@@ -105,7 +104,7 @@ export class SystemStatsController {
   @ApiOperation({ summary: "30-day trend data for charts (Admin only)" })
   @ApiQuery({ name: "days", required: false, type: Number, description: "Default 30" })
   @ApiResponse({ status: 200, description: "Trend series data" })
-  async getTrends(@Query("days") days = 30) {
+  async getTrends(@Query("days") days = 30): Promise<Record<string, unknown>> {
     const d = Math.min(Number(days) || 30, 90);
 
     const [userGrowth, activityTrend, aiTrend] = await Promise.all([

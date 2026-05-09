@@ -43,7 +43,7 @@ export class InvitationsService {
     workspaceId: string,
     dto: InviteMemberDto,
     invitedById: string,
-  ) {
+  ): Promise<unknown> {
     return withTenantTx(workspaceId, async (tx: NodePgDatabase<typeof schema>) => {
       const workspace = await this.workspaceRepo.findById(workspaceId, tx);
       if (!workspace) throw new NotFoundException("Workspace not found");
@@ -104,7 +104,7 @@ export class InvitationsService {
     }, this.db);
   }
 
-  async listPendingForUser(userId: string) {
+  async listPendingForUser(userId: string): Promise<unknown> {
     // Cross-tenant: a user can have invites from any workspace they're
     // not in yet, so withSystemTx; the email filter is the boundary.
     return withSystemTx(async (tx) => {
@@ -114,7 +114,7 @@ export class InvitationsService {
     }, this.db);
   }
 
-  async listForWorkspace(workspaceId: string, currentUserId: string) {
+  async listForWorkspace(workspaceId: string, currentUserId: string): Promise<unknown> {
     return withTenantTx(workspaceId, async (tx) => {
       const membership = await this.workspaceRepo.findMembership(workspaceId, currentUserId, tx);
       if (!membership) throw new UnauthorizedException("Not a member");
@@ -126,7 +126,7 @@ export class InvitationsService {
     workspaceId: string,
     invitationId: string,
     currentUserId: string,
-  ) {
+  ): Promise<void> {
     await withTenantTx(workspaceId, async (tx) => {
       const membership = await this.workspaceRepo.findMembership(workspaceId, currentUserId, tx);
       if (!membership) throw new UnauthorizedException("Not a member");
@@ -144,7 +144,7 @@ export class InvitationsService {
     }, this.db);
   }
 
-  async acceptInvitation(token: string, currentUserId: string) {
+  async acceptInvitation(token: string, currentUserId: string): Promise<unknown> {
     // Cross-tenant: the token resolves to a workspace we don't know yet.
     // withSystemTx for the lookup + atomic membership creation. The email
     // match against currentUser is the security boundary inside.
@@ -177,7 +177,7 @@ export class InvitationsService {
       await this.workspaceRepo.createMembership({
         userId: currentUserId,
         workspaceId: lockedInvitation.workspaceId,
-        role: lockedInvitation.role as any,
+        role: lockedInvitation.role as "owner" | "admin" | "member" | "guest",
       }, tx);
 
       await this.invitationRepo.update(lockedInvitation.id, { status: "accepted" }, tx);
@@ -208,7 +208,7 @@ export class InvitationsService {
     }, this.db);
   }
 
-  async getInvitationDetails(token: string) {
+  async getInvitationDetails(token: string): Promise<unknown> {
     // Token-based lookup: workspace not known up front, withSystemTx.
     return withSystemTx(async (tx) => {
       const invitation = await this.invitationRepo.findByToken(token, tx);

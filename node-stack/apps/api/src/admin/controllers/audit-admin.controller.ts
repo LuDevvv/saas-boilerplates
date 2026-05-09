@@ -29,7 +29,7 @@ export class AuditAdminController {
     @Query("workspaceId") workspaceId?: string,
     @Query("from") from?: string,
     @Query("to") to?: string,
-  ) {
+  ): Promise<{ data: Awaited<ReturnType<AuditLogRepository["findGlobal"]>>["logs"]; meta: { total: number; page: number; limit: number; pages: number } }> {
     const offset = (Number(page) - 1) * Number(limit);
 
     let result!: Awaited<ReturnType<AuditLogRepository["findGlobal"]>>;
@@ -46,7 +46,7 @@ export class AuditAdminController {
         },
         tx,
       );
-    }, (this.auditLogRepository as any).db);
+    }, (this.auditLogRepository as unknown as { db: Database }).db);
 
     return {
       data: result.logs,

@@ -1,9 +1,9 @@
-import { Injectable, Inject, OnModuleInit } from "@nestjs/common";
 import { InjectQueue } from "@nestjs/bullmq";
-import { Queue } from "bullmq";
+import { Injectable, Inject, OnModuleInit } from "@nestjs/common";
 import { POOL_TOKEN } from "@node-stack/db";
-import { Pool } from "pg";
 import { metricsEvents, METRIC_EVENTS } from "@node-stack/utils";
+import { Queue } from "bullmq";
+import { Pool } from "pg";
 import {
   collectDefaultMetrics,
   Counter,
@@ -11,6 +11,7 @@ import {
   Histogram,
   Registry,
 } from "prom-client";
+
 import { QUEUE_NAMES } from "@/common/queues/queue.constants.js";
 
 @Injectable()
@@ -122,7 +123,7 @@ export class MetricsService implements OnModuleInit {
     });
   }
 
-  onModuleInit() {
+  onModuleInit(): void {
     // Subscribe to cross-package metric events
     metricsEvents.on(METRIC_EVENTS.CACHE_HIT, () => {
       this.cacheOperationsTotal.inc({ result: "hit" });
@@ -132,8 +133,8 @@ export class MetricsService implements OnModuleInit {
       this.cacheOperationsTotal.inc({ result: "miss" });
     });
 
-    metricsEvents.on(METRIC_EVENTS.DB_QUERY_DURATION, ({ durationSeconds, queryType }) => {
-      this.dbQueryDurationSeconds.observe({ type: queryType ?? "unknown" }, durationSeconds);
+    metricsEvents.on(METRIC_EVENTS.DB_QUERY_DURATION, (payload: { durationSeconds: number; queryType?: string }) => {
+      this.dbQueryDurationSeconds.observe({ type: payload.queryType ?? "unknown" }, payload.durationSeconds);
     });
   }
 

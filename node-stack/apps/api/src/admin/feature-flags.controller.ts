@@ -13,6 +13,22 @@ import { FeatureFlagService } from "@node-stack/config";
 import { JwtAuthGuard } from "@/auth/guards/jwt.guard.js";
 import { AdminGuard } from "@/common/guards/admin.guard.js";
 
+type FlagScope = "global" | "workspace" | "user";
+
+interface FlagScopeBody {
+  scope?: FlagScope;
+  workspaceId?: string;
+  userId?: string;
+}
+
+interface FlagResult {
+  enabled?: boolean;
+  disabled?: boolean;
+  scope: FlagScope;
+  workspaceId?: string;
+  userId?: string;
+}
+
 @ApiTags("admin-feature-flags")
 @Controller("admin/feature-flags")
 @UseGuards(JwtAuthGuard, AdminGuard)
@@ -22,7 +38,7 @@ export class FeatureFlagsAdminController {
   @Get()
   @ApiOperation({ summary: "List all feature flags (Admin only)" })
   @ApiResponse({ status: 200, description: "Feature flags list" })
-  async listFlags() {
+  async listFlags(): Promise<ReturnType<FeatureFlagService["listAll"]>> {
     return this.flagService.listAll();
   }
 
@@ -30,13 +46,9 @@ export class FeatureFlagsAdminController {
   async enable(
     @Param("flagKey") flagKey: string,
     @Body()
-    body: {
-      scope?: "global" | "workspace" | "user";
-      workspaceId?: string;
-      userId?: string;
-    },
-  ) {
-    const scope = (body?.scope ?? "global") as any;
+    body: FlagScopeBody,
+  ): Promise<FlagResult> {
+    const scope: FlagScope = body?.scope ?? "global";
     if (scope === "global") {
       await this.flagService.enable(flagKey, "global");
       return { enabled: true, scope: "global" };
@@ -66,13 +78,9 @@ export class FeatureFlagsAdminController {
   async disable(
     @Param("flagKey") flagKey: string,
     @Body()
-    body: {
-      scope?: "global" | "workspace" | "user";
-      workspaceId?: string;
-      userId?: string;
-    },
-  ) {
-    const scope = (body?.scope ?? "global") as any;
+    body: FlagScopeBody,
+  ): Promise<FlagResult> {
+    const scope: FlagScope = body?.scope ?? "global";
     if (scope === "global") {
       await this.flagService.disable(flagKey, "global");
       return { disabled: true, scope: "global" };

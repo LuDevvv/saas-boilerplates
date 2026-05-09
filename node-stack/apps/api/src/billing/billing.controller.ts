@@ -4,9 +4,6 @@ import {
   Get,
   Body,
   Req,
-  UseGuards,
-  UseInterceptors,
-  Headers,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -16,6 +13,7 @@ import {
   ApiHeader,
 } from "@nestjs/swagger";
 import { Throttle, SkipThrottle } from "@nestjs/throttler";
+import type { CheckoutUrl, WebhookEventType } from "@node-stack/billing-adapter";
 import { Permission } from "@node-stack/types";
 import { CreateCheckoutDto } from "@node-stack/validators";
 import type { Request } from "express";
@@ -52,7 +50,7 @@ export class BillingController {
     @Body() body: CreateCheckoutDto,
     @Workspace() workspace: WorkspaceContext,
     @CurrentUser() user: UserPayload,
-  ) {
+  ): Promise<CheckoutUrl> {
     return this.billing.createCheckout({
       ...body,
       workspaceId: workspace.id,
@@ -77,11 +75,11 @@ export class BillingController {
   })
   @ApiResponse({ status: 200, description: "Webhook processed" })
   @ApiResponse({ status: 401, description: "Invalid signature" })
-  async webhook(@Req() req: Request) {
+  async webhook(@Req() req: Request): Promise<{ received: boolean; eventId: string; type: WebhookEventType }> {
     // req.body is a raw Buffer because of the express.raw() middleware
     // Pass the full headers object for Standard Webhooks verification
     // (webhook-id, webhook-timestamp, webhook-signature)
-    const rawBody: Buffer | string = req.body;
+    const rawBody = req.body as Buffer | string;
     const headers = req.headers as Record<string, string>;
 
     const event = await this.billing.handleWebhook(rawBody, headers);
@@ -95,7 +93,7 @@ export class BillingController {
   @ApiResponse({ status: 200, description: "Subscription details retrieved" })
   @ApiResponse({ status: 401, description: "Unauthorized" })
   @ApiResponse({ status: 403, description: "Forbidden" })
-  async subscription(@Workspace() workspace: WorkspaceContext) {
+  async subscription(@Workspace() workspace: WorkspaceContext): Promise<Record<string, unknown>> {
     return this.billing.getSubscription(workspace.id);
   }
 
@@ -103,7 +101,7 @@ export class BillingController {
   @RequirePermissions(Permission.BILLING_READ)
   @ApiOperation({ summary: "Get customer portal link" })
   @ApiResponse({ status: 200, description: "Customer portal link retrieved" })
-  async portal(@Workspace() workspace: WorkspaceContext) {
+  async portal(@Workspace() workspace: WorkspaceContext): Promise<{ url: string | null }> {
     return this.billing.portal(workspace.id);
   }
 
@@ -111,7 +109,7 @@ export class BillingController {
   @RequirePermissions(Permission.BILLING_READ)
   @ApiOperation({ summary: "Get invoices" })
   @ApiResponse({ status: 200, description: "Invoices retrieved" })
-  async invoices(@Workspace() workspace: WorkspaceContext) {
+  async invoices(@Workspace() workspace: WorkspaceContext): Promise<never[]> {
     return this.billing.invoices(workspace.id);
   }
 }

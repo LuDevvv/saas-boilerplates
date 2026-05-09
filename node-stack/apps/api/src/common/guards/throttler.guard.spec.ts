@@ -1,8 +1,9 @@
 import { Reflector } from "@nestjs/core";
 import { ThrottlerStorage } from "@nestjs/throttler";
-import { CustomThrottlerGuard } from "@/common/guards/throttler.guard.js";
-import { mockExecutionContext } from "@/common/guards/test-helpers/mock-context.js";
 import { Mocked } from "vitest";
+
+import { mockExecutionContext } from "@/common/guards/test-helpers/mock-context.js";
+import { CustomThrottlerGuard } from "@/common/guards/throttler.guard.js";
 
 describe("CustomThrottlerGuard", () => {
   let guard: CustomThrottlerGuard;

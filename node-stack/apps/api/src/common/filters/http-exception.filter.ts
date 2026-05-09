@@ -8,42 +8,68 @@ import {
 } from "@nestjs/common";
 import type { Request, Response } from "express";
 
+interface RequestWithId extends Request {
+  requestId?: string;
+}
+
+interface DbError {
+  code: string;
+  detail?: string;
+  message?: string;
+  column?: string;
+}
+
+interface StripeError {
+  type: string;
+  raw?: { statusCode?: number; message?: string };
+  requestId?: string;
+  statusCode?: number;
+  message?: string;
+}
+
+interface NetworkError {
+  code: string;
+  message?: string;
+  stack?: string;
+}
+
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger("ExceptionsHandler");
 
-  async catch(exception: any, host: ArgumentsHost) {
+  async catch(exception: unknown, host: ArgumentsHost): Promise<void> {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
-    const requestId = (request as any).requestId || request.headers["x-request-id"];
+    const request = ctx.getRequest<RequestWithId>();
+    const requestId = request.requestId ?? (request.headers["x-request-id"] as string | undefined);
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message: string | string[] = "Error interno del servidor";
     let errorType = "INTERNAL_SERVER_ERROR";
-    let extraData: any = {};
+    let extraData: Record<string, unknown> = {};
 
     // 1. Handle NestJS HttpExceptions (manually thrown)
     if (exception instanceof HttpException) {
       status = exception.getStatus();
       const responseBody = exception.getResponse();
-      message = (responseBody as any).message || responseBody;
+      const body = responseBody as Record<string, unknown>;
+      message = (body.message as string | string[]) || (responseBody as string);
       errorType = this.formatErrorName(exception.constructor.name);
-      
+
       if (typeof responseBody === "object") {
-        const { message: _, statusCode: __, error: ___, ...rest } = responseBody as any;
+        const { message: _msg, statusCode: _sc, error: _err, ...rest } = responseBody as Record<string, unknown>;
         extraData = rest;
       }
-    } 
+    }
     // 2. Handle Connection & Network Errors (Redis, Database down, etc.)
-    else if (exception.code === 'ECONNREFUSED' || exception.code === 'ETIMEDOUT' || exception.code === 'ENOTFOUND') {
+    else if (this.isNetworkError(exception)) {
       status = HttpStatus.SERVICE_UNAVAILABLE;
       message = "El servidor no puede conectar con un servicio requerido (Base de Datos/Caché). Por favor, intenta más tarde.";
       errorType = "SERVICE_UNAVAILABLE";
     }
     // 3. Handle Database errors (Postgres codes via Drizzle/pg)
-    else if (exception.code && typeof exception.code === 'string' && (exception.detail || exception.message)) {
-      const dbError = exception;
+    else if (this.isDbError(exception)) {
+      const dbError = exception as DbError;
       switch (dbError.code) {
         case "23505": // Unique violation
           status = HttpStatus.CONFLICT;
@@ -59,7 +85,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
           break;
         case "23502": // Not null violation
           status = HttpStatus.BAD_REQUEST;
-          message = `Campo requerido faltante: ${dbError.column || 'desconocido'}`;
+          message = `Campo requerido faltante: ${dbError.column ?? 'desconocido'}`;
           errorType = "NOT_NULL_VIOLATION";
           break;
         case "08003": // Connection does not exist
@@ -76,36 +102,42 @@ export class HttpExceptionFilter implements ExceptionFilter {
       }
     }
     // 4. Handle Stripe Errors
-    else if (exception.type && (exception.raw || exception.requestId)) {
-      status = exception.statusCode || exception.raw?.statusCode || HttpStatus.BAD_REQUEST;
-      message = exception.raw?.message || exception.message || "Payment processor error";
-      errorType = exception.type.toUpperCase().replace(/\./g, "_");
+    else if (this.isStripeError(exception)) {
+      const stripeErr = exception as StripeError;
+      status = stripeErr.statusCode ?? stripeErr.raw?.statusCode ?? HttpStatus.BAD_REQUEST;
+      message = stripeErr.raw?.message ?? stripeErr.message ?? "Payment processor error";
+      errorType = stripeErr.type.toUpperCase().replace(/\./g, "_");
     }
 
-    // 4. Logging Strategy
+    // 5. Logging Strategy
+    const exceptionMessage = exception instanceof Error ? exception.message : String(exception ?? "Unknown");
+    const exceptionStack = exception instanceof Error ? exception.stack : undefined;
+
     if (status >= 500) {
       this.logger.error(
-        `[${request.method}] ${request.url} [rid=${requestId}] - Status: ${status} - Error: ${exception.message || 'Unknown'}`,
-        exception.stack,
+        `[${request.method}] ${request.url} [rid=${requestId ?? ""}] - Status: ${status} - Error: ${exceptionMessage}`,
+        exceptionStack,
       );
-      
+
       // Use dynamic import for Sentry to avoid ESM resolution crashes during startup
       try {
         const Sentry = await import("@sentry/node");
+        const reqWithUser = request as RequestWithId & { user?: { id?: string } };
         Sentry.captureException(exception, {
           tags: { requestId },
-          user: { id: (request as any).user?.id },
+          user: { id: reqWithUser.user?.id },
         });
-      } catch (err: any) {
-        this.logger.warn(`Sentry capture failed: ${err.message}`);
+      } catch (err: unknown) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        this.logger.warn(`Sentry capture failed: ${errMsg}`);
       }
     } else {
       this.logger.warn(
-        `[${request.method}] ${request.url} [rid=${requestId}] - Status: ${status} - Message: ${JSON.stringify(message)} - Original: ${exception.message || "N/A"}`,
+        `[${request.method}] ${request.url} [rid=${requestId ?? ""}] - Status: ${status} - Message: ${JSON.stringify(message)} - Original: ${exceptionMessage}`,
       );
     }
 
-    // 5. Standardized Response Payload
+    // 6. Standardized Response Payload
     const errorPayload = {
       statusCode: status,
       error: errorType,
@@ -125,6 +157,24 @@ export class HttpExceptionFilter implements ExceptionFilter {
     response.status(status).json(responsePayload);
   }
 
+  private isNetworkError(exception: unknown): boolean {
+    if (typeof exception !== "object" || exception === null) return false;
+    const err = exception as NetworkError;
+    return err.code === "ECONNREFUSED" || err.code === "ETIMEDOUT" || err.code === "ENOTFOUND";
+  }
+
+  private isDbError(exception: unknown): boolean {
+    if (typeof exception !== "object" || exception === null) return false;
+    const err = exception as Partial<DbError>;
+    return typeof err.code === "string" && !!(err.detail ?? err.message);
+  }
+
+  private isStripeError(exception: unknown): boolean {
+    if (typeof exception !== "object" || exception === null) return false;
+    const err = exception as Partial<StripeError>;
+    return typeof err.type === "string" && !!(err.raw ?? err.requestId);
+  }
+
   private formatErrorName(name: string): string {
     return name
       .replace(/Exception$/, "")
@@ -132,7 +182,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       .toUpperCase();
   }
 
-  private formatDbDetail(detail: string): string | null {
+  private formatDbDetail(detail?: string): string | null {
     if (!detail) return null;
     // Extract field from "(email)=(test@test.com) already exists."
     const match = detail.match(/\((.*?)\)=\((.*?)\)/);

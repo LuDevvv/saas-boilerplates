@@ -1,8 +1,16 @@
-import { Injectable, ExecutionContext, Inject } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 import { ThrottlerGuard, ThrottlerRequest } from "@nestjs/throttler";
 import { CacheService } from "@node-stack/cache";
 import { schema, eq, DB_TOKEN } from "@node-stack/db";
 import type { Database } from "@node-stack/db";
+import type { Response } from "express";
+
+interface ThrottledRequest {
+  user?: { id?: string };
+  ip?: string;
+  apiKey?: { id?: string };
+  workspace?: { id?: string };
+}
 
 @Injectable()
 export class CustomThrottlerGuard extends ThrottlerGuard {
@@ -14,22 +22,22 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
 
   protected async handleRequest(requestProps: ThrottlerRequest): Promise<boolean> {
     const { context, limit: defaultLimit, ttl: defaultTtl, throttler, blockDuration } = requestProps;
-    
+
     if (await this.shouldSkip(context)) {
       return true;
     }
 
-    const response = context.switchToHttp().getResponse();
-    const req = context.switchToHttp().getRequest();
-    
-    let userId = req.user?.id || req.ip;
-    let identityType = 'public';
+    const response = context.switchToHttp().getResponse<Response>();
+    const req = context.switchToHttp().getRequest<ThrottledRequest>();
+
+    let userId: string = req.user?.id ?? req.ip ?? "anonymous";
+    let identityType = "public";
 
     if (req.apiKey) {
-      identityType = 'api-key';
-      userId = req.apiKey.id;
+      identityType = "api-key";
+      userId = req.apiKey.id ?? userId;
     } else if (req.user) {
-      identityType = 'jwt';
+      identityType = "jwt";
     }
 
     let limit = defaultLimit;
@@ -44,14 +52,14 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
             where: eq(schema.workspaces.id, workspaceId),
             columns: { tier: true },
           });
-          return result?.tier || 'free';
+          return result?.tier ?? "free";
         },
         86400, // 24 hours caching
       );
 
-      if (tier === 'enterprise') {
+      if (tier === "enterprise") {
         return true; // Skip throttling
-      } else if (tier === 'pro') {
+      } else if (tier === "pro") {
         limit = 1000;
         ttl = 60000; // 1 min
       } else {
@@ -60,26 +68,26 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
       }
     } else {
       // Identity based limits when no workspace context is present
-      if (identityType === 'public') {
+      if (identityType === "public") {
         limit = 20;
         ttl = 60000;
-      } else if (identityType === 'jwt') {
+      } else if (identityType === "jwt") {
         limit = 100;
         ttl = 60000;
-      } else if (identityType === 'api-key') {
+      } else if (identityType === "api-key") {
         limit = 500;
         ttl = 60000;
       }
     }
 
     const tracker = workspaceId ? `tenant:${workspaceId}:${userId}` : `identity:${userId}`;
-    const key = this.generateKey(context, tracker, throttler.name || "default");
-    const { totalHits, timeToExpire, isBlocked, timeToBlockExpire } = await this.storageService.increment(key, ttl, limit, blockDuration, throttler.name || "default");
-    
+    const key = this.generateKey(context, tracker, throttler.name ?? "default");
+    const { totalHits, timeToExpire, isBlocked, timeToBlockExpire } = await this.storageService.increment(key, ttl, limit, blockDuration, throttler.name ?? "default");
+
     response.setHeader("X-RateLimit-Limit", limit);
     response.setHeader("X-RateLimit-Remaining", Math.max(0, limit - totalHits));
     response.setHeader("X-RateLimit-Reset", new Date(Date.now() + ttl).toISOString());
-    
+
     if (totalHits > limit) {
       response.setHeader("Retry-After", Math.ceil(ttl / 1000));
       await this.throwThrottlingException(context, {
@@ -93,7 +101,7 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
         timeToBlockExpire
       });
     }
-    
+
     return true;
   }
 }

@@ -20,33 +20,33 @@ import { ApiKeysModule } from '@/api-keys/api-keys.module.js';
 import { AuthModule } from '@/auth/auth.module.js';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard.js';
 import { BillingModule } from '@/billing/billing.module.js';
+import { CommonModule } from '@/common/common.module.js';
 import { AdminGuard } from '@/common/guards/admin.guard.js';
 import { FeatureFlagGuard } from '@/common/guards/feature-flag.guard.js';
-import { AuditInterceptor } from '@/common/interceptors/audit.interceptor.js';
-import { MetricsModule } from '@/metrics/metrics.module.js';
-import { MetricsInterceptor } from '@/metrics/metrics.interceptor.js';
-import { MetricsService } from '@/metrics/metrics.service.js';
-import { StorageModule } from '@/storage/storage.module.js';
-import { WorkspacesModule } from '@/workspaces/workspaces.module.js';
-import { HealthModule } from '@/health/health.module.js';
-import { PortabilityModule } from '@/portability/portability.module.js';
-import { MarketingModule } from '@/marketing/marketing.module.js';
-import { CacheInvalidationInterceptor } from '@/common/interceptors/cache-invalidation.interceptor.js';
-import { WorkspaceGuard } from '@/common/guards/workspace.guard.js';
-import { RolesGuard } from '@/common/guards/roles.guard.js';
 import { PermissionsGuard } from '@/common/guards/permissions.guard.js';
+import { RolesGuard } from '@/common/guards/roles.guard.js';
 import { CustomThrottlerGuard } from '@/common/guards/throttler.guard.js';
-import { CommonModule } from '@/common/common.module.js';
-import { RealtimeModule } from '@/realtime/realtime.module.js';
-import { NotificationsModule } from '@/notifications/notifications.module.js';
-import { WebhooksModule } from '@/webhooks/webhooks.module.js';
+import { WorkspaceGuard } from '@/common/guards/workspace.guard.js';
+import { AuditInterceptor } from '@/common/interceptors/audit.interceptor.js';
+import { CacheInvalidationInterceptor } from '@/common/interceptors/cache-invalidation.interceptor.js';
+import { IdempotencyInterceptor } from '@/common/interceptors/idempotency.interceptor.js';
+import { MaintenanceModule } from '@/common/maintenance/maintenance.module.js';
+import { ApiVersionMiddleware } from '@/common/middleware/api-version.middleware.js';
 import { RequestContextMiddleware } from '@/common/middleware/request-context.middleware.js';
 import { RequestIdMiddleware } from '@/common/middleware/request-id.middleware.js';
-import { ApiVersionMiddleware } from '@/common/middleware/api-version.middleware.js';
-import { IdempotencyInterceptor } from '@/common/interceptors/idempotency.interceptor.js';
 import { IdempotencyService } from '@/common/services/idempotency.service.js';
-import { MaintenanceModule } from '@/common/maintenance/maintenance.module.js';
+import { HealthModule } from '@/health/health.module.js';
+import { MarketingModule } from '@/marketing/marketing.module.js';
+import { MetricsInterceptor } from '@/metrics/metrics.interceptor.js';
+import { MetricsModule } from '@/metrics/metrics.module.js';
+import { MetricsService } from '@/metrics/metrics.service.js';
+import { NotificationsModule } from '@/notifications/notifications.module.js';
+import { PortabilityModule } from '@/portability/portability.module.js';
+import { RealtimeModule } from '@/realtime/realtime.module.js';
+import { StorageModule } from '@/storage/storage.module.js';
 import { TicketModule } from '@/tickets/tickets.module.js';
+import { WebhooksModule } from '@/webhooks/webhooks.module.js';
+import { WorkspacesModule } from '@/workspaces/workspaces.module.js';
 
 @Module({
   imports: [
@@ -66,7 +66,7 @@ import { TicketModule } from '@/tickets/tickets.module.js';
                   colorize: true,
                 },
               },
-            customProps: (req, res) => {
+            customProps: (_req, _res) => {
               const activeSpan = opentelemetry.trace.getSpan(opentelemetry.context.active());
               if (!activeSpan) return {};
               const spanContext = activeSpan.spanContext();
@@ -116,7 +116,7 @@ import { TicketModule } from '@/tickets/tickets.module.js';
         storage: new ThrottlerStorageRedisService(new Redis(config.get('REDIS_URL') as string)),
         errorMessage: 'Too many requests. Please retry after {ttl} seconds.',
         skipIf: (ctx) => {
-          const ip = ctx.switchToHttp().getRequest().ip;
+          const ip = (ctx.switchToHttp().getRequest<{ ip?: string }>()).ip;
           return ip === '127.0.0.1' || ip === '::ffff:127.0.0.1' || ip === '::1';
         },
       }),
@@ -140,7 +140,7 @@ import { TicketModule } from '@/tickets/tickets.module.js';
   ],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
+  configure(consumer: MiddlewareConsumer): void {
     consumer
       .apply(RequestIdMiddleware, ApiVersionMiddleware, RequestContextMiddleware)
       .forRoutes('*path');

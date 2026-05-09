@@ -42,7 +42,7 @@ export class MaintenanceService {
    * and are older than 48 hours.
    */
   @Cron(CronExpression.EVERY_HOUR)
-  async cleanupOutbox() {
+  async cleanupOutbox(): Promise<void> {
     const result = await withRedisLock(
       this.cache,
       "cron:cleanup_outbox",
@@ -84,7 +84,7 @@ export class MaintenanceService {
    * older than 7 days, delete them from S3/Storage, and remove the DB record.
    */
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async cleanupAbandonedUploads() {
+  async cleanupAbandonedUploads(): Promise<void> {
     const acquired = await withRedisLock(
       this.cache,
       "cron:cleanup_abandoned_uploads",
@@ -145,7 +145,7 @@ export class MaintenanceService {
    * to keep the index size small.
    */
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  async purgeExpiredSessions() {
+  async purgeExpiredSessions(): Promise<void> {
     const result = await withRedisLock(
       this.cache,
       "cron:purge_expired_sessions",
@@ -174,7 +174,7 @@ export class MaintenanceService {
    * identifiable.
    */
   @Cron("0 3 * * *")
-  async anonymizeExpiredAccounts() {
+  async anonymizeExpiredAccounts(): Promise<void> {
     const result = await withRedisLock(
       this.cache,
       "cron:anonymize_expired_accounts",
@@ -233,7 +233,7 @@ export class MaintenanceService {
    * immediately after.
    */
   @Cron("0 4 * * *")
-  async hardDeleteExpiredWorkspaces() {
+  async hardDeleteExpiredWorkspaces(): Promise<void> {
     const result = await withRedisLock(
       this.cache,
       "cron:hard_delete_workspaces",

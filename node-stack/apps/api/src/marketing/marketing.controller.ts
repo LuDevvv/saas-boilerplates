@@ -29,7 +29,7 @@ export class MarketingController {
   @ApiResponse({ status: 201, description: "Successfully joined the waitlist" })
   @ApiResponse({ status: 400, description: "Invalid email or data" })
   @HttpCode(HttpStatus.CREATED)
-  async joinWaitlist(@Body() dto: JoinWaitlistDto) {
+  async joinWaitlist(@Body() dto: JoinWaitlistDto): Promise<ReturnType<MarketingService["joinWaitlist"]>> {
     return this.marketingService.joinWaitlist(dto);
   }
 
@@ -37,7 +37,7 @@ export class MarketingController {
   @Get("waitlist/count")
   @ApiOperation({ summary: "Get total waitlist count" })
   @ApiResponse({ status: 200, description: "Count retrieved" })
-  async getWaitlistCount() {
+  async getWaitlistCount(): Promise<{ count: number }> {
     const count = await this.marketingService.getWaitlistCount();
     return { count };
   }

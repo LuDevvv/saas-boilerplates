@@ -50,7 +50,8 @@ export class AiService {
 
       return result;
     } catch (error) {
-      this.logger.error(`AI completion failed: ${error.message}`, error.stack);
+      const err = error as Error;
+      this.logger.error(`AI completion failed: ${err.message}`, err.stack);
       throw error;
     }
   }
@@ -94,7 +95,8 @@ export class AiService {
         }
       }
     } catch (error) {
-      this.logger.error(`AI stream failed: ${error.message}`, error.stack);
+      const err = error as Error;
+      this.logger.error(`AI stream failed: ${err.message}`, err.stack);
       throw error;
     }
   }

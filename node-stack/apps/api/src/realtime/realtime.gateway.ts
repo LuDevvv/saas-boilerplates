@@ -10,8 +10,15 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
+import type { UserPayload } from '@/common/types/index.js';
 import { WsJwtGuard } from '@/realtime/ws-jwt.guard.js';
 import { WorkspacesService } from '@/workspaces/workspaces.service.js';
+
+interface SocketWithUser extends Socket {
+  data: {
+    user: UserPayload;
+  };
+}
 
 @WebSocketGateway({
   namespace: '/v1/realtime',
@@ -29,7 +36,7 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   private readonly logger = new Logger(RealtimeGateway.name);
 
   @UseGuards(WsJwtGuard)
-  async handleConnection(client: Socket) {
+  async handleConnection(client: SocketWithUser): Promise<void> {
     const user = client.data.user;
     if (!user) {
       this.logger.warn(`Rejected connection: no user data attached.`);
@@ -47,11 +54,11 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
       try {
         // Validate user is actually a member of this workspace
         await this.workspacesService.validateMembership(workspaceId, userId);
-        
+
         // Join workspace-specific room
         await this.safeJoin(client, `workspace:${workspaceId}`);
         this.logger.log(`User ${userId} joined workspace:${workspaceId}`);
-      } catch (error) {
+      } catch {
         this.logger.warn(`SECURITY: User ${userId} blocked from workspace:${workspaceId} - Unauthorized`);
         // We allow the connection to stay alive (for user notifications) but deny workspace room
       }
@@ -62,33 +69,33 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
     this.logger.log(`Client connected: ${client.id} (user:${userId})`);
   }
 
-  handleDisconnect(client: Socket) {
+  handleDisconnect(client: Socket): void {
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 
   @SubscribeMessage('switch_workspace')
   @UseGuards(WsJwtGuard)
   async handleSwitchWorkspace(
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: SocketWithUser,
     @MessageBody() data: { from?: string; to: string },
-  ) {
+  ): Promise<void> {
     const userId = client.data.user.id;
-    
+
     try {
       // Validate membership before switching
       await this.workspacesService.validateMembership(data.to, userId);
-      
+
       if (data.from) {
         await client.leave(`workspace:${data.from}`);
       }
       await this.safeJoin(client, `workspace:${data.to}`);
       this.logger.log(`User ${userId} switched to workspace:${data.to}`);
-    } catch (error) {
+    } catch {
       this.logger.warn(`SECURITY: User ${userId} failed to switch to unauthorized workspace:${data.to}`);
     }
   }
 
-  private async safeJoin(client: Socket, room: string) {
+  private async safeJoin(client: Socket, room: string): Promise<void> {
     // Basic format validation
     if (!room.startsWith('user:') && !room.startsWith('workspace:')) {
       this.logger.error(`INTERNAL ERROR: Attempted to join invalid room format: ${room}`);
@@ -98,11 +105,11 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
   }
 
   // Helper method for other services to emit to rooms
-  emitToUser(userId: string, event: string, payload: any) {
+  emitToUser(userId: string, event: string, payload: unknown): void {
     this.server.to(`user:${userId}`).emit(event, payload);
   }
 
-  emitToWorkspace(workspaceId: string, event: string, payload: any) {
+  emitToWorkspace(workspaceId: string, event: string, payload: unknown): void {
     this.server.to(`workspace:${workspaceId}`).emit(event, payload);
   }
 }

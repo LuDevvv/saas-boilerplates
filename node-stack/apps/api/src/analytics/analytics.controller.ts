@@ -12,34 +12,34 @@ export class AnalyticsController {
   @Get("workspaces/:workspaceId/usage")
   @UseGuards(WorkspaceGuard)
   @Roles(Role.ADMIN, Role.OWNER)
-  async getWorkspaceUsage(@Param("workspaceId") workspaceId: string) {
+  async getWorkspaceUsage(@Param("workspaceId") workspaceId: string): Promise<unknown> {
     return this.analyticsService.getWorkspaceUsage(workspaceId);
   }
 
   @Get("workspaces/:workspaceId/overview")
   @UseGuards(WorkspaceGuard)
   @Roles(Role.ADMIN, Role.OWNER)
-  async getOverview(@Param("workspaceId") workspaceId: string) {
+  async getOverview(@Param("workspaceId") workspaceId: string): Promise<unknown> {
     return this.analyticsService.getOverview(workspaceId);
   }
 
   @Get("workspaces/:workspaceId/traffic")
   @UseGuards(WorkspaceGuard)
   @Roles(Role.ADMIN, Role.OWNER)
-  async getTraffic(@Param("workspaceId") workspaceId: string) {
+  async getTraffic(@Param("workspaceId") workspaceId: string): Promise<unknown> {
     return this.analyticsService.getTraffic(workspaceId);
   }
 
   @Get("workspaces/:workspaceId/pages")
   @UseGuards(WorkspaceGuard)
   @Roles(Role.ADMIN, Role.OWNER)
-  async getPages(@Param("workspaceId") workspaceId: string) {
+  async getPages(@Param("workspaceId") workspaceId: string): Promise<unknown> {
     return this.analyticsService.getPages(workspaceId);
   }
 
   @Get("admin/global-stats")
   @Roles(Role.SUPER_ADMIN)
-  async getGlobalStats() {
+  async getGlobalStats(): Promise<unknown> {
     return this.analyticsService.getGlobalAdminStats();
   }
 }

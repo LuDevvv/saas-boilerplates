@@ -21,7 +21,7 @@ export class PermissionsGuard implements CanActivate {
 
     if (!required || required.length === 0) return true;
 
-    const { user } = context.switchToHttp().getRequest();
+    const { user } = context.switchToHttp().getRequest<{ user?: { workspaceRole?: Role } }>();
     if (!user) throw new ForbiddenException("Authentication required");
 
     const userRole = user.workspaceRole as Role;

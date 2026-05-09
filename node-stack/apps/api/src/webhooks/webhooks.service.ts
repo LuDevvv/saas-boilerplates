@@ -5,6 +5,9 @@ import {
 } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { InboundWebhookRepository } from "@node-stack/db";
+import type { InboundWebhookLog } from "@node-stack/db";
+
+type WebhookProvider = InboundWebhookLog["provider"];
 
 import type {
   InboundWebhookHandler,
@@ -86,9 +89,9 @@ export class InboundWebhookService {
     try {
       providerEventId = handler.extractEventId(rawBody, headers);
       eventType = handler.extractEventType(rawBody, headers);
-    } catch (err: any) {
+    } catch (err: unknown) {
       this.logger.error(
-        `Failed to extract event info from ${provider}: ${err.message}`,
+        `Failed to extract event info from ${provider}: ${(err as Error).message}`,
       );
       providerEventId = `${provider}-extract-error-${Date.now()}`;
       eventType = "unknown";
@@ -97,7 +100,7 @@ export class InboundWebhookService {
     // ── Step 3: Create audit log immediately ────────────────────────
     const sanitisedHeaders = this.sanitiseHeaders(headers);
     const log = await this.webhookRepo.create({
-      provider: provider as any,
+      provider: provider as WebhookProvider,
       providerEventId,
       eventType,
       headers: sanitisedHeaders,
@@ -110,9 +113,9 @@ export class InboundWebhookService {
     let signatureValid: boolean;
     try {
       signatureValid = await handler.validateSignature(rawBody, headers);
-    } catch (err: any) {
+    } catch (err: unknown) {
       this.logger.error(
-        `Signature validation threw for ${provider}/${providerEventId}: ${err.message}`,
+        `Signature validation threw for ${provider}/${providerEventId}: ${(err as Error).message}`,
       );
       signatureValid = false;
     }
@@ -139,7 +142,7 @@ export class InboundWebhookService {
 
     // ── Step 5: Idempotency check ───────────────────────────────────
     const alreadyProcessed = await this.webhookRepo.isAlreadyProcessed(
-      provider as any,
+      provider as WebhookProvider,
       providerEventId,
     );
 
@@ -174,17 +177,17 @@ export class InboundWebhookService {
     let transformed: TransformedWebhookEvent;
     try {
       transformed = await handler.transformEvent(rawBody, headers);
-    } catch (err: any) {
+    } catch (err: unknown) {
       const duration = Date.now() - startTime;
       this.logger.error(
-        `Transform failed for ${provider}/${providerEventId}: ${err.message}`,
-        err.stack,
+        `Transform failed for ${provider}/${providerEventId}: ${(err as Error).message}`,
+        (err as Error).stack,
       );
 
       await this.webhookRepo.updateStatus(log.id, {
         status: "failed",
         signatureValid: true,
-        errorMessage: `Transform error: ${err.message}`,
+        errorMessage: `Transform error: ${(err as Error).message}`,
         responseStatus: 200, // still ACK to avoid retries from provider
         processingDurationMs: duration,
         processingAttempts: 1,
@@ -209,9 +212,9 @@ export class InboundWebhookService {
       this.logger.log(
         `Emitted ${transformed.internalEventName} from ${provider}/${providerEventId}`,
       );
-    } catch (err: any) {
+    } catch (err: unknown) {
       this.logger.error(
-        `EventEmitter error for ${transformed.internalEventName}: ${err.message}`,
+        `EventEmitter error for ${transformed.internalEventName}: ${(err as Error).message}`,
       );
       // Non-fatal — the event was still received and logged
     }
@@ -238,15 +241,15 @@ export class InboundWebhookService {
 
   // ─── Query / Debug ────────────────────────────────────────────────────
 
-  async getRecentLogs(provider?: string, limit?: number) {
-    return this.webhookRepo.findRecent(provider as any, limit);
+  async getRecentLogs(provider?: string, limit?: number): Promise<InboundWebhookLog[]> {
+    return this.webhookRepo.findRecent(provider as WebhookProvider | undefined, limit);
   }
 
-  async getFailedLogs(provider?: string, limit?: number) {
-    return this.webhookRepo.findFailed(provider as any, limit);
+  async getFailedLogs(provider?: string, limit?: number): Promise<InboundWebhookLog[]> {
+    return this.webhookRepo.findFailed(provider as WebhookProvider | undefined, limit);
   }
 
-  async getLogById(id: string) {
+  async getLogById(id: string): Promise<InboundWebhookLog | null> {
     return this.webhookRepo.findById(id);
   }
 

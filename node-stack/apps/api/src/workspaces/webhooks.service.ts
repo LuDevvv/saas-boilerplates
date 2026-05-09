@@ -14,7 +14,7 @@ export class WebhooksService {
     private readonly encryption: EncryptionService,
   ) {}
 
-  async create(workspaceId: string, data: { url: string; eventTypes: string[] }) {
+  async create(workspaceId: string, data: { url: string; eventTypes: string[] }): Promise<unknown> {
     // SSRF PROTECTION: Validate URL during creation
     const isUrlSafe = await validateWebhookUrl(data.url);
     if (!isUrlSafe) {
@@ -42,12 +42,7 @@ export class WebhooksService {
     };
   }
 
-  async list(workspaceId: string) {
-    const endpoints = await db.query.webhookEndpoints.findMany({
-      where: eq(schema.webhookEndpoints.workspaceId, workspaceId),
-      // Wait, the previous code had where: eq(endpoints.workspaceId, workspaceId)
-    });
-    
+  async list(workspaceId: string): Promise<unknown> {
     // Re-check original list logic to avoid breaking it
     return db.query.webhookEndpoints.findMany({
       where: eq(schema.webhookEndpoints.workspaceId, workspaceId),
@@ -55,7 +50,7 @@ export class WebhooksService {
     });
   }
 
-  async delete(workspaceId: string, endpointId: string) {
+  async delete(workspaceId: string, endpointId: string): Promise<unknown> {
     const [deleted] = await db
       .delete(schema.webhookEndpoints)
       .where(
@@ -70,7 +65,7 @@ export class WebhooksService {
     return deleted;
   }
 
-  async getDeliveries(workspaceId: string, endpointId: string) {
+  async getDeliveries(workspaceId: string, endpointId: string): Promise<unknown> {
     // Verify endpoint belongs to workspace
     const endpoint = await db.query.webhookEndpoints.findFirst({
       where: and(
@@ -88,7 +83,7 @@ export class WebhooksService {
     });
   }
 
-  async test(workspaceId: string, endpointId: string) {
+  async test(workspaceId: string, endpointId: string): Promise<{ message: string }> {
     const endpoint = await db.query.webhookEndpoints.findFirst({
       where: and(
         eq(schema.webhookEndpoints.id, endpointId),
@@ -113,7 +108,7 @@ export class WebhooksService {
     return { message: "Test webhook enqueued" };
   }
 
-  async rotateSecret(workspaceId: string, endpointId: string) {
+  async rotateSecret(workspaceId: string, endpointId: string): Promise<{ secret: string }> {
     const newRawSecret = `whsec_${randomUUID().replace(/-/g, "")}`;
     const encryptedSecret = this.encryption.encrypt(newRawSecret);
 

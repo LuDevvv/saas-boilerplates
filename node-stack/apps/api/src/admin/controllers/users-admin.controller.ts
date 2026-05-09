@@ -3,19 +3,28 @@ import { EventEmitter2 } from "@nestjs/event-emitter";
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from "@nestjs/swagger";
 import { AuthRepository, schema, withSystemTx } from "@node-stack/db";
 import type { Database } from "@node-stack/db";
-import { eq } from "drizzle-orm";
 import { UpdateUserRoleSchema, UpdateUserRoleDto } from "@node-stack/validators";
+import { eq } from "drizzle-orm";
 import { ZodValidationPipe } from "nestjs-zod";
 import { z } from "zod";
 
 import { ImpersonationService } from "@/admin/services/impersonation.service.js";
 import { AdminOnly } from "@/common/decorators/admin.decorator.js";
+import type { UserPayload } from "@/common/types/index.js";
 
 const UpdateUserStatusSchema = z.object({
   status: z.enum(["active", "suspended", "banned"]),
   reason: z.string().max(500).optional(),
 });
 type UpdateUserStatusDto = z.infer<typeof UpdateUserStatusSchema>;
+
+interface AdminRequest {
+  user: UserPayload;
+  ip: string;
+  headers: Record<string, string | undefined>;
+}
+
+type User = typeof schema.users.$inferSelect;
 
 @ApiTags("admin-users")
 @Controller("admin/users")
@@ -37,7 +46,7 @@ export class UsersAdminController {
     @Query("page") page = 1,
     @Query("limit") limit = 10,
     @Query("search") search?: string,
-  ) {
+  ): Promise<User[]> {
     return this.authRepository.findAll({
       page: Number(page),
       limit: Number(limit),
@@ -52,8 +61,8 @@ export class UsersAdminController {
   async updateUserRole(
     @Param("id") id: string,
     @Body(new ZodValidationPipe(UpdateUserRoleSchema)) data: UpdateUserRoleDto,
-    @Request() req: any,
-  ) {
+    @Request() req: AdminRequest,
+  ): Promise<User> {
     const adminId = req.user.id;
     const oldUser = await this.authRepository.findUserById(id);
     if (!oldUser) throw new BadRequestException("User not found");
@@ -83,20 +92,20 @@ export class UsersAdminController {
   async updateUserStatus(
     @Param("id") id: string,
     @Body(new ZodValidationPipe(UpdateUserStatusSchema)) data: UpdateUserStatusDto,
-    @Request() req: any,
-  ) {
+    @Request() req: AdminRequest,
+  ): Promise<{ success: boolean; status: string; userId: string }> {
     const adminId = req.user.id;
     if (id === adminId) throw new BadRequestException("Cannot change your own status");
 
     const oldUser = await this.authRepository.findUserById(id);
     if (!oldUser) throw new BadRequestException("User not found");
 
-    const result = await this.authRepository.updateUser(id, {
+    await this.authRepository.updateUser(id, {
       status: data.status,
       statusReason: data.reason ?? null,
       statusChangedAt: new Date(),
       statusChangedBy: adminId,
-    } as any);
+    });
 
     // Force logout if suspended or banned
     if (data.status !== "active") {
@@ -112,7 +121,7 @@ export class UsersAdminController {
       entityId: id,
       metadata: {
         action: "status_change",
-        previousStatus: (oldUser as any).status ?? "active",
+        previousStatus: oldUser.status ?? "active",
         newStatus: data.status,
         reason: data.reason,
       },
@@ -127,8 +136,8 @@ export class UsersAdminController {
   @ApiResponse({ status: 201, description: "Impersonation session created" })
   async impersonate(
     @Param("id") id: string,
-    @Request() req: any,
-  ) {
+    @Request() req: AdminRequest,
+  ): Promise<ReturnType<ImpersonationService["impersonate"]>> {
     const adminId = req.user.id;
     const ipAddress = req.ip;
     const userAgent = req.headers["user-agent"];

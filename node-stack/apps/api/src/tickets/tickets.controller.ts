@@ -18,7 +18,6 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiParam,
-  ApiQuery,
   ApiHeader,
 } from "@nestjs/swagger";
 import { Role } from "@node-stack/types";

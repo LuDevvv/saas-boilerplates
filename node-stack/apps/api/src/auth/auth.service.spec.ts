@@ -1,16 +1,17 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException, ConflictException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { AuthService } from '@/auth/auth.service.js';
-import { TwoFactorService } from '@/auth/two-factor/two-factor.service.js';
-import { SessionRepository, AuthRepository, AuditLogRepository } from '@node-stack/db';
+import { JwtService } from '@nestjs/jwt';
+import { Test, TestingModule } from '@nestjs/testing';
 import { CacheService } from '@node-stack/cache';
-import { TokenService } from '@/auth/services/token.service.js';
-import { SessionService } from '@/auth/services/session.service.js';
-import { PasswordService } from '@/auth/services/password.service.js';
-import { OAuthService } from '@/auth/services/oauth.service.js';
+import { SessionRepository, AuthRepository, AuditLogRepository } from '@node-stack/db';
 import * as bcrypt from 'bcrypt';
+
+import { AuthService } from '@/auth/auth.service.js';
+import { OAuthService } from '@/auth/services/oauth.service.js';
+import { PasswordService } from '@/auth/services/password.service.js';
+import { SessionService } from '@/auth/services/session.service.js';
+import { TokenService } from '@/auth/services/token.service.js';
+import { TwoFactorService } from '@/auth/two-factor/two-factor.service.js';
 
 // Mock otplib to avoid ESM export parse errors
 vi.mock('otplib', () => ({

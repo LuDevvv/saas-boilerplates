@@ -7,7 +7,7 @@ export interface VersionedRequest extends Request {
 
 @Injectable()
 export class ApiVersionMiddleware implements NestMiddleware {
-  use(req: Request, res: Response, next: NextFunction) {
+  use(req: Request, _res: Response, next: NextFunction): void {
     const versionMatch = req.path.match(/^\/v(\d+)/);
     if (versionMatch) {
       (req as VersionedRequest).apiVersion = parseInt(versionMatch[1]);

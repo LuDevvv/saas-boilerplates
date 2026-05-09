@@ -26,7 +26,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
     });
   }
 
-  async validate(payload: JwtPayload) {
+  async validate(payload: JwtPayload): Promise<{ id: string; email: string; sessionId: string; role: string }> {
     const session = await this.db.query.sessions.findFirst({
       where: eq(schema.sessions.id, payload.sessionId),
     });

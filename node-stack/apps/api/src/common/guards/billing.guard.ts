@@ -24,10 +24,10 @@ export class BillingGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req = context.switchToHttp().getRequest();
+    const req = context.switchToHttp().getRequest<{ workspace?: { id?: string }; params?: { workspaceId?: string } }>();
 
     // In our app, workspace context is usually attached by a previous guard/middleware
-    const workspaceId = req?.workspace?.id || req?.params?.workspaceId;
+    const workspaceId = req?.workspace?.id ?? req?.params?.workspaceId;
 
     if (!workspaceId) {
       return true;

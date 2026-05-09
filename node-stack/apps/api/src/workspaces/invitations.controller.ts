@@ -42,14 +42,14 @@ export class InvitationsController {
     @Param("id", ParseUUIDPipe) workspaceId: string,
     @Body() dto: InviteMemberDto,
     @CurrentUser("id") userId: UserPayload["id"],
-  ) {
+  ): Promise<unknown> {
     return this.invitationsService.createInvitation(workspaceId, dto, userId);
   }
 
   @Get("/workspace-invitations/pending")
   @ApiOperation({ summary: "List pending invitations for current user" })
   @ApiResponse({ status: 200, description: "Pending invitations retrieved" })
-  async listPendingInvitations(@CurrentUser("id") userId: UserPayload["id"]) {
+  async listPendingInvitations(@CurrentUser("id") userId: UserPayload["id"]): Promise<unknown> {
     return this.invitationsService.listPendingForUser(userId);
   }
 
@@ -61,7 +61,7 @@ export class InvitationsController {
   async listWorkspaceInvitations(
     @Param("id", ParseUUIDPipe) workspaceId: string,
     @CurrentUser("id") userId: UserPayload["id"],
-  ) {
+  ): Promise<unknown> {
     return this.invitationsService.listForWorkspace(workspaceId, userId);
   }
 
@@ -74,7 +74,7 @@ export class InvitationsController {
     @Param("id", ParseUUIDPipe) workspaceId: string,
     @Param("invitationId", ParseUUIDPipe) invitationId: string,
     @CurrentUser("id") userId: UserPayload["id"],
-  ) {
+  ): Promise<{ message: string }> {
     await this.invitationsService.cancelInvitation(
       workspaceId,
       invitationId,
@@ -90,7 +90,7 @@ export class InvitationsController {
   async acceptInvitation(
     @Param("token", ParseUUIDPipe) token: string,
     @CurrentUser("id") userId: UserPayload["id"],
-  ) {
+  ): Promise<unknown> {
     return this.invitationsService.acceptInvitation(token, userId);
   }
 
@@ -98,7 +98,7 @@ export class InvitationsController {
   @Public()
   @ApiOperation({ summary: "Get invitation details by token" })
   @ApiResponse({ status: 200, description: "Invitation details retrieved" })
-  async getInvitationDetails(@Param("token", ParseUUIDPipe) token: string) {
+  async getInvitationDetails(@Param("token", ParseUUIDPipe) token: string): Promise<unknown> {
     return this.invitationsService.getInvitationDetails(token);
   }
 }

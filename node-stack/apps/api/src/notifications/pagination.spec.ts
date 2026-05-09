@@ -1,7 +1,6 @@
-import { describe, expect, it } from "vitest";
-
 import { encodeCursor, decodeCursor } from "@node-stack/utils";
 import { buildPage } from "@node-stack/validators";
+import { describe, expect, it } from "vitest";
 
 describe("encodeCursor / decodeCursor", () => {
   it("round-trips an opaque cursor", () => {

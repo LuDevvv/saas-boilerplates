@@ -76,8 +76,8 @@ export class GenericWebhookHandler implements InboundWebhookHandler {
 
       if (a.length !== b.length) return false;
       return timingSafeEqual(a, b);
-    } catch (err: any) {
-      this.logger.error(`Generic signature validation error: ${err.message}`);
+    } catch (err: unknown) {
+      this.logger.error(`Generic signature validation error: ${(err as Error).message}`);
       return false;
     }
   }
@@ -92,8 +92,12 @@ export class GenericWebhookHandler implements InboundWebhookHandler {
     if (headerId) return headerId;
 
     try {
-      const parsed = JSON.parse(rawBody.toString("utf8"));
-      return parsed.id ?? parsed.event_id ?? `generic-${Date.now()}`;
+      const parsed = JSON.parse(rawBody.toString("utf8")) as Record<string, unknown>;
+      const id = parsed["id"];
+      const eventId = parsed["event_id"];
+      return (typeof id === 'string' ? id : undefined)
+        ?? (typeof eventId === 'string' ? eventId : undefined)
+        ?? `generic-${Date.now()}`;
     } catch {
       return `generic-${Date.now()}`;
     }
@@ -106,8 +110,14 @@ export class GenericWebhookHandler implements InboundWebhookHandler {
     if (headerType) return headerType;
 
     try {
-      const parsed = JSON.parse(rawBody.toString("utf8"));
-      return parsed.type ?? parsed.event ?? parsed.event_type ?? "unknown";
+      const parsed = JSON.parse(rawBody.toString("utf8")) as Record<string, unknown>;
+      const type = parsed["type"];
+      const event = parsed["event"];
+      const eventType = parsed["event_type"];
+      return (typeof type === 'string' ? type : undefined)
+        ?? (typeof event === 'string' ? event : undefined)
+        ?? (typeof eventType === 'string' ? eventType : undefined)
+        ?? "unknown";
     } catch {
       return "unknown";
     }
@@ -117,7 +127,7 @@ export class GenericWebhookHandler implements InboundWebhookHandler {
     rawBody: Buffer,
     headers: Record<string, string>,
   ): Promise<TransformedWebhookEvent> {
-    const parsed = JSON.parse(rawBody.toString("utf8"));
+    const parsed = JSON.parse(rawBody.toString("utf8")) as Record<string, unknown>;
     const eventId = this.extractEventId(rawBody, headers);
     const eventType = this.extractEventType(rawBody, headers);
 

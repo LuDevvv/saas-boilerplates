@@ -2,8 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { CacheService } from '@node-stack/cache';
-import { SessionRepository , DatabaseModule } from '@node-stack/db';
+import { DatabaseModule } from '@node-stack/db';
 
 import { ApiKeysModule } from '@/api-keys/api-keys.module.js';
 import { AuthController } from '@/auth/auth.controller.js';

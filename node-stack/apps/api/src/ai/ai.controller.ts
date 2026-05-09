@@ -56,7 +56,7 @@ export class AiController {
     @Body() dto: ChatCompletionDto,
     @Workspace() workspace: WorkspaceContext,
     @CurrentUser() user: UserPayload,
-  ) {
+  ): Promise<unknown> {
     return this.aiService.chat(workspace.id, user.id, {
       messages: dto.messages,
       model: dto.model,
@@ -74,7 +74,7 @@ export class AiController {
     @Workspace() workspace: WorkspaceContext,
     @CurrentUser() user: UserPayload,
     @Res() res: Response,
-  ) {
+  ): Promise<void> {
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
@@ -106,7 +106,7 @@ export class AiController {
     @Body() dto: SubmitAIJobDto,
     @Workspace() workspace: WorkspaceContext,
     @CurrentUser() user: UserPayload,
-  ) {
+  ): Promise<{ jobId: string | undefined; status: string }> {
     const job = await this.jobService.addAIJob({
       jobType: dto.jobType,
       prompt: dto.prompt,
@@ -121,7 +121,7 @@ export class AiController {
 
   @Get("usage")
   @ApiOperation({ summary: "Get current AI usage for the workspace" })
-  async getUsage(@Workspace() workspace: WorkspaceContext) {
+  async getUsage(@Workspace() workspace: WorkspaceContext): Promise<{ usage: number }> {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const usage = await this.aiService.getUsage(workspace.id, startOfMonth);
@@ -133,11 +133,11 @@ export class AiController {
 
   @Get("jobs/:jobId")
   @ApiOperation({ summary: "Get job status" })
-  async getJobResult(@Param("jobId") jobId: string) {
+  async getJobResult(@Param("jobId") jobId: string): Promise<Record<string, unknown>> {
     // Try BullMQ native state first
     const jobStatus = await this.jobService.getJobStatus(QUEUE_NAMES.AI, jobId);
     if (jobStatus) {
-      return jobStatus;
+      return jobStatus as Record<string, unknown>;
     }
 
     // Fallback to cache for completed jobs whose BullMQ record was cleaned up
@@ -145,8 +145,10 @@ export class AiController {
     if (!cached) {
       return { status: "pending" };
     }
-    
-    const result = typeof cached === "string" ? JSON.parse(cached) : cached;
+
+    const result: Record<string, unknown> = typeof cached === "string"
+      ? (JSON.parse(cached) as Record<string, unknown>)
+      : (cached as unknown as Record<string, unknown>);
     return { status: "complete", ...result };
   }
 }

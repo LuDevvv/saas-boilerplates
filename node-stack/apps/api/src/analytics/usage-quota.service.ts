@@ -11,12 +11,17 @@ export class UsageQuotaService {
     private readonly billingService: BillingService,
   ) {}
 
-  async checkQuota(workspaceId: string, type: "ai" | "storage") {
+  async checkQuota(workspaceId: string, type: "ai" | "storage"): Promise<{
+    allowed: boolean;
+    plan: PlanType;
+    limits: (typeof DEFAULT_LIMITS)[PlanType];
+    usage: Awaited<ReturnType<AnalyticsService["getWorkspaceUsage"]>>;
+  }> {
     const subscription = await this.billingService.getSubscription(workspaceId);
-    
+
     // Default to free if no subscription or unknown plan
     const plan = (subscription.planId as PlanType) || "free";
-    const limits = DEFAULT_LIMITS[plan] || DEFAULT_LIMITS.free;
+    const limits = DEFAULT_LIMITS[plan] ?? DEFAULT_LIMITS.free;
     const usage = await this.analyticsService.getWorkspaceUsage(workspaceId);
 
     if (type === "ai") {

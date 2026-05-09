@@ -2,12 +2,19 @@ import { Controller, Post, Get, Delete, Body, Param, UseGuards, Request } from '
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiHeader } from '@nestjs/swagger';
 import { Permission } from '@node-stack/types';
 import { CreateApiKeyDto } from '@node-stack/validators';
+import type { Request as ExpressRequest } from 'express';
 
 import { ApiKeysService } from '@/api-keys/api-keys.service.js';
 import { JwtAuthGuard } from '@/auth/guards/jwt.guard.js';
 import { Idempotent } from '@/common/decorators/idempotent.decorator.js';
 import { Permissions } from '@/common/decorators/permissions.decorator.js';
 import { WorkspaceGuard } from '@/common/guards/workspace.guard.js';
+import type { UserPayload, WorkspaceContext } from '@/common/types/index.js';
+
+interface AuthenticatedRequest extends ExpressRequest {
+  user: UserPayload;
+  workspace: WorkspaceContext;
+}
 
 
 @ApiTags('api-keys')
@@ -31,7 +38,7 @@ export class ApiKeysController {
   })
   @ApiResponse({ status: 201, description: 'API Key created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden - Insufficient permissions' })
-  async create(@Body() body: CreateApiKeyDto, @Request() req: any) {
+  async create(@Body() body: CreateApiKeyDto, @Request() req: AuthenticatedRequest): Promise<unknown> {
     return this.service.create(
       req.workspace.id,
       req.user.id,
@@ -41,24 +48,24 @@ export class ApiKeysController {
 
   @Get()
   @Permissions(Permission.WORKSPACE_READ)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'List active API Keys',
     description: 'Returns a list of non-revoked API keys for the current workspace context.'
   })
   @ApiResponse({ status: 200, description: 'List of API keys retrieved' })
-  async list(@Request() req: any) {
+  async list(@Request() req: AuthenticatedRequest): Promise<unknown> {
     return this.service.list(req.workspace.id);
   }
 
   @Delete(':id')
   @Permissions(Permission.WORKSPACE_WRITE)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Revoke an API Key',
     description: 'Permanently disables an API key. Once revoked, it cannot be used for authentication.'
   })
   @ApiResponse({ status: 200, description: 'API Key revoked successfully' })
   @ApiResponse({ status: 404, description: 'API Key not found or does not belong to workspace' })
-  async revoke(@Param('id') id: string, @Request() req: any) {
+  async revoke(@Param('id') id: string, @Request() req: AuthenticatedRequest): Promise<void> {
     return this.service.revoke(req.workspace.id, id, req.user?.id ?? null);
   }
 }
