@@ -9,7 +9,9 @@
     "scripts": {
         "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
         "typecheck": "tsc --noEmit",
-        "build": "tsc -b --clean && tsc -b"
+        "build": "tsc -b --clean && tsc -b",
+        "storybook": "storybook dev --port 6006",
+        "build-storybook": "storybook build"
     },
     "dependencies": {
         "@motionone/dom": "^10.18.0",
@@ -32,12 +34,17 @@
         "tailwindcss-animate": "^1.0.7"
     },
     "devDependencies": {
+        "@storybook/addon-essentials": "^8.6.14",
+        "@storybook/addon-interactions": "^8.6.14",
+        "@storybook/react": "^8.6.18",
+        "@storybook/react-vite": "^8.6.18",
         "@types/react": "^19.0.0",
         "@types/react-dom": "^19.0.0",
         "autoprefixer": "^10.4.13",
         "postcss": "^8.5.2",
         "react": "^19.0.0",
         "react-dom": "^19.0.0",
+        "storybook": "^8.6.18",
         "tailwindcss": "^3.4.1",
         "typescript": "5.7.3"
     },
