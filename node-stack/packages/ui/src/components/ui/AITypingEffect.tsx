@@ -52,7 +52,7 @@ export const AITypingEffect: FC<AITypingEffectProps> = ({
     if (color === "gradient") {
       // Create a gradient effect across the dots
       const gradientColors = ["#3B82F6", "#60A5FA", "#0EA5E9"];
-      return gradientColors[index % gradientColors.length];
+      return gradientColors[index % gradientColors.length]!;
     }
     if (color === "white") return "#FFFFFF";
     return color === "blue" ? "#3B82F6" : "#6B7280";

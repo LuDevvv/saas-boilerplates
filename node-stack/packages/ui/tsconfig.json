@@ -4,8 +4,9 @@
     "composite": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "types": ["node"],
+    "types": ["node", "react", "react-dom"],
     "jsx": "react-jsx",
+    "lib": ["ES2021", "DOM", "DOM.Iterable"],
     "paths": {
       "@node-stack/*": ["../../packages/*/src/index.ts", "../../packages/*/src"]
     }

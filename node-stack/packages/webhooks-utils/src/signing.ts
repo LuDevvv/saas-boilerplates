@@ -36,8 +36,8 @@ export function verifyWebhookSignature(
 
     if (!tPart || !v1Part) return false;
 
-    const timestamp = parseInt(tPart.split("=")[1], 10);
-    const hash = v1Part.split("=")[1];
+    const timestamp = parseInt(tPart.split("=")[1] ?? "", 10);
+    const hash = v1Part.split("=")[1] ?? "";
 
     if (isNaN(timestamp)) return false;
 

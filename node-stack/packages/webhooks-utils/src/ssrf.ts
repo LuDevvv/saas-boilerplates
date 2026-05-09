@@ -15,10 +15,11 @@ export function isPrivateIP(ip: string): boolean {
   
   const ipv4Parts = ip.split(".").map(Number);
   if (ipv4Parts.length === 4) {
-    if (ipv4Parts[0] === 10) return true; // 10.0.0.0/8
-    if (ipv4Parts[0] === 172 && ipv4Parts[1] >= 16 && ipv4Parts[1] <= 31) return true; // 172.16.0.0/12
-    if (ipv4Parts[0] === 192 && ipv4Parts[1] === 168) return true; // 192.168.0.0/16
-    if (ipv4Parts[0] === 169 && ipv4Parts[1] === 254) return true; // 169.254.0.0/16 (Link-local)
+    const [o0, o1] = [ipv4Parts[0]!, ipv4Parts[1]!];
+    if (o0 === 10) return true; // 10.0.0.0/8
+    if (o0 === 172 && o1 >= 16 && o1 <= 31) return true; // 172.16.0.0/12
+    if (o0 === 192 && o1 === 168) return true; // 192.168.0.0/16
+    if (o0 === 169 && o1 === 254) return true; // 169.254.0.0/16 (Link-local)
   }
 
   // IPv6 Private / Loopback / Link-local

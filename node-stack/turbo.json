@@ -24,7 +24,8 @@
       "outputs": [
         "dist/**",
         ".next/**",
-        "!.next/cache/**"
+        "!.next/cache/**",
+        "*.tsbuildinfo"
       ],
       "cache": true
     },

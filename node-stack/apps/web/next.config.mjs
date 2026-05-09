@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // ESLint is enforced by pnpm lint (turbo pipeline); disable during next build
+  // to avoid double-linting and to prevent import/order build failures.
+  eslint: { ignoreDuringBuilds: true },
   transpilePackages: ["@node-stack/ui"],
   webpack: (config) => {
     config.resolve.extensionAlias = {

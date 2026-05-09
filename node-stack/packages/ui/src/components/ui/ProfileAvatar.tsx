@@ -1,3 +1,5 @@
+"use client";
+
 import { Trash2, Camera, Loader2 } from "lucide-react";
 import { FC, useRef, useState, useEffect } from "react";
 

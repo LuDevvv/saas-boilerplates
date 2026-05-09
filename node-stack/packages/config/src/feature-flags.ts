@@ -67,7 +67,7 @@ export class FeatureFlagService {
         // Key format: feature:flag:<flagKey>:<scope>[:<id>]
         const withoutPrefix = redisKey.slice(this.prefix.length + 1);
         const parts = withoutPrefix.split(":");
-        const flagKey = parts[0];
+        const flagKey = parts[0] ?? "";
         const scope = parts[1] ?? "global";
         const scopeId = parts[2] ?? null;
         return { key: flagKey, scope, scopeId, enabled: value === "true" };

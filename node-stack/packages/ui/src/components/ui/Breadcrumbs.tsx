@@ -45,7 +45,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     children: React.ReactNode;
     className?: string;
     title?: string;
-  }): JSX.Element => (
+  }): React.JSX.Element => (
     <a
       href={href}
       className={lc}
@@ -98,7 +98,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
       {/* Items */}
       {visibleItems.map((item, index) => {
         // Collapsed ellipsis marker
-        if (item === null) {
+        if (item === null || item === undefined) {
           return (
             <span key="ellipsis" className="flex items-center gap-0.5">
               <span

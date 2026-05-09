@@ -35,7 +35,7 @@ export class OpenRouterProvider implements AIProvider {
       temperature: params.temperature ?? 0.7,
     });
 
-    const choice = response.choices[0];
+    const choice = response.choices[0]!;
     return {
       content: choice.message.content ?? '',
       model: response.model,
