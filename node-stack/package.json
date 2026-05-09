@@ -12,7 +12,7 @@
     "test": "turbo run test",
     "test:all": "vitest run",
     "test:cov": "turbo run test:cov",
-    "test:e2e": "pnpm --filter @node-stack/api test:e2e",
+    "test:e2e": "pnpm --filter @node-stack/e2e test",
     "typecheck": "turbo run typecheck",
     "format": "prettier --write \"**/*.ts\"",
     "format:check": "prettier --check \"**/*.ts\"",

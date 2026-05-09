@@ -43,7 +43,7 @@ const Onboarding: React.FC = () => {
           </p>
         </div>
 
-        <Card className="p-8 rounded-3xl border-border bg-surface/95 backdrop-blur-xl shadow-premium">
+        <Card className="p-8 rounded-[20px] border border-border bg-surface shadow-[var(--shadow-card)]">
           <form onSubmit={handleSubmit} className="space-y-6">
             <Input
               label="Nombre de tu Empresa / Proyecto"
@@ -64,7 +64,7 @@ const Onboarding: React.FC = () => {
             <Button
               type="submit"
               loading={isSubmitting}
-              className="w-full h-14 rounded-xl bg-gradient-to-br from-primary to-accent text-white font-heading text-sm uppercase hover:opacity-95 active:scale-[0.97] transition-all shadow-premium mt-8"
+              className="w-full h-12 rounded-xl bg-primary hover:bg-primary-600 text-primary-foreground font-medium text-[13px] active:scale-[0.97] transition-colors shadow-[0_4px_14px_-2px_rgba(0,64,128,0.20)] dark:shadow-[0_4px_14px_-2px_rgba(91,168,229,0.20)] mt-4"
             >
               Continuar
               <ArrowRight className="ml-2 w-4 h-4" />
@@ -75,7 +75,7 @@ const Onboarding: React.FC = () => {
         {/* Progress indicator */}
         <div className="mt-10 flex items-center justify-center gap-2">
           <div className="w-8 h-2 rounded-full bg-primary" />
-          <div className="w-2 h-2 rounded-full bg-slate-200 dark:bg-white/10" />
+          <div className="w-2 h-2 rounded-full bg-border-strong" />
         </div>
       </div>
     </div>

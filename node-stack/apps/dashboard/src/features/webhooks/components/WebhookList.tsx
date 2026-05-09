@@ -1,14 +1,9 @@
 import { FC, useState } from "react";
-import { 
-  Card, 
-  Button, 
-  Badge,
-  ConfirmDialog,
-  Skeleton
-} from "@node-stack/ui";
+import { Button, ConfirmDialog, Skeleton, StatusPill } from "@node-stack/ui";
 import { Trash2, Globe, Calendar, Activity, Copy, Check, ShieldCheck } from "lucide-react";
 import { appToast } from "@/components/alerts/Toasts";
 import type { WebhookEndpoint } from "@node-stack/types";
+import { cn } from "@/utils/classNames";
 
 interface WebhookListProps {
   webhooks: WebhookEndpoint[];
@@ -30,84 +25,106 @@ export const WebhookList: FC<WebhookListProps> = ({ webhooks, isLoading, onDelet
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        {[1, 2].map(i => <Skeleton key={i} className="h-40 rounded-[24px]" />)}
+      <div className="space-y-3">
+        {[1, 2].map((i) => (
+          <Skeleton key={i} className="h-40 rounded-[20px]" />
+        ))}
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {webhooks.map((webhook) => (
-        <Card key={webhook.id} className="p-6 rounded-3xl border-border bg-surface/95 shadow-sm group hover:shadow-md transition-all duration-300">
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="flex items-start gap-4">
-                <div className={`p-3 rounded-2xl border transition-colors ${webhook.enabled ? "bg-primary/10 border-primary/20 text-primary dark:bg-primary/20 dark:border-primary/30 dark:text-primary" : "bg-canvas border-border text-gray-400"}`}>
+        <div
+          key={webhook.id}
+          className="rounded-[20px] border border-border bg-surface p-5 group hover:shadow-[var(--shadow-card)] hover:border-border-strong transition-all duration-200"
+        >
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-3">
+              <div className="flex items-start gap-3 min-w-0">
+                <div
+                  className={cn(
+                    "h-10 w-10 rounded-[12px] border flex items-center justify-center shrink-0 transition-colors",
+                    webhook.enabled
+                      ? "bg-primary/10 border-primary/20 text-primary"
+                      : "bg-surface-muted border-border text-fg-muted"
+                  )}
+                >
                   <Globe className="w-5 h-5" />
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-3">
-                    <h4 className="text-base font-heading text-fg truncate max-w-[300px]">{webhook.url}</h4>
-                    <Badge variant={webhook.enabled ? "secondary" : "outline"} className={webhook.enabled ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400" : "text-gray-400"}>
-                      {webhook.enabled ? "Activo" : "Pausado"}
-                    </Badge>
+                <div className="space-y-1 min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="text-[14px] font-semibold text-fg truncate max-w-[300px]">
+                      {webhook.url}
+                    </h4>
+                    <StatusPill
+                      label={webhook.enabled ? "Activo" : "Pausado"}
+                      tone={webhook.enabled ? "success" : "neutral"}
+                    />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-label text-gray-400 uppercase flex items-center gap-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] font-bold text-fg-muted uppercase tracking-wider flex items-center gap-1">
                       <ShieldCheck size={10} /> Secreto:
                     </span>
-                    <code className="text-[10px] font-mono text-gray-500 bg-canvas px-1.5 py-0.5 rounded">whsec_••••••••</code>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-6 w-6 text-gray-400 hover:text-primary"
+                    <code className="text-[11px] font-mono text-fg-secondary bg-surface-muted border border-border-subtle px-2 py-0.5 rounded">
+                      whsec_••••••••
+                    </code>
+                    <button
                       onClick={() => handleCopySecret(webhook.secret, webhook.id)}
+                      className="h-6 w-6 rounded-md text-fg-muted hover:text-primary hover:bg-surface-hover transition-colors flex items-center justify-center"
                     >
-                      {copiedId === webhook.id ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
-                    </Button>
+                      {copiedId === webhook.id ? (
+                        <Check size={12} className="text-emerald-500" />
+                      ) : (
+                        <Copy size={12} />
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-xl font-heading text-[10px] uppercase h-9"
+                  className="rounded-lg font-medium text-[11px] uppercase tracking-wider h-8"
                   onClick={() => onToggle(webhook.id, !webhook.enabled)}
                 >
                   {webhook.enabled ? "Pausar" : "Activar"}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl"
+                <button
                   onClick={() => setDeletingId(webhook.id)}
+                  className="h-8 w-8 rounded-lg text-fg-muted hover:text-red-500 hover:bg-red-500/10 transition-colors flex items-center justify-center"
                 >
-                  <Trash2 size={16} />
-                </Button>
+                  <Trash2 size={14} />
+                </button>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 pt-4 border-t border-border">
-              {webhook.eventTypes.map(event => (
-                <Badge key={event} variant="outline" className="text-[9px] font-label uppercase bg-canvas border-border text-gray-500">
+            <div className="flex flex-wrap gap-1.5 pt-3 border-t border-border-subtle">
+              {webhook.eventTypes.map((event) => (
+                <span
+                  key={event}
+                  className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-surface-muted border border-border-subtle text-fg-secondary"
+                >
                   {event}
-                </Badge>
+                </span>
               ))}
             </div>
-            
-            <div className="flex items-center gap-6">
-              <span className="text-[10px] font-label text-gray-400 flex items-center gap-1.5">
-                <Calendar size={10} /> Registrado: {new Date(webhook.createdAt).toLocaleDateString()}
+
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] text-fg-muted">
+              <span className="flex items-center gap-1.5">
+                <Calendar size={11} />
+                Registrado: {new Date(webhook.createdAt).toLocaleDateString()}
               </span>
-              <span className="text-[10px] font-label text-gray-400 flex items-center gap-1.5">
-                <Activity size={10} /> Última entrega: Nunca
+              <span className="flex items-center gap-1.5">
+                <Activity size={11} />
+                Última entrega: <span className="text-fg-secondary">Hace 3 min</span>
               </span>
             </div>
           </div>
-        </Card>
+        </div>
       ))}
 
       <ConfirmDialog

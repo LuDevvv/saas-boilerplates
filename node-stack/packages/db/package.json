@@ -47,6 +47,7 @@
                     "test:integration":  "vitest run"
                 },
     "dependencies":  {
+                         "@node-stack/utils": "workspace:*",
                          "@nestjs/common":  "latest",
                          "@nestjs/config":  "latest",
                          "@nestjs/core":  "^11.1.17",

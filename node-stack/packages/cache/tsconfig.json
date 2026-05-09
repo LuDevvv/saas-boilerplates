@@ -7,12 +7,6 @@
                                       ],
                             "outDir":  "./dist",
                             "rootDir":  "./src",
-                            "paths":  {
-                                          "@node-stack/*":  [
-                                                                "../../packages/*/src/index.ts",
-                                                                "../../packages/*/src"
-                                                            ]
-                                      },
                             "jsx":  "react-jsx"
                         },
     "include":  [
@@ -21,5 +15,8 @@
     "exclude":  [
                     "node_modules",
                     "dist"
-                ]
+                ],
+    "references": [
+        { "path": "../utils" }
+    ]
 }

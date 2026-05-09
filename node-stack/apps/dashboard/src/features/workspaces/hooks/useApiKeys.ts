@@ -6,7 +6,7 @@ import { appToast } from "@/components/alerts/Toasts";
 export const useApiKeys = (workspaceId: string | null) => {
   return useQuery({
     queryKey: workspaceId ? [...queryKeys.all, "workspaces", workspaceId, "api-keys"] : [],
-    queryFn: () => api.workspace.listApiKeys(workspaceId!),
+    queryFn: () => api.workspace.listApiKeys(workspaceId!).then((r) => r.data),
     enabled: !!workspaceId,
   });
 };
@@ -15,7 +15,8 @@ export const useCreateApiKey = (workspaceId: string | null) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (name: string) => api.workspace.createApiKey(workspaceId!, { name }),
+    mutationFn: (name: string) =>
+      api.workspace.createApiKey(workspaceId!, { name }).then((r) => r.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...queryKeys.all, "workspaces", workspaceId!, "api-keys"] });
       appToast.success({ title: "Clave API creada", description: "La nueva clave ha sido generada correctamente." });
@@ -31,7 +32,8 @@ export const useRevokeApiKey = (workspaceId: string | null) => {
   const queryKey = workspaceId ? [...queryKeys.all, "workspaces", workspaceId, "api-keys"] : [];
 
   return useMutation({
-    mutationFn: (keyId: string) => api.workspace.revokeApiKey(workspaceId!, keyId),
+    mutationFn: (keyId: string) =>
+      api.workspace.revokeApiKey(workspaceId!, keyId).then((r) => r.data),
     onMutate: async (keyId) => {
       await queryClient.cancelQueries({ queryKey });
       const previousKeys = queryClient.getQueryData(queryKey);

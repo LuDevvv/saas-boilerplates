@@ -52,7 +52,7 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="flex h-screen bg-white dark:bg-canvas overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-canvas">
       {/* Left side: Form */}
       <div className="flex w-full lg:w-1/2 flex-col p-8 lg:p-12 xl:p-16 h-full overflow-y-auto">
         <div className="mx-auto w-full max-w-md flex-1 flex flex-col justify-center animate-slide-up-fade" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
@@ -100,7 +100,7 @@ const ForgotPassword = () => {
                   ¿Recuerdas tu contraseña?{" "}
                   <Link
                     to="/auth/sign-in"
-                    className="font-bold text-primary transition-colors duration-200 hover:opacity-90 dark:text-primary dark:hover:opacity-90"
+                    className="font-bold text-primary hover:text-primary-600 transition-colors"
                   >
                     Iniciar sesión
                   </Link>
@@ -109,8 +109,8 @@ const ForgotPassword = () => {
             </>
           ) : (
             <div className="py-4 text-center">
-              <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-                <Check className="size-8 text-green-600 dark:text-green-400" />
+              <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                <Check className="size-8 text-emerald-500 dark:text-emerald-400" />
               </div>
               <h2 className="mb-2 text-2xl font-heading text-fg">
                 Revisa tu correo
@@ -142,7 +142,7 @@ const ForgotPassword = () => {
         </div>
 
         {/* Footer */}
-        <div className="mt-8 pb-8 lg:pb-0 text-[11px] font-medium text-gray-400 text-center">
+        <div className="mt-8 pb-8 lg:pb-0 text-[11px] font-medium text-fg-muted text-center">
           2026 NodeStack, All rights Reserved
         </div>
       </div>

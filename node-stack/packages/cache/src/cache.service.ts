@@ -1,5 +1,6 @@
 import { Injectable, Optional, OnModuleDestroy } from "@nestjs/common";
 import { Redis } from "ioredis";
+import { recordCacheHit, recordCacheMiss } from "@node-stack/utils";
 
 @Injectable()
 export class CacheService implements OnModuleDestroy {
@@ -44,7 +45,11 @@ export class CacheService implements OnModuleDestroy {
 
   async get<T = unknown>(key: string, tenantId?: string): Promise<T | null> {
     const raw = await this.client.get(this.key(key, tenantId));
-    if (raw === null) return null;
+    if (raw === null) {
+      recordCacheMiss();
+      return null;
+    }
+    recordCacheHit();
     try {
       return JSON.parse(raw) as T;
     } catch {

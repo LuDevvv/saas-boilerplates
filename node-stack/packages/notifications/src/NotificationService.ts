@@ -12,14 +12,32 @@ export interface NotificationPayload {
 
 export type ChannelHandler = (payload: NotificationPayload) => Promise<void>;
 
-type ChannelPreferences = Record<NotificationChannel, boolean>;
+export type ChannelPreferences = Record<NotificationChannel, boolean>;
+
+export interface IUserProvider {
+  getUserEmail(userId: string): Promise<string | null>;
+}
+
+export interface IPreferenceProvider {
+  getPreferences(userId: string): Promise<ChannelPreferences>;
+}
+
+export interface NotificationServiceOptions {
+  userProvider: IUserProvider;
+  preferenceProvider: IPreferenceProvider;
+  emailSender?: EmailSender;
+}
 
 export class NotificationService {
   private emailSender: EmailSender;
+  private userProvider: IUserProvider;
+  private preferenceProvider: IPreferenceProvider;
   private handlers: Partial<Record<NotificationChannel, ChannelHandler>> = {};
 
-  constructor() {
-    this.emailSender = new EmailSender();
+  constructor(options: NotificationServiceOptions) {
+    this.emailSender = options.emailSender ?? new EmailSender();
+    this.userProvider = options.userProvider;
+    this.preferenceProvider = options.preferenceProvider;
   }
 
   setChannelHandler(channel: NotificationChannel, handler: ChannelHandler): void {
@@ -28,7 +46,7 @@ export class NotificationService {
 
   async notify(payload: NotificationPayload): Promise<void> {
     const { userId, channels = ["EMAIL"] } = payload;
-    const preferences = await this.getUserPreferences(userId);
+    const preferences = await this.preferenceProvider.getPreferences(userId);
 
     const promises = channels.map(async (channel) => {
       if (!this.isChannelEnabled(channel, preferences)) {
@@ -58,7 +76,12 @@ export class NotificationService {
   }
 
   private async sendEmail(userId: string, template: EmailTemplate): Promise<void> {
-    const userEmail = await this.getUserEmail(userId);
+    const userEmail = await this.userProvider.getUserEmail(userId);
+    if (!userEmail) {
+      console.warn(`[NotificationService] No email found for user: ${userId}`);
+      return;
+    }
+
     await this.emailSender.sendEmail({
       to: userEmail,
       subject: this.getSubject(template),
@@ -74,18 +97,6 @@ export class NotificationService {
       default:
         return "Notification from NodeStack";
     }
-  }
-
-  private async getUserEmail(userId: string): Promise<string> {
-    return `user_${userId}@example.com`;
-  }
-
-  private async getUserPreferences(_userId: string): Promise<ChannelPreferences> {
-    return {
-      EMAIL: true,
-      PUSH: true,
-      IN_APP: true,
-    };
   }
 
   private isChannelEnabled(

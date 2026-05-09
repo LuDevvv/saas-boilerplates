@@ -62,12 +62,12 @@ export const AuthSidebar = ({ titleMain, titleAccent, subtitle, imageSrc = heroI
   }, []);
 
   return (
-    <div ref={containerRef} className="hidden lg:flex lg:w-1/2 h-full relative font-geist overflow-hidden bg-[#001D4A]">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#002D62] via-[#004080] to-primary flex flex-col items-center justify-center">
+    <div ref={containerRef} className="hidden lg:flex lg:w-1/2 h-full relative font-geist overflow-hidden bg-primary-600">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary-600 via-primary to-primary flex flex-col items-center justify-center">
         {/* Decorative Background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-white/5 to-transparent"></div>
-          <div className="absolute -top-[20%] -right-[10%] w-[70%] h-[70%] rounded-full bg-primary-light/20 blur-[120px]"></div>
+          <div className="absolute -top-[20%] -right-[10%] w-[70%] h-[70%] rounded-full bg-secondary/20 blur-[120px]"></div>
           <div className="absolute bottom-[10%] -left-[20%] w-[60%] h-[60%] rounded-full bg-secondary/10 blur-[100px]"></div>
         </div>
 
@@ -78,7 +78,7 @@ export const AuthSidebar = ({ titleMain, titleAccent, subtitle, imageSrc = heroI
           <div ref={textRef} className="text-white text-center w-full max-w-xl mx-auto mb-12 shrink-0">
             <h2 className="text-[32px] lg:text-[40px] xl:text-[48px] mb-6 leading-[1.15]  font-semibold flex flex-col items-center justify-center">
               <span ref={titleMainRef} className="block">{titleMain}</span>
-              <span ref={titleAccentRef} className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#00E6E6] to-white block mt-1 pb-1">
+              <span ref={titleAccentRef} className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-[color:var(--accent)] to-white block mt-1 pb-1">
                 {titleAccent}
               </span>
             </h2>

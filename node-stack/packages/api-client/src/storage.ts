@@ -8,27 +8,24 @@ import {
 
 export const storage = (client: AxiosInstance) => ({
   getUploadUrl: async (data: GetPresignedUrlDto) => {
-    const { data: response } = await client.post<{ data: PresignedUrlResponse }>("/storage/upload-url", data);
-    return response.data;
+    return client.post<PresignedUrlResponse>("/storage/upload-url", data) as unknown as Promise<PresignedUrlResponse>;
   },
 
   confirmUpload: async (fileId: string) => {
-    const { data: response } = await client.post<{ data: VerifyUploadResponse }>("/storage/confirm-upload", { fileId });
-    return response.data;
+    return client.post<VerifyUploadResponse>("/storage/confirm-upload", {
+      fileId,
+    }) as unknown as Promise<VerifyUploadResponse>;
   },
 
   getDownloadUrl: async (fileId: string) => {
-    const { data: response } = await client.get<{ data: { downloadUrl: string } }>(`/storage/${fileId}`);
-    return response.data;
+    return client.get<{ downloadUrl: string }>(`/storage/${fileId}`) as unknown as Promise<{ downloadUrl: string }>;
   },
 
   deleteFile: async (fileId: string) => {
-    const { data } = await client.delete<{ success: boolean }>(`/storage/${fileId}`);
-    return data.success;
+    return client.delete<{ success: boolean }>(`/storage/${fileId}`) as unknown as Promise<{ success: boolean }>;
   },
 
   listFiles: async (workspaceId: string) => {
-    const { data } = await client.get<{ data: FileInfo[] }>(`/storage/workspaces/${workspaceId}`);
-    return data.data;
+    return client.get<FileInfo[]>(`/storage/workspaces/${workspaceId}`) as unknown as Promise<FileInfo[]>;
   },
 });

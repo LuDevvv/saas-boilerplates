@@ -1,45 +1,46 @@
 import { AxiosInstance } from "axios";
 import { 
   Ticket, 
-  TicketListResponse, 
   CreateTicketDto, 
   UpdateTicketDto, 
   TicketStatus 
 } from "@node-stack/types";
 
 export const tickets = (client: AxiosInstance) => ({
-  list: async (params?: { limit?: number; cursor?: string; status?: TicketStatus }) => {
-    const { data } = await client.get<{ data: Ticket[]; nextCursor?: string }>("/ticket", { params });
-    return data;
+  list: async (params?: {
+    limit?: number;
+    cursor?: string;
+    status?: TicketStatus;
+  }) => {
+    return client.get<{ data: Ticket[]; nextCursor?: string }>("/ticket", {
+      params,
+    }) as unknown as Promise<{ data: Ticket[]; nextCursor?: string }>;
   },
 
   get: async (id: string) => {
-    const { data } = await client.get<Ticket>(`/ticket/${id}`);
-    return data;
+    return client.get<Ticket>(`/ticket/${id}`) as unknown as Promise<Ticket>;
   },
 
   create: async (data: CreateTicketDto) => {
-    const { data: response } = await client.post<Ticket>("/ticket", data);
-    return response;
+    return client.post<Ticket>("/ticket", data) as unknown as Promise<Ticket>;
   },
 
   update: async (id: string, data: UpdateTicketDto) => {
-    const { data: response } = await client.patch<Ticket>(`/ticket/${id}`, data);
-    return response;
+    return client.patch<Ticket>(`/ticket/${id}`, data) as unknown as Promise<Ticket>;
   },
 
   delete: async (id: string) => {
-    const { data } = await client.delete<{ message: string }>(`/ticket/${id}`);
-    return data.message;
+    return client.delete<{ message: string }>(`/ticket/${id}`) as unknown as Promise<{ message: string }>;
   },
 
-  addMessage: async (id: string, data: { body: string; attachments?: string[] }) => {
-    const { data: response } = await client.post<any>(`/ticket/${id}/messages`, data);
-    return response;
+  addMessage: async (
+    id: string,
+    data: { body: string; attachments?: string[] },
+  ) => {
+    return client.post<any>(`/ticket/${id}/messages`, data) as unknown as Promise<any>;
   },
 
   updateStatus: async (id: string, status: TicketStatus) => {
-    const { data: response } = await client.patch<Ticket>(`/ticket/${id}`, { status });
-    return response;
+    return client.patch<Ticket>(`/ticket/${id}`, { status }) as unknown as Promise<Ticket>;
   },
 });

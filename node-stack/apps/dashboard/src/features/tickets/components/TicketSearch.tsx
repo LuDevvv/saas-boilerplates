@@ -1,12 +1,19 @@
 import { Search } from "lucide-react";
 
-export const TicketSearch = () => (
+interface TicketSearchProps {
+  value?: string;
+  onChange?: (v: string) => void;
+}
+
+export const TicketSearch = ({ value = "", onChange }: TicketSearchProps) => (
   <div className="relative w-full md:w-72 group">
-    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
+    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-fg-muted group-focus-within:text-primary transition-colors" />
     <input
       type="text"
+      value={value}
+      onChange={(e) => onChange?.(e.target.value)}
       placeholder="Buscar tickets por ID o asunto..."
-      className="w-full pl-11 pr-4 py-3 bg-white/80 backdrop-blur-md dark:bg-gray-900/50 border border-border rounded-[20px] text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all"
+      className="w-full pl-10 pr-3.5 h-10 bg-surface-muted border border-border rounded-xl text-[13px] text-fg placeholder:text-fg-muted focus:outline-none focus:border-primary transition-colors"
     />
   </div>
 );

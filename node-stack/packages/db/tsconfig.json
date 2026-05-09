@@ -9,12 +9,12 @@
     "allowJs": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "paths": {
-      "@node-stack/*": ["../../packages/*/src/index.ts", "../../packages/*/src"]
-    },
     "jsx": "react-jsx"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"],
+  "references": [
+    { "path": "../utils" }
+  ],
   "extends": "../../tsconfig.json"
 }

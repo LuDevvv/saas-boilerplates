@@ -122,7 +122,7 @@ const VerifyEmail: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-white dark:bg-canvas overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-canvas">
       {/* Left side: Form */}
       <div className="flex w-full lg:w-1/2 flex-col p-8 lg:p-12 xl:p-16 h-full overflow-y-auto relative">
         <div className="absolute top-8 left-8 lg:top-12 lg:left-12">
@@ -131,7 +131,7 @@ const VerifyEmail: React.FC = () => {
             size="sm"
             onClick={() => logout()}
             icon={ArrowLeft}
-            className="text-gray-500 hover:text-gray-900 dark:hover:text-white font-medium"
+            className="text-fg-muted hover:text-fg font-medium"
           >
             Volver al inicio
           </Button>
@@ -167,7 +167,7 @@ const VerifyEmail: React.FC = () => {
               {resendCooldown > 0 && (
                 <p className="text-sm text-fg-secondary font-medium">
                   Podrás reenviar el código en:{" "}
-                  <span className="font-mono font-bold text-gray-900 dark:text-primary">
+                  <span className="font-mono font-bold text-primary">
                     {formatTime(resendCooldown)}
                   </span>
                 </p>
@@ -190,7 +190,7 @@ const VerifyEmail: React.FC = () => {
               <button
                 onClick={handleResend}
                 disabled={loading || resendCooldown > 0}
-                className="mt-1 font-bold text-primary transition-colors duration-200 hover:opacity-90 dark:text-primary dark:hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="mt-1 font-bold text-primary hover:text-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {resendCooldown > 0 ? "Espera para reenviar" : "Reenviar código"}
               </button>
@@ -199,7 +199,7 @@ const VerifyEmail: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <div className="mt-8 pb-8 lg:pb-0 text-[11px] font-medium text-gray-400 text-center">
+        <div className="mt-8 pb-8 lg:pb-0 text-[11px] font-medium text-fg-muted text-center">
           2026 NodeStack, All rights Reserved
         </div>
       </div>

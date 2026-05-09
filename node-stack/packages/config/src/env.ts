@@ -18,7 +18,22 @@ export const envSchema = z.object({
   MINIO_ROOT_USER: z.string().optional(),
   MINIO_ROOT_PASSWORD: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
+  METRICS_TOKEN: z.string().optional().default('dev-metrics-token'),
+  BILLING_PROVIDER: z.enum(['mock', 'polar']).default('mock'),
+  POLAR_ACCESS_TOKEN: z.string().optional(),
+  POLAR_ORGANIZATION_ID: z.string().optional(),
+  POLAR_WEBHOOK_SECRET: z.string().optional(),
+  POLAR_SERVER: z.enum(['sandbox', 'production']).default('production'),
 }).superRefine((data, ctx) => {
+  if (data.BILLING_PROVIDER === 'polar') {
+    if (!data.POLAR_ACCESS_TOKEN) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['POLAR_ACCESS_TOKEN'],
+        message: 'POLAR_ACCESS_TOKEN is required when BILLING_PROVIDER is polar',
+      });
+    }
+  }
   if (data.JWT_REFRESH_SECRET === data.JWT_SECRET) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,

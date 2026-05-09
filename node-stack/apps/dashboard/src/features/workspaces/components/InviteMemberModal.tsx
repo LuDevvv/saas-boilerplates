@@ -2,7 +2,7 @@ import { FC } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Button, Input, Select } from "@node-stack/ui";
+import { Button, Input } from "@node-stack/ui";
 import { Loader2, Mail, ShieldCheck, User, Eye } from "lucide-react";
 import { ModalLayout } from "@/layouts/ModalLayout";
 import { cn } from "@/utils/classNames";

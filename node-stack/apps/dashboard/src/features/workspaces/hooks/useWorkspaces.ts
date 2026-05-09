@@ -20,7 +20,7 @@ export const useCreateWorkspace = () => {
   const queryClient = useQueryClient();
 
   return useMutation<Workspace, Error, CreateWorkspaceDto>({
-    mutationFn: (data) => api.workspace.create(data),
+    mutationFn: (data) => api.workspace.create(data).then((r) => r.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.workspaces.list() });
       appToast.success({ title: "Compañía creada", description: "La nueva compañía está lista para usarse." });
@@ -33,7 +33,8 @@ export const useUpdateWorkspace = () => {
   const queryClient = useQueryClient();
 
   return useMutation<Workspace, Error, { workspaceId: string; data: UpdateWorkspaceDto }>({
-    mutationFn: ({ workspaceId, data }) => api.workspace.update(workspaceId, data),
+    mutationFn: ({ workspaceId, data }) =>
+      api.workspace.update(workspaceId, data).then((r) => r.data),
     onMutate: async ({ workspaceId, data: newData }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.workspaces.list() });
       const previousWorkspaces = queryClient.getQueryData(queryKeys.workspaces.list());

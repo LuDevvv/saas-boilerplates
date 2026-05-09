@@ -26,7 +26,7 @@ export const CreateWorkspaceModal: FC<CreateWorkspaceModalProps> = ({ isOpen, on
   const setActiveWorkspace = useWorkspaceStore(useShallow((s) => s.setActiveWorkspace));
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema as any),
     defaultValues: { name: "", description: "" },
   });
 

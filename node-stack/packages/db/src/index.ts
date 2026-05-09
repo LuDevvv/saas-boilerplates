@@ -2,6 +2,7 @@ import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { sql } from "drizzle-orm";
 import * as schema from "./schema/index.js";
 import { RequestContextService } from "./context/request-context.service.js";
+import { recordDbQueryDuration } from "@node-stack/utils";
 
 export { schema };
 export type Database = NodePgDatabase<typeof schema>;
@@ -36,10 +37,15 @@ export async function withTenantTx<T>(
     throw new Error("withTenantTx: workspaceId must be a valid UUID");
   }
   return db.transaction(async (tx) => {
-    await tx.execute(
-      sql`SELECT set_config('app.current_workspace_id', ${workspaceId}, true)`,
-    );
-    return callback(tx);
+    const start = Date.now();
+    try {
+      await tx.execute(
+        sql`SELECT set_config('app.current_workspace_id', ${workspaceId}, true)`,
+      );
+      return await callback(tx);
+    } finally {
+      recordDbQueryDuration((Date.now() - start) / 1000, "tenant_tx");
+    }
   });
 }
 
@@ -58,10 +64,15 @@ export async function withSystemTx<T>(
     throw new Error("withSystemTx: db is required");
   }
   return db.transaction(async (tx) => {
-    await tx.execute(
-      sql`SELECT set_config('app.current_workspace_id', ${SYSTEM_GUC_VALUE}, true)`,
-    );
-    return callback(tx);
+    const start = Date.now();
+    try {
+      await tx.execute(
+        sql`SELECT set_config('app.current_workspace_id', ${SYSTEM_GUC_VALUE}, true)`,
+      );
+      return await callback(tx);
+    } finally {
+      recordDbQueryDuration((Date.now() - start) / 1000, "system_tx");
+    }
   });
 }
 

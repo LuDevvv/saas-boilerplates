@@ -74,7 +74,7 @@ const SignInPage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-white dark:bg-canvas overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-canvas">
       {/* Left side: Form */}
       <div className="flex w-full lg:w-1/2 flex-col p-8 lg:p-12 xl:p-16 h-full overflow-y-auto">
         <div className="mx-auto w-full max-w-md flex-1 flex flex-col justify-center animate-slide-up-fade" style={{ animationDelay: '0.1s', animationFillMode: 'both' }}>
@@ -94,17 +94,17 @@ const SignInPage = () => {
 
           <div className="mb-4">
             <div className="flex w-full gap-3">
-              <SocialButton provider="google" disabled={isPending} className="h-12 w-full border-gray-200 shadow-sm hover:bg-gray-50 dark:border-white/10 dark:hover:bg-surface-hover">
+              <SocialButton provider="google" disabled={isPending} className="h-12 w-full border-border hover:bg-surface-hover">
                 Continuar con Google
               </SocialButton>
             </div>
 
             <div className="my-8 flex items-center">
-              <div className="grow border-t border-border-subtle"></div>
-              <span className="mx-4 text-[10px] font-bold uppercase text-gray-400">
+              <div className="grow border-t border-border"></div>
+              <span className="mx-4 text-[10px] font-bold uppercase tracking-wider text-fg-muted">
                 o ingresa con correo
               </span>
-              <div className="grow border-t border-border-subtle"></div>
+              <div className="grow border-t border-border"></div>
             </div>
           </div>
 
@@ -133,7 +133,7 @@ const SignInPage = () => {
                 labelRight={
                   <Link
                     to="/auth/forgot-password"
-                    className="text-xs font-bold text-primary hover:opacity-90 dark:text-primary"
+                    className="text-xs font-bold text-primary hover:text-primary-600 transition-colors"
                   >
                     ¿Olvidaste tu contraseña?
                   </Link>
@@ -143,7 +143,7 @@ const SignInPage = () => {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="size-8 text-gray-400 hover:text-gray-600"
+                    className="size-8 text-fg-muted hover:text-fg"
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -154,18 +154,20 @@ const SignInPage = () => {
               {/* Password Requirements UI */}
               {passwordValue.length > 0 && (
                 <div className="mt-3 p-4 bg-surface-muted rounded-xl border border-border flex flex-col gap-2.5">
-                  <p className="text-[12px] font-bold text-gray-500 uppercase  mb-1">Tu contraseña debe incluir:</p>
+                  <p className="text-[11px] font-bold text-fg-muted uppercase tracking-wider mb-1">
+                    Tu contraseña debe incluir:
+                  </p>
                   <div className="flex items-center gap-2">
-                    <div className={`w-4 h-4 rounded-full flex items-center justify-center ${hasMinLength ? 'bg-success text-white' : 'bg-gray-200 dark:bg-white/10 text-transparent'}`}>
+                    <div className={`w-4 h-4 rounded-full flex items-center justify-center ${hasMinLength ? 'bg-emerald-500 text-white' : 'bg-surface border border-border text-transparent'}`}>
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                     </div>
-                    <span className={`text-[13px] ${hasMinLength ? 'text-fg font-medium' : 'text-gray-500'}`}>Al menos 6 caracteres</span>
+                    <span className={`text-[13px] ${hasMinLength ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-fg-muted'}`}>Al menos 6 caracteres</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className={`w-4 h-4 rounded-full flex items-center justify-center ${hasRegex ? 'bg-success text-white' : 'bg-gray-200 dark:bg-white/10 text-transparent'}`}>
+                    <div className={`w-4 h-4 rounded-full flex items-center justify-center ${hasRegex ? 'bg-emerald-500 text-white' : 'bg-surface border border-border text-transparent'}`}>
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                     </div>
-                    <span className={`text-[13px] ${hasRegex ? 'text-fg font-medium' : 'text-gray-500'}`}>Mayúscula, minúscula y número</span>
+                    <span className={`text-[13px] ${hasRegex ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-fg-muted'}`}>Mayúscula, minúscula y número</span>
                   </div>
                 </div>
               )}
@@ -190,11 +192,11 @@ const SignInPage = () => {
           </form>
 
           <div className="mt-8 text-center text-sm">
-            <p className="text-gray-500">
+            <p className="text-fg-secondary">
               ¿No tienes cuenta?{" "}
               <Link
                 to="/auth/sign-up"
-                className="font-bold text-primary hover:opacity-90 dark:text-primary"
+                className="font-bold text-primary hover:text-primary-600 transition-colors"
               >
                 Regístrate gratis
               </Link>
@@ -203,7 +205,7 @@ const SignInPage = () => {
         </div>
 
         {/* Footer */}
-        <div className="mt-8 text-[11px] font-medium text-gray-400 text-center">
+        <div className="mt-8 text-[11px] font-medium text-fg-muted text-center">
           2026 NodeStack, All rights Reserved
         </div>
       </div>

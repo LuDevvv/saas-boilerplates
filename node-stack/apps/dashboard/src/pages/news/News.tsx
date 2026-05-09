@@ -1,6 +1,6 @@
 import { FC, useState, useMemo } from "react";
 import NavbarSidebarLayout from "@/layouts/NavBarSideBarLayout";
-import { SectionHeader } from "@/components/layout/SectionHeader";
+import { EmptyState as UIEmptyState, PageHeader } from "@node-stack/ui";
 import { SearchBar } from "@/components/shared/SearchBar";
 import {
   Megaphone,
@@ -37,38 +37,33 @@ const TYPE_CONFIG: Record<
   {
     label: string;
     icon: FC<{ className?: string }>;
-    gradient: string;
     textColor: string;
-    bgLight: string;
+    bgTint: string;
   }
 > = {
   feature: {
     label: "Nueva función",
     icon: Rocket,
-    gradient: "from-[#8C5BFF] to-[#A78BFA]",
-    textColor: "text-primary-600 dark:text-primary-400",
-    bgLight: "bg-primary-50 dark:bg-primary-900/20",
+    textColor: "text-primary",
+    bgTint: "bg-primary/10",
   },
   success: {
     label: "Caso de éxito",
     icon: Trophy,
-    gradient: "from-amber-500 to-orange-500",
     textColor: "text-amber-600 dark:text-amber-400",
-    bgLight: "bg-amber-50 dark:bg-amber-900/20",
+    bgTint: "bg-amber-500/10",
   },
   news: {
     label: "Noticia",
     icon: Newspaper,
-    gradient: "from-emerald-500 to-teal-500",
     textColor: "text-emerald-600 dark:text-emerald-400",
-    bgLight: "bg-emerald-50 dark:bg-emerald-900/20",
+    bgTint: "bg-emerald-500/10",
   },
   update: {
     label: "Actualización",
     icon: Sparkles,
-    gradient: "from-blue-500 to-indigo-500",
     textColor: "text-blue-600 dark:text-blue-400",
-    bgLight: "bg-blue-50 dark:bg-blue-900/20",
+    bgTint: "bg-blue-500/10",
   },
 };
 
@@ -151,10 +146,10 @@ const VideoOverlay: FC<{ hasVideo?: boolean; videoDuration?: string; size?: "sm"
     {hasVideo && (
       <div className="absolute inset-0 flex items-center justify-center z-10">
         <div className={cn(
-          "rounded-full bg-white/95 dark:bg-gray-900/95 flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform backdrop-blur-sm",
+          "rounded-full bg-surface-elevated border border-border flex items-center justify-center shadow-[var(--shadow-elevated)] group-hover:scale-110 transition-transform",
           size === "lg" ? "w-16 h-16" : "w-12 h-12"
         )}>
-          <Play className={cn("text-primary-600 ml-0.5", size === "lg" ? "w-7 h-7" : "w-5 h-5")} />
+          <Play className={cn("text-primary ml-0.5", size === "lg" ? "w-7 h-7" : "w-5 h-5")} />
         </div>
       </div>
     )}
@@ -171,19 +166,19 @@ const NewsCard: FC<{ item: NewsItem }> = ({ item }) => {
   const config = TYPE_CONFIG[item.type];
   const Icon = config.icon;
   return (
-    <div className="group flex flex-col bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700/60 overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 cursor-pointer h-full">
-      <div className="relative w-full aspect-video overflow-hidden bg-gray-50 dark:bg-gray-700">
+    <div className="group flex flex-col bg-surface rounded-[20px] border border-border overflow-hidden transition-all duration-300 hover:shadow-[var(--shadow-card)] hover:border-border-strong hover:-translate-y-0.5 cursor-pointer h-full">
+      <div className="relative w-full aspect-video overflow-hidden bg-surface-muted">
         <img src={item.image} alt={item.title} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
         <VideoOverlay hasVideo={item.hasVideo} videoDuration={item.videoDuration} />
       </div>
       <div className="flex flex-col gap-2.5 p-4 flex-1">
         <div className="flex items-center gap-1.5">
           <Icon className={`w-3.5 h-3.5 ${config.textColor}`} />
-          <span className={`text-[11px] font-label uppercase  ${config.textColor}`}>
+          <span className={`text-[11px] font-label uppercase tracking-wider ${config.textColor}`}>
             {config.label}
           </span>
         </div>
-        <h3 className="text-sm font-heading text-fg leading-snug line-clamp-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+        <h3 className="text-sm font-heading text-fg leading-snug line-clamp-2 group-hover:text-primary transition-colors">
           {item.title}
         </h3>
         <p className="text-xs text-fg-muted leading-relaxed line-clamp-2">
@@ -198,7 +193,7 @@ const NewsCard: FC<{ item: NewsItem }> = ({ item }) => {
               {item.linkText} <ArrowUpRight className="w-3 h-3" />
             </span>
           ) : (
-            <span className="text-xs font-label text-fg-muted group-hover:text-primary-500 transition-colors">
+            <span className="text-xs font-label text-fg-muted group-hover:text-primary transition-colors">
               Leer más
             </span>
           )}
@@ -210,17 +205,11 @@ const NewsCard: FC<{ item: NewsItem }> = ({ item }) => {
 
 // ─── Empty State ─────────────────────────────────────────────────────────────
 const EmptyState: FC = () => (
-  <div className="flex flex-col items-center justify-center py-20 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-700 text-center w-full">
-    <div className="w-16 h-16 mb-4 rounded-2xl bg-primary-50 dark:bg-primary-950/40 flex items-center justify-center">
-      <Megaphone className="w-8 h-8 text-primary-400" />
-    </div>
-    <h3 className="text-lg font-heading text-gray-800 dark:text-white mb-1">
-      No se encontraron novedades
-    </h3>
-    <p className="text-sm text-fg-muted max-w-xs">
-      Intenta buscar con otro término o selecciona una categoría diferente.
-    </p>
-  </div>
+  <UIEmptyState
+    icon={Megaphone}
+    title="No se encontraron novedades"
+    description="Intenta buscar con otro término o selecciona una categoría diferente."
+  />
 );
 
 // ─── Page ────────────────────────────────────────────────────────────────────
@@ -247,9 +236,10 @@ const NewsPage: FC = () => {
   return (
     <NavbarSidebarLayout>
       <div className="flex flex-col gap-6 min-h-full overflow-x-hidden w-full max-w-full animate-fade-in-up">
-        <SectionHeader
+        <PageHeader
+          eyebrow="NOVEDADES"
           title="Centro de Noticias"
-          subtitle="Mantente al día con las últimas actualizaciones y novedades."
+          description="Mantente al día con las últimas actualizaciones y novedades."
         />
 
         <div className="w-full">

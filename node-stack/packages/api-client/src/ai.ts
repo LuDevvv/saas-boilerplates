@@ -8,13 +8,11 @@ import {
 
 export const ai = (client: AxiosInstance) => ({
   submitJob: async (data: SubmitAIJobDto) => {
-    const { data: response } = await client.post<{ jobId: string; status: string }>("/ai/jobs", data);
-    return response;
+    return client.post<{ jobId: string; status: string }>("/ai/jobs", data) as unknown as Promise<{ jobId: string; status: string }>;
   },
 
   chat: async (data: ChatCompletionDto) => {
-    const { data: response } = await client.post<any>("/ai/chat", data);
-    return response;
+    return client.post<any>("/ai/chat", data) as unknown as Promise<any>;
   },
 
   streamChat: async function* (data: ChatCompletionDto) {
@@ -27,7 +25,7 @@ export const ai = (client: AxiosInstance) => ({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        ...(token ? { "Authorization": token as string } : {}),
+        ...(token ? { Authorization: token as string } : {}),
         ...(workspaceId ? { "X-Workspace-ID": workspaceId as string } : {}),
       },
       body: JSON.stringify(data),
@@ -67,12 +65,10 @@ export const ai = (client: AxiosInstance) => ({
   },
 
   getJobStatus: async (jobId: string) => {
-    const { data } = await client.get<any>(`/ai/jobs/${jobId}`);
-    return data;
+    return client.get<any>(`/ai/jobs/${jobId}`) as unknown as Promise<any>;
   },
 
   getUsage: async () => {
-    const { data } = await client.get<{ usage: number }>("/ai/usage");
-    return data;
+    return client.get<{ usage: number }>("/ai/usage") as unknown as Promise<{ usage: number }>;
   },
 });

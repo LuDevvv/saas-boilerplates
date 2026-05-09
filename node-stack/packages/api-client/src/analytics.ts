@@ -3,27 +3,26 @@ import { AnalyticsOverview, TrafficData, PageStat, UsageData } from "@node-stack
 
 export const analytics = (client: AxiosInstance) => ({
   getOverview: async (workspaceId: string) => {
-    const { data } = await client.get<{ data: AnalyticsOverview }>(`/analytics/workspaces/${workspaceId}/overview`);
-    return data.data;
+    return client.get<AnalyticsOverview>(
+      `/analytics/workspaces/${workspaceId}/overview`,
+    ) as unknown as Promise<AnalyticsOverview>;
   },
 
   getTraffic: async (workspaceId: string) => {
-    const { data } = await client.get<{ data: TrafficData[] }>(`/analytics/workspaces/${workspaceId}/traffic`);
-    return data.data;
+    return client.get<TrafficData[]>(
+      `/analytics/workspaces/${workspaceId}/traffic`,
+    ) as unknown as Promise<TrafficData[]>;
   },
 
   getPages: async (workspaceId: string) => {
-    const { data } = await client.get<{ data: PageStat[] }>(`/analytics/workspaces/${workspaceId}/pages`);
-    return data.data;
+    return client.get<PageStat[]>(`/analytics/workspaces/${workspaceId}/pages`) as unknown as Promise<PageStat[]>;
   },
 
   getUsage: async (workspaceId: string) => {
-    const { data } = await client.get<{ data: UsageData }>(`/analytics/workspaces/${workspaceId}/usage`);
-    return data.data;
+    return client.get<UsageData>(`/analytics/workspaces/${workspaceId}/usage`) as unknown as Promise<UsageData>;
   },
 
   getGlobalAdminStats: async () => {
-    const { data } = await client.get<{ data: any }>("/analytics/admin/global-stats");
-    return data.data;
+    return client.get<any>("/analytics/admin/global-stats") as unknown as Promise<any>;
   },
 });

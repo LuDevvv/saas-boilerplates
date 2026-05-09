@@ -50,8 +50,7 @@ export interface ModalLayoutProps {
 // ─── Animation helpers ────────────────────────────────────────────────────────
 
 const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
-const DURATION_IN  = "400ms";
-const DURATION_OUT = "280ms";
+const DURATION_IN = "400ms";
 const COMMAND_DURATION = "200ms";
 
 function getSurfaceClasses(variant: ModalVariant, size: ModalSize, isVisible: boolean): string {
@@ -197,10 +196,6 @@ export const ModalLayout: FC<ModalLayoutProps> = ({
   }, [shouldRender]);
 
   if (!shouldRender) return null;
-
-  const handleBackdrop = (e: React.MouseEvent) => {
-    if (closeOnBackdrop && e.target === e.currentTarget) onClose();
-  };
 
   const backdropOpacity = variant === "command"
     ? isVisible ? "opacity-60" : "opacity-0"

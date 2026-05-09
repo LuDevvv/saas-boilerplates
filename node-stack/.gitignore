@@ -87,7 +87,6 @@ openspec/
 .claude/
 .gemini/
 .codex/
-.github/
 .gitkeep
 .prompt/
 .docs/

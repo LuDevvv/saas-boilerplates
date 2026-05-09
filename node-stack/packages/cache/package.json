@@ -24,6 +24,7 @@
                              "@nestjs/core":  "\u003e=11.0.0"
                          },
     "dependencies":  {
+                         "@node-stack/utils": "workspace:*",
                          "ioredis":  "^5.10.1",
                          "reflect-metadata":  "^0.2.2"
                      },

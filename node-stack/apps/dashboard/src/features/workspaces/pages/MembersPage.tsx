@@ -9,7 +9,7 @@ import {
   ChevronRight,
   Sparkles,
 } from "lucide-react";
-import { Button, CalloutCard, SearchInput } from "@node-stack/ui";
+import { Button, CalloutCard, SearchInput, StatRow } from "@node-stack/ui";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { useAuth } from "@/hooks/stores/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -284,29 +284,39 @@ const MembersPage: FC = () => {
 
           {/* Member count summary — shown only when data loaded */}
           {!isLoading && (members?.length ?? 0) > 0 && (
-            <div className="rounded-[20px] border border-border bg-white dark:bg-surface p-5">
-              <p className="text-[11px] font-bold uppercase  text-gray-400 mb-3">
+            <div className="rounded-[20px] border border-border bg-surface p-5">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-fg-muted mb-2">
                 Resumen
               </p>
-              <div className="space-y-2">
+              <div className="divide-y divide-border-subtle">
+                <StatRow
+                  icon={Users}
+                  label="Total miembros"
+                  value={members?.length ?? 0}
+                />
                 {(["owner", "admin", "member", "guest"] as const).map(role => {
                   const count = (members || []).filter(m => m.role === role).length;
                   if (!count) return null;
-                  const labels = {
+                  const labelMap = {
                     owner: "Propietario",
                     admin: "Administrador",
                     member: "Miembro",
                     guest: "Invitado",
                   };
+                  const iconMap = {
+                    owner: ShieldCheck,
+                    admin: ShieldCheck,
+                    member: User,
+                    guest: Eye,
+                  };
                   return (
-                    <div key={role} className="flex items-center justify-between">
-                      <span className="text-[12px] text-fg-secondary">
-                        {labels[role]}
-                      </span>
-                      <span className="text-[12px] font-bold text-fg tabular-nums">
-                        {count}
-                      </span>
-                    </div>
+                    <StatRow
+                      key={role}
+                      icon={iconMap[role]}
+                      label={labelMap[role]}
+                      value={count}
+                      compact
+                    />
                   );
                 })}
               </div>

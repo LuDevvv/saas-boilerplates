@@ -8,9 +8,13 @@ import {
   Check,
   Trash2,
   Loader2,
-  Package,
-  Settings,
   Sparkles,
+  Mail,
+  Smartphone,
+  Globe,
+  Moon,
+  Megaphone,
+  ShieldCheck,
   CreditCard,
 } from "lucide-react";
 import { cn } from "@/utils/classNames";
@@ -22,42 +26,41 @@ import {
   useSeedNotifications,
 } from "@/features/notifications/hooks/useNotificationMutations";
 import type { Notification, NotificationType } from "@node-stack/types";
-import { SectionHeader } from "@/components/layout/SectionHeader";
-import { Button } from "@node-stack/ui";
+import {
+  Button,
+  EmptyState,
+  FilterTabs,
+  LoadingState,
+  PageHeader,
+  SectionHeader,
+  TwoColumnLayout,
+} from "@node-stack/ui";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const TYPE_CONFIG: Record<NotificationType, { icon: React.ElementType; color: string; label: string }> = {
-  info:    { icon: Info,         color: "text-blue-500",    label: "Info" },
-  warning: { icon: AlertTriangle, color: "text-amber-500",  label: "Aviso" },
-  success: { icon: CheckCircle2, color: "text-emerald-500", label: "Éxito" },
-  error:   { icon: XCircle,      color: "text-rose-500",    label: "Error" },
+const TYPE_CONFIG: Record<NotificationType, { icon: React.ElementType; color: string }> = {
+  info:    { icon: Info,          color: "text-blue-500 dark:text-blue-400" },
+  warning: { icon: AlertTriangle, color: "text-amber-500 dark:text-amber-400" },
+  success: { icon: CheckCircle2,  color: "text-emerald-500 dark:text-emerald-400" },
+  error:   { icon: XCircle,       color: "text-red-500 dark:text-red-400" },
 };
 
 function relativeTime(dateStr: string): string {
   const ms = Date.now() - new Date(dateStr).getTime();
-  const s  = Math.floor(ms / 1000);
-  if (s < 60)  return "Ahora";
+  const s = Math.floor(ms / 1000);
+  if (s < 60) return "Ahora";
   const m = Math.floor(s / 60);
-  if (m < 60)  return `Hace ${m}m`;
+  if (m < 60) return `Hace ${m} m`;
   const h = Math.floor(m / 60);
-  if (h < 24)  return `Hace ${h}h`;
+  if (h < 24) return `Hace ${h} h`;
   const d = Math.floor(h / 24);
-  if (d < 7)   return `Hace ${d}d`;
+  if (d < 7) return `Hace ${d} d`;
   return new Date(dateStr).toLocaleDateString("es-ES", { day: "numeric", month: "short" });
 }
 
-type FilterTab = "all" | "unread" | "payouts" | "products" | "settings";
+type FilterTab = "all" | "unread";
 
-const FILTER_TABS: { key: FilterTab; label: string; icon?: React.ElementType }[] = [
-  { key: "all",      label: "Todas" },
-  { key: "unread",   label: "Sin leer" },
-  { key: "payouts",  label: "Pagos",     icon: CreditCard },
-  { key: "products", label: "Productos", icon: Package },
-  { key: "settings", label: "Ajustes",   icon: Settings },
-];
-
-// ─── Notification Card ────────────────────────────────────────────────────────
+// ─── NotificationCard ────────────────────────────────────────────────────────
 
 const NotificationCard: FC<{
   notification: Notification;
@@ -71,51 +74,46 @@ const NotificationCard: FC<{
       className={cn(
         "group relative flex items-start gap-4 rounded-[16px] border px-5 py-4 transition-all duration-200",
         notification.read
-          ? "border-[var(--border)] bg-white dark:bg-surface hover:border-gray-200 dark:hover:border-white/10"
-          : "border-primary/20 bg-primary/[0.02] dark:bg-primary/[0.04]"
+          ? "border-border bg-surface hover:border-border-strong"
+          : "border-primary/20 bg-primary/[0.04]"
       )}
     >
-      {/* Icon — small, no heavy background */}
       <Icon className={cn("mt-0.5 h-4 w-4 shrink-0", color)} />
 
-      {/* Content */}
       <div className="min-w-0 flex-1">
-        {/* Title row */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-2 min-w-0">
-            <h3 className={cn(
-              "text-[14px] leading-snug truncate",
-              notification.read
-                ? "text-fg-secondary"
-                : "font-semibold text-fg"
-            )}>
+            <h3
+              className={cn(
+                "text-[14px] leading-snug truncate",
+                notification.read ? "text-fg-secondary" : "font-semibold text-fg"
+              )}
+            >
               {notification.title}
             </h3>
             {!notification.read && (
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary animate-pulse" />
             )}
           </div>
-          <span className="text-[12px] text-gray-400 shrink-0 whitespace-nowrap mt-0.5">
+          <span className="text-[11px] text-fg-muted shrink-0 whitespace-nowrap mt-0.5">
             {relativeTime(notification.createdAt)}
           </span>
         </div>
 
-        {/* Body */}
-        <p className={cn(
-          "mt-1 text-[13px] leading-relaxed line-clamp-2 max-w-prose",
-          notification.read
-            ? "text-fg-muted"
-            : "text-gray-600 dark:text-gray-300"
-        )}>
+        <p
+          className={cn(
+            "mt-1 text-[13px] leading-relaxed line-clamp-2 max-w-prose",
+            notification.read ? "text-fg-muted" : "text-fg-secondary"
+          )}
+        >
           {notification.body}
         </p>
 
-        {/* Actions — appear on hover */}
         <div className="mt-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 -translate-y-1 group-hover:translate-y-0 transition-all duration-200">
           {!notification.read && (
             <button
               onClick={() => onRead(notification.id)}
-              className="flex items-center gap-1.5 rounded-lg bg-primary/[0.08] px-3 py-1.5 text-[12px] font-medium text-primary hover:bg-primary/15 transition-colors active:scale-95"
+              className="flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-[12px] font-medium text-primary hover:bg-primary/15 transition-colors active:scale-95"
             >
               <Check className="h-3 w-3" />
               Marcar como leída
@@ -123,7 +121,7 @@ const NotificationCard: FC<{
           )}
           <button
             onClick={() => onDismiss(notification.id)}
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium text-gray-400 hover:bg-gray-100 hover:text-rose-500 dark:hover:bg-surface-hover transition-colors active:scale-95"
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium text-fg-muted hover:bg-surface-hover hover:text-red-500 transition-colors active:scale-95"
           >
             <Trash2 className="h-3 w-3" />
             Descartar
@@ -134,7 +132,155 @@ const NotificationCard: FC<{
   );
 };
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// ─── Preferences (mock UI) ───────────────────────────────────────────────────
+
+const PreferencesPanel: FC = () => {
+  const [channels, setChannels] = useState({ email: true, push: true, inApp: true });
+  const [quietHours, setQuietHours] = useState(true);
+  const [topics, setTopics] = useState({ marketing: false, security: true, billing: true });
+
+  return (
+    <div className="rounded-[20px] border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
+      <SectionHeader
+        eyebrow="PREFERENCIAS"
+        title="Cómo te avisamos"
+        description="Personaliza canales, horarios y temas."
+        as="h3"
+      />
+
+      {/* Channels */}
+      <div className="mt-5 space-y-2">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted">
+          Canales
+        </p>
+        <ChannelToggle
+          icon={Mail}
+          label="Email"
+          description="Resumen diario y alertas críticas"
+          enabled={channels.email}
+          onToggle={() => setChannels((c) => ({ ...c, email: !c.email }))}
+        />
+        <ChannelToggle
+          icon={Smartphone}
+          label="Push"
+          description="Notificaciones en dispositivos móviles"
+          enabled={channels.push}
+          onToggle={() => setChannels((c) => ({ ...c, push: !c.push }))}
+        />
+        <ChannelToggle
+          icon={Globe}
+          label="In-app"
+          description="Centro de notificaciones del dashboard"
+          enabled={channels.inApp}
+          onToggle={() => setChannels((c) => ({ ...c, inApp: !c.inApp }))}
+        />
+      </div>
+
+      {/* Quiet hours */}
+      <div className="mt-6 pt-5 border-t border-border-subtle space-y-2">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted">
+          Horario de silencio
+        </p>
+        <ChannelToggle
+          icon={Moon}
+          label="Silenciar 22:00 → 07:00"
+          description="No recibirás push ni email durante la noche"
+          enabled={quietHours}
+          onToggle={() => setQuietHours((v) => !v)}
+        />
+      </div>
+
+      {/* Topics */}
+      <div className="mt-6 pt-5 border-t border-border-subtle space-y-2">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted">
+          Agrupación por tema
+        </p>
+        <TopicToggle
+          icon={Megaphone}
+          label="Marketing"
+          enabled={topics.marketing}
+          onToggle={() => setTopics((t) => ({ ...t, marketing: !t.marketing }))}
+        />
+        <TopicToggle
+          icon={ShieldCheck}
+          label="Seguridad"
+          enabled={topics.security}
+          onToggle={() => setTopics((t) => ({ ...t, security: !t.security }))}
+        />
+        <TopicToggle
+          icon={CreditCard}
+          label="Billing"
+          enabled={topics.billing}
+          onToggle={() => setTopics((t) => ({ ...t, billing: !t.billing }))}
+        />
+      </div>
+    </div>
+  );
+};
+
+const ChannelToggle: FC<{
+  icon: React.ElementType;
+  label: string;
+  description: string;
+  enabled: boolean;
+  onToggle: () => void;
+}> = ({ icon: Icon, label, description, enabled, onToggle }) => (
+  <div className="flex items-center justify-between gap-3 p-2.5 rounded-xl border border-border-subtle bg-surface-muted">
+    <div className="flex items-center gap-2.5 min-w-0">
+      <div className="h-8 w-8 rounded-[10px] bg-surface border border-border flex items-center justify-center shrink-0">
+        <Icon className="h-3.5 w-3.5 text-fg-muted" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[12px] font-semibold text-fg leading-snug">{label}</p>
+        <p className="text-[10px] text-fg-muted leading-snug truncate">{description}</p>
+      </div>
+    </div>
+    <button
+      onClick={onToggle}
+      className={cn(
+        "relative h-5 w-9 rounded-full transition-colors shrink-0",
+        enabled ? "bg-primary" : "bg-surface-hover border border-border"
+      )}
+      aria-pressed={enabled}
+    >
+      <span
+        className={cn(
+          "absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all shadow-sm",
+          enabled ? "left-[18px]" : "left-0.5"
+        )}
+      />
+    </button>
+  </div>
+);
+
+const TopicToggle: FC<{
+  icon: React.ElementType;
+  label: string;
+  enabled: boolean;
+  onToggle: () => void;
+}> = ({ icon: Icon, label, enabled, onToggle }) => (
+  <button
+    onClick={onToggle}
+    className="w-full flex items-center justify-between gap-3 p-2.5 rounded-lg hover:bg-surface-hover transition-colors text-left"
+  >
+    <div className="flex items-center gap-2 min-w-0">
+      <Icon className="h-3.5 w-3.5 text-fg-muted shrink-0" />
+      <p className="text-[12px] font-medium text-fg">{label}</p>
+    </div>
+    <span
+      className={cn(
+        "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border",
+        enabled
+          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+          : "bg-surface-muted text-fg-muted border-border"
+      )}
+    >
+      {enabled ? "Activo" : "Pausado"}
+    </span>
+  </button>
+);
+
+// ─── Page ────────────────────────────────────────────────────────────────────
 
 const NotificationsPage: FC = () => {
   const [activeFilter, setActiveFilter] = useState<FilterTab>("all");
@@ -150,137 +296,118 @@ const NotificationsPage: FC = () => {
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  if (isLoading) {
-    return (
-      <div className="flex h-96 items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-[13px] text-gray-400">Cargando notificaciones...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex h-96 flex-col items-center justify-center gap-4 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-[20px] bg-rose-50 dark:bg-rose-500/10">
-          <XCircle className="h-7 w-7 text-rose-500" />
-        </div>
-        <div>
-          <p className="text-[15px] font-semibold text-fg">Error de conexión</p>
-          <p className="text-[13px] text-gray-400 mt-1">No pudimos cargar las notificaciones.</p>
-        </div>
-        <Button variant="outline" onClick={() => window.location.reload()} className="rounded-xl">
-          Reintentar
-        </Button>
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col gap-8 w-full max-w-[1400px] mx-auto pb-20 px-4 md:px-8 animate-fade-in">
-      <SectionHeader
-        title="Notificaciones"
-        subtitle="Mantente al día con la actividad de tu cuenta y la plataforma."
+    <div className="pb-20 animate-in fade-in duration-500">
+      <PageHeader
+        eyebrow="NOTIFICACIONES"
+        title="Centro de notificaciones"
+        description="Mantente al día con la actividad de tu cuenta y la plataforma."
         action={
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             {unreadCount > 0 && (
               <Button
                 variant="outline"
                 onClick={() => markAllAsRead.mutate()}
                 disabled={markAllAsRead.isPending}
-                className="rounded-xl h-10 px-5 text-[12px] font-medium"
+                className="rounded-xl h-10 px-4 text-[12px] font-medium"
               >
-                {markAllAsRead.isPending
-                  ? <Loader2 className="h-4 w-4 animate-spin" />
-                  : <><Check className="h-3.5 w-3.5 mr-1.5" />Marcar todo leído</>
-                }
+                {markAllAsRead.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Check className="h-3.5 w-3.5 mr-1.5" />
+                    Marcar todo leído
+                  </>
+                )}
               </Button>
             )}
             <Button
               onClick={() => seed.mutate()}
               loading={seed.isPending}
-              className="rounded-xl h-10 px-5 text-[12px] font-medium bg-surface-muted text-gray-500 border-none shadow-none hover:bg-surface-hover"
+              className="rounded-xl h-10 px-4 text-[12px] font-medium bg-surface-muted border border-border text-fg-secondary hover:bg-surface-hover hover:text-fg"
             >
               <Sparkles className="h-3.5 w-3.5 mr-1.5" />
               Generar pruebas
             </Button>
           </div>
         }
+        className="mb-6"
       />
 
-      {/* Filter tabs */}
-      <div className="flex items-center gap-1 rounded-xl bg-surface-muted p-1 w-fit border border-border">
-        {FILTER_TABS.map(({ key, label, icon: TabIcon }) => (
-          <button
-            key={key}
-            onClick={() => setActiveFilter(key)}
-            className={cn(
-              "flex items-center gap-1.5 rounded-lg px-4 py-2 text-[12px] font-medium transition-all duration-200 whitespace-nowrap active:scale-95",
-              activeFilter === key
-                ? "bg-white dark:bg-surface text-fg shadow-sm border border-border"
-                : "text-fg-secondary hover:text-gray-800 dark:hover:text-gray-200"
-            )}
-          >
-            {TabIcon && <TabIcon className="h-3.5 w-3.5" />}
-            {label}
-          </button>
-        ))}
-      </div>
+      <TwoColumnLayout>
+        <TwoColumnLayout.Main className="flex flex-col gap-4">
+          <FilterTabs
+            value={activeFilter}
+            onChange={(v) => setActiveFilter(v as FilterTab)}
+            ariaLabel="Filtrar notificaciones por estado"
+            options={[
+              { value: "all",    label: "Todas",   count: notifications.length },
+              { value: "unread", label: "Sin leer", count: unreadCount },
+            ]}
+          />
 
-      {/* Notification list */}
-      {notifications.length > 0 ? (
-        <div className="flex flex-col gap-2">
-          {notifications.map((n) => (
-            <NotificationCard
-              key={n.id}
-              notification={n}
-              onRead={(id) => markAsRead.mutate(id)}
-              onDismiss={(id) => dismiss.mutate(id)}
+          {isLoading ? (
+            <LoadingState message="Cargando notificaciones..." />
+          ) : error ? (
+            <EmptyState
+              icon={XCircle}
+              title="Error de conexión"
+              description="No pudimos cargar las notificaciones. Inténtalo de nuevo."
+              action={
+                <Button
+                  variant="outline"
+                  onClick={() => window.location.reload()}
+                  className="rounded-xl"
+                >
+                  Reintentar
+                </Button>
+              }
             />
-          ))}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center rounded-[24px] border border-dashed border-border py-24 px-8 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-surface-muted mb-5 relative">
-            <Bell className="h-7 w-7 text-gray-300 dark:text-gray-600" />
-            <span className="absolute top-2 right-2 h-3 w-3 rounded-full bg-primary border-2 border-white dark:border-[#121212]" />
-          </div>
-          <h3 className="text-[18px] font-bold text-fg">¡Todo en orden!</h3>
-          <p className="mt-2 text-[13px] text-gray-400 max-w-sm leading-relaxed">
-            {activeFilter === "unread"
-              ? "No tienes notificaciones pendientes. Te avisaremos si algo cambia."
-              : "Tu bandeja está vacía. Las actualizaciones importantes aparecerán aquí."}
-          </p>
-          {activeFilter !== "all" && (
-            <Button
-              variant="outline"
-              onClick={() => setActiveFilter("all")}
-              className="mt-6 rounded-xl text-[12px]"
-            >
-              Ver historial completo
-            </Button>
+          ) : notifications.length === 0 ? (
+            <EmptyState
+              icon={Bell}
+              title="¡Todo en orden!"
+              description={
+                activeFilter === "unread"
+                  ? "No tienes notificaciones pendientes. Te avisaremos si algo cambia."
+                  : "Tu bandeja está vacía. Las actualizaciones importantes aparecerán aquí."
+              }
+              action={
+                activeFilter !== "all" ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => setActiveFilter("all")}
+                    className="rounded-xl text-[12px]"
+                  >
+                    Ver historial completo
+                  </Button>
+                ) : undefined
+              }
+            />
+          ) : (
+            <div className="flex flex-col gap-2">
+              {notifications.map((n) => (
+                <NotificationCard
+                  key={n.id}
+                  notification={n}
+                  onRead={(id) => markAsRead.mutate(id)}
+                  onDismiss={(id) => dismiss.mutate(id)}
+                />
+              ))}
+            </div>
           )}
-        </div>
-      )}
 
-      {/* Legend */}
-      {notifications.length > 0 && (
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 px-1">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-primary" />
-            <span className="text-[12px] text-gray-400">Sin leer</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-gray-200 dark:bg-gray-700" />
-            <span className="text-[12px] text-gray-400">Leída</span>
-          </div>
-          <span className="text-[12px] text-gray-300 dark:text-gray-600 ml-auto">
-            Las notificaciones se eliminan automáticamente después de 30 días.
-          </span>
-        </div>
-      )}
+          {notifications.length > 0 && (
+            <p className="text-[11px] text-fg-muted px-1 mt-2">
+              Las notificaciones se eliminan automáticamente después de 30 días.
+            </p>
+          )}
+        </TwoColumnLayout.Main>
+
+        <TwoColumnLayout.Aside>
+          <PreferencesPanel />
+        </TwoColumnLayout.Aside>
+      </TwoColumnLayout>
     </div>
   );
 };
