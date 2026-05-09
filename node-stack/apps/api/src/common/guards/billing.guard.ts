@@ -55,7 +55,7 @@ export class BillingGuard implements CanActivate {
       throw new ForbiddenException("Active subscription required to use this feature.");
     }
 
-    const limits = PLAN_LIMITS[planId] || PLAN_LIMITS[DEFAULT_PLAN];
+    const limits = PLAN_LIMITS[planId] ?? PLAN_LIMITS[DEFAULT_PLAN]!;
 
     if (usage >= limits.maxTokensPerMonth) {
       throw new ForbiddenException(

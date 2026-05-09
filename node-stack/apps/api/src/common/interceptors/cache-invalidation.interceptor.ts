@@ -44,7 +44,7 @@ export class CacheInvalidationInterceptor implements NestInterceptor {
       tap(async () => {
         if (workspaceId) {
           for (const pattern of patterns) {
-            await this.cacheService.invalidate(
+            await this.cacheService.invalidateAndBroadcast(
               pattern.replace("{workspaceId}", workspaceId),
               workspaceId,
             );

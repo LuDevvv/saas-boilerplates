@@ -11,6 +11,7 @@
     "experimentalDecorators": true,
     "strict": true,
     "strictPropertyInitialization": false,
+    "noUncheckedIndexedAccess": true,
     "skipLibCheck": true,
     "noImplicitAny": false,
     "types": [

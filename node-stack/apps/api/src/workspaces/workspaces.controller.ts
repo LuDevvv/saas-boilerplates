@@ -150,7 +150,7 @@ export class WorkspacesController {
     const forwarded = req.headers["x-forwarded-for"];
     const ip =
       typeof forwarded === "string" && forwarded.length > 0
-        ? forwarded.split(",")[0].trim()
+        ? (forwarded.split(",")[0] ?? "").trim()
         : req.ip;
     await this.workspaceDeletionService.closeWorkspace(
       workspaceId,

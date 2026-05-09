@@ -161,11 +161,11 @@ export class MetricsService implements OnModuleInit {
         "paused",
       );
 
-      this.queueJobsTotal.set({ queue: name, status: "active" }, counts.active);
-      this.queueJobsTotal.set({ queue: name, status: "waiting" }, counts.waiting);
-      this.queueJobsTotal.set({ queue: name, status: "completed" }, counts.completed);
-      this.queueJobsTotal.set({ queue: name, status: "failed" }, counts.failed);
-      this.queueJobsTotal.set({ queue: name, status: "delayed" }, counts.delayed);
+      this.queueJobsTotal.set({ queue: name, status: "active" }, counts.active ?? 0);
+      this.queueJobsTotal.set({ queue: name, status: "waiting" }, counts.waiting ?? 0);
+      this.queueJobsTotal.set({ queue: name, status: "completed" }, counts.completed ?? 0);
+      this.queueJobsTotal.set({ queue: name, status: "failed" }, counts.failed ?? 0);
+      this.queueJobsTotal.set({ queue: name, status: "delayed" }, counts.delayed ?? 0);
     }
     
     return this.registry.metrics();

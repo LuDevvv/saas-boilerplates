@@ -1,9 +1,18 @@
-import { Injectable, Optional, OnModuleDestroy } from "@nestjs/common";
-import { Redis } from "ioredis";
+import { Injectable, Optional, OnModuleDestroy, OnModuleInit, Logger } from "@nestjs/common";
 import { recordCacheHit, recordCacheMiss } from "@node-stack/utils";
+import { Redis } from "ioredis";
+
+/** Channel used to broadcast cache invalidation across replicas. */
+const INVALIDATION_CHANNEL = "__cache_invalidation__";
+
+interface InvalidationMessage {
+  pattern: string;
+  tenantId?: string;
+}
 
 @Injectable()
-export class CacheService implements OnModuleDestroy {
+export class CacheService implements OnModuleInit, OnModuleDestroy {
+  private readonly logger = new Logger(CacheService.name);
   private client: Redis;
   private namespace: string;
   private ttlDefault: number;
@@ -18,6 +27,21 @@ export class CacheService implements OnModuleDestroy {
     this.ttlDefault = ttlDefault;
     this.client = new Redis(url, {
       maxRetriesPerRequest: null,
+    });
+  }
+
+  async onModuleInit(): Promise<void> {
+    // Subscribe to invalidation broadcasts from other replicas.
+    await this.subscribe(INVALIDATION_CHANNEL, (raw) => {
+      try {
+        const msg = JSON.parse(raw) as InvalidationMessage;
+        // Fire-and-forget; errors logged but not re-thrown so the subscription stays alive.
+        this.invalidate(msg.pattern, msg.tenantId).catch((err: unknown) => {
+          this.logger.warn(`Remote cache invalidation failed: ${err instanceof Error ? err.message : String(err)}`);
+        });
+      } catch {
+        this.logger.warn(`Malformed cache invalidation message: ${raw}`);
+      }
     });
   }
 
@@ -98,6 +122,16 @@ export class CacheService implements OnModuleDestroy {
       await this.client.del(...toDelete);
     }
   }
+  /**
+   * Invalidate a key pattern locally AND broadcast the invalidation to all
+   * other replicas via Redis pub/sub so their caches stay coherent.
+   */
+  async invalidateAndBroadcast(pattern: string, tenantId?: string): Promise<void> {
+    await this.invalidate(pattern, tenantId);
+    const msg: InvalidationMessage = { pattern, tenantId };
+    await this.publish(INVALIDATION_CHANNEL, msg);
+  }
+
   async publish(channel: string, message: unknown): Promise<void> {
     const data = typeof message === 'string' ? message : JSON.stringify(message);
     const prefixedChannel = this.namespace ? `${this.namespace}:${channel}` : channel;
