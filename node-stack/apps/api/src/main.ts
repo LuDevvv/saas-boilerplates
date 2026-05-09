@@ -1,5 +1,9 @@
 import 'reflect-metadata';
 
+import { writeFileSync } from 'fs';
+import { join } from 'path';
+import { fileURLToPath } from 'url';
+
 import { Logger as NestLogger, UnprocessableEntityException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
@@ -129,7 +133,19 @@ async function bootstrap(): Promise<void> {
   // Global JSON body parser (excluding webhook path which uses raw body)
 
   // Swagger configuration
-  setupSwagger(app);
+  const openApiDoc = setupSwagger(app);
+
+  // When GENERATE_OPENAPI=true: write spec to disk and exit cleanly.
+  // Used by `pnpm generate:types` to produce the api-client schema.
+  if (process.env.GENERATE_OPENAPI === 'true') {
+    const __dirname = fileURLToPath(new URL('.', import.meta.url));
+    // dist/src → dist → apps/api
+    const specPath = join(__dirname, '..', '..', 'openapi-spec.json');
+    writeFileSync(specPath, JSON.stringify(openApiDoc, null, 2));
+    logger.log(`OpenAPI spec written to ${specPath}`);
+    await app.close();
+    process.exit(0);
+  }
 
   const port = process.env.PORT ?? 4000;
 

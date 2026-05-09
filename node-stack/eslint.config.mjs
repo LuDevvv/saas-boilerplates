@@ -18,6 +18,8 @@ export default [
       '**/*.mjs',
       '**/*.d.ts',
       '**/coverage/**',
+      // Auto-generated OpenAPI schema — do not lint
+      'packages/api-client/src/schema.ts',
     ],
   },
   {

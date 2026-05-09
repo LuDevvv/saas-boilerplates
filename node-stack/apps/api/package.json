@@ -12,7 +12,7 @@
         "start": "node dist/main.js",
         "start:local": "node --env-file=../../.env dist/main.js",
         "db:migrate": "drizzle-kit migrate",
-        "openapi:export": "node scripts/generate-openapi-spec.js",
+        "openapi:export": "node --import tsx scripts/generate-openapi-spec.ts",
         "test": "vitest",
         "test:unit": "vitest run --project=api-unit",
         "test:cov": "vitest run --coverage",

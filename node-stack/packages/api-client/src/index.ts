@@ -1,4 +1,8 @@
 export * from "./client.js";
+// Generated OpenAPI schema types (auto-generated — do not edit directly).
+// Regenerate with: pnpm --filter @node-stack/api-client generate:types
+export type { paths, operations, components } from "./schema.js";
+
 export * from "./auth.js";
 export * from "./workspace.js";
 export * from "./billing.js";

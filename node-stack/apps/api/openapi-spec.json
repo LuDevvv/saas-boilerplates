@@ -1,0 +1,4782 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/jobs/queues": {
+      "get": {
+        "operationId": "JobsController_getQueueStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Queue statistics"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get all queue stats (Admin only)",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/v1/jobs/queues/{queueName}": {
+      "get": {
+        "operationId": "JobsController_getQueueStatsByName",
+        "parameters": [
+          {
+            "name": "queueName",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Queue statistics"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get stats for a specific queue (Admin only)",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/v1/jobs/{queueName}/{jobId}": {
+      "get": {
+        "operationId": "JobsController_getJobStatus",
+        "parameters": [
+          {
+            "name": "queueName",
+            "required": true,
+            "in": "query",
+            "description": "Queue name (e.g., ai, notifications, outbox)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "jobId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Job status"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get a specific job status (Admin only)",
+        "tags": [
+          "jobs"
+        ]
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "description": "Creates a new user account with email and password. Password must be at least 8 characters.",
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User registered successfully"
+          },
+          "400": {
+            "description": "Email already in use or validation failed"
+          }
+        },
+        "summary": "Register a new user",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "description": "Authenticates a user and returns a JWT access token and refresh token. Handles 2FA challenge if enabled.",
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful. May return a tempToken if 2FA is required."
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        },
+        "summary": "Login with email and password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "description": "Exchange a valid refresh token for a new access token and a rotated refresh token.",
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tokens rotated successfully"
+          },
+          "401": {
+            "description": "Invalid or expired refresh token"
+          }
+        },
+        "summary": "Refresh access token",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "description": "Invalidates the current session and its refresh token.",
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Logged out successfully"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Logout current session",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "description": "Returns the detailed profile of the currently authenticated user.",
+        "operationId": "AuthController_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "User profile retrieved"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get current user profile",
+        "tags": [
+          "auth"
+        ]
+      },
+      "delete": {
+        "description": "Soft-deletes the current user. Re-authentication via password is required. Sessions are revoked immediately. After 30 days the cron anonymizes PII.",
+        "operationId": "AuthController_closeAccount",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Account closed"
+          },
+          "401": {
+            "description": "Wrong password or no token"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Close current user account",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/profile": {
+      "patch": {
+        "description": "Updates the profile information for the currently authenticated user.",
+        "operationId": "AuthController_updateProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User profile updated"
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update current user profile",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/sessions": {
+      "get": {
+        "description": "Returns a paginated list of all active sessions (devices/browsers) for the current user.",
+        "operationId": "AuthController_getSessions",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Opaque cursor returned by the previous page",
+            "schema": {
+              "example": "eyJpZCI6ImFiYzEyMyJ9",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Page size; min 1, max 100",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "exclusiveMaximum": false,
+              "exclusiveMinimum": false,
+              "default": 20,
+              "example": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of sessions"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List active sessions",
+        "tags": [
+          "auth"
+        ]
+      },
+      "delete": {
+        "description": "Invalidates all active sessions for the current user except the one making the request.",
+        "operationId": "AuthController_revokeAllSessions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "All other sessions revoked"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Revoke all other sessions",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/sessions/{id}": {
+      "delete": {
+        "description": "Invalidates a specific session by ID. If the current session is revoked, the user will be logged out.",
+        "operationId": "AuthController_revokeSession",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Session revoked"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Revoke a specific session",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/2fa/enable": {
+      "post": {
+        "description": "Generates a TOTP secret and a QR code URL for the user to scan with their authenticator app.",
+        "operationId": "AuthController_enable2fa",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "2FA secret and QR code generated"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Enable 2FA (Phase 1)",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/2fa/verify": {
+      "post": {
+        "description": "Verifies the TOTP code from the app and permanently enables 2FA for the account.",
+        "operationId": "AuthController_verify2fa",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Verify2faDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "2FA successfully enabled"
+          },
+          "400": {
+            "description": "Invalid TOTP code"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Verify and Activate 2FA",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/2fa/disable": {
+      "post": {
+        "description": "Removes two-factor authentication from the user's account.",
+        "operationId": "AuthController_disable2fa",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "2FA successfully disabled"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Disable 2FA",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/login/2fa": {
+      "post": {
+        "description": "Finalizes the login process by verifying the TOTP code using the temporary token provided during the login step.",
+        "operationId": "AuthController_login2fa",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login2faDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful"
+          },
+          "401": {
+            "description": "Invalid or expired temp token / TOTP code"
+          }
+        },
+        "summary": "Complete Login with 2FA",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/forgot-password": {
+      "post": {
+        "description": "Sends a password reset email if the user exists.",
+        "operationId": "AuthController_forgotPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoveryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "If the email was found, a recovery link was sent."
+          }
+        },
+        "summary": "Request password reset",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/reset-password": {
+      "post": {
+        "description": "Sets a new password using a valid reset token.",
+        "operationId": "AuthController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password reset successfully."
+          }
+        },
+        "summary": "Reset password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/change-password": {
+      "post": {
+        "description": "Updates the current user's password. Requires the current password for verification.",
+        "operationId": "AuthController_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password changed successfully."
+          },
+          "401": {
+            "description": "Unauthorized or invalid current password"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Change password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/email/verification-link": {
+      "post": {
+        "description": "Generates and sends an email verification link to the logged-in user.",
+        "operationId": "AuthController_sendVerificationEmail",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Verification email sent if not already verified."
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Send verification email",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/email/verify": {
+      "post": {
+        "description": "Confirms a user's email address using a valid verification token.",
+        "operationId": "AuthController_verifyEmail",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Email verified successfully."
+          }
+        },
+        "summary": "Verify email address",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/audit-logs": {
+      "get": {
+        "description": "Returns recent security-related actions for the current user, cursor-paginated.",
+        "operationId": "AuthController_getAuditLogs",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Opaque cursor returned by the previous page",
+            "schema": {
+              "example": "eyJpZCI6ImFiYzEyMyJ9",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Page size; min 1, max 100",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "exclusiveMaximum": false,
+              "exclusiveMinimum": false,
+              "default": 20,
+              "example": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of audit logs."
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get security audit logs",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/google": {
+      "get": {
+        "description": "Redirects the user to Google to start the OAuth2 flow. Links to existing accounts if emails match.",
+        "operationId": "AuthController_googleAuth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Initiate Google OAuth",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/github": {
+      "get": {
+        "description": "Redirects the user to GitHub to start the OAuth2 flow. Links to existing accounts if emails match.",
+        "operationId": "AuthController_githubAuth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Initiate GitHub OAuth",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/api-keys": {
+      "post": {
+        "description": "Generates a unique API key for programmatic access. Use with Header X-API-KEY.",
+        "operationId": "ApiKeysController_create",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateApiKeyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "API Key created successfully"
+          },
+          "403": {
+            "description": "Forbidden - Insufficient permissions"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a new API Key",
+        "tags": [
+          "api-keys"
+        ]
+      },
+      "get": {
+        "description": "Returns a list of non-revoked API keys for the current workspace context.",
+        "operationId": "ApiKeysController_list",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of API keys retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List active API Keys",
+        "tags": [
+          "api-keys"
+        ]
+      }
+    },
+    "/api/v1/api-keys/{id}": {
+      "delete": {
+        "description": "Permanently disables an API key. Once revoked, it cannot be used for authentication.",
+        "operationId": "ApiKeysController_revoke",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "API Key revoked successfully"
+          },
+          "404": {
+            "description": "API Key not found or does not belong to workspace"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Revoke an API Key",
+        "tags": [
+          "api-keys"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{id}/api-keys": {
+      "post": {
+        "description": "Creates a new API key scoped to this specific workspace. Requires ADMIN role.",
+        "operationId": "WorkspacesController_createApiKey",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateApiKeyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "API Key generated successfully"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Generate API key for workspace",
+        "tags": [
+          "workspaces"
+        ]
+      },
+      "get": {
+        "operationId": "WorkspacesController_listApiKeys",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of API keys retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List workspace API keys",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{id}/api-keys/{keyId}": {
+      "delete": {
+        "operationId": "WorkspacesController_revokeApiKey",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "keyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Key revoked successfully"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Revoke workspace API key",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/api/v1/workspaces": {
+      "post": {
+        "description": "Initializes a workspace with the current user as the OWNER.",
+        "operationId": "WorkspacesController_createWorkspace",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWorkspaceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Workspace created successfully"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a brand new workspace",
+        "tags": [
+          "workspaces"
+        ]
+      },
+      "get": {
+        "operationId": "WorkspacesController_listWorkspaces",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Opaque cursor returned by the previous page",
+            "schema": {
+              "example": "eyJpZCI6ImFiYzEyMyJ9",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Page size; min 1, max 100",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "exclusiveMaximum": false,
+              "exclusiveMinimum": false,
+              "default": 20,
+              "example": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workspaces retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List user workspaces",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{id}": {
+      "get": {
+        "operationId": "WorkspacesController_getWorkspace",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workspace details retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get workspace details",
+        "tags": [
+          "workspaces"
+        ]
+      },
+      "delete": {
+        "description": "Soft-deletes the workspace and marks all memberships as removed. After 30 days the cron hard-deletes the row. OWNER role required.",
+        "operationId": "WorkspacesController_closeWorkspace",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Workspace closed"
+          },
+          "403": {
+            "description": "Not the owner"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Close workspace",
+        "tags": [
+          "workspaces"
+        ]
+      },
+      "patch": {
+        "operationId": "WorkspacesController_updateWorkspace",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkspaceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Workspace updated successfully"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update workspace details",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{id}/members": {
+      "get": {
+        "operationId": "WorkspacesController_getMembers",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of members retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List workspace members",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{id}/members/{userId}": {
+      "patch": {
+        "operationId": "WorkspacesController_updateMemberRole",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMemberRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Member role updated"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update member role",
+        "tags": [
+          "workspaces"
+        ]
+      },
+      "delete": {
+        "operationId": "WorkspacesController_removeMember",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Member removed"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Remove member from workspace",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{id}/webhooks": {
+      "post": {
+        "operationId": "WebhooksController_create",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a new webhook endpoint",
+        "tags": [
+          "workspaces"
+        ]
+      },
+      "get": {
+        "operationId": "WebhooksController_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List webhook endpoints",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{id}/webhooks/{webhookId}": {
+      "delete": {
+        "operationId": "WebhooksController_delete",
+        "parameters": [
+          {
+            "name": "webhookId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete a webhook endpoint",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{id}/webhooks/{webhookId}/deliveries": {
+      "get": {
+        "operationId": "WebhooksController_getDeliveries",
+        "parameters": [
+          {
+            "name": "webhookId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get webhook delivery history",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{id}/webhooks/{webhookId}/test": {
+      "post": {
+        "operationId": "WebhooksController_test",
+        "parameters": [
+          {
+            "name": "webhookId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Send a test webhook event",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{id}/webhooks/{webhookId}/rotate-secret": {
+      "post": {
+        "operationId": "WebhooksController_rotateSecret",
+        "parameters": [
+          {
+            "name": "webhookId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Rotate webhook secret",
+        "tags": [
+          "workspaces"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{id}/invitations": {
+      "post": {
+        "operationId": "InvitationsController_createInvitation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Invitation created"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a workspace invitation",
+        "tags": [
+          "invitations"
+        ]
+      },
+      "get": {
+        "operationId": "InvitationsController_listWorkspaceInvitations",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invitations retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List workspace invitations",
+        "tags": [
+          "invitations"
+        ]
+      }
+    },
+    "/api/v1/workspace-invitations/pending": {
+      "get": {
+        "operationId": "InvitationsController_listPendingInvitations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Pending invitations retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List pending invitations for current user",
+        "tags": [
+          "invitations"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{id}/invitations/{invitationId}": {
+      "delete": {
+        "operationId": "InvitationsController_cancelInvitation",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invitationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invitation cancelled"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Cancel a pending invitation",
+        "tags": [
+          "invitations"
+        ]
+      }
+    },
+    "/api/v1/workspace-invitations/{token}/accept": {
+      "post": {
+        "operationId": "InvitationsController_acceptInvitation",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invitation accepted"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Accept a workspace invitation",
+        "tags": [
+          "invitations"
+        ]
+      }
+    },
+    "/api/v1/workspace-invitations/{token}": {
+      "get": {
+        "operationId": "InvitationsController_getInvitationDetails",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invitation details retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get invitation details by token",
+        "tags": [
+          "invitations"
+        ]
+      }
+    },
+    "/api/v1/billing/checkout": {
+      "post": {
+        "description": "Initializes a checkout session for the selected plan.",
+        "operationId": "BillingController_checkout",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCheckoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Checkout URL generated"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create checkout session",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/billing/webhook": {
+      "post": {
+        "description": "Accepts events from Polar. Body must be raw for signature verification.",
+        "operationId": "BillingController_webhook",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Webhook processed"
+          },
+          "401": {
+            "description": "Invalid signature"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Billing webhook listener",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/v1/billing/subscription": {
+      "get": {
+        "operationId": "BillingController_subscription",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Subscription details retrieved"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get subscription details",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/v1/billing/portal": {
+      "get": {
+        "operationId": "BillingController_portal",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer portal link retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get customer portal link",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/v1/billing/invoices": {
+      "get": {
+        "operationId": "BillingController_invoices",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invoices retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get invoices",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/v1/storage/upload/{path}": {
+      "put": {
+        "operationId": "StorageController_uploadLocal",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "0",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Handle local storage upload (Dev only)",
+        "tags": [
+          "storage"
+        ]
+      }
+    },
+    "/api/v1/storage/upload-url": {
+      "post": {
+        "description": "Generates a temporary S3 URL for direct client-side upload. Validates file size and type against context policies (avatar, attachment, export).",
+        "operationId": "StorageController_getUploadUrl",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetPresignedUrlDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Presigned URL generated successfully"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Request a presigned upload URL",
+        "tags": [
+          "storage"
+        ]
+      }
+    },
+    "/api/v1/storage/confirm-upload": {
+      "post": {
+        "description": "Verifies that the file was actually uploaded to the storage provider and updates its status in the DB.",
+        "operationId": "StorageController_confirmUpload",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Upload confirmed"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Confirm and Verify Upload",
+        "tags": [
+          "storage"
+        ]
+      }
+    },
+    "/api/v1/storage/{fileId}": {
+      "get": {
+        "operationId": "StorageController_getFile",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Download URL retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get secure download URL by file ID",
+        "tags": [
+          "storage"
+        ]
+      },
+      "delete": {
+        "operationId": "StorageController_delete",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File deletion initiated"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete file",
+        "tags": [
+          "storage"
+        ]
+      }
+    },
+    "/api/v1/analytics/workspaces/{workspaceId}/usage": {
+      "get": {
+        "operationId": "AnalyticsController_getWorkspaceUsage",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Analytics"
+        ]
+      }
+    },
+    "/api/v1/analytics/workspaces/{workspaceId}/overview": {
+      "get": {
+        "operationId": "AnalyticsController_getOverview",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Analytics"
+        ]
+      }
+    },
+    "/api/v1/analytics/workspaces/{workspaceId}/traffic": {
+      "get": {
+        "operationId": "AnalyticsController_getTraffic",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Analytics"
+        ]
+      }
+    },
+    "/api/v1/analytics/workspaces/{workspaceId}/pages": {
+      "get": {
+        "operationId": "AnalyticsController_getPages",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Analytics"
+        ]
+      }
+    },
+    "/api/v1/analytics/admin/global-stats": {
+      "get": {
+        "operationId": "AnalyticsController_getGlobalStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Analytics"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "description": "Evaluates the health of all critical infrastructure components using NestJS Terminus.",
+        "operationId": "HealthController_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The Health Check is successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "info": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {},
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Health Check is not successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "error"
+                    },
+                    "info": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        },
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Complete system health check",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/health/live": {
+      "get": {
+        "description": "Simple indicator that the API process is running.",
+        "operationId": "HealthController_liveness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Service process is alive"
+          }
+        },
+        "summary": "Liveness probe",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "description": "Indicates if the service is ready to accept traffic.",
+        "operationId": "HealthController_readiness",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "The Health Check is successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "info": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {},
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "The Health Check is not successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "error"
+                    },
+                    "info": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "error": {
+                      "type": "object",
+                      "example": {
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      },
+                      "nullable": true
+                    },
+                    "details": {
+                      "type": "object",
+                      "example": {
+                        "database": {
+                          "status": "up"
+                        },
+                        "redis": {
+                          "status": "down",
+                          "message": "Could not connect"
+                        }
+                      },
+                      "additionalProperties": {
+                        "type": "object",
+                        "required": [
+                          "status"
+                        ],
+                        "properties": {
+                          "status": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Readiness probe",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/v1/health/pgbouncer/pools": {
+      "get": {
+        "description": "Retrieves internal connection pooling metrics from PgBouncer.",
+        "operationId": "HealthController_getPgbouncerPools",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Get PgBouncer pool statistics",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/v1/ai/chat": {
+      "post": {
+        "operationId": "AiController_chat",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatCompletionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "AI completion retrieved"
+          },
+          "400": {
+            "description": "Invalid request or prompt"
+          },
+          "402": {
+            "description": "Payment required (AI credits exhausted)"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Synchronous AI chat completion",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/api/v1/ai/chat/stream": {
+      "post": {
+        "operationId": "AiController_streamChat",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatCompletionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Streaming AI chat completion",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/api/v1/ai/jobs": {
+      "post": {
+        "description": "Enqueues a background task for AI processing. Results can be retrieved via polling or webhooks.",
+        "operationId": "AiController_submitJob",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitAIJobDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Job accepted"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Submit AI job",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/api/v1/ai/usage": {
+      "get": {
+        "operationId": "AiController_getUsage",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get current AI usage for the workspace",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/api/v1/ai/jobs/{jobId}": {
+      "get": {
+        "operationId": "AiController_getJobResult",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique key to ensure request idempotency. Required for write operations.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "jobId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get job status",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/api/v1/metrics": {
+      "get": {
+        "operationId": "MetricsController_getMetrics",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Metrics"
+        ]
+      }
+    },
+    "/api/v1/notifications": {
+      "get": {
+        "operationId": "NotificationsController_listNotifications",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Opaque cursor returned by the previous page",
+            "schema": {
+              "example": "eyJpZCI6ImFiYzEyMyJ9",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Page size; min 1, max 100",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "exclusiveMaximum": false,
+              "exclusiveMinimum": false,
+              "default": 20,
+              "example": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List notifications for current user",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/unread-count": {
+      "get": {
+        "operationId": "NotificationsController_getUnreadCount",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get count of unread notifications",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/{id}/read": {
+      "patch": {
+        "operationId": "NotificationsController_markAsRead",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark a notification as read",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/mark-all-read": {
+      "post": {
+        "operationId": "NotificationsController_markAllAsRead",
+        "parameters": [
+          {
+            "name": "workspaceId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark all notifications as read",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/{id}": {
+      "delete": {
+        "operationId": "NotificationsController_deleteNotification",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete/Dismiss a notification",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/v1/notifications/test": {
+      "post": {
+        "operationId": "NotificationsController_sendTestNotification",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Send a test notification (Admin only)",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/api/v1/webhooks/{provider}": {
+      "post": {
+        "description": "Universal endpoint for receiving webhooks from external providers (Stripe, Polar, Clerk, etc.). Validates signatures, deduplicates, and emits normalised events on the internal bus.",
+        "operationId": "WebhooksController_receiveWebhook",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "description": "The webhook provider (e.g. stripe, polar, clerk, generic)",
+            "schema": {
+              "example": "stripe",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Webhook received and processed"
+          },
+          "401": {
+            "description": "Invalid webhook signature"
+          },
+          "404": {
+            "description": "Unknown webhook provider"
+          }
+        },
+        "summary": "Receive inbound webhook",
+        "tags": [
+          "webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/logs/recent": {
+      "get": {
+        "description": "Returns recent inbound webhook logs for debugging. Requires authentication.",
+        "operationId": "WebhooksController_getRecentLogs",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": false,
+            "in": "query",
+            "description": "Filter by provider",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of logs to return (default: 50)",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recent webhook logs"
+          }
+        },
+        "summary": "List recent webhook logs",
+        "tags": [
+          "webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/logs/failed": {
+      "get": {
+        "description": "Returns failed/rejected webhook logs for investigation and potential replay.",
+        "operationId": "WebhooksController_getFailedLogs",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": false,
+            "in": "query",
+            "description": "Filter by provider",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Number of logs to return (default: 50)",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Failed webhook logs"
+          }
+        },
+        "summary": "List failed webhook logs",
+        "tags": [
+          "webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/logs/{id}": {
+      "get": {
+        "description": "Returns a single webhook log entry with full payload.",
+        "operationId": "WebhooksController_getLogById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "The webhook log UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Webhook log details"
+          }
+        },
+        "summary": "Get webhook log by ID",
+        "tags": [
+          "webhooks"
+        ]
+      }
+    },
+    "/api/v1/webhooks/providers": {
+      "get": {
+        "description": "Returns the list of currently registered webhook provider handlers.",
+        "operationId": "WebhooksController_getProviders",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of provider names"
+          }
+        },
+        "summary": "List registered webhook providers",
+        "tags": [
+          "webhooks"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{id}/portability": {
+      "post": {
+        "description": "Triggers a background job to export all workspace data for HIPAA/compliance.",
+        "operationId": "PortabilityController_requestExport",
+        "parameters": [],
+        "responses": {
+          "202": {
+            "description": "Export request accepted and queued"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Request workspace data export",
+        "tags": [
+          "portability"
+        ]
+      },
+      "get": {
+        "operationId": "PortabilityController_listRequests",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of export requests retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List all export requests for this workspace",
+        "tags": [
+          "portability"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{id}/portability/{requestId}": {
+      "get": {
+        "operationId": "PortabilityController_getRequest",
+        "parameters": [
+          {
+            "name": "requestId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Export request details retrieved"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get status and details of a specific export request",
+        "tags": [
+          "portability"
+        ]
+      }
+    },
+    "/api/v1/workspaces/{id}/portability/{requestId}/download": {
+      "get": {
+        "description": "Returns a temporary signed URL valid for 1 hour.",
+        "operationId": "PortabilityController_download",
+        "parameters": [
+          {
+            "name": "requestId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Signed URL generated successfully"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get a secure download link for the export package",
+        "tags": [
+          "portability"
+        ]
+      }
+    },
+    "/api/v1/marketing/waitlist": {
+      "post": {
+        "operationId": "MarketingController_joinWaitlist",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinWaitlistDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successfully joined the waitlist"
+          },
+          "400": {
+            "description": "Invalid email or data"
+          }
+        },
+        "summary": "Join the product waitlist",
+        "tags": [
+          "marketing"
+        ]
+      }
+    },
+    "/api/v1/marketing/waitlist/count": {
+      "get": {
+        "operationId": "MarketingController_getWaitlistCount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Count retrieved"
+          }
+        },
+        "summary": "Get total waitlist count",
+        "tags": [
+          "marketing"
+        ]
+      }
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "operationId": "UsersAdminController_listUsers",
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of users retrieved"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden: Admin access required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List all users (Admin only)",
+        "tags": [
+          "admin-users"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}/role": {
+      "patch": {
+        "operationId": "UsersAdminController_updateUserRole",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User role updated"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden: Admin access required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update user role (Admin only)",
+        "tags": [
+          "admin-users"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}/status": {
+      "patch": {
+        "operationId": "UsersAdminController_updateUserStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User status updated"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden: Admin access required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Suspend or ban a user (Admin only)",
+        "tags": [
+          "admin-users"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{id}/impersonate": {
+      "post": {
+        "operationId": "UsersAdminController_impersonate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User ID to impersonate",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Impersonation session created"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden: Admin access required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Impersonate a user (Admin only)",
+        "tags": [
+          "admin-users"
+        ]
+      }
+    },
+    "/api/v1/admin/audit-logs": {
+      "get": {
+        "operationId": "AuditAdminController_listAuditLogs",
+        "parameters": [
+          {
+            "name": "action",
+            "required": false,
+            "in": "query",
+            "description": "Filter by action (partial match)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "workspaceId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "ISO date",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "ISO date",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audit logs retrieved"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden: Admin access required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List all audit logs cross-workspace (Admin only)",
+        "tags": [
+          "admin-audit"
+        ]
+      }
+    },
+    "/api/v1/admin/workspaces": {
+      "get": {
+        "operationId": "WorkspacesAdminController_listWorkspaces",
+        "parameters": [
+          {
+            "name": "includeDeleted",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workspaces list"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden: Admin access required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List all workspaces (Admin only)",
+        "tags": [
+          "admin-workspaces"
+        ]
+      }
+    },
+    "/api/v1/admin/workspaces/{id}": {
+      "get": {
+        "operationId": "WorkspacesAdminController_getWorkspace",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Workspace ID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Workspace detail"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden: Admin access required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get workspace detail (Admin only)",
+        "tags": [
+          "admin-workspaces"
+        ]
+      }
+    },
+    "/api/v1/admin/config": {
+      "get": {
+        "operationId": "ConfigAdminController_getAllConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Configuration retrieved"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden: Admin access required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get all dynamic configuration (Admin only)",
+        "tags": [
+          "admin-config"
+        ]
+      },
+      "post": {
+        "operationId": "ConfigAdminController_setConfig",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetConfigDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Configuration updated"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden: Admin access required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Set dynamic configuration (Admin only)",
+        "tags": [
+          "admin-config"
+        ]
+      }
+    },
+    "/api/v1/admin/config/refresh": {
+      "post": {
+        "operationId": "ConfigAdminController_refreshCache",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Cache refreshed"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden: Admin access required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Manually refresh configuration cache (Admin only)",
+        "tags": [
+          "admin-config"
+        ]
+      }
+    },
+    "/api/v1/admin/stats/overview": {
+      "get": {
+        "operationId": "SystemStatsController_getOverview",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Full control-center stats"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden: Admin access required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Rich system-wide overview stats (Admin only)",
+        "tags": [
+          "admin-stats"
+        ]
+      }
+    },
+    "/api/v1/admin/stats/trends": {
+      "get": {
+        "operationId": "SystemStatsController_getTrends",
+        "parameters": [
+          {
+            "name": "days",
+            "required": false,
+            "in": "query",
+            "description": "Default 30",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Trend series data"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden: Admin access required"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "30-day trend data for charts (Admin only)",
+        "tags": [
+          "admin-stats"
+        ]
+      }
+    },
+    "/api/v1/admin/feature-flags": {
+      "get": {
+        "operationId": "FeatureFlagsAdminController_listFlags",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Feature flags list"
+          }
+        },
+        "summary": "List all feature flags (Admin only)",
+        "tags": [
+          "admin-feature-flags"
+        ]
+      }
+    },
+    "/api/v1/admin/feature-flags/{flagKey}/enable": {
+      "post": {
+        "operationId": "FeatureFlagsAdminController_enable",
+        "parameters": [
+          {
+            "name": "flagKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "admin-feature-flags"
+        ]
+      }
+    },
+    "/api/v1/admin/feature-flags/{flagKey}/disable": {
+      "post": {
+        "operationId": "FeatureFlagsAdminController_disable",
+        "parameters": [
+          {
+            "name": "flagKey",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "admin-feature-flags"
+        ]
+      }
+    },
+    "/api/v1/ticket": {
+      "post": {
+        "operationId": "TicketController_create",
+        "parameters": [
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTicketDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ticket created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed"
+          },
+          "403": {
+            "description": "Insufficient permissions"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Create a new ticket",
+        "tags": [
+          "ticket"
+        ]
+      },
+      "get": {
+        "operationId": "TicketController_list",
+        "parameters": [
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending",
+                "active",
+                "inactive",
+                "deleted"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "exclusiveMaximum": false,
+              "exclusiveMinimum": false,
+              "default": 20,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "tickets list retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TicketResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "List tickets for workspace",
+        "tags": [
+          "ticket"
+        ]
+      }
+    },
+    "/api/v1/ticket/{id}": {
+      "get": {
+        "operationId": "TicketController_get",
+        "parameters": [
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Ticket UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ticket retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ticket not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Get ticket by ID",
+        "tags": [
+          "ticket"
+        ]
+      },
+      "patch": {
+        "operationId": "TicketController_update",
+        "parameters": [
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Ticket UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTicketDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ticket updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TicketResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Ticket not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Update ticket",
+        "tags": [
+          "ticket"
+        ]
+      },
+      "delete": {
+        "operationId": "TicketController_delete",
+        "parameters": [
+          {
+            "name": "x-workspace-id",
+            "in": "header",
+            "description": "The ID of the workspace context",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Ticket UUID",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ticket deleted successfully"
+          },
+          "404": {
+            "description": "Ticket not found"
+          }
+        },
+        "security": [
+          {
+            "JWT-auth": []
+          }
+        ],
+        "summary": "Delete ticket (soft delete)",
+        "tags": [
+          "ticket"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Node Stack API",
+    "description": "Production-ready Node.js SaaS Backend with NestJS. Explore the API using Swagger or Scalar Reference.",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "JWT-auth": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "description": "Enter JWT token"
+      },
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-KEY",
+        "description": "Enter your workspace API key"
+      }
+    },
+    "schemas": {
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "description": "Correo electrónico del usuario",
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "description": "Contraseña del usuario",
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128,
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)"
+          },
+          "firstName": {
+            "description": "User's first name",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "lastName": {
+            "description": "User's last name",
+            "type": "string",
+            "maxLength": 100
+          },
+          "phone": {
+            "description": "User's phone number",
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "firstName"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "description": "Correo electrónico del usuario",
+            "type": "string",
+            "format": "email",
+            "example": "user@example.com"
+          },
+          "password": {
+            "description": "Contraseña del usuario",
+            "type": "string",
+            "minLength": 1,
+            "example": "Password123!"
+          },
+          "rememberMe": {
+            "description": "Mantenerme conectado",
+            "type": "boolean",
+            "default": false,
+            "example": true
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "RefreshDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "description": "Refresh token obtained during login",
+            "type": "string",
+            "minLength": 1,
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "UpdateProfileDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "description": "User's first name",
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100,
+            "example": "John"
+          },
+          "lastName": {
+            "description": "User's last name",
+            "type": "string",
+            "maxLength": 100,
+            "example": "Doe"
+          },
+          "phone": {
+            "description": "User's phone number",
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 20,
+            "example": "+1234567890"
+          },
+          "avatarUrl": {
+            "description": "User's avatar URL",
+            "type": "string",
+            "format": "uri",
+            "example": "https://example.com/avatar.png"
+          }
+        }
+      },
+      "Verify2faDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "description": "6-digit TOTP code from authenticator app",
+            "type": "string",
+            "pattern": "^\\d{6}$",
+            "example": "123456"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "Login2faDto": {
+        "type": "object",
+        "properties": {
+          "tempToken": {
+            "description": "Temporary token from initial login step",
+            "type": "string",
+            "minLength": 1,
+            "example": "temp_token_123"
+          },
+          "token": {
+            "description": "6-digit TOTP code",
+            "type": "string",
+            "pattern": "^\\d{6}$",
+            "example": "123456"
+          },
+          "rememberMe": {
+            "description": "Keep me logged in",
+            "type": "boolean",
+            "default": false,
+            "example": true
+          }
+        },
+        "required": [
+          "tempToken",
+          "token"
+        ]
+      },
+      "RecoveryDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "description": "Correo para enviar el enlace de recuperación",
+            "type": "string",
+            "format": "email",
+            "example": "user@example.com"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "description": "Token de recuperación",
+            "type": "string",
+            "minLength": 1,
+            "example": "reset_token_123"
+          },
+          "newPassword": {
+            "description": "New password for the account",
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 128,
+            "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)",
+            "example": "NewPassword123!"
+          }
+        },
+        "required": [
+          "token",
+          "newPassword"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "currentPassword": {
+            "type": "string",
+            "description": "Current password for verification",
+            "minLength": 8
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "New password to be set",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ]
+      },
+      "VerifyEmailDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "description": "Verification token from email",
+            "type": "string",
+            "example": "verify_token_123"
+          },
+          "email": {
+            "description": "User email address",
+            "type": "string",
+            "format": "email",
+            "example": "user@example.com"
+          },
+          "code": {
+            "description": "6-digit verification code",
+            "type": "string",
+            "example": "123456"
+          }
+        }
+      },
+      "CreateApiKeyDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "A descriptive name for the API key",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "example": "Production App"
+          },
+          "expiresAt": {
+            "description": "Optional expiration date",
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-12-31T23:59:59Z"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "CreateWorkspaceDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Display name of the workspace",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "example": "Engineering Team"
+          },
+          "slug": {
+            "description": "URL-friendly unique identifier",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "pattern": "^[a-z0-9-]+$",
+            "example": "engineering-team"
+          }
+        },
+        "required": [
+          "name",
+          "slug"
+        ]
+      },
+      "UpdateWorkspaceDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "example": "Acme Corp"
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "pattern": "^[a-z0-9-]+$",
+            "example": "acme-corp"
+          },
+          "logoUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true,
+            "example": "https://example.com/logo.png"
+          }
+        }
+      },
+      "UpdateMemberRoleDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "description": "New role for the workspace member",
+            "type": "string",
+            "enum": [
+              "admin",
+              "member",
+              "guest"
+            ],
+            "example": "admin"
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "InviteMemberDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "description": "Email of the person to invite",
+            "type": "string",
+            "format": "email",
+            "example": "new-member@example.com"
+          },
+          "role": {
+            "description": "Role to assign to the invited user",
+            "type": "string",
+            "enum": [
+              "admin",
+              "member",
+              "guest"
+            ],
+            "default": "member",
+            "example": "member"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "CreateCheckoutDto": {
+        "type": "object",
+        "properties": {
+          "planId": {
+            "type": "string",
+            "minLength": 1,
+            "example": "pro_plan_123",
+            "description": "The ID of the plan to subscribe to"
+          },
+          "variantId": {
+            "type": "string",
+            "example": "monthly",
+            "description": "Optional variant ID (e.g. monthly/yearly)"
+          },
+          "successUrl": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://app.com/success",
+            "description": "URL to redirect after successful payment"
+          },
+          "cancelUrl": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://app.com/billing",
+            "description": "URL to redirect if payment is cancelled"
+          }
+        },
+        "required": [
+          "planId",
+          "successUrl",
+          "cancelUrl"
+        ]
+      },
+      "GetPresignedUrlDto": {
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "description": "Original name of the file",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "pattern": "^[a-zA-Z0-9._\\-\\s]+$",
+            "example": "profile.jpg"
+          },
+          "mimeType": {
+            "description": "IANA media type",
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 100,
+            "example": "image/jpeg"
+          },
+          "fileSize": {
+            "description": "Size of the file in bytes",
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 104857600,
+            "exclusiveMaximum": false,
+            "example": 1024576
+          },
+          "context": {
+            "description": "The context/bucket for the upload",
+            "type": "string",
+            "enum": [
+              "avatar",
+              "attachment",
+              "export"
+            ],
+            "example": "avatar"
+          }
+        },
+        "required": [
+          "fileName",
+          "mimeType",
+          "fileSize",
+          "context"
+        ]
+      },
+      "ChatMessageDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "example": "user",
+            "enum": [
+              "system",
+              "user",
+              "assistant"
+            ]
+          },
+          "content": {
+            "type": "string",
+            "example": "Hello, AI!"
+          }
+        },
+        "required": [
+          "role",
+          "content"
+        ]
+      },
+      "ChatCompletionDto": {
+        "type": "object",
+        "properties": {
+          "messages": {
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "system",
+                    "user",
+                    "assistant"
+                  ]
+                },
+                "content": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "role",
+                "content"
+              ]
+            },
+            "type": "array"
+          },
+          "model": {
+            "type": "string",
+            "example": "gpt-4o"
+          },
+          "maxTokens": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "example": 1000
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": false,
+            "maximum": 2,
+            "exclusiveMaximum": false,
+            "example": 0.7
+          }
+        },
+        "required": [
+          "messages"
+        ]
+      },
+      "SubmitAIJobDto": {
+        "type": "object",
+        "properties": {
+          "jobType": {
+            "description": "The type of task for the AI processor",
+            "type": "string",
+            "enum": [
+              "summarize-document",
+              "classify-ticket",
+              "generate-description",
+              "analyze-usage",
+              "custom"
+            ],
+            "example": "summarize-document"
+          },
+          "prompt": {
+            "description": "The main instruction or query for the AI",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10000,
+            "example": "Please summarize this report."
+          },
+          "context": {
+            "description": "Additional text or document content to analyze",
+            "type": "string",
+            "maxLength": 50000,
+            "example": "The report content is..."
+          },
+          "model": {
+            "description": "Specific AI model to use",
+            "type": "string",
+            "example": "gpt-4o"
+          }
+        },
+        "required": [
+          "jobType",
+          "prompt"
+        ]
+      },
+      "JoinWaitlistDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "user@example.com",
+            "description": "Email address to join the waitlist"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "John Doe",
+            "description": "Full name of the user"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 50,
+            "default": "marketing_site",
+            "example": "landing_page",
+            "description": "Source of the signup"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "UpdateUserRoleDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "admin",
+              "super_admin"
+            ],
+            "example": "admin"
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "SetConfigDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "pattern": "^[a-zA-Z0-9_:]+$",
+            "example": "maintenance_mode",
+            "description": "Config key"
+          },
+          "value": {
+            "description": "Config value (any JSON)",
+            "type": "",
+            "x-nestjs_zod-empty-type": true,
+            "example": true
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 255,
+            "example": "Disables all write operations"
+          }
+        },
+        "required": [
+          "key",
+          "value"
+        ]
+      },
+      "CreateTicketDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Name/Subject of the ticket"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Detailed description"
+          }
+        },
+        "required": [
+          "name",
+          "description"
+        ]
+      },
+      "TicketResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "object"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "active",
+              "inactive",
+              "deleted"
+            ]
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "workspaceId",
+          "name",
+          "description",
+          "status",
+          "createdBy",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpdateTicketDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "active",
+              "inactive",
+              "deleted"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

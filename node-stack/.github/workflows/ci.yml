@@ -209,6 +209,37 @@ jobs:
           path: apps/e2e/playwright-report/
           retention-days: 30
 
+  generate-types:
+    name: OpenAPI Types — Schema Freshness
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Regenerate schema from committed spec
+        run: pnpm --filter @node-stack/api-client generate:types
+
+      - name: Assert schema.ts is up to date
+        run: |
+          if ! git diff --exit-code packages/api-client/src/schema.ts; then
+            echo "❌ schema.ts is out of date. Run 'pnpm --filter @node-stack/api-client generate:types' and commit."
+            exit 1
+          fi
+          echo "✅ schema.ts is up to date."
+
   secret-scanning:
     name: Secret Scanning
     runs-on: ubuntu-latest
