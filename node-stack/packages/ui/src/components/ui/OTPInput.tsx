@@ -1,15 +1,16 @@
 import React from "react";
+
 import { cn } from "../../utils.js";
 
 interface OTPInputProps {
   length: number;
   code: string[];
   inputRefs: React.MutableRefObject<(HTMLInputElement | null)[]>;
-  // eslint-disable-next-line no-unused-vars
+   
   onChange: (index: number, value: string) => void;
-  // eslint-disable-next-line no-unused-vars
+   
   onKeyDown: (index: number, e: React.KeyboardEvent<HTMLInputElement>) => void;
-  // eslint-disable-next-line no-unused-vars
+   
   onPaste: (e: React.ClipboardEvent<HTMLInputElement>) => void;
   disabled?: boolean;
   className?: string;

@@ -1,5 +1,6 @@
-import React from "react";
 import { ChevronRight, MoreHorizontal, Home } from "lucide-react";
+import React from "react";
+
 import { cn } from "../../utils.js";
 
 export interface BreadcrumbItem {
@@ -44,7 +45,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     children: React.ReactNode;
     className?: string;
     title?: string;
-  }) => (
+  }): JSX.Element => (
     <a
       href={href}
       className={lc}

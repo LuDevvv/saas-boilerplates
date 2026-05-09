@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useRef } from "react";
 import { Phone } from "lucide-react";
+import React, { useState, useRef } from "react";
+
 import { cn } from "../../utils.js";
 
 const COUNTRIES = [
@@ -30,7 +31,7 @@ const COUNTRIES = [
   { code: "ES", dialCode: "+34", name: "España" },
 ];
 
-const CountryFlag = ({ code }: { code: string }) => {
+const CountryFlag = ({ code }: { code: string }): JSX.Element => {
   if (!code) return <Phone className="w-5 h-4 text-gray-400" />;
   return (
     <img
@@ -81,7 +82,7 @@ export const PhoneInput = ({
   onChange,
   disabled,
   className = "",
-}: PhoneInputProps) => {
+}: PhoneInputProps): JSX.Element => {
   const phoneInputRef = useRef<HTMLInputElement>(null);
 
   // Force República Dominicana
@@ -95,7 +96,7 @@ export const PhoneInput = ({
     return formatPhone(d);
   });
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const digits = stripToDigits(e.target.value).slice(0, MAX_DIGITS);
     const formatted = formatPhone(digits);
     setPhoneNumber(formatted);

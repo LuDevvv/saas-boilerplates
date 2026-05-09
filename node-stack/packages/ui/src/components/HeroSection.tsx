@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+
 import { cn } from "../utils.js";
 import { Button } from "./ui/Button.js";
 import { useGsapReveal } from "../hooks/use-gsap-reveal.js";
@@ -21,7 +22,7 @@ export function HeroSection({
   onCtaClick,
   image,
   className,
-}: HeroSectionProps) {
+}: HeroSectionProps): JSX.Element {
   const titleRef = useGsapReveal<HTMLHeadingElement>({ direction: "up", delay: 0.1 });
   const subtitleRef = useGsapReveal<HTMLParagraphElement>({ direction: "up", delay: 0.3 });
   const actionsRef = useGsapReveal<HTMLDivElement>({ direction: "up", delay: 0.5 });

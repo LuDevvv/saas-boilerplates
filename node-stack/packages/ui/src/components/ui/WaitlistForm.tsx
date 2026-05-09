@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { cn } from "../../utils.js";
+
 import { Button } from "./Button.js";
+import { cn } from "../../utils.js";
 
 export interface WaitlistFormProps {
   apiEndpoint?: string;
@@ -14,12 +15,12 @@ export function WaitlistForm({
   apiEndpoint = "/api/v1/marketing/waitlist",
   onSuccess,
   className,
-}: WaitlistFormProps) {
+}: WaitlistFormProps): JSX.Element {
   const [email, setEmail] = React.useState("");
   const [status, setStatus] = React.useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = React.useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     setStatus("loading");
     setMessage("");

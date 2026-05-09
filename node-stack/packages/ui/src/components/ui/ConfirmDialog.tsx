@@ -1,6 +1,7 @@
-import React from "react";
 import { AlertTriangle, Trash2, ShieldAlert } from "lucide-react";
-import { cn } from "../../utils.js";
+import React from "react";
+
+import { Button } from "./Button.js";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./Dialog.js";
-import { Button } from "./Button.js";
+import { cn } from "../../utils.js";
 
 export interface ConfirmDialogProps {
   isOpen: boolean;

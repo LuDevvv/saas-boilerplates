@@ -1,5 +1,6 @@
-import { FC, useRef, useState, useEffect } from "react";
 import { Trash2, Camera, Loader2 } from "lucide-react";
+import { FC, useRef, useState, useEffect } from "react";
+
 import { Avatar, AvatarImage, AvatarFallback } from "./Avatar.js";
 import { cn } from "../../utils.js";
 
@@ -40,20 +41,20 @@ export const ProfileAvatar: FC<ProfileAvatarProps> = ({
     setPreview(null);
   }, [src]);
 
-  const handleEditClick = (e: React.MouseEvent) => {
+  const handleEditClick = (e: React.MouseEvent): void => {
     e.stopPropagation();
     if (isUploading) return;
     fileInputRef.current?.click();
   };
 
-  const handleRemoveClick = (e: React.MouseEvent) => {
+  const handleRemoveClick = (e: React.MouseEvent): void => {
     e.stopPropagation();
     if (isUploading) return;
     setPreview(null);
     onImageChange?.(null);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     if (!file) return;
 

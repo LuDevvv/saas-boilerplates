@@ -35,6 +35,7 @@ export const AUDIT_ACTIONS = [
   "workspace.workspace_closed",
   "workspace.workspace_hard_deleted",
   // Billing webhooks
+  "billing.checkout_created",
   "billing.subscription_created",
   "billing.subscription_updated",
   "billing.subscription_canceled",

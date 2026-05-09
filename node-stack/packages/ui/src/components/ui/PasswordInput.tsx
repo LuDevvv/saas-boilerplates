@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Input, type InputProps } from "./Input.js";
 import { Eye, EyeOff, Check, X } from "lucide-react";
+import React, { useState, useEffect } from "react";
+
+import { Input, type InputProps } from "./Input.js";
 import { cn } from "../../utils.js";
 
 export interface PasswordInputProps extends Omit<InputProps, "type"> {
@@ -41,14 +42,14 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
       setStrength(score);
     }, [password]);
 
-    const getStrengthColor = () => {
+    const getStrengthColor = (): string => {
       if (strength === 0) return "bg-surface-hover";
       if (strength <= 1) return "bg-[#EF4F5F]";
       if (strength <= 3) return "bg-[#F4A524]";
       return "bg-[#00E6E6]";
     };
 
-    const getStrengthLabel = () => {
+    const getStrengthLabel = (): string => {
       if (strength === 0) return "";
       if (strength <= 1) return "Weak";
       if (strength <= 3) return "Fair";
@@ -117,7 +118,7 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
   }
 );
 
-const RequirementItem = ({ label, met }: { label: string; met: boolean }) => (
+const RequirementItem = ({ label, met }: { label: string; met: boolean }): JSX.Element => (
   <div className="flex items-center gap-2">
     <div className={cn(
       "flex items-center justify-center w-4 h-4 rounded-full transition-all duration-300",

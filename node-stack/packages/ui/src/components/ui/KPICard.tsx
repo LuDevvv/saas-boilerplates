@@ -1,7 +1,8 @@
-import React from "react";
 import { LucideIcon } from "lucide-react";
-import { cn } from "../../utils.js";
+import React from "react";
+
 import { Card } from "./Card.js";
+import { cn } from "../../utils.js";
 
 export interface KPICardProps {
   label: string;
@@ -18,7 +19,7 @@ export const KPICard: React.FC<KPICardProps> = ({
   value,
   icon: Icon,
   trend,
-  trendLabel,
+  trendLabel: _trendLabel,
   variant = "default",
   className,
 }) => {

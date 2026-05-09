@@ -27,7 +27,7 @@ export const detectGeoDefaults = (): GeoData => {
       
     // Default to Dominican Republic as it seems to be the user's primary market
     return { countryCode: "DO", dialCode: "+1" };
-  } catch (e) {
+  } catch {
     return { countryCode: "DO", dialCode: "+1" };
   }
 };

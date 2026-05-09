@@ -1,6 +1,7 @@
-import React, { FC } from "react";
-import { cn } from "../../utils.js";
 import { Crown, Sparkles } from "lucide-react";
+import React, { FC } from "react";
+
+import { cn } from "../../utils.js";
 
 export interface PlanBadgeProps {
   planName?: string;

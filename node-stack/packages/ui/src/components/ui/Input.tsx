@@ -1,14 +1,15 @@
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 import type { InputHTMLAttributes } from "react";
 import React, { forwardRef } from "react";
+
 import { cn } from "../../utils.js";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   success?: boolean;
   helperText?: string;
-  icon?: any;
+  icon?: React.ReactNode | React.ElementType;
   required?: boolean;
   fullWidth?: boolean;
   rightElement?: React.ReactNode;
@@ -57,12 +58,12 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           {icon && (
             <div className="absolute left-4 top-1/2 z-10 -translate-y-1/2 pointer-events-none text-fg-muted group-focus-within:text-primary transition-colors duration-300 flex items-center justify-center">
               {React.isValidElement(icon)
-                ? React.cloneElement(icon as React.ReactElement<any>, {
+                ? React.cloneElement(icon as React.ReactElement<{ size?: number; className?: string }>, {
                   size: 15,
-                  className: cn("w-[15px] h-[15px]", (icon as React.ReactElement<any>).props?.className)
+                  className: cn("w-[15px] h-[15px]", (icon as React.ReactElement<{ size?: number; className?: string }>).props?.className)
                 })
                 : (typeof icon === "function" || (typeof icon === "object" && icon !== null && ("render" in icon || "$$typeof" in icon)))
-                  ? React.createElement(icon as any, { size: 15, className: "w-[15px] h-[15px]" })
+                  ? React.createElement(icon as React.ElementType, { size: 15, className: "w-[15px] h-[15px]" })
                   : icon}
             </div>
           )}

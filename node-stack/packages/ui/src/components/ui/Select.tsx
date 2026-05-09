@@ -1,13 +1,14 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-import { cn } from "../../utils.js";
 import { ChevronDown, Search, Check } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+
+import { cn } from "../../utils.js";
 
 export interface Option {
   value: string;
   label: string;
-  icon?: any;
+  icon?: React.ReactNode | React.ElementType;
 }
 
 export interface SelectProps {
@@ -18,7 +19,7 @@ export interface SelectProps {
   placeholder?: string;
   error?: string;
   helperText?: string;
-  icon?: any;
+  icon?: React.ReactNode | React.ElementType;
   searchable?: boolean;
   fullWidth?: boolean;
   required?: boolean;
@@ -60,7 +61,7 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
     );
 
     useEffect(() => {
-      const handleClickOutside = (event: MouseEvent) => {
+      const handleClickOutside = (event: MouseEvent): void => {
         if (
           containerRef.current &&
           !containerRef.current.contains(event.target as Node)
@@ -79,19 +80,19 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
       }
     }, [isOpen, searchable]);
 
-    const handleSelect = (optionValue: string) => {
+    const handleSelect = (optionValue: string): void => {
       onChange(optionValue);
       setIsOpen(false);
       setSearchTerm("");
     };
 
-    const renderIcon = (iconSource: any) => {
+    const renderIcon = (iconSource: React.ReactNode | React.ElementType): React.ReactNode => {
       if (!iconSource) return null;
       return typeof iconSource === "function" ||
         (typeof iconSource === "object" &&
           iconSource !== null &&
           "render" in iconSource)
-        ? React.createElement(iconSource as any, { className: "w-4 h-4" })
+        ? React.createElement(iconSource as React.ElementType, { className: "w-4 h-4" })
         : iconSource;
     };
 

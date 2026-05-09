@@ -1,6 +1,7 @@
 "use client";
 
 import React, { FC, useEffect, useState } from "react";
+
 import { cn } from "../../utils.js";
 
 export interface AITypingEffectProps {
@@ -47,7 +48,7 @@ export const AITypingEffect: FC<AITypingEffectProps> = ({
   );
 
   // Define the color for each dot
-  const getColor = (index: number) => {
+  const getColor = (index: number): string => {
     if (color === "gradient") {
       // Create a gradient effect across the dots
       const gradientColors = ["#3B82F6", "#60A5FA", "#0EA5E9"];

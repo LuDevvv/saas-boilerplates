@@ -1,5 +1,6 @@
-import React from "react";
 import { Check } from "lucide-react";
+import React from "react";
+
 import { cn } from "../../utils.js";
 
 interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -9,7 +10,7 @@ interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
-  ({ className, label, helperText, error, ...props }, ref) => {
+  ({ className: _className, label, helperText, error, ...props }, ref) => {
     return (
       <div className="group flex flex-col gap-1.5">
         <label className="flex items-start gap-3 cursor-pointer select-none group">

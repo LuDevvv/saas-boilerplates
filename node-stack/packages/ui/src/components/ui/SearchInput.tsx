@@ -1,5 +1,6 @@
-import React, { FC } from "react";
 import { Search, X, Loader2 } from "lucide-react";
+import React, { FC } from "react";
+
 import { cn } from "../../utils.js";
 
 export interface SearchInputProps {

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
 import { animate } from "@motionone/dom";
+import React, { useEffect, useRef } from "react";
 
 interface PremiumLoaderProps {
   logoSrc?: string;
@@ -33,7 +33,7 @@ export const PremiumLoader: React.FC<PremiumLoaderProps> = ({
     const barEl = barRef.current;
     let cancelled = false;
 
-    const runBarLoop = async () => {
+    const runBarLoop = async (): Promise<void> => {
       while (!cancelled) {
         // Expand from left
         barEl.style.transformOrigin = "left";

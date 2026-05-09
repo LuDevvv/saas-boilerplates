@@ -1,6 +1,7 @@
 import React from "react";
-import { cn } from "../../utils.js";
+
 import { Button, ButtonProps } from "./Button.js";
+import { cn } from "../../utils.js";
 
 export interface SocialButtonProps extends ButtonProps {
   provider: "google" | "github" | "apple";

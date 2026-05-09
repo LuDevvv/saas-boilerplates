@@ -1,5 +1,6 @@
-import React, { FC, ReactNode } from "react";
 import { LucideIcon } from "lucide-react";
+import React, { FC, ReactNode } from "react";
+
 import { cn } from "../../utils.js";
 
 export interface EmptyStateProps {

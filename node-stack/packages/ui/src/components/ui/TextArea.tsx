@@ -1,11 +1,12 @@
 import React, { TextareaHTMLAttributes, forwardRef } from "react";
+
 import { cn } from "../../utils.js";
 
 export interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;
   helperText?: string;
-  icon?: any;
+  icon?: React.ReactNode | React.ElementType;
   required?: boolean;
   fullWidth?: boolean;
 }
@@ -54,7 +55,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
             <div className="absolute left-5 top-5 pointer-events-none z-10 text-[#64748B] group-focus-within:text-[#004080] transition-colors duration-300 dark:text-[#94A3B8] dark:group-focus-within:text-[#00E6E6]">
               {typeof icon === "function" ||
                 (typeof icon === "object" && icon !== null && "render" in icon)
-                ? React.createElement(icon as any, { className: "w-5 h-5" })
+                ? React.createElement(icon as React.ElementType, { className: "w-5 h-5" })
                 : icon}
             </div>
           )}

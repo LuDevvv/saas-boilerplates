@@ -1,4 +1,5 @@
 import { type LabelHTMLAttributes, type FC } from "react";
+
 import { cn } from "../../utils.js";
 
 export interface LabelProps extends LabelHTMLAttributes<HTMLLabelElement> {

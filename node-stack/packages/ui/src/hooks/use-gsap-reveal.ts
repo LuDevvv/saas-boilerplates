@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, type RefObject } from "react";
 import { animate, inView } from "@motionone/dom";
+import { useEffect, useRef, type RefObject } from "react";
 
 /**
  * Hook to create a reveal animation on scroll using Motion's inView API.

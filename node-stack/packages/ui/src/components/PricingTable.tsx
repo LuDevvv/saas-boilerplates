@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+
 import { cn } from "../utils.js";
 import { Button } from "./ui/Button.js";
 import { useGsapReveal } from "../hooks/use-gsap-reveal.js";
@@ -19,7 +20,7 @@ export interface PricingTableProps {
   className?: string;
 }
 
-export function PricingTable({ tiers, className }: PricingTableProps) {
+export function PricingTable({ tiers, className }: PricingTableProps): JSX.Element {
   const containerRef = useGsapReveal<HTMLDivElement>({ direction: "up", distance: 30 });
 
   return (

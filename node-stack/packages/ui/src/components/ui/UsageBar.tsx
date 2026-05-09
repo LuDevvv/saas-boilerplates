@@ -1,4 +1,5 @@
 import React from "react";
+
 import { cn } from "../../utils.js";
 
 export interface UsageBarProps {
@@ -14,7 +15,7 @@ export interface UsageBarProps {
 export const UsageBar: React.FC<UsageBarProps> = ({ current, limit, className }) => {
   const percentage = Math.min(Math.round((current / limit) * 100), 100);
   
-  const getBarColor = (pct: number) => {
+  const getBarColor = (pct: number): string => {
     if (pct >= 90) return "bg-[#EF4F5F] shadow-[0_0_15px_rgba(239,79,95,0.4)]";
     if (pct >= 70) return "bg-[#F4A524] shadow-[0_0_15px_rgba(244,165,36,0.4)]";
     return "bg-[#00E6E6] shadow-[0_0_15px_rgba(0,230,230,0.4)]";

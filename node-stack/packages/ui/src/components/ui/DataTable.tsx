@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useState } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -18,9 +17,11 @@ import {
   ArrowUpDown,
   Inbox,
 } from "lucide-react";
-import { cn } from "../../utils.js";
+import React, { useState } from "react";
+
 import { Button } from "./Button.js";
 import { SearchInput } from "./SearchInput.js";
+import { Skeleton } from "./Skeleton.js";
 import {
   Table,
   TableBody,
@@ -29,11 +30,11 @@ import {
   TableHeader,
   TableRow,
 } from "./Table.js";
-import { Skeleton } from "./Skeleton.js";
+import { cn } from "../../utils.js";
 
 interface DataTableProps<T> {
   data: T[];
-  columns: ColumnDef<T, any>[];
+  columns: ColumnDef<T, unknown>[];
   isLoading?: boolean;
   searchPlaceholder?: string;
   onRowClick?: (row: T) => void;
@@ -47,7 +48,7 @@ export function DataTable<T>({
   searchPlaceholder = "Buscar...",
   onRowClick,
   pageSize = 10,
-}: DataTableProps<T>) {
+}: DataTableProps<T>): JSX.Element {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState("");

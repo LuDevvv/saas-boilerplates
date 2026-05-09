@@ -1,5 +1,7 @@
-import { FC, ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
+import { FC, ReactNode } from "react";
+
+import { StatusPill, type StatusPillTone } from "./StatusPill.js";
 import { cn } from "../../utils.js";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -10,7 +12,7 @@ export type CalloutLayout = "vertical" | "horizontal";
 
 interface CalloutStatus {
   label: string;
-  tone?: "success" | "warning" | "info" | "neutral";
+  tone?: Exclude<StatusPillTone, "danger">;
   /** When true, shows an animated pulse dot before the label. */
   pulse?: boolean;
 }
@@ -43,25 +45,11 @@ export interface CalloutCardProps {
 // ─── Style maps ──────────────────────────────────────────────────────────────
 
 const ICON_TONE_CLASSES: Record<CalloutTone, { tile: string; text: string }> = {
-  primary: { tile: "bg-primary/10",                                   text: "text-primary" },
-  success: { tile: "bg-emerald-500/10",                               text: "text-emerald-500" },
-  info:    { tile: "bg-blue-500/10",                                  text: "text-blue-500 dark:text-blue-400" },
-  warning: { tile: "bg-amber-500/10",                                 text: "text-amber-500 dark:text-amber-400" },
-  neutral: { tile: "bg-surface-hover",                                text: "text-fg-secondary" },
-};
-
-const STATUS_TONE_CLASSES: Record<NonNullable<CalloutStatus["tone"]>, string> = {
-  success: "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
-  warning: "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20",
-  info:    "text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/20",
-  neutral: "text-fg-muted bg-surface-hover border-border",
-};
-
-const STATUS_DOT_CLASSES: Record<NonNullable<CalloutStatus["tone"]>, string> = {
-  success: "bg-emerald-500",
-  warning: "bg-amber-500",
-  info:    "bg-blue-500",
-  neutral: "bg-fg-muted",
+  primary: { tile: "bg-primary/10",        text: "text-primary" },
+  success: { tile: "bg-emerald-500/10",    text: "text-emerald-500" },
+  info:    { tile: "bg-blue-500/10",       text: "text-blue-500 dark:text-blue-400" },
+  warning: { tile: "bg-amber-500/10",      text: "text-amber-500 dark:text-amber-400" },
+  neutral: { tile: "bg-surface-hover",     text: "text-fg-secondary" },
 };
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -83,27 +71,6 @@ const IconTile: FC<{ icon: LucideIcon; tone: CalloutTone; variant: CalloutVarian
     <div className={cn("h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0", tile)}>
       <Icon className={cn("h-5 w-5", text)} />
     </div>
-  );
-};
-
-const StatusPill: FC<{ status: CalloutStatus }> = ({ status }) => {
-  const tone = status.tone ?? "neutral";
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase border",
-        STATUS_TONE_CLASSES[tone]
-      )}
-    >
-      <span
-        className={cn(
-          "h-1.5 w-1.5 rounded-full shrink-0",
-          STATUS_DOT_CLASSES[tone],
-          status.pulse && "animate-pulse"
-        )}
-      />
-      {status.label}
-    </span>
   );
 };
 
@@ -146,6 +113,10 @@ export const CalloutCard: FC<CalloutCardProps> = ({
   const descriptionColor = isPromo ? "text-white/70"    : "text-fg-secondary";
   const eyebrowColor     = isPromo ? "text-white/60"    : "text-fg-muted";
 
+  const renderStatus = status && (
+    <StatusPill label={status.label} tone={status.tone ?? "neutral"} pulse={status.pulse} />
+  );
+
   return (
     <div className={cn(surfaceClasses, paddingClasses, className)}>
       {/* Promo decoration — only on promo variant */}
@@ -167,7 +138,7 @@ export const CalloutCard: FC<CalloutCardProps> = ({
           {/* Status / trailing — only show on top in vertical layout */}
           {!isHorizontal && (status || trailing) && (
             <div className="flex items-center gap-2 shrink-0">
-              {status && <StatusPill status={status} />}
+              {renderStatus}
               {trailing}
             </div>
           )}
@@ -198,11 +169,7 @@ export const CalloutCard: FC<CalloutCardProps> = ({
           )}
 
           {/* Inline status for horizontal layout */}
-          {isHorizontal && status && (
-            <div className="mt-2">
-              <StatusPill status={status} />
-            </div>
-          )}
+          {isHorizontal && status && <div className="mt-2">{renderStatus}</div>}
         </div>
 
         {/* Action slot */}
