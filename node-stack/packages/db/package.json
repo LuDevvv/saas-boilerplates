@@ -40,10 +40,10 @@
                     "db:push":  "drizzle-kit push",
                     "db:studio":  "drizzle-kit studio --host localhost --port 4983",
                     "db:migrate":  "drizzle-kit migrate",
-                    "db:migrate:full":  "tsx src/migrate.ts",
-                    "db:seed":  "tsx src/seed.ts",
-                    "db:seed:tenant":  "tsx src/seed.ts --tenant",
-                    "db:clean":  "tsx src/clean.ts",
+                    "db:migrate:full":  "node --import ../../node_modules/tsx/dist/esm/index.mjs src/migrate.ts",
+                    "db:seed":  "node --import ../../node_modules/tsx/dist/esm/index.mjs src/seed.ts",
+                    "db:seed:tenant":  "node --import ../../node_modules/tsx/dist/esm/index.mjs src/seed.ts --tenant",
+                    "db:clean":  "node --import ../../node_modules/tsx/dist/esm/index.mjs src/clean.ts",
                     "test:integration":  "vitest run"
                 },
     "dependencies":  {
