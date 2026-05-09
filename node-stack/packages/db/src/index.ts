@@ -104,9 +104,35 @@ export async function withTransaction<T>(
   });
 }
 
+/**
+ * Execute a read-only callback against the read replica (or primary if no
+ * replica is configured). Use for expensive analytics queries and list
+ * endpoints where replica lag is acceptable. Never use for post-write reads
+ * that must see their own writes.
+ *
+ * Unlike withTenantTx, this does NOT set the RLS GUC — the replica pool
+ * uses the same `app_user` role whose RLS policies already apply to every
+ * connection.
+ */
+export async function withReadTx<T>(
+  callback: (db: Database) => Promise<T>,
+  db: Database,
+): Promise<T> {
+  if (!db) {
+    throw new Error("withReadTx: db is required");
+  }
+  const start = Date.now();
+  try {
+    return await callback(db);
+  } finally {
+    recordDbQueryDuration((Date.now() - start) / 1000, "read_replica");
+  }
+}
+
 export * from "./schema/index.js";
 export * from "./repositories/index.js";
 export * from "./database.module.js";
+export { READ_DB_TOKEN } from "./tokens.js";
 export * from "./tokens.js";
 export * from "./utils/api-key.utils.js";
 export * from "./audit-actions.js";

@@ -21,7 +21,7 @@ export abstract class BaseRepository<T = unknown> {
   async findById(id: string): Promise<T | null> {
     const table = this.table as Record<string, unknown>;
     const name = this.tableName as keyof SchemaQuery;
-    const queryTable = this.db.query[name] as {
+    const queryTable = this.db.query[name] as unknown as {
       findFirst: (opts: { where: unknown }) => Promise<T | undefined>;
     };
     const res = await queryTable.findFirst({
@@ -35,7 +35,7 @@ export abstract class BaseRepository<T = unknown> {
     const tenantColKey = this.tenantField as keyof typeof table;
     const tenantCol = table[tenantColKey];
     const name = this.tableName as keyof SchemaQuery;
-    const queryTable = this.db.query[name] as {
+    const queryTable = this.db.query[name] as unknown as {
       findFirst: (opts: { where: unknown }) => Promise<T | undefined>;
     };
     if (tenantCol) {
@@ -52,7 +52,7 @@ export abstract class BaseRepository<T = unknown> {
 
   async findMany(where?: unknown): Promise<T[]> {
     const name = this.tableName as keyof SchemaQuery;
-    const queryTable = this.db.query[name] as {
+    const queryTable = this.db.query[name] as unknown as {
       findMany: (opts: { where: unknown }) => Promise<T[]>;
     };
     const res = await queryTable.findMany({ where });
@@ -69,7 +69,7 @@ export abstract class BaseRepository<T = unknown> {
         : eq(tenantCol as Parameters<typeof eq>[0], tenantId)
       : where;
     const name = this.tableName as keyof SchemaQuery;
-    const queryTable = this.db.query[name] as {
+    const queryTable = this.db.query[name] as unknown as {
       findMany: (opts: { where: unknown }) => Promise<T[]>;
     };
     return queryTable.findMany({ where: finalWhere });

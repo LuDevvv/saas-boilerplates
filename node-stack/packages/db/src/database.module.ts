@@ -18,7 +18,7 @@ import { SystemConfigRepository } from './repositories/system-config.repository.
 import { UserRepository } from './repositories/user.repository.js';
 import { WorkspaceRepository } from './repositories/workspace.repository.js';
 import * as schema from './schema/index.js';
-import { DB_TOKEN, POOL_TOKEN } from './tokens.js';
+import { DB_TOKEN, POOL_TOKEN, READ_DB_TOKEN } from './tokens.js';
 
 @Global()
 @Module({
@@ -48,6 +48,24 @@ import { DB_TOKEN, POOL_TOKEN } from './tokens.js';
       },
       inject: [POOL_TOKEN],
     },
+    {
+      // READ_DB_TOKEN points to a read replica when READ_REPLICA_URL is set,
+      // otherwise falls back to the primary so code using it needs no branching.
+      provide: READ_DB_TOKEN,
+      useFactory: (primaryPool: Pool) => {
+        const replicaUrl = process.env.READ_REPLICA_URL;
+        const pool = replicaUrl
+          ? new Pool({
+              connectionString: replicaUrl,
+              max: parseInt(process.env.DB_REPLICA_POOL_MAX ?? '5', 10),
+              idleTimeoutMillis: 30000,
+              connectionTimeoutMillis: 2000,
+            })
+          : primaryPool;
+        return drizzle(pool, { schema });
+      },
+      inject: [POOL_TOKEN],
+    },
     WorkspaceRepository,
     UserRepository,
     InvitationRepository,
@@ -66,6 +84,7 @@ import { DB_TOKEN, POOL_TOKEN } from './tokens.js';
   ],
   exports: [
     DB_TOKEN,
+    READ_DB_TOKEN,
     POOL_TOKEN,
     WorkspaceRepository,
     UserRepository,

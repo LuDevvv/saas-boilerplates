@@ -49,7 +49,7 @@ describe('Row Level Security (RLS)', () => {
 
       const wsBTasks = await tx.select().from(tasks);
       expect(wsBTasks).toHaveLength(1);
-      expect(wsBTasks[0].id).toBe(taskB.id);
+      expect(wsBTasks[0]!.id).toBe(taskB!.id);
     });
   });
 });
