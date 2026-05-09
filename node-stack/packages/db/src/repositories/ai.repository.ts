@@ -1,10 +1,11 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { eq, and, desc, gte, sql } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { DB_TOKEN } from "../tokens.js";
-import * as schema from "../schema/index.js";
+
 import { BaseRepository } from "./base.repository.js";
 import { aiLogs, NewAiLog, AiLog } from "../schema/ai.js";
-import { eq, and, desc, gte, sql } from "drizzle-orm";
+import * as schema from "../schema/index.js";
+import { DB_TOKEN } from "../tokens.js";
 
 @Injectable()
 export class AiRepository extends BaseRepository<typeof aiLogs.$inferSelect> {

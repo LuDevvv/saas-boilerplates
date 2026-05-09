@@ -3,8 +3,8 @@ import { eq, desc, and, gte, lte, like, type SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 import type { AuditAction } from "../audit-actions.js";
-import { DB_TOKEN } from "../tokens.js";
 import * as schema from "../schema/index.js";
+import { DB_TOKEN } from "../tokens.js";
 
 type AuditLog = typeof schema.auditLogs.$inferSelect;
 type NewAuditLog = typeof schema.auditLogs.$inferInsert;

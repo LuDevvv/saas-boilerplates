@@ -5,6 +5,8 @@ import { NodePgDatabase } from "drizzle-orm/node-postgres";
 import * as schema from "../schema/index.js";
 import { DB_TOKEN } from "../tokens.js";
 
+type Db = NodePgDatabase<typeof schema>;
+type SchemaQuery = Db["query"];
 
 @Injectable()
 export abstract class BaseRepository<T = unknown> {
@@ -13,70 +15,90 @@ export abstract class BaseRepository<T = unknown> {
   protected tenantField: string = "workspaceId";
 
   constructor(
-    @Inject(DB_TOKEN) protected readonly db: NodePgDatabase<typeof schema>,
+    @Inject(DB_TOKEN) protected readonly db: Db,
   ) {}
 
   async findById(id: string): Promise<T | null> {
     const table = this.table as Record<string, unknown>;
-    const name = this.tableName;
-    const res = await (this.db.query as any)[name].findFirst({
-      where: eq((table as any).id, id),
+    const name = this.tableName as keyof SchemaQuery;
+    const queryTable = this.db.query[name] as {
+      findFirst: (opts: { where: unknown }) => Promise<T | undefined>;
+    };
+    const res = await queryTable.findFirst({
+      where: eq(table["id"] as Parameters<typeof eq>[0], id),
     });
-    return res as T | null;
+    return res ?? null;
   }
 
   async findByIdWithTenant(tenantId: string, id: string): Promise<T | null> {
     const table = this.table as Record<string, unknown>;
-    const tenantCol = (table as any)[this.tenantField];
+    const tenantColKey = this.tenantField as keyof typeof table;
+    const tenantCol = table[tenantColKey];
+    const name = this.tableName as keyof SchemaQuery;
+    const queryTable = this.db.query[name] as {
+      findFirst: (opts: { where: unknown }) => Promise<T | undefined>;
+    };
     if (tenantCol) {
-      return (this.db.query as any)[this.tableName].findFirst({
-        where: and(eq(tenantCol, tenantId), eq((table as any).id, id)),
-      }) as T | null;
+      const res = await queryTable.findFirst({
+        where: and(
+          eq(tenantCol as Parameters<typeof eq>[0], tenantId),
+          eq(table["id"] as Parameters<typeof eq>[0], id),
+        ),
+      });
+      return res ?? null;
     }
     return this.findById(id);
   }
 
   async findMany(where?: unknown): Promise<T[]> {
-    const name = this.tableName;
-    const res = await (this.db.query as any)[name].findMany({ where: where as any });
-    return res as T[];
+    const name = this.tableName as keyof SchemaQuery;
+    const queryTable = this.db.query[name] as {
+      findMany: (opts: { where: unknown }) => Promise<T[]>;
+    };
+    const res = await queryTable.findMany({ where });
+    return res;
   }
 
   async findManyWithTenant(tenantId: string, where?: unknown): Promise<T[]> {
     const table = this.table as Record<string, unknown>;
-    const tenantCol = (table as any)[this.tenantField];
-    let finalWhere: unknown = where;
-    if (tenantCol) {
-      finalWhere = where
-        ? and(eq(tenantCol, tenantId), where as any)
-        : eq(tenantCol, tenantId);
-    }
-    return (this.db.query as any)[this.tableName].findMany({
-      where: finalWhere as any,
-    }) as T[];
+    const tenantColKey = this.tenantField as keyof typeof table;
+    const tenantCol = table[tenantColKey];
+    const finalWhere: unknown = tenantCol
+      ? where
+        ? and(eq(tenantCol as Parameters<typeof eq>[0], tenantId), where as Parameters<typeof eq>[0])
+        : eq(tenantCol as Parameters<typeof eq>[0], tenantId)
+      : where;
+    const name = this.tableName as keyof SchemaQuery;
+    const queryTable = this.db.query[name] as {
+      findMany: (opts: { where: unknown }) => Promise<T[]>;
+    };
+    return queryTable.findMany({ where: finalWhere });
   }
 
-  async create(data: Record<string, unknown>, tx?: NodePgDatabase<typeof schema>): Promise<T> {
+  async create(data: Record<string, unknown>, tx?: Db): Promise<T> {
     const database = tx ?? this.db;
-    const [record] = await (database.insert(this.table as any) as any)
-      .values(data)
-      .returning();
+    const tableRef = this.table as Parameters<typeof database.insert>[0];
+    const [record] = await database.insert(tableRef).values(data).returning();
     return record as T;
   }
 
-  async update(id: string, data: Record<string, unknown>, tx?: NodePgDatabase<typeof schema>): Promise<T | null> {
+  async update(id: string, data: Record<string, unknown>, tx?: Db): Promise<T | null> {
     const database = tx ?? this.db;
-    const [record] = await (database.update(this.table as any) as any)
+    const tableRef = this.table as Parameters<typeof database.update>[0];
+    const tableWithId = this.table as Record<string, Parameters<typeof eq>[0]>;
+    const [record] = await database.update(tableRef)
       .set(data)
-      .where(eq((this.table as any).id, id))
+      .where(eq(tableWithId["id"], id))
       .returning();
     return (record as T) ?? null;
   }
 
-  async delete(id: string, tx?: NodePgDatabase<typeof schema>): Promise<boolean> {
+  async delete(id: string, tx?: Db): Promise<boolean> {
     const database = tx ?? this.db;
-    const result = await (database.delete(this.table as any) as any)
-      .where(eq((this.table as any).id, id))
+    const tableRef = this.table as Parameters<typeof database.delete>[0];
+    const tableWithId = this.table as Record<string, Parameters<typeof eq>[0]>;
+    const result = await database.delete(tableRef)
+      .where(eq(tableWithId["id"], id))
       .returning();
     return (result?.length ?? 0) > 0;
   }

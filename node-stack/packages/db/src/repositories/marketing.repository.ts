@@ -1,9 +1,10 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { eq } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { DB_TOKEN } from "../tokens.js";
+
 import * as schema from "../schema/index.js";
 import { waitlist, type NewWaitlistEntry, type WaitlistEntry } from "../schema/marketing.js";
+import { DB_TOKEN } from "../tokens.js";
 
 @Injectable()
 export class MarketingRepository {

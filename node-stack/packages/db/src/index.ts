@@ -1,12 +1,14 @@
-import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { sql } from "drizzle-orm";
-import * as schema from "./schema/index.js";
-import { RequestContextService } from "./context/request-context.service.js";
 import { recordDbQueryDuration } from "@node-stack/utils";
+import { sql } from "drizzle-orm";
+import { NodePgDatabase } from "drizzle-orm/node-postgres";
+
+import { RequestContextService } from "./context/request-context.service.js";
+import * as schema from "./schema/index.js";
+
 
 export { schema };
 export type Database = NodePgDatabase<typeof schema>;
-export const Database = {} as any; // Dummy value for NestJS metadata
+export const Database = {} as unknown; // Dummy value for NestJS metadata
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

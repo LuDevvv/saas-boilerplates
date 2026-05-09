@@ -1,9 +1,9 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { eq, ne, and, sql, gte, count, gt, isNull, lte, lt } from "drizzle-orm";
+import { eq, ne, and, sql, gte, count, gt, isNull } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import { DB_TOKEN } from "../tokens.js";
 import * as schema from "../schema/index.js";
+import { DB_TOKEN } from "../tokens.js";
 
 @Injectable()
 export class AnalyticsRepository {
@@ -13,7 +13,7 @@ export class AnalyticsRepository {
 
   // ─── Workspace-scoped ───────────────────────────────────────────────────────
 
-  async getAiUsage(workspaceId: string, days: number = 30) {
+  async getAiUsage(workspaceId: string, days: number = 30): Promise<{ date: string; inputTokens: number; outputTokens: number; count: number }[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -30,7 +30,7 @@ export class AnalyticsRepository {
       .orderBy(sql`date`);
   }
 
-  async getStorageUsage(workspaceId: string) {
+  async getStorageUsage(workspaceId: string): Promise<{ totalBytes: number; fileCount: number }> {
     const [result] = await this.db
       .select({
         totalBytes: sql<number>`cast(sum(${schema.files.size}) as bigint)`,
@@ -41,7 +41,7 @@ export class AnalyticsRepository {
     return { totalBytes: Number(result?.totalBytes || 0), fileCount: Number(result?.fileCount || 0) };
   }
 
-  async getActivityTrend(workspaceId: string, days: number = 7) {
+  async getActivityTrend(workspaceId: string, days: number = 7): Promise<{ date: string; count: number }[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
     return this.db
@@ -144,7 +144,7 @@ export class AnalyticsRepository {
   }
 
   /** Global AI usage — per provider/model */
-  async getGlobalAiUsage() {
+  async getGlobalAiUsage(): Promise<{ provider: string; model: string; totalTokens: number }[]> {
     return this.db
       .select({
         provider: schema.aiLogs.provider,

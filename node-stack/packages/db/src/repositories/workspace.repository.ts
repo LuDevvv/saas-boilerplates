@@ -2,8 +2,8 @@ import { Injectable, Inject } from "@nestjs/common";
 import { eq, and, gt, isNull, lt } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import { DB_TOKEN } from "../tokens.js";
 import * as schema from "../schema/index.js";
+import { DB_TOKEN } from "../tokens.js";
 
 type Workspace = typeof schema.workspaces.$inferSelect;
 type CreateWorkspaceData = typeof schema.workspaces.$inferInsert;
@@ -13,28 +13,49 @@ type Membership = typeof schema.memberships.$inferSelect;
 type CreateMembershipData = typeof schema.memberships.$inferInsert;
 export type UpdateMembershipData = Partial<CreateMembershipData>;
 
+type Tx = NodePgDatabase<typeof schema>;
+
+type WorkspaceSummary = {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+  createdAt: Date;
+  role: string;
+};
+
+type MemberSummary = {
+  userId: string;
+  role: string;
+  createdAt: Date;
+  id: string;
+  email: string;
+  name: string | null;
+  avatarUrl: string | null;
+};
+
 @Injectable()
 export class WorkspaceRepository {
   constructor(
-    @Inject(DB_TOKEN) private readonly db: NodePgDatabase<typeof schema>,
+    @Inject(DB_TOKEN) private readonly db: Tx,
   ) {}
 
   async findAllByUserId(
     userId: string,
     cursor?: string,
     limit: number = 20,
-    tx?: NodePgDatabase<typeof schema>,
-  ) {
+    tx?: Tx,
+  ): Promise<{ workspaces: WorkspaceSummary[]; nextCursor: string | null }> {
     const database = tx ?? this.db;
     const conditions = [eq(schema.memberships.userId, userId)];
 
     if (cursor) {
       try {
-        const decoded = JSON.parse(Buffer.from(cursor, "base64").toString("utf-8"));
+        const decoded = JSON.parse(Buffer.from(cursor, "base64").toString("utf-8")) as { id?: string };
         if (decoded?.id) {
           conditions.push(gt(schema.workspaces.id, decoded.id));
         }
-      } catch (e) {
+      } catch {
         // Ignore invalid cursor
       }
     }
@@ -66,9 +87,9 @@ export class WorkspaceRepository {
 
   async findById(
     id: string,
-    tx?: NodePgDatabase<typeof schema>,
+    tx?: Tx,
     opts: { includeDeleted?: boolean } = {},
-  ) {
+  ): Promise<Workspace | undefined> {
     const database = tx ?? this.db;
     return database.query.workspaces.findFirst({
       where: opts.includeDeleted
@@ -79,9 +100,9 @@ export class WorkspaceRepository {
 
   async findBySlug(
     slug: string,
-    tx?: NodePgDatabase<typeof schema>,
+    tx?: Tx,
     opts: { includeDeleted?: boolean } = {},
-  ) {
+  ): Promise<Workspace | undefined> {
     const database = tx ?? this.db;
     return database.query.workspaces.findFirst({
       where: opts.includeDeleted
@@ -90,7 +111,7 @@ export class WorkspaceRepository {
     });
   }
 
-  async create(data: CreateWorkspaceData, tx?: NodePgDatabase<typeof schema>) {
+  async create(data: CreateWorkspaceData, tx?: Tx): Promise<Workspace> {
     const db = tx ?? this.db;
     const [workspace] = await db
       .insert(schema.workspaces)
@@ -99,7 +120,7 @@ export class WorkspaceRepository {
     return workspace;
   }
 
-  async update(id: string, data: UpdateWorkspaceData, tx?: NodePgDatabase<typeof schema>) {
+  async update(id: string, data: UpdateWorkspaceData, tx?: Tx): Promise<Workspace | undefined> {
     const db = tx ?? this.db;
     const [workspace] = await db
       .update(schema.workspaces)
@@ -109,7 +130,7 @@ export class WorkspaceRepository {
     return workspace;
   }
 
-  async delete(id: string, tx?: NodePgDatabase<typeof schema>) {
+  async delete(id: string, tx?: Tx): Promise<void> {
     const db = tx ?? this.db;
     await db
       .delete(schema.workspaces)
@@ -118,8 +139,8 @@ export class WorkspaceRepository {
 
   async findMembersByWorkspaceId(
     workspaceId: string,
-    tx?: NodePgDatabase<typeof schema>,
-  ) {
+    tx?: Tx,
+  ): Promise<MemberSummary[]> {
     const database = tx ?? this.db;
     return database
       .select({
@@ -136,7 +157,7 @@ export class WorkspaceRepository {
       .where(eq(schema.memberships.workspaceId, workspaceId));
   }
 
-  async findMembership(workspaceId: string, userId: string, tx?: NodePgDatabase<typeof schema>) {
+  async findMembership(workspaceId: string, userId: string, tx?: Tx): Promise<Membership | undefined> {
     const db = tx ?? this.db;
     return db.query.memberships.findFirst({
       where: and(
@@ -146,12 +167,12 @@ export class WorkspaceRepository {
     });
   }
 
-  async createMembership(data: CreateMembershipData, tx?: NodePgDatabase<typeof schema>) {
+  async createMembership(data: CreateMembershipData, tx?: Tx): Promise<void> {
     const db = tx ?? this.db;
     await db.insert(schema.memberships).values(data);
   }
 
-  async updateMembership(workspaceId: string, userId: string, data: UpdateMembershipData, tx?: NodePgDatabase<typeof schema>) {
+  async updateMembership(workspaceId: string, userId: string, data: UpdateMembershipData, tx?: Tx): Promise<void> {
     const db = tx ?? this.db;
     await db
       .update(schema.memberships)
@@ -164,7 +185,7 @@ export class WorkspaceRepository {
       );
   }
 
-  async deleteMembership(workspaceId: string, userId: string, tx?: NodePgDatabase<typeof schema>) {
+  async deleteMembership(workspaceId: string, userId: string, tx?: Tx): Promise<void> {
     const db = tx ?? this.db;
     await db
       .delete(schema.memberships)
@@ -190,8 +211,8 @@ export class WorkspaceRepository {
     workspaceId: string,
     deletedBy: string | null,
     reason: string | null,
-    tx?: NodePgDatabase<typeof schema>,
-  ) {
+    tx?: Tx,
+  ): Promise<void> {
     const db = tx ?? this.db;
     await db
       .update(schema.workspaces)
@@ -207,15 +228,15 @@ export class WorkspaceRepository {
       .where(eq(schema.memberships.workspaceId, workspaceId));
   }
 
-  async hardDeleteWorkspace(workspaceId: string, tx?: NodePgDatabase<typeof schema>) {
+  async hardDeleteWorkspace(workspaceId: string, tx?: Tx): Promise<void> {
     const db = tx ?? this.db;
     await db.delete(schema.workspaces).where(eq(schema.workspaces.id, workspaceId));
   }
 
   async findWorkspacesExpiredForHardDelete(
     cutoff: Date,
-    tx?: NodePgDatabase<typeof schema>,
-  ) {
+    tx?: Tx,
+  ): Promise<Workspace[]> {
     const db = tx ?? this.db;
     return db.query.workspaces.findMany({
       where: lt(schema.workspaces.deletedAt, cutoff),

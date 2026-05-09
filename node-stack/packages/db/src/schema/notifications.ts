@@ -1,4 +1,5 @@
 import { pgTable, text, timestamp, uuid, jsonb, index } from "drizzle-orm/pg-core";
+
 import { users } from "./users.js";
 import { workspaces } from "./workspaces.js";
 
@@ -14,7 +15,7 @@ export const notifications = pgTable(
     type: text("type").notNull(),
     title: text("title").notNull(),
     body: text("body").notNull(),
-    data: jsonb("data").$type<Record<string, any>>().notNull().default({}),
+    data: jsonb("data").$type<Record<string, unknown>>().notNull().default({}),
     readAt: timestamp("read_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },

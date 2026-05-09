@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -6,9 +7,9 @@ import {
   pgEnum,
   index,
 } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
-import { workspaces } from "./workspaces.js";
+
 import { users } from "./users.js";
+import { workspaces } from "./workspaces.js";
 
 /**
  * {ModuleName} status enum

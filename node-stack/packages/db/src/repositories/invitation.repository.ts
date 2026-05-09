@@ -2,27 +2,29 @@ import { Injectable, Inject } from "@nestjs/common";
 import { eq, and } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import { DB_TOKEN } from "../tokens.js";
 import * as schema from "../schema/index.js";
+import { DB_TOKEN } from "../tokens.js";
 
 type Invitation = typeof schema.workspaceInvitations.$inferSelect;
 type CreateInvitationData = typeof schema.workspaceInvitations.$inferInsert;
 export type UpdateInvitationData = Partial<CreateInvitationData>;
 
+type Tx = NodePgDatabase<typeof schema>;
+
 @Injectable()
 export class InvitationRepository {
   constructor(
-    @Inject(DB_TOKEN) private readonly db: NodePgDatabase<typeof schema>,
+    @Inject(DB_TOKEN) private readonly db: Tx,
   ) {}
 
-  async findById(id: string, tx?: NodePgDatabase<typeof schema>) {
+  async findById(id: string, tx?: Tx): Promise<Invitation | undefined> {
     const database = tx ?? this.db;
     return database.query.workspaceInvitations.findFirst({
       where: eq(schema.workspaceInvitations.id, id),
     });
   }
 
-  async findByToken(token: string, tx?: NodePgDatabase<typeof schema>) {
+  async findByToken(token: string, tx?: Tx): Promise<Invitation | undefined> {
     const database = tx ?? this.db;
     return database.query.workspaceInvitations.findFirst({
       where: eq(schema.workspaceInvitations.token, token),
@@ -32,8 +34,8 @@ export class InvitationRepository {
   async findPendingByEmailAndWorkspace(
     email: string,
     workspaceId: string,
-    tx?: NodePgDatabase<typeof schema>,
-  ) {
+    tx?: Tx,
+  ): Promise<Invitation | undefined> {
     const database = tx ?? this.db;
     return database.query.workspaceInvitations.findFirst({
       where: and(
@@ -46,8 +48,8 @@ export class InvitationRepository {
 
   async findManyByWorkspace(
     workspaceId: string,
-    tx?: NodePgDatabase<typeof schema>,
-  ) {
+    tx?: Tx,
+  ): Promise<Invitation[]> {
     const database = tx ?? this.db;
     return database.query.workspaceInvitations.findMany({
       where: eq(schema.workspaceInvitations.workspaceId, workspaceId),
@@ -56,8 +58,8 @@ export class InvitationRepository {
 
   async findManyPendingByEmail(
     email: string,
-    tx?: NodePgDatabase<typeof schema>,
-  ) {
+    tx?: Tx,
+  ): Promise<Invitation[]> {
     const database = tx ?? this.db;
     return database.query.workspaceInvitations.findMany({
       where: and(
@@ -67,7 +69,7 @@ export class InvitationRepository {
     });
   }
 
-  async create(data: CreateInvitationData, tx?: NodePgDatabase<typeof schema>) {
+  async create(data: CreateInvitationData, tx?: Tx): Promise<Invitation> {
     const db = tx ?? this.db;
     const [invitation] = await db
       .insert(schema.workspaceInvitations)
@@ -76,7 +78,7 @@ export class InvitationRepository {
     return invitation;
   }
 
-  async update(id: string, data: UpdateInvitationData, tx?: NodePgDatabase<typeof schema>) {
+  async update(id: string, data: UpdateInvitationData, tx?: Tx): Promise<void> {
     const db = tx ?? this.db;
     await db
       .update(schema.workspaceInvitations)
@@ -84,7 +86,7 @@ export class InvitationRepository {
       .where(eq(schema.workspaceInvitations.id, id));
   }
 
-  async delete(id: string, tx?: NodePgDatabase<typeof schema>) {
+  async delete(id: string, tx?: Tx): Promise<void> {
     const db = tx ?? this.db;
     await db
       .delete(schema.workspaceInvitations)

@@ -8,6 +8,7 @@ import {
   index,
   integer,
 } from "drizzle-orm/pg-core";
+
 import { workspaces } from "./workspaces.js";
 
 export const outbox = pgTable(

@@ -1,5 +1,5 @@
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
 
 // Node 20+ supports process.loadEnvFile
 // Try to load env file from various levels
@@ -16,7 +16,7 @@ for (const envPath of envPaths) {
         process.loadEnvFile(envPath);
         // console.log(`Loaded env from ${envPath}`);
       }
-    } catch (e) {
+    } catch {
       // ignore errors loading env file
     }
   }

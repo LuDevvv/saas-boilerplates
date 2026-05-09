@@ -2,12 +2,11 @@ import {
   pgTable,
   uuid,
   varchar,
-  text,
   timestamp,
   jsonb,
-  boolean,
   index,
 } from 'drizzle-orm/pg-core';
+
 import { users } from './users.js';
 import { workspaces } from './workspaces.js';
 

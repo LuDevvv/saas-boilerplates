@@ -1,6 +1,7 @@
-import { Pool } from 'pg';
-import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { sql } from 'drizzle-orm';
+import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
+
 import * as schema from '../schema/index.js';
 
 export interface TestDb {
@@ -22,8 +23,8 @@ export function getTestDb(): TestDb {
   const pool = new Pool({ connectionString });
   const db = drizzle(pool, { schema });
 
-  return { 
-    db, 
+  return {
+    db,
     pool,
     cleanup: async () => {
       await pool.end();
@@ -35,28 +36,28 @@ export function getTestDb(): TestDb {
 export const createTestDb = getTestDb;
 
 // Lazy-initialize the global test db instance to avoid crashes during app bootstrap (e.g. OpenAPI export)
-let _db: any;
-let _pool: any;
+let _db: NodePgDatabase<typeof schema> | undefined;
+let _pool: Pool | undefined;
 
-export const db = new Proxy({} as any, {
-  get(_, prop) {
+export const db = new Proxy({} as NodePgDatabase<typeof schema>, {
+  get(_target, prop) {
     if (!_db) {
       const testDb = getTestDb();
       _db = testDb.db;
       _pool = testDb.pool;
     }
-    return _db[prop];
+    return _db[prop as keyof NodePgDatabase<typeof schema>];
   }
 });
 
-export const pool = new Proxy({} as any, {
-  get(_, prop) {
+export const pool = new Proxy({} as Pool, {
+  get(_target, prop) {
     if (!_pool) {
       const testDb = getTestDb();
       _db = testDb.db;
       _pool = testDb.pool;
     }
-    return _pool[prop];
+    return _pool[prop as keyof Pool];
   }
 });
 

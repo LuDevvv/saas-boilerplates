@@ -1,15 +1,14 @@
 import { sql } from "drizzle-orm";
 import {
   pgTable,
-  text,
   timestamp,
   uuid,
   pgEnum,
   jsonb,
 } from "drizzle-orm/pg-core";
 
-import { workspaces } from "./workspaces.js";
 import { users } from "./users.js";
+import { workspaces } from "./workspaces.js";
 
 export const portabilityStatusEnum = pgEnum("portability_status", [
   "pending",

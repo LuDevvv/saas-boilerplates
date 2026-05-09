@@ -18,7 +18,7 @@ export const faker = {
     name: () => `Test Company ${Math.random().toString(36).slice(2, 7)}`,
   },
   lorem: {
-    slug: (count?: number) => `test-slug-${Math.random().toString(36).slice(2, 10)}`,
+    slug: (_count?: number) => `test-slug-${Math.random().toString(36).slice(2, 10)}`,
     sentence: () => 'Test sentence.',
     paragraph: () => 'Test paragraph.',
   },

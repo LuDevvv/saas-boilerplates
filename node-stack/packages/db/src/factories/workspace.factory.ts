@@ -1,6 +1,7 @@
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import * as schema from '../schema/index.js';
+
 import { withTransaction } from '../index.js';
+import * as schema from '../schema/index.js';
 
 export type CreateWorkspaceInput = Partial<typeof schema.workspaces.$inferInsert>;
 
@@ -16,7 +17,7 @@ export async function createWorkspace(
          + '-' + faker.string.alphanumeric(4);
 
   return withTransaction(async (tx) => {
-    const [workspace] = await (tx as any)
+    const [workspace] = await tx
       .insert(schema.workspaces)
       .values({ name, slug, ...overrides })
       .onConflictDoUpdate({
@@ -26,12 +27,12 @@ export async function createWorkspace(
       .returning();
 
     // Always create owner membership
-    await (tx as any).insert(schema.memberships).values({
+    await tx.insert(schema.memberships).values({
       userId: ownerUserId,
       workspaceId: workspace.id,
       role: 'owner',
     }).onConflictDoNothing();
 
     return workspace;
-  }, db as any);
+  }, db);
 }

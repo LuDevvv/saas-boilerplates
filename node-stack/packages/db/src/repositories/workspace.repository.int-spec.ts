@@ -1,8 +1,8 @@
-import { createTestDb, truncateAll, TestDb } from '../testing/test-db.js';
-import { createUser, createWorkspace } from '../factories/index.js';
 import { WorkspaceRepository } from './workspace.repository.js';
+import { createUser, createWorkspace } from '../factories/index.js';
 import { withTransaction } from '../index.js';
 import * as schema from '../schema/index.js';
+import { createTestDb, truncateAll, TestDb } from '../testing/test-db.js';
 
 describe('WorkspaceRepository (integration)', () => {
   let testDb: TestDb;
@@ -59,12 +59,12 @@ describe('WorkspaceRepository (integration)', () => {
 
     try {
       await withTransaction(async (tx) => {
-        await (tx as any).insert(schema.workspaces).values({
-          name: 'Will rollback', slug: 'will-rollback',
-        });
+        await tx
+          .insert(schema.workspaces)
+          .values({ name: 'Will rollback', slug: 'will-rollback' });
         throw new Error('Simulated failure');
-      }, testDb.db as any);
-    } catch (_) { /* expected */ }
+      }, testDb.db);
+    } catch { /* expected */ }
 
     const after = await repo.findAllByUserId(owner.id);
     expect(after.workspaces).toHaveLength(before.workspaces.length);

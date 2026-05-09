@@ -8,9 +8,10 @@
  */
 
 import './env.js';
-import { Pool } from 'pg';
 import { parseArgs } from 'util';
+
 import chalk from 'chalk';
+import { Pool } from 'pg';
 
 // Simple arg parsing
 interface CleanOptions {
@@ -72,12 +73,12 @@ async function clean(options: CleanOptions): Promise<void> {
     process.exit(1);
   }
 
-  console.log(chalk.cyan('\n🧹 Database Clean Utility\n'));
-  console.log(chalk.gray('─'.repeat(50)));
+  console.warn(chalk.cyan('\n🧹 Database Clean Utility\n'));
+  console.warn(chalk.gray('─'.repeat(50)));
 
   // Dry run mode
   if (options.dryRun) {
-    console.log(chalk.yellow('⚠️  DRY RUN MODE - No changes will be made\n'));
+    console.warn(chalk.yellow('⚠️  DRY RUN MODE - No changes will be made\n'));
   }
 
   const pool = new Pool({ connectionString });
@@ -86,28 +87,28 @@ async function clean(options: CleanOptions): Promise<void> {
   try {
     // Safety confirmation for non-dry-run
     if (!options.dryRun && !options.confirm) {
-      console.log(chalk.yellow('⚠️  This will permanently delete data!'));
-      console.log(chalk.gray('Run with --confirm to proceed\n'));
+      console.warn(chalk.yellow('⚠️  This will permanently delete data!'));
+      console.warn(chalk.gray('Run with --confirm to proceed\n'));
     }
 
     if (options.tables.length > 0) {
-      console.log(chalk.blue(`Target tables: ${options.tables.join(', ')}`));
+      console.warn(chalk.blue(`Target tables: ${options.tables.join(', ')}`));
     } else {
-      console.log(chalk.blue('Target: All tables (in dependency order)'));
+      console.warn(chalk.blue('Target: All tables (in dependency order)'));
     }
 
     if (options.tenant) {
-      console.log(chalk.blue(`Tenant filter: ${options.tenant}`));
+      console.warn(chalk.blue(`Tenant filter: ${options.tenant}`));
     }
 
     if (options.resetSequences) {
-      console.log(chalk.blue('Sequences will be reset'));
+      console.warn(chalk.blue('Sequences will be reset'));
     }
 
-    console.log(chalk.gray('─'.repeat(50) + '\n'));
+    console.warn(chalk.gray('─'.repeat(50) + '\n'));
 
     if (!options.confirm && !options.dryRun) {
-      console.log(chalk.yellow('Use --confirm to proceed or --dry-run to preview'));
+      console.warn(chalk.yellow('Use --confirm to proceed or --dry-run to preview'));
       await client.release();
       await pool.end();
       return;
@@ -135,18 +136,18 @@ async function clean(options: CleanOptions): Promise<void> {
         `;
         const result = await client.query(query, [options.tenant]);
         if (result.rowCount && result.rowCount > 0) {
-          console.log(chalk.green(`✓`) + ` ${safeTable}: ${chalk.gray(`${result.rowCount} rows`)}`);
+          console.warn(chalk.green(`✓`) + ` ${safeTable}: ${chalk.gray(`${result.rowCount} rows`)}`);
           deletedCount += result.rowCount;
         }
       } else {
         const query = `TRUNCATE TABLE "${safeTable}" CASCADE`;
         await client.query(query);
-        console.log(chalk.green(`✓`) + ` ${safeTable}`);
+        console.warn(chalk.green(`✓`) + ` ${safeTable}`);
       }
     }
 
     if (options.resetSequences) {
-      console.log(chalk.blue('\nResetting sequences...'));
+      console.warn(chalk.blue('\nResetting sequences...'));
       for (const table of tablesToClean) {
         const safeTable = table.replace(/[^a-z_]/g, '');
         try {
@@ -155,17 +156,17 @@ async function clean(options: CleanOptions): Promise<void> {
           // Ignore if table doesn't have serial sequence
         }
       }
-      console.log(chalk.green('✓') + ' Sequences reset');
+      console.warn(chalk.green('✓') + ' Sequences reset');
     }
 
     await client.query('COMMIT');
 
-    console.log(chalk.gray('\n─'.repeat(50)));
-    
+    console.warn(chalk.gray('\n─'.repeat(50)));
+
     if (options.dryRun) {
-      console.log(chalk.yellow(`\n⚠️  DRY RUN COMPLETE - No changes were made`));
+      console.warn(chalk.yellow(`\n⚠️  DRY RUN COMPLETE - No changes were made`));
     } else {
-      console.log(chalk.green(`\n✅ Database cleaned successfully! (${deletedCount} total rows deleted)`));
+      console.warn(chalk.green(`\n✅ Database cleaned successfully! (${deletedCount} total rows deleted)`));
     }
 
   } catch (error) {

@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { pgTable, uuid, boolean, index, timestamp } from "drizzle-orm/pg-core";
+
 import { users } from "./users.js";
 
 export const notificationSettings = pgTable(

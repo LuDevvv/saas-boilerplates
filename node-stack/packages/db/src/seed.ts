@@ -1,9 +1,10 @@
 import './env.js';
+import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import * as schema from './schema/index.js';
+
 import { createUserWithPassword, createWorkspace } from './factories/index.js';
-import { eq } from 'drizzle-orm';
+import * as schema from './schema/index.js';
+
 
 async function seed(): Promise<void> {
   const connectionString = process.env.DATABASE_URL;
@@ -14,39 +15,39 @@ async function seed(): Promise<void> {
   const pool = new Pool({
     connectionString: connectionString
   });
-  const db = drizzle(pool, { schema });
+  const db: NodePgDatabase<typeof schema> = drizzle(pool, { schema });
 
   // Simple arg parsing
   const args = process.argv.slice(2);
   const tenantArg = args.find(a => a.startsWith('--tenant='));
   const specificSlug = tenantArg ? tenantArg.split('=')[1] : null;
 
-  console.log('--- Starting Database Seeding ---');
+  console.warn('--- Starting Database Seeding ---');
 
   try {
     if (specificSlug) {
-      console.log(`[Atomic Seed] Targeting tenant: ${specificSlug}`);
-      
+      console.warn(`[Atomic Seed] Targeting tenant: ${specificSlug}`);
+
       // Atomic Seeding Logic
       const adminEmail = `${specificSlug}-admin@example.com`;
       const adminPassword = 'password123';
-      
-      console.log(`Creating/Updating user for ${specificSlug}: ${adminEmail}...`);
-      const { user: admin } = await createUserWithPassword(db as any, adminPassword, {
+
+      console.warn(`Creating/Updating user for ${specificSlug}: ${adminEmail}...`);
+      const { user: admin } = await createUserWithPassword(db, adminPassword, {
         email: adminEmail,
         name: `${specificSlug} Admin`,
         role: 'user', // regular user for tenant seeds
         emailVerified: true,
       });
 
-      console.log(`Creating/Updating workspace: ${specificSlug}...`);
-      const workspace = await createWorkspace(db as any, admin.id, {
-        name: specificSlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+      console.warn(`Creating/Updating workspace: ${specificSlug}...`);
+      const workspace = await createWorkspace(db, admin.id, {
+        name: specificSlug.split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
         slug: specificSlug,
       });
 
-      console.log('Linking user to workspace...');
-      await (db as any)
+      console.warn('Linking user to workspace...');
+      await db
         .insert(schema.memberships)
         .values({ userId: admin.id, workspaceId: workspace.id, role: 'admin' })
         .onConflictDoUpdate({
@@ -54,46 +55,46 @@ async function seed(): Promise<void> {
           set: { role: 'admin' }
         });
 
-      console.log(`✅ Atomic seed for ${specificSlug} complete.`);
-      console.log(`Credentials: ${adminEmail} / ${adminPassword}`);
+      console.warn(`✅ Atomic seed for ${specificSlug} complete.`);
+      console.warn(`Credentials: ${adminEmail} / ${adminPassword}`);
     } else {
       // 1. Create/Update Super User
       const adminEmail = 'admin@ludevv.com';
       const adminPassword = 'Password123';
-      
-      console.log(`Creating/Updating super user: ${adminEmail}...`);
-      const { user: admin } = await createUserWithPassword(db as any, adminPassword, {
+
+      console.warn(`Creating/Updating super user: ${adminEmail}...`);
+      const { user: admin } = await createUserWithPassword(db, adminPassword, {
         email: adminEmail,
         name: 'Super Admin',
         role: 'super_admin',
         emailVerified: true,
       });
-      console.log('✅ Super user created/updated.');
+      console.warn('✅ Super user created/updated.');
 
       // 2. Create/Find Default Workspace
       const workspaceName = 'Main Laboratory';
       const workspaceSlug = 'main-laboratory';
-      
-      console.log(`Creating/Updating workspace: ${workspaceName}...`);
-      const workspace = await createWorkspace(db as any, admin.id, {
+
+      console.warn(`Creating/Updating workspace: ${workspaceName}...`);
+      const workspace = await createWorkspace(db, admin.id, {
         name: workspaceName,
         slug: workspaceSlug,
       });
-      console.log('✅ Workspace created/updated.');
+      console.warn('✅ Workspace created/updated.');
 
       // 3. Link user to workspace with ADMIN role
-      console.log('Linking user to workspace with ADMIN role...');
-      await (db as any)
+      console.warn('Linking user to workspace with ADMIN role...');
+      await db
         .insert(schema.memberships)
         .values({ userId: admin.id, workspaceId: workspace.id, role: 'admin' })
         .onConflictDoUpdate({
           target: [schema.memberships.userId, schema.memberships.workspaceId],
           set: { role: 'admin' }
         });
-      console.log('✅ Membership created/updated.');
+      console.warn('✅ Membership created/updated.');
 
-      console.log('--- Full Seeding Complete ---');
-      console.log(`Credentials: ${adminEmail} / ${adminPassword}`);
+      console.warn('--- Full Seeding Complete ---');
+      console.warn(`Credentials: ${adminEmail} / ${adminPassword}`);
     }
 
   } catch (error) {

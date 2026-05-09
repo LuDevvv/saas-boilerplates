@@ -1,9 +1,10 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { eq, and, desc } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
-import { DB_TOKEN } from "../tokens.js";
+
 import * as schema from "../schema/index.js";
 import { tickets, type Ticket, type NewTicket } from "../schema/tickets.js";
+import { DB_TOKEN } from "../tokens.js";
 
 type Tx = NodePgDatabase<typeof schema>;
 

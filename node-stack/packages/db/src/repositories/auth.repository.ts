@@ -2,8 +2,8 @@ import { Injectable, Inject, Logger } from "@nestjs/common";
 import { eq, and, gt, desc, isNull, lt, or, type SQL } from "drizzle-orm";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
-import { DB_TOKEN } from "../tokens.js";
 import * as schema from "../schema/index.js";
+import { DB_TOKEN } from "../tokens.js";
 
 type User = typeof schema.users.$inferSelect;
 type CreateUserData = typeof schema.users.$inferInsert;
@@ -318,7 +318,7 @@ export class AuthRepository {
       cursorCreatedAt: Date | null;
       cursorId: string | null;
     },
-  ) {
+  ): Promise<(typeof schema.auditLogs.$inferSelect)[]> {
     const database = tx ?? this._db;
     const limit = options?.limit ?? 50;
     const conditions: SQL[] = [eq(schema.auditLogs.userId, userId)];
@@ -342,7 +342,7 @@ export class AuthRepository {
       .limit(limit);
   }
 
-  async findAll(options: { page: number; limit: number; search?: string }, tx?: Tx) {
+  async findAll(options: { page: number; limit: number; search?: string }, tx?: Tx): Promise<(typeof schema.users.$inferSelect)[]> {
     const database = tx ?? this._db;
     const offset = (options.page - 1) * options.limit;
 

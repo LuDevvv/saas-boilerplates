@@ -1,21 +1,21 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { db as superDb, pool as superPool, resetDatabase } from './test-db.js';
-import { workspaces, tasks } from '../schema/index.js';
-import { withTransaction } from '../index.js';
-import { RequestContextService } from '../context/request-context.service.js';
-import { sql } from 'drizzle-orm';
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+
+import { db as superDb, resetDatabase } from './test-db.js';
+import { RequestContextService } from '../context/request-context.service.js';
+import { withTransaction } from '../index.js';
+import { workspaces, tasks } from '../schema/index.js';
 import * as schema from '../schema/index.js';
 
 describe('Automatic RLS Enforcement', () => {
-  let appDb: any;
+  let appDb: NodePgDatabase<typeof schema>;
   let appPool: Pool;
   const context = new RequestContextService();
 
   beforeAll(async () => {
     await resetDatabase(superDb);
-    
+
     // Create a connection as the non-superuser app_user to trigger RLS enforcement
     const dbUrl = process.env.DATABASE_URL!.replace('test_user:test_pass', 'app_user:app_pass');
     appPool = new Pool({ connectionString: dbUrl });

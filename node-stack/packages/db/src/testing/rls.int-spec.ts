@@ -1,17 +1,18 @@
+import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+
 import { db as superDb, pool as superPool, resetDatabase } from './test-db.js';
 import { workspaces, tasks, sql } from '../index.js';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
 import * as schema from '../schema/index.js';
 
 describe('Row Level Security (RLS)', () => {
-  let appDb: any;
+  let appDb: NodePgDatabase<typeof schema>;
   let appPool: Pool;
 
   beforeAll(async () => {
     await resetDatabase(superDb);
-    
+
     // Create a connection as the non-superuser app_user
     const dbUrl = process.env.DATABASE_URL!.replace('test_user:test_pass', 'app_user:app_pass');
     appPool = new Pool({ connectionString: dbUrl });
@@ -35,17 +36,17 @@ describe('Row Level Security (RLS)', () => {
     }).returning();
 
     // 3. Query as Workspace A (using app_user connection)
-    await appDb.transaction(async (tx: any) => {
+    await appDb.transaction(async (tx) => {
       await tx.execute(sql.raw(`SET LOCAL "app.current_workspace_id" = '${wsA.id}'`));
-      
+
       const wsATasks = await tx.select().from(tasks);
       expect(wsATasks).toHaveLength(0);
     });
 
     // 4. Query as Workspace B (using app_user connection)
-    await appDb.transaction(async (tx: any) => {
+    await appDb.transaction(async (tx) => {
       await tx.execute(sql.raw(`SET LOCAL "app.current_workspace_id" = '${wsB.id}'`));
-      
+
       const wsBTasks = await tx.select().from(tasks);
       expect(wsBTasks).toHaveLength(1);
       expect(wsBTasks[0].id).toBe(taskB.id);
