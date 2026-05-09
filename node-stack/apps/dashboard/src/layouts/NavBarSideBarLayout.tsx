@@ -1,10 +1,11 @@
-import { Sidebar } from "@/components/layout/Sidebar";
-import { Navbar } from "@/components/layout/Navbar";
 import type { FC, PropsWithChildren } from "react";
-import { useSidebarState } from "@/hooks/useSidebarState";
-import { cn } from "@/utils/classNames";
+
+import { Navbar } from "@/components/layout/Navbar";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { CommandPalette } from "@/components/shared/CommandPalette";
 import { MotionContainer } from "@/components/utils/MotionContainer";
+import { useSidebarState } from "@/hooks/useSidebarState";
+import { cn } from "@/utils/classNames";
 
 interface NavbarSidebarLayoutProps {
   isFooter?: boolean;

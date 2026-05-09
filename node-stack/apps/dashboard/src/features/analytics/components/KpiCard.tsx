@@ -1,6 +1,7 @@
-import { FC } from "react";
 import { TrendingUp, TrendingDown, type LucideIcon } from "lucide-react";
+import { FC } from "react";
 import { AreaChart, Area, ResponsiveContainer } from "recharts";
+
 import { cn } from "@/utils/classNames";
 
 // ─── Inline sparkline ─────────────────────────────────────────────────────────

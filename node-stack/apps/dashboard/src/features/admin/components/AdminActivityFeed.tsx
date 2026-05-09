@@ -1,5 +1,6 @@
-import { FC } from "react";
 import { Activity, Loader2 } from "lucide-react";
+import { FC } from "react";
+
 import { useAuditLogs } from "../hooks";
 
 export const AdminActivityFeed: FC = () => {

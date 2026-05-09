@@ -1,13 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
 import { OTPInput, Button } from "@node-stack/ui";
-import { appToast } from "@/components/alerts/Toasts";
-import { useAuth } from "@/hooks/stores/useAuth";
-import { useVerifyEmail, useResendVerification } from "@/features/auth/hooks";
+import { ArrowLeft } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate , Link } from "react-router-dom";
+
+
 import { AuthSidebar } from "./components/AuthSidebar";
+
 import { Logo } from "@/assets/logo/logo";
-import { Link } from "react-router-dom";
+import { appToast } from "@/components/alerts/Toasts";
+import { useVerifyEmail, useResendVerification } from "@/features/auth/hooks";
+import { useAuth } from "@/hooks/stores/useAuth";
+
 
 const VerifyEmail: React.FC = () => {
   const [code, setCode] = useState<string[]>(new Array(6).fill(""));
@@ -85,6 +88,7 @@ const VerifyEmail: React.FC = () => {
           });
           navigate("/auth/sign-in");
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onError: (error: any) => {
           appToast.error({
             title: "Error de verificación",
@@ -106,6 +110,7 @@ const VerifyEmail: React.FC = () => {
         });
         setResendCooldown(60);
       },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onError: (error: any) => {
         appToast.error({
           title: "Error al reenviar",

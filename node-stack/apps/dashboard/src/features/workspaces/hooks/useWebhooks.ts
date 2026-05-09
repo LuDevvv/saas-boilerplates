@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/react-query/queryKeys";
-import { api } from "@/lib/api";
+
 import { appToast } from "@/components/alerts/Toasts";
+import { api } from "@/lib/api";
+import { queryKeys } from "@/lib/react-query/queryKeys";
 
 export const useWebhooks = (workspaceId: string | null) => {
   return useQuery({
@@ -14,6 +15,7 @@ export const useWebhooks = (workspaceId: string | null) => {
 export const useCreateWebhook = (workspaceId: string | null) => {
   const queryClient = useQueryClient();
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return useMutation<any, Error, { url: string; eventTypes: string[] }>({
     mutationFn: ({ url, eventTypes }) =>
       api.workspace.createWebhook(workspaceId!, { url, eventTypes }).then((r) => r.data),
@@ -43,6 +45,7 @@ export const useDeleteWebhook = (workspaceId: string | null) => {
 export const useUpdateWebhook = (workspaceId: string | null) => {
   const queryClient = useQueryClient();
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return useMutation<any, Error, { id: string; url?: string; eventTypes?: string[]; enabled?: boolean }>({
     mutationFn: ({ id, ...data }) =>
       api.workspace.updateWebhook(workspaceId!, id, data).then((r) => r.data),

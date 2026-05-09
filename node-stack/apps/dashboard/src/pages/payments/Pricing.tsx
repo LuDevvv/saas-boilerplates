@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { Button, BillingToggle } from "@node-stack/ui";
 import {
   Check,
   CheckCircle2,
@@ -10,12 +10,13 @@ import {
   ArrowRight,
   TrendingDown,
 } from "lucide-react";
-import { Button, BillingToggle } from "@node-stack/ui";
-import { useAuth } from "@/hooks/stores/useAuth";
+import { FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { cn } from "@/utils/classNames";
+
 import { BackButton } from "@/components/shared/BackButton";
+import { useAuth } from "@/hooks/stores/useAuth";
 import { useExchangeRate } from "@/hooks/useExchangeRate";
+import { cn } from "@/utils/classNames";
 
 // ─── Plan catalog ─────────────────────────────────────────────────────────────
 

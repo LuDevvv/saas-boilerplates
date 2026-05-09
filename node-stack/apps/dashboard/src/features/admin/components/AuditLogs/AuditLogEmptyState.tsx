@@ -1,6 +1,6 @@
-import { FC } from "react";
-import { ScrollText } from "lucide-react";
 import { EmptyState } from "@node-stack/ui";
+import { ScrollText } from "lucide-react";
+import { FC } from "react";
 
 export const AuditLogEmptyState: FC = () => (
   <EmptyState

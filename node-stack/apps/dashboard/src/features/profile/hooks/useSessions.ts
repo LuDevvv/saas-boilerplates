@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+
 import { appToast } from "@/components/alerts/Toasts";
+import { api } from "@/lib/api";
 
 export const useSessions = () => {
   const queryClient = useQueryClient();

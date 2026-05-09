@@ -1,4 +1,4 @@
-import { FC, useState, useMemo } from "react";
+import { FilterTabs, StatusPill } from "@node-stack/ui";
 import {
   Activity,
   RefreshCw,
@@ -7,8 +7,10 @@ import {
   Loader2,
   Filter,
 } from "lucide-react";
+import { FC, useState, useMemo } from "react";
+
 import { ModalLayout } from "@/layouts/ModalLayout";
-import { FilterTabs, StatusPill } from "@node-stack/ui";
+
 
 // ─── Mock data types ─────────────────────────────────────────────────────────
 

@@ -1,5 +1,6 @@
-import { Plus, Trash2, ShieldCheck } from "lucide-react";
 import { Button, Card, Badge } from "@node-stack/ui";
+import { Plus, Trash2, ShieldCheck } from "lucide-react";
+
 import { SectionHeader } from "@/components/layout/SectionHeader";
 
 const PaymentMethods = () => {

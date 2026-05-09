@@ -124,6 +124,19 @@ export default [
     },
   },
   {
+    // Dashboard app: api-client responses are currently `any` (Phase 4c will regenerate types).
+    // Turn off warning-level unsafe-* rules until codegen produces typed responses.
+    // explicit-function-return-type is off because React component inference is sufficient.
+    files: ['apps/dashboard/**/*.ts', 'apps/dashboard/**/*.tsx'],
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment':    'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-call':          'off',
+      '@typescript-eslint/no-unsafe-return':        'off',
+      '@typescript-eslint/explicit-function-return-type': 'off',
+    },
+  },
+  {
     // Relax rules for test and migration files
     // Also disable typed-linting for spec files that are excluded from tsconfig
     files: ['**/*.spec.ts', '**/*.e2e-spec.ts', '**/test-*.ts', '**/migrate.ts'],

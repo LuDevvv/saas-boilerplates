@@ -1,10 +1,13 @@
-import { FC, useState } from "react";
-import { ShieldCheck, ShieldAlert, Loader2 } from "lucide-react";
 import { Button, CalloutCard } from "@node-stack/ui";
-import { useAuth } from "@/hooks/stores/useAuth";
+import { ShieldCheck, ShieldAlert, Loader2 } from "lucide-react";
+import { FC, useState } from "react";
+
+
 import { TwoFactorModal } from "./TwoFactorModal";
 import { useDisable2fa } from "../../auth/hooks/use2faMutations";
+
 import { appToast } from "@/components/alerts/Toasts";
+import { useAuth } from "@/hooks/stores/useAuth";
 
 export const SecurityCard: FC = () => {
   const { user } = useAuth();
@@ -20,7 +23,7 @@ export const SecurityCard: FC = () => {
         title: "2FA Desactivado",
         description: "Se ha eliminado la protección de dos pasos de tu cuenta."
       });
-    } catch (error) {
+    } catch {
       appToast.error({
         title: "Error",
         description: "No se pudo desactivar el 2FA. Inténtalo de nuevo."

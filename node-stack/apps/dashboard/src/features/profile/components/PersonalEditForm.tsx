@@ -1,8 +1,9 @@
-import { FC } from "react";
-import { Mail, User, Phone } from "lucide-react";
-import { Button, InfoItem, Input, PhoneInput } from "@node-stack/ui";
-import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, InfoItem, Input, PhoneInput } from "@node-stack/ui";
+import { Mail, User, Phone } from "lucide-react";
+import { FC } from "react";
+import { useForm, Controller } from "react-hook-form";
+
 import { ProfileFormValues, profileSchema } from "../types";
 
 interface PersonalEditFormProps {
@@ -21,6 +22,7 @@ export const PersonalEditForm: FC<PersonalEditFormProps> = ({
   onCancel,
 }) => {
   const { register, handleSubmit, control, formState: { errors } } = useForm<ProfileFormValues>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(profileSchema as any),
     defaultValues: {
       firstName: user?.firstName ?? "",

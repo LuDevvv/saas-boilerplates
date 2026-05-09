@@ -23,9 +23,9 @@ export const dashboardApi = {
   getRecentActivity: (): Promise<ActivityItem[]> => 
     apiClient.get("/analytics/activity"),
     
-  getOnboardingStatus: (): Promise<any[]> =>
+  getOnboardingStatus: (): Promise<Record<string, unknown>[]> =>
     apiClient.get("/workspaces/onboarding"),
-    
-  getReleaseNotes: (): Promise<any[]> =>
+
+  getReleaseNotes: (): Promise<Record<string, unknown>[]> =>
     apiClient.get("/system/release-notes"),
 };

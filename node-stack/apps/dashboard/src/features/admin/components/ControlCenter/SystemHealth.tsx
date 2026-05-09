@@ -1,6 +1,7 @@
-import { FC } from "react";
-import { Server, Cpu, Clock, CheckCircle2 } from "lucide-react";
 import type { AdminStats } from "@node-stack/types";
+import { Server, Cpu, Clock, CheckCircle2 } from "lucide-react";
+import { FC } from "react";
+
 import { cn } from "@/utils/classNames";
 
 interface SystemHealthProps {

@@ -1,8 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/react-query/queryKeys";
-import { api } from "@/lib/api";
-import { appToast } from "@/components/alerts/Toasts";
 import type { InviteMemberDto, UpdateMemberRoleDto, WorkspaceMember } from "@node-stack/types";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { appToast } from "@/components/alerts/Toasts";
+import { api } from "@/lib/api";
+import { queryKeys } from "@/lib/react-query/queryKeys";
 
 export const useWorkspaceMembers = (workspaceId: string | null) => {
   const query = useQuery({
@@ -13,6 +14,7 @@ export const useWorkspaceMembers = (workspaceId: string | null) => {
 
   return {
     ...query,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: ((query.data as any)?.data ?? query.data ?? []) as WorkspaceMember[],
   };
 };
@@ -20,6 +22,7 @@ export const useWorkspaceMembers = (workspaceId: string | null) => {
 export const useInviteMember = (workspaceId: string | null) => {
   const queryClient = useQueryClient();
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return useMutation<any, Error, InviteMemberDto>({
     mutationFn: (data) => api.workspace.inviteMember(workspaceId!, data),
     onSuccess: () => {
@@ -36,6 +39,7 @@ export const useUpdateMemberRole = (workspaceId: string | null) => {
   const queryClient = useQueryClient();
   const queryKey = workspaceId ? [...queryKeys.all, "workspaces", workspaceId, "members"] : [];
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return useMutation<any, Error, { memberId: string; role: UpdateMemberRoleDto["role"] }>({
     mutationFn: ({ memberId, role }) =>
       api.workspace.updateMemberRole(workspaceId!, memberId, { role }),
@@ -43,13 +47,16 @@ export const useUpdateMemberRole = (workspaceId: string | null) => {
       await queryClient.cancelQueries({ queryKey });
       const previousMembers = queryClient.getQueryData(queryKey);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       queryClient.setQueryData(queryKey, (old: any) => {
         const members = Array.isArray(old) ? old : old?.data || [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return members.map((m: any) => m.id === memberId ? { ...m, role } : m);
       });
 
       return { previousMembers };
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err, _, context: any) => {
       queryClient.setQueryData(queryKey, context?.previousMembers);
       appToast.error(err);
@@ -73,13 +80,16 @@ export const useRemoveMember = (workspaceId: string | null) => {
       await queryClient.cancelQueries({ queryKey });
       const previousMembers = queryClient.getQueryData(queryKey);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       queryClient.setQueryData(queryKey, (old: any) => {
         const members = Array.isArray(old) ? old : old?.data || [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return members.filter((m: any) => m.id !== memberId);
       });
 
       return { previousMembers };
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err, _, context: any) => {
       queryClient.setQueryData(queryKey, context?.previousMembers);
       appToast.error(err);

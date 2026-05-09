@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
-import { WifiOff, RefreshCw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { WifiOff, RefreshCw } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
 
 interface ServiceWorkerRegistration {
   waiting?: ServiceWorker;

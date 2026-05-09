@@ -1,4 +1,3 @@
-import { FC } from "react";
 import {
   Filter,
   UserX,
@@ -7,12 +6,16 @@ import {
   LogIn,
   Shield,
 } from "lucide-react";
-import { cn } from "@/utils/classNames";
-import { type AdminUser } from "@/features/admin";
+import { FC } from "react";
+
+import { UserEmptyState } from "./UserEmptyState";
+import { UserRow } from "./UserRow";
 import { UserSearch } from "./UserSearch";
 import { UserTable } from "./UserTable";
-import { UserRow } from "./UserRow";
-import { UserEmptyState } from "./UserEmptyState";
+
+import { type AdminUser } from "@/features/admin";
+import { cn } from "@/utils/classNames";
+
 
 interface UserTableContentProps {
   users: AdminUser[];

@@ -1,7 +1,9 @@
-import { FC } from "react";
-import { LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Button } from "@node-stack/ui";
+import { LucideIcon } from "lucide-react";
+import { FC } from "react";
+
+import { cn } from "@/lib/utils";
+
 
 interface EmptyStateProps {
   icon?: LucideIcon;

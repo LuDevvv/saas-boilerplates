@@ -1,9 +1,11 @@
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
+
 import "./index.css";
 import "@/config/i18n";
-import { initSentry } from "@/lib/sentry";
 import App from "./app/App";
+
+import { initSentry } from "@/lib/sentry";
 
 initSentry();
 

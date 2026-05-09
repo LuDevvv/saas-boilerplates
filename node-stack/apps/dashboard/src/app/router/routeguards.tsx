@@ -1,5 +1,6 @@
 import { ReactElement } from "react";
 import { Navigate, useLocation } from "react-router-dom";
+
 import Loading from "@/components/ui/Loading";
 import { useAuth } from "@/hooks/stores/useAuth";
 
@@ -40,7 +41,7 @@ export const adminGuard = (element: ReactElement): ReactElement => {
     return <Loading />;
   }
 
-  const isAdmin = user?.role === "admin" || user?.role === "super_admin" || !!(user as any)?.isAdmin;
+  const isAdmin = user?.role === "admin" || user?.role === "super_admin" || !!(user as { isAdmin?: boolean })?.isAdmin;
 
   if (!user || !isAdmin) {
     return <Navigate to="/" state={{ from: location }} replace />;

@@ -1,9 +1,10 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, cookieTokenStorage } from "@/lib/api";
-import { useAuthStore } from "@/stores/authStore";
-import { useShallow } from "zustand/react/shallow";
-import { queryKeys } from "@/lib/react-query/queryKeys";
 import type { LoginDto, RegisterDto, AuthResponse, VerifyEmailDto } from "@node-stack/types";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useShallow } from "zustand/react/shallow";
+
+import { api, cookieTokenStorage } from "@/lib/api";
+import { queryKeys } from "@/lib/react-query/queryKeys";
+import { useAuthStore } from "@/stores/authStore";
 
 export const useLogin = () => {
   const setAuth = useAuthStore(useShallow((state) => state.setAuth));

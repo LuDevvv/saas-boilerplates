@@ -1,15 +1,16 @@
-import { Calendar, Edit3, Building2, Loader2 } from "lucide-react";
+import { appToast } from "@components/alerts/Toasts";
 import { Button, Badge, HeroHeader, ProfileAvatar } from "@node-stack/ui";
 import { formatEntityDate } from "@node-stack/utils";
-import { appToast } from "@components/alerts/Toasts";
+import { Calendar, Edit3, Building2, Loader2 } from "lucide-react";
 import { FC } from "react";
+
 import { useUploadFile } from "@/features/storage/hooks/useStorage";
 import { useUpdateWorkspace } from "@/features/workspaces/hooks/useWorkspaces";
 
 interface CompanyHeroProps {
   isEditing: boolean;
   onToggleEdit: () => void;
-  workspace?: any;
+  workspace?: Record<string, unknown>;
   isPending?: boolean;
 }
 
@@ -33,7 +34,7 @@ export const CompanyHero: FC<CompanyHeroProps> = ({ isEditing, onToggleEdit, wor
         title: "Logo actualizado",
         description: "El logo de la compañía se ha guardado correctamente."
       });
-    } catch (error) {
+    } catch {
       // Handled by hook
     }
   };

@@ -1,8 +1,9 @@
-import { FC, useState } from "react";
+import type { WebhookEndpoint } from "@node-stack/types";
 import { Button, ConfirmDialog, Skeleton, StatusPill } from "@node-stack/ui";
 import { Trash2, Globe, Calendar, Activity, Copy, Check, ShieldCheck } from "lucide-react";
+import { FC, useState } from "react";
+
 import { appToast } from "@/components/alerts/Toasts";
-import type { WebhookEndpoint } from "@node-stack/types";
 import { cn } from "@/utils/classNames";
 
 interface WebhookListProps {

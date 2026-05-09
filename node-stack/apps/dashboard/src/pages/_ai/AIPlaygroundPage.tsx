@@ -1,4 +1,5 @@
 import { FC } from "react";
+
 import AIPlayground from "@/pages/ai/AIPlayground";
 
 const AIPlaygroundPage: FC = () => {

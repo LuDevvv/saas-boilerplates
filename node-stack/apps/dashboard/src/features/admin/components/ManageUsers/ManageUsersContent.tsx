@@ -1,9 +1,11 @@
-import { FC, useState } from "react";
-import { Download } from "lucide-react";
 import { PageHeader } from "@node-stack/ui";
-import { useAdminUsers, useUpdateUserStatus, useUpdateUserRole } from "@/features/admin";
-import { useImpersonateUser } from "@/features/admin";
+import { Download } from "lucide-react";
+import { FC, useState } from "react";
+
 import { UserTableContent } from "./UserTableContent";
+
+import { useAdminUsers, useUpdateUserStatus, useUpdateUserRole , useImpersonateUser } from "@/features/admin";
+
 
 export const ManageUsersContent: FC = () => {
   const [searchTerm, setSearchTerm] = useState("");

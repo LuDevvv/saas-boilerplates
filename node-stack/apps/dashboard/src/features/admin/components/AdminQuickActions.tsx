@@ -1,6 +1,6 @@
+import { Users, Settings, Zap, LayoutGrid, Activity } from "lucide-react";
 import { FC } from "react";
 import { Link } from "react-router-dom";
-import { Users, Settings, Zap, LayoutGrid, Activity } from "lucide-react";
 
 const QuickLink: FC<{ to: string; icon: typeof Users; label: string }> = ({ to, icon: Icon, label }) => (
   <Link

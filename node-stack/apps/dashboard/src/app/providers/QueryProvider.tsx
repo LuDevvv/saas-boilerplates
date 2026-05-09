@@ -1,6 +1,5 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider , onlineManager } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { onlineManager } from "@tanstack/react-query";
 import { ReactNode, useState } from "react";
 
 onlineManager.setEventListener((setOnline) => {

@@ -1,6 +1,6 @@
-import { FC } from "react";
-import { ShieldCheck } from "lucide-react";
 import { Button, CalloutCard } from "@node-stack/ui";
+import { ShieldCheck } from "lucide-react";
+import { FC } from "react";
 
 export const KycCard: FC = () => (
   <CalloutCard

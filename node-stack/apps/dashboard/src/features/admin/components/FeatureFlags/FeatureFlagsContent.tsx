@@ -1,7 +1,9 @@
-import { FC, useState } from "react";
-import { Zap, Globe, Building2, User, Loader2, AlertCircle, ToggleLeft, ToggleRight } from "lucide-react";
 import { PageHeader, FilterTabs } from "@node-stack/ui";
+import { Zap, Globe, Building2, User, Loader2, AlertCircle, ToggleLeft, ToggleRight } from "lucide-react";
+import { FC, useState } from "react";
+
 import { useFeatureFlags, useToggleFeatureFlag } from "../../hooks";
+
 import { cn } from "@/utils/classNames";
 
 type FlagScope = "all" | "global" | "workspace" | "user";
@@ -86,6 +88,7 @@ export const FeatureFlagsContent: FC = () => {
   const handleToggle = (flagKey: string, enabled: boolean, scope: string) => {
     setTogglingKey(flagKey);
     toggle.mutate(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       { flagKey, enabled, scope: scope as any },
       { onSettled: () => setTogglingKey(null) }
     );

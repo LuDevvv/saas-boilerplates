@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from "react";
+import { Button, CalloutCard, SearchInput, StatRow } from "@node-stack/ui";
 import {
   Users,
   UserPlus,
@@ -9,18 +9,20 @@ import {
   ChevronRight,
   Sparkles,
 } from "lucide-react";
-import { Button, CalloutCard, SearchInput, StatRow } from "@node-stack/ui";
-import { useWorkspaceStore } from "@/stores/workspaceStore";
-import { useAuth } from "@/hooks/stores/useAuth";
+import { FC, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
+import { InviteMemberModal } from "../components/InviteMemberModal";
+import { MembersList } from "../components/MembersList";
 import {
   useWorkspaceMembers,
   useInviteMember,
   useUpdateMemberRole,
   useRemoveMember,
 } from "../hooks/useWorkspaceMembers";
-import { MembersList } from "../components/MembersList";
-import { InviteMemberModal } from "../components/InviteMemberModal";
+
+import { useAuth } from "@/hooks/stores/useAuth";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { cn } from "@/utils/classNames";
 
 // ─── Pagination ───────────────────────────────────────────────────────────────
@@ -141,6 +143,7 @@ const MembersPage: FC = () => {
     if (!search.trim()) return members || [];
     const q = search.toLowerCase();
     return (members || []).filter(m => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const user = m.user as any;
       const name = `${user.firstName || ""} ${user.lastName || ""} ${user.name || ""}`.toLowerCase();
       return name.includes(q) || (user.email || "").toLowerCase().includes(q);
@@ -224,6 +227,7 @@ const MembersPage: FC = () => {
                 members={paginated}
                 isLoading={false}
                 onUpdateRole={(id, role) =>
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   updateRoleMutation.mutate({ memberId: id, role: role as any })
                 }
                 onRemove={(id) => removeMutation.mutate(id)}

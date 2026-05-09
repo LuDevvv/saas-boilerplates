@@ -1,5 +1,6 @@
-import { create } from "zustand";
 import { io, Socket } from "socket.io-client";
+import { create } from "zustand";
+
 import { cookieTokenStorage } from "@/lib/api";
 
 export interface OnlineUser {
@@ -29,7 +30,7 @@ const getBaseUrl = () => {
   try {
     const parsed = new URL(url);
     return `${parsed.protocol}//${parsed.host}`;
-  } catch (e) {
+  } catch {
     console.warn("[realtime] VITE_SERVER_URL is not a valid URL:", url);
     return "";
   }

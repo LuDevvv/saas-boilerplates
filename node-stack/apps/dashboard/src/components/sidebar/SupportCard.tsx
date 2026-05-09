@@ -1,5 +1,6 @@
-import { FC, useState } from "react";
 import { Headphones, X } from "lucide-react";
+import { FC, useState } from "react";
+
 import { cn } from "@/utils/classNames";
 
 export const SupportCard: FC = () => {

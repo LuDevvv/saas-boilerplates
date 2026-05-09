@@ -1,5 +1,6 @@
-import { Inbox } from "lucide-react";
 import { Button, EmptyState } from "@node-stack/ui";
+import { Inbox } from "lucide-react";
+
 import { statusConfig } from "../config";
 
 interface TicketEmptyStateProps {

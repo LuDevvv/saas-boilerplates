@@ -1,12 +1,15 @@
-import { FC, useState, useMemo } from "react";
 import { Download, Eye, Users, MousePointer2, Target } from "lucide-react";
-import { cn } from "@/utils/classNames";
-import { KpiCard } from "./KpiCard";
-import { SalesChart, type TrendPoint } from "./SalesChart";
+import { FC, useState, useMemo } from "react";
+
+
 import { ActivityChart, type BarPoint } from "./ActivityChart";
 import { DonutWidget, type DonutSlice } from "./DonutWidget";
+import { KpiCard } from "./KpiCard";
+import { SalesChart, type TrendPoint } from "./SalesChart";
 import { TopProductsTable, type SourceItem } from "./TopProductsTable";
+
 import { appToast } from "@/components/alerts/Toasts";
+import { cn } from "@/utils/classNames";
 
 // ─── Period type ──────────────────────────────────────────────────────────────
 

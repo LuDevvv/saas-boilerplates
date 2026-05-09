@@ -1,6 +1,7 @@
+import { animate } from "@motionone/dom";
 import { useIsFetching, useIsMutating } from "@tanstack/react-query";
 import { useEffect, useState, useRef } from "react";
-import { animate } from "@motionone/dom";
+
 import { transition } from "@/lib/motion";
 
 export const GlobalProgressBar = () => {

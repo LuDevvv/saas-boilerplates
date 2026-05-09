@@ -1,5 +1,6 @@
 import { TicketStatus } from "@node-stack/types";
 import { FilterTabs } from "@node-stack/ui";
+
 import { statusTabs } from "../config";
 
 interface StatusTabsProps {

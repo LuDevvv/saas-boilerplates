@@ -1,13 +1,15 @@
-import { FC, useState } from "react";
-import { cn } from "@/utils/classNames";
-import { LogOut, Settings } from "lucide-react";
-import { useAuth } from "@/hooks/stores/useAuth";
-import { SettingsModal } from "@/features/settings/components/SettingsModal.js";
 import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
 } from "@node-stack/ui";
+import { LogOut, Settings } from "lucide-react";
+import { FC, useState } from "react";
+
+import { SettingsModal } from "@/features/settings/components/SettingsModal.js";
+import { useAuth } from "@/hooks/stores/useAuth";
+import { cn } from "@/utils/classNames";
+
 
 interface UserIdentityProps {
   isCollapsed: boolean;

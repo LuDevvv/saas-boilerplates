@@ -1,9 +1,10 @@
-import { FC } from "react";
-import { CreditCard, Calendar, Lock, ShieldCheck, Loader2 } from "lucide-react";
-import { Button, Input } from "@node-stack/ui";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, Input } from "@node-stack/ui";
+import { CreditCard, Calendar, Lock, ShieldCheck, Loader2 } from "lucide-react";
+import { FC } from "react";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
+
 import { ModalLayout } from "@/layouts/ModalLayout";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
@@ -92,6 +93,7 @@ export const AddCardModal: FC<AddCardModalProps> = ({
     formState: { errors },
     reset,
   } = useForm<CardFormValues>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(cardSchema as any),
     mode: "onBlur",
   });

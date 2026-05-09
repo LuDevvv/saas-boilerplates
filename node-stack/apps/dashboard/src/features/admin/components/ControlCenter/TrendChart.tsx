@@ -1,20 +1,22 @@
+import { format, parseISO } from "date-fns";
+import { es } from "date-fns/locale";
 import { FC } from "react";
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid,
 } from "recharts";
-import { format, parseISO } from "date-fns";
-import { es } from "date-fns/locale";
 // ─── Shared tooltip ──────────────────────────────────────────────────────────
 
-const CustomTooltip: FC<any> = ({ active, payload, label, valueLabel, formatter }) => {
+interface TooltipPayloadEntry { name: string; value: number }
+interface CustomTooltipProps { active?: boolean; payload?: TooltipPayloadEntry[]; label?: string; valueLabel?: string; formatter?: (v: number) => string }
+const CustomTooltip: FC<CustomTooltipProps> = ({ active, payload, label, valueLabel, formatter }) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-[12px] border border-border bg-surface-elevated shadow-[var(--shadow-elevated)] px-3 py-2.5 text-[12px]">
       <p className="text-fg-muted mb-1 font-semibold">
         {label ? (() => { try { return format(parseISO(label), "d MMM yyyy", { locale: es }); } catch { return label; } })() : ""}
       </p>
-      {payload.map((p: any) => (
+      {payload.map((p) => (
         <p key={p.name} className="text-fg">
           <span className="text-fg-muted">{valueLabel ?? p.name}: </span>
           <span className="font-semibold">{formatter ? formatter(p.value) : p.value?.toLocaleString()}</span>

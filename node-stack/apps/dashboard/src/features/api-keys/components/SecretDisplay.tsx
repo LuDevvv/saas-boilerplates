@@ -1,6 +1,7 @@
-import { FC, useState } from "react";
-import { Check, Copy, Eye, EyeOff } from "lucide-react";
 import { Button } from "@node-stack/ui";
+import { Check, Copy, Eye, EyeOff } from "lucide-react";
+import { FC, useState } from "react";
+
 import { appToast } from "@/components/alerts/Toasts";
 
 interface SecretDisplayProps {

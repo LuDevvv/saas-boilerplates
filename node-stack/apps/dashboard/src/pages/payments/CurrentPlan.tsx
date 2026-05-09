@@ -1,7 +1,8 @@
-import { Check, Calendar, ArrowRight, Activity, Clock } from "lucide-react";
 import { Button, Card, CardContent, Badge, Progress } from "@node-stack/ui";
-import { useAuth } from "@/hooks/stores/useAuth";
+import { Check, Calendar, ArrowRight, Activity, Clock } from "lucide-react";
+
 import { SectionHeader } from "@/components/layout/SectionHeader";
+import { useAuth } from "@/hooks/stores/useAuth";
 
 export const CurrentPlan: React.FC = () => {
   const { currentPlan, isPremium } = useAuth();

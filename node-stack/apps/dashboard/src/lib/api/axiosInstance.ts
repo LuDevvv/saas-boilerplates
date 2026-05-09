@@ -1,8 +1,10 @@
-import axios from "axios";
 import { createClient } from "@node-stack/api-client";
+import axios from "axios";
+
 import { cookieTokenStorage } from "../cookie-storage";
-import { useWorkspaceStore } from "@/stores/workspaceStore";
+
 import { useAuthStore } from "@/stores/authStore";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
 
 const getActiveWorkspaceId = (): string | null => {
   return useWorkspaceStore.getState().activeWorkspaceId;
@@ -22,6 +24,7 @@ export const axiosInstance = createClient({
 // but we keep the error handling (retry/refresh) here
 axiosInstance.interceptors.response.use(
   (response) => response,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async (error: any) => {
     // Determine if this is a 401 error, handling both AxiosError and AppError
     const status = error.statusCode || error.response?.status || error.originalError?.response?.status;
@@ -56,6 +59,7 @@ axiosInstance.interceptors.response.use(
           // Update the original request with the new token
           originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return axiosInstance(originalRequest);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (refreshError: any) {
           const rStatus = refreshError?.response?.status || refreshError?.statusCode;
           if (rStatus === 401 || rStatus === 403) {
@@ -66,7 +70,7 @@ axiosInstance.interceptors.response.use(
               if (!window.location.pathname.startsWith("/auth")) {
                 window.location.href = "/auth/sign-in";
               }
-            } catch (e) {}
+            } catch {}
           }
           return Promise.reject(refreshError);
         }
@@ -81,7 +85,7 @@ axiosInstance.interceptors.response.use(
               window.location.href = "/auth/sign-in";
             }
           }
-        } catch (e) {}
+        } catch {}
       }
     }
 

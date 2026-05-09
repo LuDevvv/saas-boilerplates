@@ -1,5 +1,6 @@
-import { FC } from "react";
 import { List, LayoutGrid } from "lucide-react";
+import { FC } from "react";
+
 import { cn } from "@/utils/classNames";
 
 export type ViewMode = "grid" | "list";

@@ -1,5 +1,6 @@
-import { FC, useState } from "react";
 import { X } from "lucide-react";
+import { FC, useState } from "react";
+
 import { cn } from "@/utils/classNames";
 
 export const UpgradeCard: FC = () => {

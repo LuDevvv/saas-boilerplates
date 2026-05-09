@@ -56,11 +56,19 @@ export interface SidebarSectionProps {
   children: React.ReactNode;
 }
 
+export interface CurrentPlan {
+  planId?: string;
+  planName?: string;
+  status?: string;
+  currentPeriodEnd?: string;
+  [key: string]: unknown;
+}
+
 export interface AccountDropdownProps {
   isOpen: boolean;
   onClose: () => void;
   isPremium: boolean;
-  currentPlan: any | null;
+  currentPlan: CurrentPlan | null;
   onLogout: () => void;
   items: DropdownItem[];
   triggerRef: React.RefObject<HTMLButtonElement | null>;
@@ -72,7 +80,7 @@ export interface AccountSectionProps {
   isCollapsed: boolean;
   isPremium: boolean;
   user: UserType | null | undefined;
-  currentPlan: any | null;
+  currentPlan: CurrentPlan | null;
   onLogout: () => void;
   dropdownItems: DropdownItem[];
 }

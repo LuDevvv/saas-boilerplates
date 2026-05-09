@@ -1,6 +1,8 @@
-import { Toaster as HotToaster, toast, Toast as HotToast, resolveValue } from "react-hot-toast";
+import { AppError } from "@node-stack/api-client";
 import { CheckCircle2, Info, XCircle, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { Toaster as HotToaster, toast, Toast as HotToast, resolveValue , ToastOptions } from "react-hot-toast";
+
 import { playToastSound } from "@/utils/audio";
 
 // Types for Rich Toasts
@@ -153,15 +155,12 @@ const CustomToast = ({ t }: { t: HotToast }) => {
   );
 };
 
-import { ToastOptions } from "react-hot-toast";
-import { AppError } from "@node-stack/api-client";
-
 export const appToast = {
   success: (payload: RichToastPayload | string, options?: ToastOptions) => {
     playToastSound('success');
     return toast.success(payload as unknown as string, options);
   },
-  error: (payload: RichToastPayload | string | AppError | any, options?: ToastOptions) => {
+  error: (payload: RichToastPayload | string | AppError | unknown, options?: ToastOptions) => {
     playToastSound('error');
 
     if (payload instanceof AppError) {
@@ -172,6 +171,7 @@ export const appToast = {
       return toast.error({
         title: payload.message || "Ha ocurrido un error",
         description: description,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any, options);
     }
 
@@ -179,6 +179,7 @@ export const appToast = {
       return toast.error(payload, options);
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return toast.error(payload as any, options);
   },
   info: (payload: RichToastPayload | string, options?: ToastOptions) => {
@@ -188,6 +189,7 @@ export const appToast = {
   warning: (payload: RichToastPayload | string, options?: ToastOptions) => {
     playToastSound('warning');
     return toast.custom((t) => (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       <CustomToast t={{ ...t, type: 'custom', message: payload as any }} />
     ), options);
   },

@@ -1,4 +1,11 @@
-import { FC, useState, useCallback, useMemo, useRef } from "react";
+import {
+  CalloutCard,
+  EmptyState,
+  FilterTabs,
+  Input,
+  PageHeader,
+  TwoColumnLayout,
+} from "@node-stack/ui";
 import {
   HardDrive,
   Upload,
@@ -8,26 +15,22 @@ import {
   Layers,
   Search,
 } from "lucide-react";
-import {
-  CalloutCard,
-  EmptyState,
-  FilterTabs,
-  Input,
-  PageHeader,
-  TwoColumnLayout,
-} from "@node-stack/ui";
-import { useWorkspaceStore } from "@/stores/workspaceStore";
+import { FC, useState, useCallback, useMemo, useRef } from "react";
+
+
+import { FileGrid } from "../components/FileGrid";
+import { FileUploadButton } from "../components/FileUploadButton";
+import { StorageStats } from "../components/StorageStats";
+import { UploadTray } from "../components/UploadTray";
 import {
   useStorageFiles,
   useStorageStats,
   useUploadFile,
   useDeleteFile,
 } from "../hooks/useStorage";
-import { FileGrid } from "../components/FileGrid";
-import { StorageStats } from "../components/StorageStats";
-import { FileUploadButton } from "../components/FileUploadButton";
-import { UploadTray } from "../components/UploadTray";
+
 import { api } from "@/lib/api";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { cn } from "@/utils/classNames";
 
 // ─── Filter tabs ──────────────────────────────────────────────────────────────
@@ -62,6 +65,7 @@ const StoragePage: FC = () => {
   const { data: filesResponse, isLoading: isLoadingFiles } = useStorageFiles(activeWorkspaceId);
   const allFiles = Array.isArray(filesResponse)
     ? filesResponse
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     : (filesResponse as any)?.data || [];
 
   const { data: stats, isLoading: isLoadingStats } = useStorageStats(activeWorkspaceId);
@@ -79,6 +83,7 @@ const StoragePage: FC = () => {
   // ── Derived: filtered + searched files ────────────────────────────────────
   const visibleFiles = useMemo(() => {
     const q = search.trim().toLowerCase();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return allFiles.filter((f: any) => {
       if (!matchesFilter(f.type ?? "", filter)) return false;
       if (q && !f.name?.toLowerCase().includes(q)) return false;
@@ -124,6 +129,7 @@ const StoragePage: FC = () => {
     if (files.length > 0) await uploadMany(files);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDownload = async (file: any) => {
     try {
       const { downloadUrl } = await api.storage.getDownloadUrl(file.id);

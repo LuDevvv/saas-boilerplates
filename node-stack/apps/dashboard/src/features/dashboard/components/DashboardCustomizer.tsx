@@ -1,5 +1,3 @@
-import { FC } from "react";
-import { GripVertical, RotateCcw } from "lucide-react";
 import {
   DndContext,
   closestCenter,
@@ -17,9 +15,13 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { GripVertical, RotateCcw } from "lucide-react";
+import { FC } from "react";
+
+import { WIDGET_CATALOG, type WidgetId, type WidgetDef } from "../hooks/useDashboardLayout";
+
 import { ModalLayout } from "@/layouts/ModalLayout";
 import { cn } from "@/utils/classNames";
-import { WIDGET_CATALOG, type WidgetId, type WidgetDef } from "../hooks/useDashboardLayout";
 
 interface DashboardCustomizerProps {
   isOpen: boolean;

@@ -1,14 +1,3 @@
-import { FC, useState } from "react";
-import {
-  Bell,
-  CheckCircle2,
-  CreditCard,
-  Inbox,
-  Layers,
-  ShieldCheck,
-  Sparkles,
-  Users,
-} from "lucide-react";
 import {
   Button,
   CalloutCard,
@@ -21,6 +10,17 @@ import {
   StatusPill,
   TwoColumnLayout,
 } from "@node-stack/ui";
+import {
+  Bell,
+  CheckCircle2,
+  CreditCard,
+  Inbox,
+  Layers,
+  ShieldCheck,
+  Sparkles,
+  Users,
+} from "lucide-react";
+import { FC, useState } from "react";
 
 // ─── Layout helpers (catalog-only) ───────────────────────────────────────────
 

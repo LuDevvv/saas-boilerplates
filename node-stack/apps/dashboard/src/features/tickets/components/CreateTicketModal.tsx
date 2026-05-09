@@ -1,14 +1,19 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { TicketPriority, TicketCategory, CreateTicketDto } from "@node-stack/types";
+import { Button, Input } from "@node-stack/ui";
+import { CreateTicketSchema } from "@node-stack/validators";
+import { AlertCircle, Send, Bug, Zap, CreditCard, MessageSquare } from "lucide-react";
 import { FC } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, Send, Bug, Zap, CreditCard, MessageSquare } from "lucide-react";
-import { useCreateTicket } from "../index";
-import type { TicketPriority, TicketCategory, CreateTicketDto } from "@node-stack/types";
-import { CreateTicketSchema } from "@node-stack/validators";
 import { useNavigate } from "react-router-dom";
-import { cn } from "@/utils/classNames";
-import { Button, Input } from "@node-stack/ui";
+
+import { useCreateTicket } from "../index";
+
+
 import { ModalLayout } from "@/layouts/ModalLayout";
+import { cn } from "@/utils/classNames";
+
+
 
 interface CreateTicketModalProps {
   isOpen: boolean;
@@ -26,6 +31,7 @@ const CreateTicketModal: FC<CreateTicketModalProps> = ({ isOpen, onClose }) => {
     reset,
     formState: { errors },
   } = useForm<CreateTicketDto>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(CreateTicketSchema as any),
     defaultValues: {
       subject: "",
@@ -50,6 +56,7 @@ const CreateTicketModal: FC<CreateTicketModalProps> = ({ isOpen, onClose }) => {
     onClose();
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const categories: { key: TicketCategory; label: string; icon: any }[] = [
     { key: "bug",     label: "Bug / Error",      icon: Bug },
     { key: "feature", label: "Mejora / Feature",  icon: Zap },

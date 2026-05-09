@@ -1,7 +1,8 @@
+import { FileText, Download, Trash2 } from "lucide-react";
 import { FC } from "react";
+
 import type { StorageFile } from "@/features/storage";
 import { cn } from "@/utils/classNames";
-import { FileText, Download, Trash2 } from "lucide-react";
 
 interface ReportCardProps {
   report: StorageFile;

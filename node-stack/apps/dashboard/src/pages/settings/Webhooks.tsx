@@ -1,4 +1,5 @@
 import { FC, lazy, Suspense } from "react";
+
 import { LoadingState } from "@/components/shared/LoadingState";
 
 const WebhooksPage = lazy(() => import("@features/webhooks/pages/WebhooksPage"));

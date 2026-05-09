@@ -1,4 +1,4 @@
-import { FC, useMemo } from "react";
+import { Breadcrumbs as SharedBreadcrumbs, BreadcrumbItem } from "@node-stack/ui";
 import {
   BarChart3,
   Bell,
@@ -20,8 +20,9 @@ import {
   Zap,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { FC, useMemo } from "react";
 import { useLocation } from "react-router-dom";
-import { Breadcrumbs as SharedBreadcrumbs, BreadcrumbItem } from "@node-stack/ui";
+
 import { LinkTransition } from "@/components/utils/LinkTransition";
 
 // ─── Route metadata map ───────────────────────────────────────────────────────

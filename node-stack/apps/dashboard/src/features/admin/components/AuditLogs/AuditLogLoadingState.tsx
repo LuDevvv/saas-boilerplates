@@ -1,5 +1,5 @@
-import { FC } from "react";
 import { Loader2 } from "lucide-react";
+import { FC } from "react";
 
 export const AuditLogLoadingState: FC = () => {
   return (

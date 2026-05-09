@@ -1,6 +1,8 @@
 import { Button } from "@node-stack/ui";
-import { cn } from "@/utils/classNames";
+
 import type { TimeFilter as TimeFilterType } from "../types";
+
+import { cn } from "@/utils/classNames";
 
 interface TimeFilterProps {
   value: TimeFilterType;

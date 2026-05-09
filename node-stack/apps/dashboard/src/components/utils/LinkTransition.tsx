@@ -1,5 +1,6 @@
 import { FC } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { cn } from "@/utils/classNames";
 
 interface LinkTransitionProps {
@@ -12,7 +13,7 @@ interface LinkTransitionProps {
 
 // Función de guarda de tipo para verificar si startViewTransition está disponible
 function supportsViewTransition(doc: Document): doc is Document & {
-  startViewTransition: (callback: () => void | Promise<void>) => any;
+  startViewTransition: (callback: () => void | Promise<void>) => unknown;
 } {
   return "startViewTransition" in doc;
 }

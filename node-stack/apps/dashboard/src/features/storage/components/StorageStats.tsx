@@ -1,8 +1,9 @@
-import { FC } from "react";
 import { Progress } from "@node-stack/ui";
 import { HardDrive, FileText, Database } from "lucide-react";
-import { formatBytes } from "@/utils/formatters";
+import { FC } from "react";
+
 import { cn } from "@/utils/classNames";
+import { formatBytes } from "@/utils/formatters";
 
 interface StorageStatsProps {
   usedBytes: number;

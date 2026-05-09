@@ -1,6 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
 import type { CreateTicketDto, TicketStatus } from "@node-stack/types";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { api } from "@/lib/api";
 
 export const useTickets = (params?: { page?: number; limit?: number; status?: TicketStatus }) => {
   return useQuery({
@@ -20,6 +21,7 @@ export const useTicket = (id: string) => {
 export const useCreateTicket = () => {
   const queryClient = useQueryClient();
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return useMutation<any, Error, CreateTicketDto>({
     mutationFn: (data) => api.tickets.create(data),
     onSuccess: () => {
@@ -31,6 +33,7 @@ export const useCreateTicket = () => {
 export const useAddTicketMessage = (ticketId: string) => {
   const queryClient = useQueryClient();
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return useMutation<any, Error, string>({
     mutationFn: (body) => api.tickets.addMessage(ticketId, { body }),
     onSuccess: () => {
@@ -42,6 +45,7 @@ export const useAddTicketMessage = (ticketId: string) => {
 export const useUpdateTicketStatus = (ticketId: string) => {
   const queryClient = useQueryClient();
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return useMutation<any, Error, TicketStatus>({
     mutationFn: (status) => api.tickets.updateStatus(ticketId, status),
     onSuccess: () => {

@@ -1,5 +1,5 @@
-import { FC } from "react";
 import { Checkbox, Label } from "@node-stack/ui";
+import { FC } from "react";
 
 export const WEBHOOK_EVENTS = [
   { id: "user.created", label: "Usuario Creado", description: "Se dispara cuando un nuevo usuario se registra." },

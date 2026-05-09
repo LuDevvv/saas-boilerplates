@@ -1,7 +1,3 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/react-query/queryKeys";
-import { api } from "@/lib/api";
-import { useWorkspaceStore } from "@/stores/workspaceStore";
 import type { 
   Subscription, 
   Invoice, 
@@ -10,6 +6,11 @@ import type {
   PaymentMethod,
   CreateCheckoutDto
 } from "@node-stack/types";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { api } from "@/lib/api";
+import { queryKeys } from "@/lib/react-query/queryKeys";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
 
 export const useSubscription = () => {
   const workspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
@@ -24,6 +25,7 @@ export const useInvoices = () => {
   const workspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
   return useQuery<Invoice[], Error>({
     queryKey: queryKeys.billing.invoices(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     queryFn: () => api.billing.listInvoices() as any,
     enabled: !!workspaceId,
   });

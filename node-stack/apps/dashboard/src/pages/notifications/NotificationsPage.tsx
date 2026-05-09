@@ -1,4 +1,13 @@
-import { FC, useState } from "react";
+import type { Notification, NotificationType } from "@node-stack/types";
+import {
+  Button,
+  EmptyState,
+  FilterTabs,
+  LoadingState,
+  PageHeader,
+  SectionHeader,
+  TwoColumnLayout,
+} from "@node-stack/ui";
 import {
   Bell,
   Info,
@@ -17,24 +26,17 @@ import {
   ShieldCheck,
   CreditCard,
 } from "lucide-react";
-import { cn } from "@/utils/classNames";
-import { useNotifications } from "@/features/notifications/hooks/useNotifications";
+import { FC, useState } from "react";
+
 import {
   useMarkAsRead,
   useMarkAllAsRead,
   useDismissNotification,
   useSeedNotifications,
 } from "@/features/notifications/hooks/useNotificationMutations";
-import type { Notification, NotificationType } from "@node-stack/types";
-import {
-  Button,
-  EmptyState,
-  FilterTabs,
-  LoadingState,
-  PageHeader,
-  SectionHeader,
-  TwoColumnLayout,
-} from "@node-stack/ui";
+import { useNotifications } from "@/features/notifications/hooks/useNotifications";
+import { cn } from "@/utils/classNames";
+
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
@@ -287,6 +289,7 @@ const NotificationsPage: FC = () => {
 
   const { data: notifications = [], isLoading, error } = useNotifications({
     ...(activeFilter === "unread" ? { unread: true } : {}),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }) as { data: Notification[]; isLoading: boolean; error: any };
 
   const markAsRead    = useMarkAsRead();

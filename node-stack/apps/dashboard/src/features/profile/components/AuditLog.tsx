@@ -1,6 +1,7 @@
-import { FC } from "react";
-import { History as HistoryIcon, Clock, ChevronRight, User } from "lucide-react";
 import { Card, EmptyState } from "@node-stack/ui";
+import { History as HistoryIcon, Clock, ChevronRight, User } from "lucide-react";
+import { FC } from "react";
+
 import { AuditLogItem } from "../types";
 
 interface AuditLogProps {

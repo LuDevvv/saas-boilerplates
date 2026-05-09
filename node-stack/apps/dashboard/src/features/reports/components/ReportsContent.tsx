@@ -1,17 +1,20 @@
-import { FC, useState, useEffect } from "react";
-import { FileText } from "lucide-react";
 import { Button, PageHeader } from "@node-stack/ui";
+import { useQueryClient } from "@tanstack/react-query";
+import { FileText } from "lucide-react";
+import { FC, useState, useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
+
+import { CreateReportModal } from "./CreateReportModal";
+import { ReportList } from "./ReportList";
+import { ReportsFilterBar } from "./ReportsFilterBar";
+
 import { appToast } from "@/components/alerts/Toasts";
-import { useWorkspaceStore } from "@/stores/workspaceStore";
-import { useRealtimeStore } from "@/stores/realtimeStore";
+import { useReports, useDeleteReport } from "@/features/reports/hooks/useReports";
 import { useUploadFile, type StorageFile } from "@/features/storage";
 import { api } from "@/lib/api";
-import { useShallow } from "zustand/react/shallow";
-import { useQueryClient } from "@tanstack/react-query";
-import { useReports, useDeleteReport } from "@/features/reports/hooks/useReports";
-import { ReportsFilterBar } from "./ReportsFilterBar";
-import { ReportList } from "./ReportList";
-import { CreateReportModal } from "./CreateReportModal";
+import { useRealtimeStore } from "@/stores/realtimeStore";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
+
 
 export const ReportsContent: FC = () => {
   const activeWorkspaceId = useWorkspaceStore(useShallow((state) => state.activeWorkspaceId));
@@ -77,7 +80,7 @@ export const ReportsContent: FC = () => {
     try {
       await deleteReportMutation.mutateAsync(id);
       appToast.success({ title: "Deleted", description: "Report was removed." });
-    } catch (error) {
+    } catch {
       appToast.error({ title: "Delete Failed", description: "Could not delete report." });
     }
   };
@@ -90,7 +93,7 @@ export const ReportsContent: FC = () => {
       link.download = report.name;
       link.target = "_blank";
       link.click();
-    } catch (error) {
+    } catch {
       appToast.error({ title: "Download Failed", description: "Could not generate secure download link." });
     }
   };

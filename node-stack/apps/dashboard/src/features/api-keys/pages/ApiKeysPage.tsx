@@ -1,5 +1,3 @@
-import { FC, useState } from "react";
-import { Plus, Key, Terminal, Code2 } from "lucide-react";
 import {
   Button,
   CalloutCard,
@@ -7,7 +5,10 @@ import {
   PageHeader,
   TwoColumnLayout,
 } from "@node-stack/ui";
-import { useWorkspaceStore } from "@/stores/workspaceStore";
+import { Plus, Key, Terminal, Code2 } from "lucide-react";
+import { FC, useState } from "react";
+
+
 import {
   useApiKeys,
   useCreateApiKey,
@@ -15,6 +16,8 @@ import {
 } from "../../workspaces/hooks/useApiKeys";
 import { ApiKeyList } from "../components/ApiKeyList";
 import { CreateKeyDialog } from "../components/CreateKeyDialog";
+
+import { useWorkspaceStore } from "@/stores/workspaceStore";
 
 const ApiKeysPage: FC = () => {
   const { activeWorkspaceId } = useWorkspaceStore();

@@ -73,6 +73,7 @@ export const queryKeys = {
 
   tickets: {
     all: ["tickets"] as const,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     list: (filters?: any) => [...queryKeys.tickets.all, "list", filters] as const,
     detail: (id: string) => [...queryKeys.tickets.all, "detail", id] as const,
   },

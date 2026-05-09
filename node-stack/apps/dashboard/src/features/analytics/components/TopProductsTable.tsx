@@ -2,8 +2,9 @@
  * TopSourcesWidget — ranked channel/source list with change indicators.
  * File kept as TopProductsTable.tsx for import compatibility.
  */
-import { FC } from "react";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { FC } from "react";
+
 import { cn } from "@/utils/classNames";
 
 export interface SourceItem {

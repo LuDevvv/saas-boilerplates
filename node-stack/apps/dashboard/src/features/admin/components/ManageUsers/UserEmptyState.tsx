@@ -1,6 +1,6 @@
-import { FC } from "react";
-import { Users } from "lucide-react";
 import { EmptyState } from "@node-stack/ui";
+import { Users } from "lucide-react";
+import { FC } from "react";
 
 export const UserEmptyState: FC = () => (
   <EmptyState

@@ -1,5 +1,5 @@
-import { type FC, useState, useEffect } from "react";
 import { PremiumLoader } from "@node-stack/ui";
+import { type FC, useState, useEffect } from "react";
 
 const RENDER_DELAY_MS = 150;
 

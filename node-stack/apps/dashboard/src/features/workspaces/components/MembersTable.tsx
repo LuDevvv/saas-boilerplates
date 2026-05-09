@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { WorkspaceMember } from "@node-stack/types";
 import {
   DataTable,
   Avatar,
@@ -12,8 +12,10 @@ import {
   DropdownMenuSeparator,
 } from "@node-stack/ui";
 import { MoreHorizontal, Shield, UserMinus } from "lucide-react";
+import { FC } from "react";
+
 import { RoleBadge } from "./RoleBadge";
-import type { WorkspaceMember } from "@node-stack/types";
+
 
 interface MembersTableProps {
   members: WorkspaceMember[];
@@ -34,8 +36,10 @@ export const MembersTable: FC<MembersTableProps> = ({
     {
       accessorKey: "user",
       header: "Usuario",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       cell: ({ row }: any) => {
         const member = row.original as WorkspaceMember;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const name = (member.user as any).name || "Usuario";
         return (
           <div className="flex items-center gap-3">
@@ -61,10 +65,12 @@ export const MembersTable: FC<MembersTableProps> = ({
     {
       accessorKey: "role",
       header: "Rol",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       cell: ({ row }: any) => <RoleBadge role={row.original.role} />,
     },
     {
       id: "actions",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       cell: ({ row }: any) => {
         const member = row.original as WorkspaceMember;
         const isOwner = member.role === "owner";

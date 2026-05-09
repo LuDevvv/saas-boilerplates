@@ -1,7 +1,9 @@
 import { useEffect, useMemo } from 'react';
-import { useWorkspaceStore } from '../stores/workspaceStore';
-import { useWorkspaces } from '@/features/workspaces/hooks/useWorkspaces';
 import { useShallow } from 'zustand/react/shallow';
+
+import { useWorkspaceStore } from '../stores/workspaceStore';
+
+import { useWorkspaces } from '@/features/workspaces/hooks/useWorkspaces';
 
 export const useDynamicFavicon = () => {
   const activeWorkspaceId = useWorkspaceStore(useShallow((state) => state.activeWorkspaceId));

@@ -1,5 +1,6 @@
-import { FC } from "react";
 import { Search, Command } from "lucide-react";
+import { FC } from "react";
+
 import { cn } from "@/utils/classNames";
 
 interface SidebarSearchProps {

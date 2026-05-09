@@ -1,13 +1,16 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, Input } from "@node-stack/ui";
+import { Building2, AlignLeft } from "lucide-react";
 import { FC } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Building2, AlignLeft } from "lucide-react";
-import { Button, Input } from "@node-stack/ui";
-import { ModalLayout } from "@/layouts/ModalLayout";
-import { useCreateWorkspace } from "../hooks/useWorkspaces";
-import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { useShallow } from "zustand/react/shallow";
+
+import { useCreateWorkspace } from "../hooks/useWorkspaces";
+
+import { ModalLayout } from "@/layouts/ModalLayout";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
+
 
 const schema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -26,6 +29,7 @@ export const CreateWorkspaceModal: FC<CreateWorkspaceModalProps> = ({ isOpen, on
   const setActiveWorkspace = useWorkspaceStore(useShallow((s) => s.setActiveWorkspace));
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<FormValues>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(schema as any),
     defaultValues: { name: "", description: "" },
   });

@@ -1,7 +1,10 @@
-import { FC, useState, useRef, useEffect } from "react";
-import { useAi, useAiUsage } from "@/features/ai";
-import { useWorkspaceStore } from "@/stores/workspaceStore";
 import type { ChatMessageDto } from "@node-stack/types";
+import {
+  PageHeader,
+  Progress,
+  StatusPill,
+  TwoColumnLayout,
+} from "@node-stack/ui";
 import {
   Send,
   Bot,
@@ -17,12 +20,10 @@ import {
   Hash,
   Clock,
 } from "lucide-react";
-import {
-  PageHeader,
-  Progress,
-  StatusPill,
-  TwoColumnLayout,
-} from "@node-stack/ui";
+import { FC, useState, useRef, useEffect } from "react";
+
+import { useAi, useAiUsage } from "@/features/ai";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { cn } from "@/utils/classNames";
 
 // ─── Types & mock data ────────────────────────────────────────────────────────
@@ -272,8 +273,9 @@ const AIPlayground: FC = () => {
         }
         return prev;
       });
-    } catch (error: any) {
-      if (error.status === 403) {
+    } catch (error: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((error as any)?.status === 403) {
         setQuotaExceeded(true);
         setMessages((prev) => [
           ...prev.slice(0, -1),

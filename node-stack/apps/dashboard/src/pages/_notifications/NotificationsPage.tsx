@@ -1,4 +1,5 @@
 import { FC } from "react";
+
 import NotificationsPage from "@/pages/notifications/NotificationsPage";
 
 const NotificationsPageComponent: FC = () => {

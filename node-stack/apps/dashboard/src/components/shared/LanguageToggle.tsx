@@ -1,6 +1,7 @@
+import { Globe, Check } from "lucide-react";
 import { FC, useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Globe, Check } from "lucide-react";
+
 import { cn } from "@/utils/classNames";
 
 const languages = [

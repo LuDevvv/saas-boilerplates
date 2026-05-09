@@ -1,5 +1,6 @@
-import { FC } from "react";
 import { Badge } from "@node-stack/ui";
+import { FC } from "react";
+
 import { cn } from "@/utils/classNames";
 
 interface RoleBadgeProps {

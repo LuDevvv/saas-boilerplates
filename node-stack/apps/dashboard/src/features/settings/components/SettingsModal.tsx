@@ -1,7 +1,3 @@
-import { FC, useState, useEffect } from "react";
-import { flushSync } from "react-dom";
-import { createPortal } from "react-dom";
-import { useNavigate } from "react-router-dom";
 import {
   X,
   User,
@@ -18,8 +14,12 @@ import {
   Moon,
   Sun,
 } from "lucide-react";
-import { cn } from "@/utils/classNames";
+import { FC, useState, useEffect } from "react";
+import { flushSync , createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
+
 import { useThemeStore } from "@/stores/themeStore";
+import { cn } from "@/utils/classNames";
 
 // ─── Section definitions ────────────────────────────────────────────────────
 

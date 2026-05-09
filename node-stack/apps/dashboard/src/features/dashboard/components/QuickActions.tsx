@@ -1,5 +1,6 @@
-import { FC } from "react";
 import { LucideIcon, ArrowUpRight } from "lucide-react";
+import { FC } from "react";
+
 import { LinkTransition } from "@/components/utils/LinkTransition";
 import { cn } from "@/utils/classNames";
 

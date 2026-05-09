@@ -1,4 +1,3 @@
-import { useState, useCallback } from "react";
 import {
   BarChart3,
   BookOpen,
@@ -7,6 +6,7 @@ import {
   Bell,
   type LucideIcon,
 } from "lucide-react";
+import { useState, useCallback } from "react";
 
 // ─── Widget catalog ───────────────────────────────────────────────────────────
 

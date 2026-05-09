@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/react-query/queryKeys";
-import { api } from "@/lib/api";
+
 import { appToast } from "@/components/alerts/Toasts";
+import { api } from "@/lib/api";
+import { queryKeys } from "@/lib/react-query/queryKeys";
 
 export const useApiKeys = (workspaceId: string | null) => {
   return useQuery({
@@ -38,8 +39,10 @@ export const useRevokeApiKey = (workspaceId: string | null) => {
       await queryClient.cancelQueries({ queryKey });
       const previousKeys = queryClient.getQueryData(queryKey);
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       queryClient.setQueryData(queryKey, (old: any) => {
         const keys = Array.isArray(old) ? old : old?.data || [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return keys.filter((k: any) => k.id !== keyId);
       });
 

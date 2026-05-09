@@ -1,7 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/react-query/queryKeys";
-import { api } from "@/lib/api";
 import type { AnalyticsOverview, TrafficData, PageStat, UsageData } from "@node-stack/types";
+import { useQuery } from "@tanstack/react-query";
+
+import { api } from "@/lib/api";
+import { queryKeys } from "@/lib/react-query/queryKeys";
 
 export const useAnalyticsOverview = (workspaceId: string) => {
   return useQuery<AnalyticsOverview, Error>({

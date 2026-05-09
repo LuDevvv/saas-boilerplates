@@ -1,7 +1,9 @@
 import { FC } from "react";
-import { cn } from "@/utils/classNames";
-import logoSolo from "./nodestack-logo-solo.png";
+
 import logoCompleto from "./nodestack-logo-completo.png";
+import logoSolo from "./nodestack-logo-solo.png";
+
+import { cn } from "@/utils/classNames";
 
 interface LogoProps {
   variant?: "solo" | "full";

@@ -1,5 +1,5 @@
-import { type FC, type ReactNode } from "react";
 import { cn } from "@utils/classNames";
+import { type FC, type ReactNode } from "react";
 
 interface FooterProps {
   children: ReactNode;

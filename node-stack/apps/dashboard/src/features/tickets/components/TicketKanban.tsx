@@ -1,7 +1,9 @@
-import { FC } from "react";
 import type { Ticket, TicketStatus } from "@node-stack/types";
+import { FC } from "react";
+
 import { kanbanColumns, statusConfig } from "../config";
 import { TicketCard } from "./TicketCard";
+
 import { cn } from "@/utils/classNames";
 
 interface TicketKanbanProps {

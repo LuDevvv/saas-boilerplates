@@ -1,7 +1,8 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button, Input, Select, Card } from "@node-stack/ui";
 import { Building2, ArrowRight } from "lucide-react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { useAuth } from "@/hooks/stores/useAuth";
 
 const Onboarding: React.FC = () => {

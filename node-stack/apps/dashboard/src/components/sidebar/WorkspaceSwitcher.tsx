@@ -1,11 +1,12 @@
-import { useState, useMemo, useEffect } from "react";
 import { ChevronsUpDown, Check, Plus } from "lucide-react";
-import { cn } from "@/utils/classNames";
-import { useWorkspaces } from "@/features/workspaces/hooks/useWorkspaces";
-import { useWorkspaceStore } from "@/stores/workspaceStore";
+import { useState, useMemo, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
+
 import { Logo } from "@/assets/logo/logo";
 import { CreateWorkspaceModal } from "@/features/workspaces/components/CreateWorkspaceModal";
+import { useWorkspaces } from "@/features/workspaces/hooks/useWorkspaces";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
+import { cn } from "@/utils/classNames";
 
 interface WorkspaceSwitcherProps {
   isCollapsed: boolean;

@@ -1,13 +1,15 @@
-import { FC, useState } from "react";
+import { PageHeader, Input, StatusPill, type StatusPillTone } from "@node-stack/ui";
 import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
 import {
   Building2, Users, Crown, Loader2, AlertCircle, Search,
   ChevronLeft, ChevronRight, ExternalLink,
 } from "lucide-react";
-import { PageHeader, Input, StatusPill, type StatusPillTone } from "@node-stack/ui";
+import { FC, useState } from "react";
+
 import { api } from "@/lib/api";
 import { cn } from "@/utils/classNames";
-import { format } from "date-fns";
+
 
 const TIER_TONE: Record<string, StatusPillTone> = {
   free: "neutral",
@@ -101,6 +103,7 @@ export const WorkspacesAdminContent: FC = () => {
 
   const filtered = search.trim()
     ? workspaces.filter(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (ws: any) =>
           ws.name.toLowerCase().includes(search.toLowerCase()) ||
           ws.slug.toLowerCase().includes(search.toLowerCase())
@@ -121,7 +124,9 @@ export const WorkspacesAdminContent: FC = () => {
         {[
           { label: "Total", value: meta?.total ?? "—", icon: Building2, color: "text-primary bg-primary/10" },
           { label: "Esta página", value: workspaces.length, icon: Building2, color: "text-fg-secondary bg-surface-muted" },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           { label: "Con miembros", value: workspaces.filter((w: any) => w.memberCount > 0).length, icon: Users, color: "text-emerald-600 bg-emerald-500/10" },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           { label: "Pro/Enterprise", value: workspaces.filter((w: any) => w.tier !== "free").length, icon: Crown, color: "text-amber-600 bg-amber-500/10" },
         ].map(({ label, value, icon: Icon, color }) => (
           <div key={label} className="rounded-[16px] border border-border bg-surface p-4 flex items-center gap-3">
@@ -187,6 +192,7 @@ export const WorkspacesAdminContent: FC = () => {
                 </tr>
               </thead>
               <tbody>
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 {filtered.map((ws: any) => (
                   <WorkspaceRow key={ws.id} ws={ws} />
                 ))}

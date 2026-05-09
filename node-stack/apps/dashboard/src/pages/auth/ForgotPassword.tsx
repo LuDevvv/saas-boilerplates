@@ -1,15 +1,19 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { Check } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Input, Button } from "@node-stack/ui";
+import { Check } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
+
+import { AuthSidebar } from "./components/AuthSidebar";
+
+import { Logo } from "@/assets/logo/logo";
+import { appToast } from "@/components/alerts/Toasts";
+import { useRequestPasswordReset } from "@/features/auth/hooks";
 import type { ForgotPasswordFormData } from "@/utils/validations/auth";
 import { forgotPasswordSchema } from "@/utils/validations/auth";
-import { Input, Button } from "@node-stack/ui";
-import { useRequestPasswordReset } from "@/features/auth/hooks";
-import { appToast } from "@/components/alerts/Toasts";
-import { AuthSidebar } from "./components/AuthSidebar";
-import { Logo } from "@/assets/logo/logo";
+
+
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -23,6 +27,7 @@ const ForgotPassword = () => {
     setError,
     formState: { errors },
   } = useForm<ForgotPasswordFormData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(forgotPasswordSchema as any),
     mode: "onChange",
   });
@@ -46,7 +51,7 @@ const ForgotPassword = () => {
         description: "Si el correo está registrado, recibirás las instrucciones en breve.",
       });
       setIsSubmitted(true);
-    } catch (e) {
+    } catch {
       // Error manejado en el useEffect
     }
   };

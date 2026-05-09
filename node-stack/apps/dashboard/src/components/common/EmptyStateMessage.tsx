@@ -1,6 +1,6 @@
-import { FC, ReactNode } from "react";
-import { LucideIcon } from "lucide-react";
 import { EmptyState } from "@node-stack/ui";
+import { LucideIcon } from "lucide-react";
+import { FC, ReactNode } from "react";
 
 interface EmptyStateMessageProps {
   icon: LucideIcon;

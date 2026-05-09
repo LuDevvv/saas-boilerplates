@@ -1,8 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { queryKeys } from "@/lib/react-query/queryKeys";
+
 import { appToast } from "@/components/alerts/Toasts";
 import { useUser } from "@/features/auth/hooks/useUser";
+import { api } from "@/lib/api";
+import { queryKeys } from "@/lib/react-query/queryKeys";
 
 export const useMarkAsRead = () => {
   const queryClient = useQueryClient();

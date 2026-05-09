@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { WorkspaceMember } from "@node-stack/types";
 import {
   Avatar,
   AvatarImage,
@@ -10,9 +10,12 @@ import {
   DropdownMenuSeparator,
 } from "@node-stack/ui";
 import { MoreHorizontal, Shield, UserMinus } from "lucide-react";
+import { FC } from "react";
+
 import { RoleBadge } from "./RoleBadge";
+
 import { cn } from "@/utils/classNames";
-import type { WorkspaceMember } from "@node-stack/types";
+
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -26,7 +29,7 @@ interface MembersListProps {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function getMemberName(user: any): string {
+function getMemberName(user: { firstName?: string; lastName?: string; name?: string; email?: string }): string {
   if (user.firstName) {
     return `${user.firstName}${user.lastName ? ` ${user.lastName}` : ""}`.trim();
   }
@@ -62,11 +65,13 @@ const MemberRow: FC<{
   onRemove: MembersListProps["onRemove"];
   currentUserId?: string;
 }> = ({ member, onUpdateRole, onRemove, currentUserId }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const user = member.user as any;
   const name = getMemberName(user);
   const initials = name.slice(0, 2).toUpperCase();
   const isOwner = member.role === "owner";
   const isSelf = member.userId === currentUserId;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const joined = formatJoinDate((member as any).createdAt || (member as any).joinedAt);
 
   return (

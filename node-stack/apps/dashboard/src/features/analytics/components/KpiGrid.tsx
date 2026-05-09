@@ -1,4 +1,5 @@
 import { FC } from "react";
+
 import { KpiCard, type KpiCardProps } from "./KpiCard";
 
 interface KpiGridProps {

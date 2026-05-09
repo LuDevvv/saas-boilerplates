@@ -1,6 +1,6 @@
+import CreateTicketModal from "@features/tickets/components/CreateTicketModal";
 import { FC } from "react";
 import { useNavigate } from "react-router-dom";
-import CreateTicketModal from "@features/tickets/components/CreateTicketModal";
 
 const CreateTicketPage: FC = () => {
   const navigate = useNavigate();

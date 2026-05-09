@@ -111,6 +111,7 @@ export const useSidebarStore = create<SidebarState>()(
         expandedMenus: Array.from(state.expandedMenus),
       }),
       // Deserialización personalizada para Set
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       merge: (persistedState: any, currentState) => ({
         ...currentState,
         ...persistedState,

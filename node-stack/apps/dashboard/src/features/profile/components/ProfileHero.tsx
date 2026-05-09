@@ -1,11 +1,12 @@
-import { Calendar, Edit3 } from "lucide-react";
-import { Button, Badge, HeroHeader, ProfileAvatar } from "@node-stack/ui";
-import { useAuth } from "@/hooks/stores/useAuth";
-import { formatDateShort } from "@node-stack/utils";
 import { appToast } from "@components/alerts/Toasts";
+import { Button, Badge, HeroHeader, ProfileAvatar } from "@node-stack/ui";
+import { formatDateShort } from "@node-stack/utils";
+import { Calendar, Edit3 } from "lucide-react";
 import { FC } from "react";
-import { useUploadFile } from "@/features/storage/hooks/useStorage";
+
 import { useUpdateProfile } from "@/features/auth/hooks/useUpdateProfile";
+import { useUploadFile } from "@/features/storage/hooks/useStorage";
+import { useAuth } from "@/hooks/stores/useAuth";
 
 interface ProfileHeroProps {
   isEditing: boolean;
@@ -30,7 +31,7 @@ export const ProfileHero: FC<ProfileHeroProps> = ({ isEditing, onToggleEdit }) =
         title: "Avatar actualizado",
         description: "Tu foto de perfil se ha guardado correctamente."
       });
-    } catch (error) {
+    } catch {
       // Handled by hook
     }
   };

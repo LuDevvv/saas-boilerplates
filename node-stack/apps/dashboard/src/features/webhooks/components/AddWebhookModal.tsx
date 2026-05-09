@@ -1,10 +1,12 @@
-import { FC } from "react";
-import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button, Input, Label } from "@node-stack/ui";
 import { Loader2, Globe } from "lucide-react";
+import { FC } from "react";
+import { useForm, Controller } from "react-hook-form";
+import * as z from "zod";
+
 import { EventSelector } from "./EventSelector";
+
 import { ModalLayout } from "@/layouts/ModalLayout";
 
 const webhookSchema = z.object({
@@ -34,6 +36,7 @@ export const AddWebhookModal: FC<AddWebhookModalProps> = ({
     reset,
     formState: { errors, isValid },
   } = useForm<WebhookFormValues>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(webhookSchema as any),
     mode: "onChange",
     defaultValues: {

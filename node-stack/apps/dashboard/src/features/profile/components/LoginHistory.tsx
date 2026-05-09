@@ -1,9 +1,10 @@
-import { FC } from "react";
-import { Smartphone, XCircle, ShieldCheck, Laptop, Globe, LogOut, Loader2 } from "lucide-react";
 import { Card, Spinner } from "@node-stack/ui";
-import { useSessions } from "../hooks/useSessions";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
+import { Smartphone, XCircle, ShieldCheck, Laptop, Globe, LogOut, Loader2 } from "lucide-react";
+import { FC } from "react";
+
+import { useSessions } from "../hooks/useSessions";
 
 interface LoginHistoryProps {
   onRevokeAll?: () => void;
@@ -59,6 +60,7 @@ export const LoginHistory: FC<LoginHistoryProps> = ({ onRevokeAll, isRevokingAll
       </div>
 
       <div className="divide-y divide-border flex-1">
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {sessions.map((session: any) => (
           <div key={session.id} className="flex items-center justify-between px-6 py-4 hover:bg-surface-hover group gap-4 transition-colors">
             <div className="flex items-center gap-4 flex-1 min-w-0">

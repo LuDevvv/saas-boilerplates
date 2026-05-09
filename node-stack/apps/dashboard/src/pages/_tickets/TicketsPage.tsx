@@ -1,4 +1,5 @@
 import { FC } from "react";
+
 import TicketsPage from "@/pages/tickets/TicketsPage";
 
 const TicketsPageComponent: FC = () => {

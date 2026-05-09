@@ -1,4 +1,5 @@
 import React from "react";
+
 import Pricing from "../payments/Pricing";
 
 const OnboardingPricing: React.FC = () => {

@@ -1,9 +1,12 @@
 import { Ticket } from "@node-stack/types";
-import { priorityConfig, statusConfig } from "../config";
-import { cn } from "@/utils/classNames";
-import { Link } from "react-router-dom";
-import { ChevronRight, Clock, User, Timer } from "lucide-react";
 import { StatusPill } from "@node-stack/ui";
+import { ChevronRight, Clock, User, Timer } from "lucide-react";
+import { Link } from "react-router-dom";
+
+import { priorityConfig, statusConfig } from "../config";
+
+import { cn } from "@/utils/classNames";
+
 
 interface TicketCardProps {
   ticket: Ticket;

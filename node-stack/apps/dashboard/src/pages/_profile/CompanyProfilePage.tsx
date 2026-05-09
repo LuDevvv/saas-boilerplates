@@ -1,4 +1,5 @@
 import { FC } from "react";
+
 import CompanyProfile from "@/pages/profile/CompanyProfile";
 
 const CompanyProfilePage: FC = () => {

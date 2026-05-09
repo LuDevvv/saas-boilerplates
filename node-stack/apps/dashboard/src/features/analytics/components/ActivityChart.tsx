@@ -3,6 +3,7 @@
  * Shows current period vs previous period side-by-side bars.
  * File kept as ActivityChart.tsx for import compatibility.
  */
+import { TrendingUp, TrendingDown } from "lucide-react";
 import { FC } from "react";
 import {
   BarChart,
@@ -14,7 +15,7 @@ import {
   ResponsiveContainer,
   type TooltipProps,
 } from "recharts";
-import { TrendingUp, TrendingDown } from "lucide-react";
+
 import { cn } from "@/utils/classNames";
 
 export interface BarPoint {

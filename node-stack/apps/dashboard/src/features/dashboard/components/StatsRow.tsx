@@ -1,5 +1,6 @@
-import { FC } from "react";
 import { LucideIcon, TrendingUp, TrendingDown } from "lucide-react";
+import { FC } from "react";
+
 import { cn } from "@/utils/classNames";
 
 export interface StatMetric {

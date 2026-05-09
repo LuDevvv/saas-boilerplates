@@ -1,5 +1,5 @@
-import { FC } from "react";
 import { Skeleton } from "@node-stack/ui";
+import { FC } from "react";
 
 // ─── Members list section ─────────────────────────────────────────────────────
 

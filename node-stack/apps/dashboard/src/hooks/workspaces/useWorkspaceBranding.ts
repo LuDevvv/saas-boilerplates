@@ -1,7 +1,8 @@
-import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { useState } from "react";
+
 import { appToast } from "@/components/alerts/Toasts";
+import { api } from "@/lib/api";
 import { queryKeys } from "@/lib/react-query/queryKeys";
 
 export const useWorkspaceBranding = (workspaceId: string) => {

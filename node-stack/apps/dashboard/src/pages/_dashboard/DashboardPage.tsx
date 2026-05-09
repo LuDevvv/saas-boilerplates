@@ -1,4 +1,5 @@
 import { FC } from "react";
+
 import Dashboard from "@/pages/index";
 
 const DashboardPage: FC = () => {

@@ -1,15 +1,18 @@
+import { ConfirmDialog, Skeleton } from "@node-stack/ui";
 import { FC, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/stores/useAuth";
-import { ConfirmDialog, Skeleton } from "@node-stack/ui";
-import { appToast } from "@/components/alerts/Toasts";
-import { PlanCard } from "./PlanCard";
-import { PaymentMethodCard, type PaymentMethod } from "./PaymentMethodCard";
-import { PaymentHistory, type PaymentRecord } from "./PaymentHistory";
-import { SupportCard } from "./SupportCard";
+
+
 import { AddCardModal } from "./AddCardModal";
 import { BillingLayoutSkeleton } from "./BillingSkeletons";
+import { PaymentHistory, type PaymentRecord } from "./PaymentHistory";
+import { PaymentMethodCard, type PaymentMethod } from "./PaymentMethodCard";
+import { PlanCard } from "./PlanCard";
+import { SupportCard } from "./SupportCard";
 import { useSubscription, useInvoices, usePaymentMethods, useCancelSubscription } from "../hooks/useBilling";
+
+import { appToast } from "@/components/alerts/Toasts";
+import { useAuth } from "@/hooks/stores/useAuth";
 
 // ─── Demo data — displayed when API stubs return empty (remove for production) ─
 
@@ -79,6 +82,7 @@ export const BillingContent: FC = () => {
   // ── Derived data ──────────────────────────────────────────────────────────
 
   const planInfo = useMemo(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sub = subscription as any;
     return {
       planId: sub?.planId || (isPremium ? "pro" : "free"),

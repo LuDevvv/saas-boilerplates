@@ -3,7 +3,9 @@ import { useEffect } from "react";
 // Tipos para Google Analytics
 declare global {
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     dataLayer: any[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     gtag: (...args: any[]) => void;
   }
 }
@@ -31,6 +33,7 @@ export const useGoogleAnalytics = (
     window.dataLayer = window.dataLayer || [];
 
     // Función gtag
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function gtag(...args: any[]) {
       window.dataLayer.push(args);
     }

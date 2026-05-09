@@ -1,6 +1,6 @@
-import { FC, useRef } from "react";
 import { Button } from "@node-stack/ui";
 import { Upload, Loader2 } from "lucide-react";
+import { FC, useRef } from "react";
 
 interface FileUploadButtonProps {
   onUpload: (file: File) => Promise<void | { fileUrl: string } | undefined>;

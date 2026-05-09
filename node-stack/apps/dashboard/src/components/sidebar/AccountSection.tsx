@@ -1,16 +1,19 @@
-import { FC, useRef, useState } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@node-stack/ui";
 import { ChevronDown } from "lucide-react";
-import { cn } from "@/utils/classNames";
+import { FC, useRef, useState } from "react";
+
+
 import { AccountDropdown } from "./AccountDropdown";
 import { AccountSectionProps } from "./types";
 
+import { cn } from "@/utils/classNames";
+
 function getInitials(user: AccountSectionProps["user"]): string {
   if (!user) return "U";
-  const first = (user as any).firstName ?? "";
-  const last  = (user as any).lastName  ?? "";
-  if (first && last) return `${first[0]}${last[0]}`.toUpperCase();
-  if (first)         return first.slice(0, 2).toUpperCase();
+  const first = user.firstName ?? "";
+  const last  = user.lastName  ?? "";
+  if (first && last) return `${String(first)[0]}${String(last)[0]}`.toUpperCase();
+  if (first)         return String(first).slice(0, 2).toUpperCase();
   if (user.email)    return user.email.slice(0, 2).toUpperCase();
   return "U";
 }
@@ -18,14 +21,14 @@ function getInitials(user: AccountSectionProps["user"]): string {
 /** Returns only the first name for compact spaces to avoid overflow. */
 function getDisplayName(user: AccountSectionProps["user"]): string {
   if (!user) return "Usuario";
-  return (user as any).firstName || user.email?.split("@")[0] || "Usuario";
+  return user.firstName || user.email?.split("@")[0] || "Usuario";
 }
 
 /** Returns the full name for contexts with more space. */
 function getFullName(user: AccountSectionProps["user"]): string {
   if (!user) return "Usuario";
-  const first = (user as any).firstName ?? "";
-  const last  = (user as any).lastName  ?? "";
+  const first = user.firstName ?? "";
+  const last  = user.lastName  ?? "";
   return [first, last].filter(Boolean).join(" ") || user.email || "Usuario";
 }
 
@@ -60,7 +63,7 @@ export const AccountSection: FC<AccountSectionProps> = ({
           isPremium && "ring-2 ring-primary/30 ring-offset-1 dark:ring-offset-[#0A0A0A]"
         )}>
           <AvatarImage
-            src={user?.avatarUrl || (user as any)?.avatar}
+            src={user?.avatarUrl}
             alt={getDisplayName(user)}
           />
           <AvatarFallback className="text-[11px] font-semibold bg-primary/10 text-primary">

@@ -1,17 +1,19 @@
-import { FC, useState } from "react";
+import { PageHeader } from "@node-stack/ui";
 import {
   Users, Building2, CreditCard, Cpu, Brain, HardDrive,
   Ticket, Activity, TrendingUp, RefreshCw,
   UserCheck, Shield, Crown, Wifi,
 } from "lucide-react";
+import { FC, useState } from "react";
 import { Link } from "react-router-dom";
-import { PageHeader } from "@node-stack/ui";
-import { useAdminStats, useAdminTrends } from "../../hooks";
+
 import { KpiCard } from "./KpiCard";
 import { SectionCard } from "./SectionCard";
 import { StatusBreakdown } from "./StatusBreakdown";
 import { SystemHealth } from "./SystemHealth";
 import { AreaTrendChart, AiBarChart } from "./TrendChart";
+import { useAdminStats, useAdminTrends } from "../../hooks";
+
 import { cn } from "@/utils/classNames";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

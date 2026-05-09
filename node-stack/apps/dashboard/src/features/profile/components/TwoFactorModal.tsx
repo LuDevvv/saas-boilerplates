@@ -1,12 +1,15 @@
-import { FC, useState, useEffect } from "react";
+import { appToast } from "@components/alerts/Toasts";
 import { Button, Input } from "@node-stack/ui";
-import { QRCodeSVG } from "qrcode.react";
 import {
   ShieldCheck, Copy, CheckCircle2, AlertCircle,
   Loader2, X, ArrowLeft,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
+import { FC, useState, useEffect } from "react";
+
 import { useEnable2fa, useVerify2fa } from "../../auth/hooks/use2faMutations";
-import { appToast } from "@components/alerts/Toasts";
+
+
 import { ModalLayout } from "@/layouts/ModalLayout";
 
 interface TwoFactorModalProps {
@@ -25,7 +28,7 @@ export const TwoFactorModal: FC<TwoFactorModalProps> = ({ isOpen, onClose }) => 
 
   // Kick off 2FA setup when opened; reset on close
   useEffect(() => {
-    let t: any = null;
+    let t: ReturnType<typeof setTimeout> | null = null;
     
     if (isOpen) {
       handleSetup();
@@ -49,6 +52,7 @@ export const TwoFactorModal: FC<TwoFactorModalProps> = ({ isOpen, onClose }) => 
       const data = await enable2fa();
       setSecretData({
         secret: data.secret,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         otpAuthUrl: (data as any).otpAuthUrl || (data as any).otpauthUrl,
       });
       setStep("setup");

@@ -1,7 +1,4 @@
-import { FC, useState, useMemo } from "react";
-import NavbarSidebarLayout from "@/layouts/NavBarSideBarLayout";
 import { EmptyState as UIEmptyState, PageHeader } from "@node-stack/ui";
-import { SearchBar } from "@/components/shared/SearchBar";
 import {
   Megaphone,
   Play,
@@ -12,8 +9,12 @@ import {
   ArrowUpRight,
   Sparkles,
 } from "lucide-react";
-import { cn } from "@/utils/classNames";
+import { FC, useState, useMemo } from "react";
+
+import { SearchBar } from "@/components/shared/SearchBar";
 import { ViewMode } from "@/components/toolbar/ViewToggle";
+import NavbarSidebarLayout from "@/layouts/NavBarSideBarLayout";
+import { cn } from "@/utils/classNames";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type NewsType = "feature" | "success" | "news" | "update";

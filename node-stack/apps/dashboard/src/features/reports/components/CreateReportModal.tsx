@@ -1,9 +1,10 @@
-import { FC, useEffect } from "react";
-import { ModalLayout } from "@/layouts/ModalLayout";
-import { Button, Input, Select } from "@node-stack/ui";
-import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, Input, Select } from "@node-stack/ui";
+import { FC, useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
 import * as z from "zod";
+
+import { ModalLayout } from "@/layouts/ModalLayout";
 
 const reportSchema = z.object({
   name: z.string().min(1, "El nombre del reporte es obligatorio"),
@@ -32,6 +33,7 @@ export const CreateReportModal: FC<CreateReportModalProps> = ({
     reset,
     formState: { errors },
   } = useForm<ReportFormValues>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(reportSchema as any),
     defaultValues: {
       name: "",

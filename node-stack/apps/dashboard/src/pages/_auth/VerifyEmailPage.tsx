@@ -1,4 +1,5 @@
 import { FC } from "react";
+
 import VerifyEmail from "@/pages/auth/VerifyEmail";
 
 const VerifyEmailPage: FC = () => {

@@ -1,5 +1,5 @@
-import { Component, ReactNode, Suspense } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Component, ReactNode, Suspense } from "react";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 

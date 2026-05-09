@@ -1,8 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "@/lib/react-query/queryKeys";
-import { api } from "@/lib/api";
-import { appToast } from "@/components/alerts/Toasts";
 import type { AdminStats, AdminTrends } from "@node-stack/types";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { appToast } from "@/components/alerts/Toasts";
+import { api } from "@/lib/api";
+import { queryKeys } from "@/lib/react-query/queryKeys";
 
 export const useAdminStats = () => {
   return useQuery<AdminStats, Error>({
@@ -29,6 +30,7 @@ export const useAdminUsers = (params?: {
     queryKey: [...queryKeys.admin.users(), params],
     queryFn: async () => {
       const response = await api.admin.listUsers(params);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (response as any)?.data ?? response ?? [];
     },
   });

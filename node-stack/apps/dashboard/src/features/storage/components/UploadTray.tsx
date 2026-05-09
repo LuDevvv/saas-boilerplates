@@ -1,4 +1,4 @@
-import { FC, useState, useEffect } from "react";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 import {
   X,
   CheckCircle2,
@@ -13,9 +13,11 @@ import {
   FileCode,
   File as FileIcon,
 } from "lucide-react";
-import { useAutoAnimate } from "@formkit/auto-animate/react";
-import { useUploadStore, type UploadItem } from "../stores/uploadStore";
+import { FC, useState, useEffect } from "react";
+
 import { useUploadFile } from "../hooks/useStorage";
+import { useUploadStore, type UploadItem } from "../stores/uploadStore";
+
 import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { cn } from "@/utils/classNames";
 import { formatBytes } from "@/utils/formatters";

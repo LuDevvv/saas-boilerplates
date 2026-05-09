@@ -1,6 +1,7 @@
-import { FC, ReactNode } from "react";
-import { useAdminUsers } from "@/features/admin";
 import { Loader2 } from "lucide-react";
+import { FC, ReactNode } from "react";
+
+import { useAdminUsers } from "@/features/admin";
 
 interface ManageUsersPageProps {
   children: ReactNode;

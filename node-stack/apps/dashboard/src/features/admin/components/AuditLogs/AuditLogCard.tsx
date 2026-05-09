@@ -1,8 +1,11 @@
-import { FC } from "react";
 import { Download, Activity, User, FileText } from "lucide-react";
-import { cn } from "@/utils/classNames";
-import { type AuditLog } from "@/features/admin";
+import { FC } from "react";
+
 import { getActionColor } from "./getActionIcon";
+
+import { type AuditLog } from "@/features/admin";
+import { cn } from "@/utils/classNames";
+
 
 interface AuditLogCardProps {
   log: AuditLog;

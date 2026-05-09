@@ -1,9 +1,10 @@
-import { FC } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button, Input } from "@node-stack/ui";
 import { Loader2, Mail, ShieldCheck, User, Eye } from "lucide-react";
+import { FC } from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+
 import { ModalLayout } from "@/layouts/ModalLayout";
 import { cn } from "@/utils/classNames";
 
@@ -66,6 +67,7 @@ export const InviteMemberModal: FC<InviteMemberModalProps> = ({
     reset,
     formState: { errors },
   } = useForm<InviteFormValues>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(inviteSchema as any),
     defaultValues: { role: "member" },
   });

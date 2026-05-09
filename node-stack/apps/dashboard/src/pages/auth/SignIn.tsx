@@ -1,9 +1,18 @@
-import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { appToast } from "@/components/alerts/Toasts";
+import { Input, Checkbox, Button, SocialButton } from "@node-stack/ui";
+import { Eye, EyeOff } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate, Link } from "react-router-dom";
 import { z } from "zod";
+import { useShallow } from "zustand/react/shallow";
+
+import { AuthSidebar } from "./components/AuthSidebar";
+
+import { Logo } from "@/assets/logo/logo";
+import { appToast } from "@/components/alerts/Toasts";
+import { useLoginFlow } from "@/composables";
+import { useAuthStore } from "@/stores/authStore";
 
 // SignIn form schema — matches LoginSchema from @node-stack/validators + UI-only rememberMe
 const SignInFormSchema = z.object({
@@ -14,13 +23,8 @@ const SignInFormSchema = z.object({
 
 type SignInFormData = z.infer<typeof SignInFormSchema>;
 
-import { Eye, EyeOff } from "lucide-react";
-import { Input, Checkbox, Button, SocialButton } from "@node-stack/ui";
-import { useLoginFlow } from "@/composables";
-import { useAuthStore } from "@/stores/authStore";
-import { useShallow } from "zustand/react/shallow";
-import { AuthSidebar } from "./components/AuthSidebar";
-import { Logo } from "@/assets/logo/logo";
+
+
 
 const SignInPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -35,6 +39,7 @@ const SignInPage = () => {
     setError,
     formState: { errors },
   } = useForm<SignInFormData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(SignInFormSchema as any),
     mode: "onChange",
     defaultValues: { rememberMe: false, email: "", password: "" },
@@ -68,7 +73,7 @@ const SignInPage = () => {
   const onSubmit = async (data: SignInFormData) => {
     try {
       await loginUser(data);
-    } catch (e) {
+    } catch {
       // El error ya se maneja en el useEffect y en el onError de la mutación
     }
   };

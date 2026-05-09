@@ -1,6 +1,6 @@
-import { FC } from "react";
-import { Headphones, ArrowUpRight } from "lucide-react";
 import { Button, CalloutCard } from "@node-stack/ui";
+import { Headphones, ArrowUpRight } from "lucide-react";
+import { FC } from "react";
 
 interface SupportCardProps {
   onContactSupport: () => void;

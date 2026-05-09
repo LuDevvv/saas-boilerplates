@@ -1,5 +1,6 @@
-import { FC } from "react";
 import { BarChart3, BookOpen, ChevronRight, Clock, CreditCard, Rocket, Users } from "lucide-react";
+import { FC } from "react";
+
 import { cn } from "@/utils/classNames";
 
 interface Tutorial {

@@ -1,17 +1,19 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { appToast } from "@/components/alerts/Toasts";
 import type { RegisterDto } from "@node-stack/types";
+import { Input, Button, PhoneInput, Checkbox, SocialButton } from "@node-stack/ui";
 import { SignUpSchema, type SignUpDto } from "@node-stack/validators";
 import { Eye, EyeOff } from "lucide-react";
-import { Input, Button, PhoneInput, Checkbox, SocialButton } from "@node-stack/ui";
+import { useState, useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
+import { useShallow } from "zustand/react/shallow";
+
+import { AuthSidebar } from "./components/AuthSidebar";
+
+import { Logo } from "@/assets/logo/logo";
+import { appToast } from "@/components/alerts/Toasts";
 import { useRegisterFlow } from "@/composables";
 import { useAuthStore } from "@/stores/authStore";
-import { useShallow } from "zustand/react/shallow";
-import { AuthSidebar } from "./components/AuthSidebar";
-import { Logo } from "@/assets/logo/logo";
 
 const SignUpPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -28,6 +30,7 @@ const SignUpPage = () => {
     setError,
     formState: { errors },
   } = useForm<SignUpDto>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(SignUpSchema as any),
     mode: "onChange",
     defaultValues: { acceptedTerms: true, firstName: "", lastName: "", email: "", phone: "", password: "", confirmPassword: "" },
@@ -62,7 +65,7 @@ const SignUpPage = () => {
     try {
       await registerUser(registrationData as RegisterDto);
       navigate("/onboarding");
-    } catch (e) {
+    } catch {
       // Error handled in useEffect
     }
   };

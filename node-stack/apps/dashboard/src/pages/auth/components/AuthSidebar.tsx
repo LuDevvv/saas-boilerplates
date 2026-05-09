@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
 import { animate } from "@motionone/dom";
+import { useEffect, useRef } from "react";
+
 import heroImage from "@/assets/resorces/hero-screenshot.png";
 import { easing, duration } from "@/lib/motion";
 

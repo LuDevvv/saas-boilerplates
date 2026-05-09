@@ -1,10 +1,12 @@
-import { FC, useEffect } from "react";
-import { Building2, X, Hash } from "lucide-react";
-import { Button, Input } from "@node-stack/ui";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CompanyFormValues, companySchema } from "../types";
 import type { Workspace } from "@node-stack/types";
+import { Button, Input } from "@node-stack/ui";
+import { Building2, X, Hash } from "lucide-react";
+import { FC, useEffect } from "react";
+import { useForm } from "react-hook-form";
+
+import { CompanyFormValues, companySchema } from "../types";
+
 
 interface CompanyEditFormProps {
   workspace?: Workspace | null;
@@ -15,6 +17,7 @@ interface CompanyEditFormProps {
 
 export const CompanyEditForm: FC<CompanyEditFormProps> = ({ workspace, onSave, isPending, onCancel }) => {
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CompanyFormValues>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(companySchema as any),
     defaultValues: {
       name: workspace?.name ?? "",

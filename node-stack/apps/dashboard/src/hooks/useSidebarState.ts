@@ -1,6 +1,7 @@
 import { useEffect } from "react";
-import { useSidebarStore } from "@/stores/sidebarStore";
 import { useShallow } from "zustand/react/shallow";
+
+import { useSidebarStore } from "@/stores/sidebarStore";
 
 export const useSidebarState = () => {
   const isCollapsed = useSidebarStore(useShallow((state) => state.isCollapsed));

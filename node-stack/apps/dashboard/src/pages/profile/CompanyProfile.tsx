@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+
 import { CompanyContent, ProfileLayoutSkeleton } from "@/features/profile";
 
 const CompanyProfile = () => (

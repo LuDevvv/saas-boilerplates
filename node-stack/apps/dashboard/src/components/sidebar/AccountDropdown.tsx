@@ -1,9 +1,13 @@
-import { FC, useEffect, useRef } from "react";
-import LinkTransition from "../utils/LinkTransition.js";
 import { LogOut } from "lucide-react";
-import { cn } from "@/utils/classNames";
+import { FC, useEffect, useRef } from "react";
+
 import { AccountDropdownProps } from "./types.js";
+import LinkTransition from "../utils/LinkTransition.js";
+
 import { useSidebarStore } from "@/stores/sidebarStore";
+import { cn } from "@/utils/classNames";
+
+
 
 export const AccountDropdown: FC<AccountDropdownProps> = ({
   isOpen,

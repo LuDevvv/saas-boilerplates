@@ -1,15 +1,17 @@
-import { FC, useState, useMemo } from "react";
-import { Plus, LayoutGrid, List as ListIcon } from "lucide-react";
 import { PageHeader } from "@node-stack/ui";
+import { Plus, LayoutGrid, List as ListIcon } from "lucide-react";
+import { FC, useState, useMemo } from "react";
+
 import { useTickets, TicketStatus } from "../index";
-import { StatusTabs } from "./StatusTabs";
-import { TicketSearch } from "./TicketSearch";
-import { TicketList } from "./TicketList";
-import { TicketKanban } from "./TicketKanban";
-import { TicketEmptyState } from "./TicketEmptyState";
-import { TicketLoadingState } from "./TicketLoadingState";
-import { TicketErrorState } from "./TicketErrorState";
 import CreateTicketModal from "./CreateTicketModal";
+import { StatusTabs } from "./StatusTabs";
+import { TicketEmptyState } from "./TicketEmptyState";
+import { TicketErrorState } from "./TicketErrorState";
+import { TicketKanban } from "./TicketKanban";
+import { TicketList } from "./TicketList";
+import { TicketLoadingState } from "./TicketLoadingState";
+import { TicketSearch } from "./TicketSearch";
+
 import { cn } from "@/utils/classNames";
 
 type ViewMode = "list" | "kanban";

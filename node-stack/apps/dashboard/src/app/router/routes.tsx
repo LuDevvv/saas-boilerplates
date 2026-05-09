@@ -1,10 +1,20 @@
-import { lazy, Suspense } from "react";
+import React, { lazy, Suspense } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import MainLayout from "@/layouts/MainLayout";
-import Loading from "@/components/ui/Loading";
-import { useAuth } from "@/hooks/stores/useAuth";
-import { ProfileLayoutSkeleton } from "@/features/profile";
+
 import { protectedGuard, guestGuard, adminGuard } from "./routeguards";
+
+import { PageSkeleton } from "@/components/shared/ErrorBoundary";
+import Loading from "@/components/ui/Loading";
+import { AnalyticsLayoutSkeleton } from "@/features/analytics/components/AnalyticsSkeletons";
+import {
+  BillingLayoutSkeleton,
+  PricingPageSkeleton,
+  CheckoutPageSkeleton,
+} from "@/features/billing/components/BillingSkeletons";
+import { ProfileLayoutSkeleton } from "@/features/profile";
+import { MembersLayoutSkeleton } from "@/features/workspaces/components/MembersSkeletons";
+import { useAuth } from "@/hooks/stores/useAuth";
+import MainLayout from "@/layouts/MainLayout";
 
 // Lazy load pages
 const SignInPage = lazy(() => import("@pages/_auth/SignInPage"));
@@ -54,18 +64,9 @@ const StoragePage = lazy(() => import("@/features/storage/pages/StoragePage"));
 // Dev-only routes (only registered in development builds)
 const ComponentsCatalogPage = lazy(() => import("@pages/dev/ComponentsCatalog"));
 
-import { PageSkeleton } from "@/components/shared/ErrorBoundary";
-import {
-  BillingLayoutSkeleton,
-  PricingPageSkeleton,
-  CheckoutPageSkeleton,
-} from "@/features/billing/components/BillingSkeletons";
-import { AnalyticsLayoutSkeleton } from "@/features/analytics/components/AnalyticsSkeletons";
-import { MembersLayoutSkeleton } from "@/features/workspaces/components/MembersSkeletons";
+const LoadingFallback = (): JSX.Element => <PageSkeleton />;
 
-const LoadingFallback = () => <PageSkeleton />;
-
-export const AppRoutes = () => {
+export const AppRoutes = (): JSX.Element => {
   return (
     <Routes>
       {/* Guest Routes - Redirect to dashboard if authenticated */}
@@ -153,7 +154,7 @@ export const AppRoutes = () => {
   );
 };
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+const ProtectedRoute = ({ children }: { children: React.ReactNode }): JSX.Element => {
   const { isAuthenticated, user, isLoading } = useAuth();
   const location = useLocation();
 

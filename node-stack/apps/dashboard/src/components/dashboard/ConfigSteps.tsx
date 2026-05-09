@@ -1,6 +1,7 @@
-import { FC, useState } from "react";
-import { cn } from "@/utils/classNames";
 import { CheckCircle2, ChevronDown, ChevronRight, type LucideIcon } from "lucide-react";
+import { FC, useState } from "react";
+
+import { cn } from "@/utils/classNames";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

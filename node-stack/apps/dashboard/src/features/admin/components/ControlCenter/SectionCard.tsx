@@ -1,5 +1,6 @@
-import { FC, ReactNode } from "react";
 import { LucideIcon } from "lucide-react";
+import { FC, ReactNode } from "react";
+
 import { cn } from "@/utils/classNames";
 
 interface SectionCardProps {

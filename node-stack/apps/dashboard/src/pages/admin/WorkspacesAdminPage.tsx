@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+
 import { PageSkeleton } from "@/components/shared/ErrorBoundary";
 
 const WorkspacesAdminContent = lazy(() =>

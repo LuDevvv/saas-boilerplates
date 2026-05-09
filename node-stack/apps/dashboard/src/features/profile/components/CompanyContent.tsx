@@ -1,15 +1,18 @@
-import { FC, useMemo, useState } from "react";
-import { Building2, Hash, AlignLeft, ShieldCheck, Calendar } from "lucide-react";
-import { useWorkspaceStore } from "@/stores/workspaceStore";
-import { CalloutCard, Card, InfoItem } from "@node-stack/ui";
-import { useWorkspaces, useUpdateWorkspace } from "@/features/workspaces/hooks/useWorkspaces";
-import { useShallow } from "zustand/react/shallow";
-import { KycCard } from "./KycCard";
-import { CompanyEditForm } from "./CompanyEditForm";
-import { AuditLog } from "./AuditLog";
-import { CompanyHero } from "./CompanyHero";
-import { CompanyFormValues } from "../types";
 import { appToast } from "@components/alerts/Toasts";
+import { CalloutCard, Card, InfoItem } from "@node-stack/ui";
+import { Building2, Hash, AlignLeft, ShieldCheck, Calendar } from "lucide-react";
+import { FC, useMemo, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
+
+import { AuditLog } from "./AuditLog";
+import { CompanyEditForm } from "./CompanyEditForm";
+import { CompanyHero } from "./CompanyHero";
+import { KycCard } from "./KycCard";
+import { CompanyFormValues } from "../types";
+
+import { useWorkspaces, useUpdateWorkspace } from "@/features/workspaces/hooks/useWorkspaces";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
+
 
 export const CompanyContent: FC = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -18,6 +21,7 @@ export const CompanyContent: FC = () => {
   const { mutateAsync: updateWorkspace, isPending } = useUpdateWorkspace();
 
   const activeWorkspace = useMemo(() =>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     workspaces?.find((w: any) => w.id === activeWorkspaceId),
     [workspaces, activeWorkspaceId]
   );

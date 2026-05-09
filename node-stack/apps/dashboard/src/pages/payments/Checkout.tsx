@@ -12,7 +12,8 @@
  * Remove the simulated timeout in onSubmit when the backend is wired to Polar.
  */
 
-import { FC, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Input } from "@node-stack/ui";
 import {
   CheckCircle2,
   ChevronDown,
@@ -26,15 +27,15 @@ import {
   Lock,
   Tag,
 } from "lucide-react";
-import { Input } from "@node-stack/ui";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { FC, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import * as z from "zod";
-import { cn } from "@/utils/classNames";
+
 import { BackButton } from "@/components/shared/BackButton";
-import { useExchangeRate } from "@/hooks/useExchangeRate";
 import { useCheckout } from "@/features/billing/hooks/useBilling";
+import { useExchangeRate } from "@/hooks/useExchangeRate";
+import { cn } from "@/utils/classNames";
 
 // ─── Schema — Polar handles card / address; we only pre-fill email ────────────
 
@@ -197,6 +198,7 @@ const Checkout: FC = () => {
   const { mutateAsync: createCheckout, isPending } = useCheckout();
 
   const { register, handleSubmit, formState: { errors } } = useForm<CheckoutForm>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(checkoutSchema as any),
   });
 
@@ -220,8 +222,9 @@ const Checkout: FC = () => {
         // Fallback to redirect if SDK not loaded
         window.location.href = result.url;
       }
-    } catch (err: any) {
-      alert(err.message || "Error al generar la sesión de pago");
+    } catch (err: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      alert((err as any)?.message || "Error al generar la sesión de pago");
     }
   };
 

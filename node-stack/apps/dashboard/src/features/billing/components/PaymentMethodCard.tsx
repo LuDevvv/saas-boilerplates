@@ -1,6 +1,7 @@
-import { FC, useState, useEffect, ReactNode } from "react";
-import { Plus, Trash2, Star } from "lucide-react";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { Plus, Trash2, Star } from "lucide-react";
+import { FC, useState, useEffect, ReactNode } from "react";
+
 import { cn } from "@/utils/classNames";
 
 export interface PaymentMethod {

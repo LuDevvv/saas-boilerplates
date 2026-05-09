@@ -1,15 +1,17 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate, useSearchParams, useParams } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { Eye, EyeOff, Check, AlertTriangle } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Input, Button } from "@node-stack/ui";
+import { Eye, EyeOff, Check, AlertTriangle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { Link, useNavigate, useSearchParams, useParams } from "react-router-dom";
+
+import { AuthSidebar } from "./components/AuthSidebar";
+
+import { Logo } from "@/assets/logo/logo";
 import { appToast } from "@/components/alerts/Toasts";
+import { useResetPassword } from "@/features/auth/hooks";
 import type { ResetPasswordFormData } from "@/utils/validations/auth";
 import { resetPasswordSchema } from "@/utils/validations/auth";
-import { Input, Button } from "@node-stack/ui";
-import { useResetPassword } from "@/features/auth/hooks";
-import { AuthSidebar } from "./components/AuthSidebar";
-import { Logo } from "@/assets/logo/logo";
 
 const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -30,6 +32,7 @@ const ResetPassword = () => {
     setError,
     formState: { errors },
   } = useForm<ResetPasswordFormData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(resetPasswordSchema as any),
     mode: "onChange",
     defaultValues: { password: "", confirmPassword: "" },
@@ -70,7 +73,7 @@ const ResetPassword = () => {
         description: "Tu contraseña ha sido actualizada correctamente.",
       });
       setIsSuccess(true);
-    } catch (e) {
+    } catch {
       // Error manejado en el useEffect
     }
   };

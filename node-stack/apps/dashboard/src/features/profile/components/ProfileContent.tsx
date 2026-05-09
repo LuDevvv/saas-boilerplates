@@ -1,14 +1,16 @@
 import { FC, useState } from "react";
-import { cn } from "@/utils/classNames";
-import { useAuth } from "@/hooks/stores/useAuth";
-import { useUpdateProfile } from "@/features/auth/hooks/useUpdateProfile";
-import { appToast } from "@/components/alerts/Toasts";
-import { SecurityCard } from "./SecurityCard";
-import { PersonalEditForm } from "./PersonalEditForm";
+
 import { LoginHistory } from "./LoginHistory";
+import { PersonalEditForm } from "./PersonalEditForm";
 import { ProfileHero } from "./ProfileHero";
-import { ProfileFormValues } from "../types";
+import { SecurityCard } from "./SecurityCard";
 import { useSessions } from "../hooks/useSessions";
+import { ProfileFormValues } from "../types";
+
+import { appToast } from "@/components/alerts/Toasts";
+import { useUpdateProfile } from "@/features/auth/hooks/useUpdateProfile";
+import { useAuth } from "@/hooks/stores/useAuth";
+import { cn } from "@/utils/classNames";
 
 export const ProfileContent: FC = () => {
   const { user } = useAuth();
@@ -29,7 +31,7 @@ export const ProfileContent: FC = () => {
         description: "Tus cambios se han sincronizado correctamente."
       });
       setIsEditing(false);
-    } catch (error) {
+    } catch {
       appToast.error({
         title: "Error al guardar",
         description: "No se pudieron guardar los cambios. Inténtalo de nuevo."

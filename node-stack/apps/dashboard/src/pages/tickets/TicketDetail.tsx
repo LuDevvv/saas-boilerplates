@@ -1,5 +1,4 @@
-import { FC, useState, useRef, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { StatusPill, TwoColumnLayout } from "@node-stack/ui";
 import {
   ChevronLeft,
   Send,
@@ -16,7 +15,9 @@ import {
   LifeBuoy,
   Timer,
 } from "lucide-react";
-import { StatusPill, TwoColumnLayout } from "@node-stack/ui";
+import { FC, useState, useRef, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+
 import {
   useTicket,
   useAddTicketMessage,

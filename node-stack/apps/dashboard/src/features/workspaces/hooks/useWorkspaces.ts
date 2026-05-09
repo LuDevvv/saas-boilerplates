@@ -1,8 +1,9 @@
+import type { CreateWorkspaceDto, UpdateWorkspaceDto, Workspace } from "@node-stack/types";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { appToast } from "@/components/alerts/Toasts";
 import { api } from "@/lib/api";
 import { queryKeys } from "@/lib/react-query/queryKeys";
-import { appToast } from "@/components/alerts/Toasts";
-import type { CreateWorkspaceDto, UpdateWorkspaceDto, Workspace } from "@node-stack/types";
 
 export const useWorkspaces = () => {
   const query = useQuery({
@@ -12,6 +13,7 @@ export const useWorkspaces = () => {
 
   return {
     ...query,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: (query.data as any)?.workspaces ?? query.data ?? [],
   };
 };
@@ -39,7 +41,9 @@ export const useUpdateWorkspace = () => {
       await queryClient.cancelQueries({ queryKey: queryKeys.workspaces.list() });
       const previousWorkspaces = queryClient.getQueryData(queryKeys.workspaces.list());
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       queryClient.setQueryData(queryKeys.workspaces.list(), (old: any) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const list = (old as any)?.workspaces ?? old ?? [];
         return {
           ...old,
@@ -49,6 +53,7 @@ export const useUpdateWorkspace = () => {
 
       return { previousWorkspaces };
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err, _, context: any) => {
       queryClient.setQueryData(queryKeys.workspaces.list(), context?.previousWorkspaces);
       appToast.error(err);

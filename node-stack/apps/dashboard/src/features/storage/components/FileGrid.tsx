@@ -1,4 +1,4 @@
-import { FC } from "react";
+import type { FileInfo as StorageFile } from "@node-stack/types";
 import {
   Button,
   Skeleton,
@@ -19,9 +19,10 @@ import {
   ExternalLink,
   File as FileIcon,
 } from "lucide-react";
-import { formatBytes } from "@/utils/formatters";
+import { FC } from "react";
+
 import { cn } from "@/utils/classNames";
-import type { FileInfo as StorageFile } from "@node-stack/types";
+import { formatBytes } from "@/utils/formatters";
 
 interface FileGridProps {
   files: StorageFile[];

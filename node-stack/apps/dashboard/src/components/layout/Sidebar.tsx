@@ -1,20 +1,20 @@
+import { TooltipProvider } from "@node-stack/ui";
+import { PanelLeftOpen } from "lucide-react";
 import { FC, useEffect, useMemo, useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import {
-  PanelLeftOpen
-} from "lucide-react";
-import { cn } from "@/utils/classNames";
+
+import { SidebarItem } from "../sidebar/SidebarItem.js";
+import { SidebarSearch } from "../sidebar/SidebarSearch.js";
+import { SidebarSection } from "../sidebar/SidebarSection.js";
+import { TrialStatusWidget } from "../sidebar/SidebarWidgets.js";
+import { SidebarProps } from "../sidebar/types.js";
+import { UserIdentity } from "../sidebar/UserIdentity.js";
+import { WorkspaceSwitcher } from "../sidebar/WorkspaceSwitcher.js";
+
+import { getMenuSections } from "@/config/navigation";
 import { useAuth } from "@/hooks/stores/useAuth";
 import { useSidebarStore } from "@/stores/sidebarStore";
-import { SidebarItem } from "../sidebar/SidebarItem.js";
-import { SidebarSection } from "../sidebar/SidebarSection.js";
-import { TooltipProvider } from "@node-stack/ui";
-import { getMenuSections } from "@/config/navigation";
-import { SidebarProps } from "../sidebar/types.js";
-import { WorkspaceSwitcher } from "../sidebar/WorkspaceSwitcher.js";
-import { UserIdentity } from "../sidebar/UserIdentity.js";
-import { TrialStatusWidget } from "../sidebar/SidebarWidgets.js";
-import { SidebarSearch } from "../sidebar/SidebarSearch.js";
+import { cn } from "@/utils/classNames";
 
 export const Sidebar: FC<SidebarProps> = ({
   isOpen,
@@ -39,7 +39,7 @@ export const Sidebar: FC<SidebarProps> = ({
   const menuSections = useMemo(() => {
     const rawSections = propMenuSections || getMenuSections();
 
-    const isAdmin = user?.role === "admin" || user?.role === "super_admin" || !!(user as any)?.isAdmin;
+    const isAdmin = user?.role === "admin" || user?.role === "super_admin" || !!(user as { isAdmin?: boolean })?.isAdmin;
 
     if (!isAdmin) {
       return rawSections.filter(section => !section.adminOnly);

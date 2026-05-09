@@ -1,9 +1,13 @@
-import { useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { appToast } from "@/components/alerts/Toasts";
 import type { GetPresignedUrlDto } from "@node-stack/types";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
+
 import { useUploadStore } from "../stores/uploadStore";
+
+import { appToast } from "@/components/alerts/Toasts";
+import { api } from "@/lib/api";
+
+
 
 // ─── Files list ──────────────────────────────────────────────────────────────
 
@@ -136,8 +140,9 @@ export const useUploadFile = (workspaceId: string | null) => {
         setTimeout(() => useUploadStore.getState().remove(itemId), 4000);
 
         return { fileUrl };
-      } catch (error: any) {
-        const message = error?.message || "No se pudo subir el archivo";
+      } catch (error: unknown) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const message = (error as any)?.message || "No se pudo subir el archivo";
         const isCancelled = message === "Subida cancelada";
         setStatus(itemId, isCancelled ? "cancelled" : "error", {
           error: isCancelled ? undefined : message,

@@ -1,5 +1,4 @@
-import { FC, ReactNode, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Skeleton } from "@node-stack/ui";
 import {
   Users,
   CreditCard,
@@ -10,18 +9,24 @@ import {
   Rocket,
   SlidersHorizontal,
 } from "lucide-react";
-import { useAuth } from "@/hooks/stores/useAuth";
-import { WelcomeBanner } from "@/components/dashboard/WelcomeBanner";
-import { QuickActions, type QuickAction } from "./QuickActions";
-import { KpiCard } from "@/features/analytics/components/KpiCard";
-import { ConfigSteps } from "@/components/dashboard/ConfigSteps";
-import { TutorialsWidget } from "./TutorialsWidget";
+import { FC, ReactNode, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+
+
+
 import { DashboardCustomizer } from "./DashboardCustomizer";
-import { Skeleton } from "@node-stack/ui";
-import { appToast } from "@/components/alerts/Toasts";
-import { NovedadesSection } from "@/components/news/NovedadesSection";
+import { QuickActions, type QuickAction } from "./QuickActions";
+import { TutorialsWidget } from "./TutorialsWidget";
 import { useOnboardingStatus, useReleaseNotes } from "../hooks/useDashboard";
 import { useDashboardLayout, type WidgetId } from "../hooks/useDashboardLayout";
+
+import { appToast } from "@/components/alerts/Toasts";
+import { ConfigSteps } from "@/components/dashboard/ConfigSteps";
+import { WelcomeBanner } from "@/components/dashboard/WelcomeBanner";
+import { NovedadesSection } from "@/components/news/NovedadesSection";
+import { KpiCard } from "@/features/analytics/components/KpiCard";
+import { useAuth } from "@/hooks/stores/useAuth";
 import { cn } from "@/utils/classNames";
 
 // ─── Quick actions ────────────────────────────────────────────────────────────

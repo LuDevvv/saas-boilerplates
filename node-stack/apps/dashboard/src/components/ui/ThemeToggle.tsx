@@ -1,7 +1,9 @@
-import { FC } from "react";
 import { Moon, Sun } from "lucide-react";
-import { useThemeStore } from "@/stores/themeStore";
+import { FC } from "react";
 import { flushSync } from "react-dom";
+
+import { useThemeStore } from "@/stores/themeStore";
+
 
 export const ThemeToggle: FC = () => {
   const { theme, toggleTheme } = useThemeStore();

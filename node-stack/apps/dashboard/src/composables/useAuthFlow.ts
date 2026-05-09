@@ -1,11 +1,12 @@
+import type { LoginDto, RegisterDto, AuthResponse } from "@node-stack/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { api, cookieTokenStorage } from "@/lib/api";
-import { useAuthStore } from "@/stores/authStore";
 import { useShallow } from "zustand/react/shallow";
-import { queryKeys } from "@/lib/react-query/queryKeys";
+
 import { appToast } from "@/components/alerts/Toasts";
-import type { LoginDto, RegisterDto, AuthResponse } from "@node-stack/types";
+import { api, cookieTokenStorage } from "@/lib/api";
+import { queryKeys } from "@/lib/react-query/queryKeys";
+import { useAuthStore } from "@/stores/authStore";
 
 export const useLoginFlow = () => {
   const navigate = useNavigate();

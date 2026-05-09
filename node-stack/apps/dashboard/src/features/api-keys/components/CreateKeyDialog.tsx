@@ -1,11 +1,13 @@
-import { FC, useState } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { Button, Input } from "@node-stack/ui";
 import { Loader2, Key } from "lucide-react";
-import { ModalLayout } from "@/layouts/ModalLayout";
+import { FC, useState } from "react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+
 import { SecretDisplay } from "./SecretDisplay";
+
+import { ModalLayout } from "@/layouts/ModalLayout";
 
 const keySchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio").max(50, "El nombre es demasiado largo"),
@@ -16,7 +18,7 @@ type KeyFormValues = z.infer<typeof keySchema>;
 interface CreateKeyDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (name: string) => Promise<any>;
+  onCreate: (name: string) => Promise<{ secret?: string } | unknown>;
   isLoading: boolean;
 }
 
@@ -29,6 +31,7 @@ export const CreateKeyDialog: FC<CreateKeyDialogProps> = ({
   const [generatedSecret, setGeneratedSecret] = useState<string | null>(null);
 
   const { register, handleSubmit, reset, formState: { errors, isValid } } = useForm<KeyFormValues>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(keySchema as any),
     mode: "onChange",
     defaultValues: { name: "" },
@@ -37,7 +40,8 @@ export const CreateKeyDialog: FC<CreateKeyDialogProps> = ({
   const onSubmit = async (data: KeyFormValues) => {
     try {
       const result = await onCreate(data.name);
-      if (result?.secret) setGeneratedSecret(result.secret);
+      const secretResult = result as { secret?: string } | null;
+      if (secretResult?.secret) setGeneratedSecret(secretResult.secret);
     } catch {
       // handled by hook
     }

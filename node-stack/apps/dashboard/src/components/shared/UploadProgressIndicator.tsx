@@ -1,5 +1,6 @@
-import { UploadProgress } from "@/hooks/use-s3-upload";
 import { Upload, CheckCircle2, XCircle, RefreshCw } from "lucide-react";
+
+import { UploadProgress } from "@/hooks/use-s3-upload";
 
 interface UploadProgressIndicatorProps {
   progress: UploadProgress;

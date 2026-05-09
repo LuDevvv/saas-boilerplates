@@ -1,10 +1,11 @@
 import { useEffect } from "react";
-import { useAuthStore } from "@/stores/authStore";
-import { api, cookieTokenStorage } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
+import { useShallow } from "zustand/react/shallow";
+
 import { appToast } from "@/components/alerts/Toasts";
 import { useUser } from "@/features/auth/hooks/useUser";
-import { useShallow } from "zustand/react/shallow";
+import { api, cookieTokenStorage } from "@/lib/api";
+import { useAuthStore } from "@/stores/authStore";
 
 export const useAuth = () => {
   const token = useAuthStore(useShallow((state) => state.token));
@@ -18,7 +19,7 @@ export const useAuth = () => {
   const logout = async () => {
     try {
       await api.auth.logout();
-    } catch (e) {
+    } catch {
       // Ignore network errors on logout
     } finally {
       clearStore();

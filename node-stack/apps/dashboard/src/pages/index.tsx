@@ -1,6 +1,7 @@
 import { FC, Suspense } from "react";
-import { DashboardContent } from "@/features/dashboard";
+
 import { LoadingState } from "@/components/shared/LoadingState";
+import { DashboardContent } from "@/features/dashboard";
 
 const DashboardPage: FC = () => {
   return (

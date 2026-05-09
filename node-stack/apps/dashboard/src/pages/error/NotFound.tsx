@@ -1,6 +1,6 @@
-import { useNavigate } from "react-router";
-import { ArrowLeft, Home } from "lucide-react";
 import { Button } from "@node-stack/ui";
+import { ArrowLeft, Home } from "lucide-react";
+import { useNavigate } from "react-router";
 
 const NotFound = () => {
   const navigate = useNavigate();

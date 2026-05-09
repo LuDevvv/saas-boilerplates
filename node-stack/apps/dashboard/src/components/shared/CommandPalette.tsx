@@ -1,4 +1,3 @@
-import { useState, useEffect, useMemo } from "react";
 import { Command } from "cmdk";
 import {
   Search,
@@ -16,11 +15,13 @@ import {
   CornerDownLeft,
   LogOut,
 } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+
 import { useAuth } from "@/hooks/stores/useAuth";
+import { ModalLayout } from "@/layouts/ModalLayout";
 import { useSidebarStore } from "@/stores/sidebarStore";
 import { cn } from "@/utils/classNames";
-import { ModalLayout } from "@/layouts/ModalLayout";
 
 export const CommandPalette = () => {
   const { isCommandPaletteOpen, setCommandPaletteOpen, toggleCommandPalette } = useSidebarStore();

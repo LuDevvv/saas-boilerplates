@@ -1,6 +1,7 @@
-import { FC } from "react";
-import { CheckCircle2, Calendar, ChevronRight } from "lucide-react";
 import { Button } from "@node-stack/ui";
+import { CheckCircle2, Calendar, ChevronRight } from "lucide-react";
+import { FC } from "react";
+
 import { cn } from "@/utils/classNames";
 
 // ─── Plan catalog ─────────────────────────────────────────────────────────────

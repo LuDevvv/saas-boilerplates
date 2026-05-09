@@ -1,6 +1,7 @@
 import { Suspense } from "react";
-import { TicketsContent } from "@/features/tickets/components";
+
 import { LoadingState } from "@/components/shared/LoadingState";
+import { TicketsContent } from "@/features/tickets/components";
 
 const TicketsPage = () => (
   <Suspense fallback={<LoadingState />}>

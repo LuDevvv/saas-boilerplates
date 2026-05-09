@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
-import { useAuthStore } from "@/stores/authStore";
-import { useWorkspaceStore } from "@/stores/workspaceStore";
-import { useRealtimeStore } from "@/stores/realtimeStore";
-import { useShallow } from "zustand/react/shallow";
 import { useQueryClient } from "@tanstack/react-query";
+import React, { useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
+
 import { queryKeys } from "@/lib/react-query/queryKeys";
+import { useAuthStore } from "@/stores/authStore";
+import { useRealtimeStore } from "@/stores/realtimeStore";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
 
 export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isAuthenticated = useAuthStore(useShallow((state) => state.isAuthenticated));
@@ -33,7 +34,7 @@ export const RealtimeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     if (!socket) return;
     
-    const handleNewNotification = (_notification: any) => {
+    const handleNewNotification = (_notification: unknown) => {
       // Invalidate queries to fetch fresh data
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.notifications.unreadCount() });

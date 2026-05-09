@@ -1,5 +1,5 @@
-import { FC, useEffect, useRef, PropsWithChildren } from "react";
 import { animate, AnimationOptionsWithOverrides } from "@motionone/dom";
+import { FC, useEffect, useRef, PropsWithChildren } from "react";
 
 interface MotionContainerProps {
   delay?: number;
@@ -26,8 +26,8 @@ export const MotionContainer: FC<PropsWithChildren<MotionContainerProps>> = ({
       easing: [0.22, 1, 0.36, 1],
     };
 
-    let initial: any = { opacity: 0 };
-    let animateTo: any = { opacity: 1 };
+    let initial: { opacity: number; transform?: string } = { opacity: 0 };
+    let animateTo: { opacity: number; transform?: string } = { opacity: 1 };
 
     switch (variant) {
       case "slide-up":
