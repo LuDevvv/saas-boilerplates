@@ -126,16 +126,22 @@ export default [
     },
   },
   {
-    // Dashboard app: api-client responses are currently `any` (Phase 4c will regenerate types).
-    // Turn off warning-level unsafe-* rules until codegen produces typed responses.
-    // explicit-function-return-type is off because React component inference is sufficient.
+    // Dashboard — intentional relaxations (see ENGINEERING_GUIDE.md §17):
+    //
+    // 1. no-unsafe-*: api-client methods return manually-typed values, not schema.ts types yet.
+    //    TO REMOVE: update every api-client method (auth.ts, workspace.ts, …) to use
+    //    `components["schemas"]["X"]` from packages/api-client/src/schema.ts, then delete
+    //    these four lines. ~298 warnings will surface — all fixable with typed assertions.
+    //
+    // 2. explicit-function-return-type: React components don't benefit from `: JSX.Element`
+    //    on every arrow function. Keep off permanently for tsx files in this app.
     files: ['apps/dashboard/**/*.ts', 'apps/dashboard/**/*.tsx'],
     rules: {
-      '@typescript-eslint/no-unsafe-assignment':    'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-call':          'off',
-      '@typescript-eslint/no-unsafe-return':        'off',
-      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/no-unsafe-assignment':    'off',  // TECH DEBT — see note 1
+      '@typescript-eslint/no-unsafe-member-access': 'off',  // TECH DEBT — see note 1
+      '@typescript-eslint/no-unsafe-call':          'off',  // TECH DEBT — see note 1
+      '@typescript-eslint/no-unsafe-return':        'off',  // TECH DEBT — see note 1
+      '@typescript-eslint/explicit-function-return-type': 'off',  // intentional — see note 2
     },
   },
   {
