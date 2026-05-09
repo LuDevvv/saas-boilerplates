@@ -8,4 +8,5 @@ export {
   useAuditLogs,
   useImpersonateUser,
   useAdminWorkspaces,
+  useAdminTrends,
 } from "./useAdmin";

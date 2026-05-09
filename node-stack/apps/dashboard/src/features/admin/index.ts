@@ -1,4 +1,4 @@
-export type { AuditLog, SystemStats, AdminUser, FeatureFlag } from "@node-stack/types";
+export type { AuditLog, SystemStats, AdminStats, AdminTrends, AdminUser, FeatureFlag } from "@node-stack/types";
 
 export {
   useAdminStats,
@@ -10,4 +10,5 @@ export {
   useAuditLogs,
   useImpersonateUser,
   useAdminWorkspaces,
+  useAdminTrends,
 } from "./hooks";

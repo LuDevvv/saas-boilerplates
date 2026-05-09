@@ -2,12 +2,21 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/react-query/queryKeys";
 import { api } from "@/lib/api";
 import { appToast } from "@/components/alerts/Toasts";
-import type { SystemStats } from "@node-stack/types";
+import type { AdminStats, AdminTrends } from "@node-stack/types";
 
 export const useAdminStats = () => {
-  return useQuery<SystemStats, Error>({
+  return useQuery<AdminStats, Error>({
     queryKey: queryKeys.admin.stats(),
     queryFn: () => api.admin.getStats(),
+    staleTime: 30_000,
+  });
+};
+
+export const useAdminTrends = (days?: number) => {
+  return useQuery<AdminTrends, Error>({
+    queryKey: [...queryKeys.admin.stats(), "trends", days ?? 30],
+    queryFn: () => api.admin.getTrends(days),
+    staleTime: 60_000,
   });
 };
 

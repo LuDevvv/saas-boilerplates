@@ -1,14 +1,19 @@
 import { AxiosInstance } from "axios";
 import {
   PaginatedResponse,
-  SystemStats,
+  AdminStats,
+  AdminTrends,
   AdminUser,
 } from "@node-stack/types";
 
 export const admin = (client: AxiosInstance) => ({
   // ── Stats ──────────────────────────────────────────────────
-  getStats: async (): Promise<SystemStats> => {
+  getStats: async (): Promise<AdminStats> => {
     return client.get("/admin/stats/overview").then((r) => r.data);
+  },
+
+  getTrends: async (days?: number): Promise<AdminTrends> => {
+    return client.get("/admin/stats/trends", { params: { days } }).then((r) => r.data);
   },
 
   // ── Users ─────────────────────────────────────────────────
