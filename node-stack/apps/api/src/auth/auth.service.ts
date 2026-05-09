@@ -6,8 +6,7 @@ import {
   ConflictException,
   BadRequestException,
 } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { JwtService } from "@nestjs/jwt";
+
 import {
   withSystemTx,
   AuthRepository,
@@ -46,8 +45,6 @@ interface ListPageOptions {
 @Injectable()
 export class AuthService {
   constructor(
-    private jwtService: JwtService,
-    private configService: ConfigService,
     private twoFactorService: TwoFactorService,
     private authRepository: AuthRepository,
     private auditLog: AuditLogRepository,

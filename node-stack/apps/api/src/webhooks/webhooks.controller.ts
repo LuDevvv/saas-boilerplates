@@ -7,7 +7,6 @@ import {
   Req,
   Res,
   HttpCode,
-  Logger,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -25,8 +24,6 @@ import { InboundWebhookService } from "@/webhooks/webhooks.service.js";
 @ApiTags("webhooks")
 @Controller("webhooks")
 export class WebhooksController {
-  private readonly logger = new Logger(WebhooksController.name);
-
   constructor(private readonly webhookService: InboundWebhookService) {}
 
 

@@ -6,7 +6,6 @@ import {
   ConflictException,
   BadRequestException,
   UnauthorizedException,
-  Logger,
   Inject,
 } from "@nestjs/common";
 import {
@@ -28,8 +27,6 @@ import { OutboxService } from "@/common/services/outbox.service.js";
 
 @Injectable()
 export class InvitationsService {
-  private readonly logger = new Logger(InvitationsService.name);
-
   constructor(
     private readonly workspaceRepo: WorkspaceRepository,
     private readonly invitationRepo: InvitationRepository,

@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 
 import { writeFileSync } from 'fs';
+import { randomBytes } from 'crypto';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -63,21 +64,33 @@ async function bootstrap(): Promise<void> {
     app.useWebSocketAdapter(redisIoAdapter);
   }
 
-  // Security headers with strict CSP (must be first)
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'"],
-      },
+  // Security headers — per-request nonce for CSP (replaces unsafe-inline).
+  // The nonce is attached to res.locals so downstream middleware/templates can read it.
+  app.use((_req: express.Request, res: express.Response, next: express.NextFunction) => {
+    res.locals["cspNonce"] = randomBytes(16).toString("base64");
+    next();
+  });
+
+  app.use(
+    (req: express.Request, res: express.Response, next: express.NextFunction) => {
+      const nonce = res.locals["cspNonce"] as string | undefined;
+      helmet({
+        contentSecurityPolicy: {
+          directives: {
+            defaultSrc: ["'self'"],
+            // Use nonce instead of unsafe-inline so only our scripts run.
+            scriptSrc: ["'self'", ...(nonce ? [`'nonce-${nonce}'`] : ["'unsafe-inline'"])],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", "data:", "https:"],
+            connectSrc: ["'self'"],
+          },
+        },
+      })(req, res, next);
     },
-  }));
+  );
 
   // Defensive cookie configuration: force secure defaults on all res.cookie calls
-  app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+  app.use((_req: express.Request, res: express.Response, next: express.NextFunction) => {
     const originalCookie = res.cookie.bind(res) as (name: string, value: unknown, options?: express.CookieOptions) => express.Response;
     res.cookie = function (this: express.Response, name: string, value: unknown, options?: express.CookieOptions): express.Response {
       const secureOptions: express.CookieOptions = {

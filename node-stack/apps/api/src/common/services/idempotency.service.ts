@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { Redis } from "ioredis";
 
 const IDEMPOTENCY_PREFIX = "idempotency:";
@@ -14,7 +14,6 @@ interface CachedResponse {
 @Injectable()
 export class IdempotencyService {
   private readonly client: Redis;
-  private readonly logger = new Logger(IdempotencyService.name);
 
   constructor() {
     const url = process.env.REDIS_URL || "redis://localhost:6379";

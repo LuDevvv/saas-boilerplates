@@ -6,7 +6,7 @@ import { Strategy, Profile } from "passport-google-oauth20";
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
-  constructor(private readonly config: ConfigService) {
+  constructor(config: ConfigService) {
     super({
       clientID: config.getOrThrow("GOOGLE_CLIENT_ID"),
       clientSecret: config.getOrThrow("GOOGLE_CLIENT_SECRET"),

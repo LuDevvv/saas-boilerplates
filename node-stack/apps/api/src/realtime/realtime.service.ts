@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { OnEvent } from '@nestjs/event-emitter';
 
 import { RealtimeGateway } from '@/realtime/realtime.gateway.js';
 
@@ -14,7 +14,6 @@ export class RealtimeService implements OnModuleInit {
   private readonly logger = new Logger(RealtimeService.name);
 
   constructor(
-    private readonly eventEmitter: EventEmitter2,
     private readonly realtimeGateway: RealtimeGateway,
   ) {}
 
