@@ -47,7 +47,7 @@ export const FilterTabs = <TValue extends string = string>({
   size = "md",
   className,
   ariaLabel,
-}: FilterTabsProps<TValue>): JSX.Element => {
+}: FilterTabsProps<TValue>): React.JSX.Element => {
   const heightClass = size === "sm" ? "h-7 text-[11px]" : "h-8 text-[12px]";
 
   return (

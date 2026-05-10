@@ -1,7 +1,8 @@
 import { Suspense } from "react";
-import { AdminOverview } from "@/features/admin/components/admin-overview";
+
 import { PageHeader } from "@/components/page-header";
 import { Shell } from "@/components/shell";
+import { AdminOverview } from "@/features/admin/components/admin-overview";
 
 export const metadata = {
   title: "Admin Overview",

@@ -62,7 +62,7 @@ export class FeatureFlagService {
     const pattern = `${this.prefix}:*`;
     const keys = await this.redis.keys(pattern);
     const results = await Promise.all(
-      keys.map(async (redisKey) => {
+      keys.map(async (redisKey): Promise<{ key: string; scope: string; scopeId: string | null; enabled: boolean }> => {
         const value = await this.redis.get(redisKey);
         // Key format: feature:flag:<flagKey>:<scope>[:<id>]
         const withoutPrefix = redisKey.slice(this.prefix.length + 1);

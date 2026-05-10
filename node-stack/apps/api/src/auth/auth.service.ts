@@ -1,4 +1,4 @@
-import * as crypto from "crypto";
+import * as crypto from "node:crypto";
 
 import {
   Injectable,
@@ -6,7 +6,6 @@ import {
   ConflictException,
   BadRequestException,
 } from "@nestjs/common";
-
 import {
   withSystemTx,
   AuthRepository,

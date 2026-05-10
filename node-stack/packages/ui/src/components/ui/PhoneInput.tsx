@@ -31,7 +31,7 @@ const COUNTRIES = [
   { code: "ES", dialCode: "+34", name: "España" },
 ];
 
-const CountryFlag = ({ code }: { code: string }): JSX.Element => {
+const CountryFlag = ({ code }: { code: string }): React.JSX.Element => {
   if (!code) return <Phone className="w-5 h-4 text-gray-400" />;
   return (
     <img
@@ -82,7 +82,7 @@ export const PhoneInput = ({
   onChange,
   disabled,
   className = "",
-}: PhoneInputProps): JSX.Element => {
+}: PhoneInputProps): React.JSX.Element => {
   const phoneInputRef = useRef<HTMLInputElement>(null);
 
   // Force República Dominicana

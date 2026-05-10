@@ -9,7 +9,7 @@ export interface SendEmailOptions {
 
 export interface EmailProviderResponse {
   messageId?: string;
-  raw?: any;
+  raw?: unknown;
 }
 
 export interface IEmailProvider {

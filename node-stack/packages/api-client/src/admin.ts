@@ -1,10 +1,10 @@
-import { AxiosInstance } from "axios";
 import {
   PaginatedResponse,
   AdminStats,
   AdminTrends,
   AdminUser,
 } from "@node-stack/types";
+import { AxiosInstance } from "axios";
 
 export const admin = (client: AxiosInstance) => ({
   // ── Stats ──────────────────────────────────────────────────

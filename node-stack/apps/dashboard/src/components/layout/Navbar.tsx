@@ -1,3 +1,4 @@
+import type { CurrentPlan } from "@components/sidebar/types";
 import { LinkTransition } from "@components/utils/LinkTransition";
 import { Menu } from "lucide-react";
 import { FC } from "react";
@@ -48,7 +49,7 @@ export const Navbar: FC<NavbarProps> = ({ onMenuClick }) => {
             isCollapsed={false}
             isPremium={isPremium}
             user={user}
-            currentPlan={currentPlan as any}
+            currentPlan={currentPlan as CurrentPlan | null}
             onLogout={logout}
             dropdownItems={accountDropdownItems}
           />

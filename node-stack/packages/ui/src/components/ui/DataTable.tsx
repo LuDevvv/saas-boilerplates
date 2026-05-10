@@ -48,7 +48,7 @@ export function DataTable<T>({
   searchPlaceholder = "Buscar...",
   onRowClick,
   pageSize = 10,
-}: DataTableProps<T>): JSX.Element {
+}: DataTableProps<T>): React.JSX.Element {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState("");

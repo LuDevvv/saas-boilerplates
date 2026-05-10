@@ -20,7 +20,7 @@ export interface PricingTableProps {
   className?: string;
 }
 
-export function PricingTable({ tiers, className }: PricingTableProps): JSX.Element {
+export function PricingTable({ tiers, className }: PricingTableProps): React.JSX.Element {
   const containerRef = useGsapReveal<HTMLDivElement>({ direction: "up", distance: 30 });
 
   return (

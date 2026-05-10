@@ -1,4 +1,3 @@
-import { AxiosInstance } from "axios";
 import { 
   Branch, 
   Product, 
@@ -28,6 +27,7 @@ import {
   UpdateQrDto,
   PaginatedResponse
 } from "@node-stack/types";
+import { AxiosInstance } from "axios";
 
 export const branches = (client: AxiosInstance) => ({
   getAll: async (

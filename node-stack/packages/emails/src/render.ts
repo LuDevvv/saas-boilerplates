@@ -1,5 +1,6 @@
 import { render } from "@react-email/render";
 import * as React from "react";
+
 import { WelcomeEmail } from "./templates/WelcomeEmail.js";
 
 export type EmailTemplate = 
@@ -9,12 +10,12 @@ export type EmailTemplate =
   | { name: "VERIFY_EMAIL"; data: { token: string } }
   | { name: "AI_COMPLETED"; data: { jobId: string; message: string } };
 
-export async function renderEmail(template: EmailTemplate) {
-  let Component: any;
+export async function renderEmail(template: EmailTemplate): Promise<{ html: string; text: string }> {
+  let Component: React.ReactElement;
 
   switch (template.name.toUpperCase()) {
     case "WELCOME":
-      Component = React.createElement(WelcomeEmail, template.data as any);
+      Component = React.createElement(WelcomeEmail, template.data as { name: string; loginUrl: string });
       break;
     case "RESET_PASSWORD":
     case "PASSWORD_RESET":

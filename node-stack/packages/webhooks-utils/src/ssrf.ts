@@ -1,7 +1,7 @@
-import { parse } from "url";
 import { lookup } from "dns";
-import { promisify } from "util";
 import { isIP } from "net";
+import { parse } from "url";
+import { promisify } from "util";
 
 const lookupAsync = promisify(lookup);
 

@@ -1,5 +1,5 @@
-import { AxiosInstance } from "axios";
 import { AnalyticsOverview, TrafficData, PageStat, UsageData } from "@node-stack/types";
+import { AxiosInstance } from "axios";
 
 export const analytics = (client: AxiosInstance) => ({
   getOverview: async (workspaceId: string) => {

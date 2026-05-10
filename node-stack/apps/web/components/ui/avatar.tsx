@@ -1,5 +1,5 @@
-import React from "react";
 import { cn } from "@node-stack/ui";
+import React from "react";
 
 export const Avatar = React.forwardRef<
   HTMLDivElement,

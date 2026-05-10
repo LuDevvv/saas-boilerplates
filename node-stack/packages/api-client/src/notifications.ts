@@ -1,5 +1,5 @@
-import { AxiosInstance } from "axios";
 import { PaginatedResponse, Notification } from "@node-stack/types";
+import { AxiosInstance } from "axios";
 
 export const notifications = (client: AxiosInstance) => ({
   list: async (params?: {

@@ -16,7 +16,7 @@ export const formatDateShort = (date: string | Date | undefined | null, options?
 
   try {
     return d.toLocaleDateString('es-ES', defaultOptions);
-  } catch (e) {
+  } catch {
     return "Reciente";
   }
 };

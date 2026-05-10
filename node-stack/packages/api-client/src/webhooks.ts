@@ -1,5 +1,5 @@
-import { AxiosInstance } from "axios";
 import { WebhookLog, PaginatedResponse } from "@node-stack/types";
+import { AxiosInstance } from "axios";
 
 export const webhooks = (client: AxiosInstance) => ({
   getRecentLogs: async (params?: { provider?: string; limit?: number }) => {

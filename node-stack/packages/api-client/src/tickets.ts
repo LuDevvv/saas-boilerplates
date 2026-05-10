@@ -1,10 +1,10 @@
-import { AxiosInstance } from "axios";
 import { 
   Ticket, 
   CreateTicketDto, 
   UpdateTicketDto, 
   TicketStatus 
 } from "@node-stack/types";
+import { AxiosInstance } from "axios";
 
 export const tickets = (client: AxiosInstance) => ({
   list: async (params?: {

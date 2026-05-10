@@ -1,19 +1,20 @@
 export * from "./providers/types.js";
 export * from "./providers/ses.provider.js";
+export * from "./providers/resend.provider.js";
 export * from "./providers/console.provider.js";
 export * from "./render.js";
 
 import { ConsoleProvider } from "./providers/console.provider.js";
-import { SESProvider } from "./providers/ses.provider.js";
 import { ResendProvider } from "./providers/resend.provider.js";
-import { IEmailProvider, SendEmailOptions } from "./providers/types.js";
+import { SESProvider } from "./providers/ses.provider.js";
+import { IEmailProvider } from "./providers/types.js";
 import { renderEmail, EmailTemplate } from "./render.js";
 
 export interface LegacyEmailOptions {
   to: string | string[];
   subject: string;
-  templateName: any; // Keep compatible for now
-  templateData: any;
+  templateName: string;
+  templateData: Record<string, unknown>;
   from?: string;
 }
 
@@ -55,7 +56,7 @@ export class EmailSender {
     // Map old names to new types for compatibility during migration
     let mappedTemplate: EmailTemplate | null = null;
     if (templateName === "welcome") {
-      mappedTemplate = { name: "WELCOME", data: { name: templateData.name, loginUrl: templateData.loginUrl || "#" } };
+      mappedTemplate = { name: "WELCOME", data: { name: String(templateData.name ?? ""), loginUrl: String(templateData.loginUrl ?? "#") } };
     }
 
     if (mappedTemplate) {

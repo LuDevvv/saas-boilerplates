@@ -1,4 +1,3 @@
-import { AxiosInstance } from "axios";
 import { 
   Subscription, 
   CreateCheckoutDto,
@@ -6,6 +5,7 @@ import {
   PortalResponse,
   Invoice
 } from "@node-stack/types";
+import { AxiosInstance } from "axios";
 
 export const billing = (client: AxiosInstance) => ({
   getSubscription: async () => {

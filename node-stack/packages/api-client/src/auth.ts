@@ -1,4 +1,3 @@
-import { AxiosInstance } from "axios";
 import { 
   LoginDto, 
   RegisterDto, 
@@ -13,6 +12,7 @@ import {
   UpdateProfileDto,
   UserEntity
 } from "@node-stack/types";
+import { AxiosInstance } from "axios";
 
 export const auth = (client: AxiosInstance) => ({
   me: async () => {

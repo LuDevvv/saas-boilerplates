@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import { NotificationService, IUserProvider, IPreferenceProvider } from './NotificationService.js';
 
 describe('NotificationService', () => {

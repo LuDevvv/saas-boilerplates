@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
   Body,
   Container,
@@ -12,13 +11,14 @@ import {
   Tailwind,
   Hr,
 } from "@react-email/components";
+import * as React from "react";
 
 interface WelcomeEmailProps {
   name: string;
   loginUrl: string;
 }
 
-export const WelcomeEmail = ({ name, loginUrl }: WelcomeEmailProps) => {
+export const WelcomeEmail = ({ name, loginUrl }: WelcomeEmailProps): React.ReactElement => {
   return (
     <Html>
       <Head />

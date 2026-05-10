@@ -8,14 +8,14 @@ export const METRIC_EVENTS = {
   DB_QUERY_DURATION: 'db_query_duration',
 } as const;
 
-export function recordCacheHit() {
+export function recordCacheHit(): void {
   metricsEvents.emit(METRIC_EVENTS.CACHE_HIT);
 }
 
-export function recordCacheMiss() {
+export function recordCacheMiss(): void {
   metricsEvents.emit(METRIC_EVENTS.CACHE_MISS);
 }
 
-export function recordDbQueryDuration(durationSeconds: number, queryType?: string) {
+export function recordDbQueryDuration(durationSeconds: number, queryType?: string): void {
   metricsEvents.emit(METRIC_EVENTS.DB_QUERY_DURATION, { durationSeconds, queryType });
 }

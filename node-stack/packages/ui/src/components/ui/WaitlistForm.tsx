@@ -15,7 +15,7 @@ export function WaitlistForm({
   apiEndpoint = "/api/v1/marketing/waitlist",
   onSuccess,
   className,
-}: WaitlistFormProps): JSX.Element {
+}: WaitlistFormProps): React.JSX.Element {
   const [email, setEmail] = React.useState("");
   const [status, setStatus] = React.useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = React.useState("");

@@ -1,12 +1,13 @@
-import { FC, useState } from "react";
+import type { AuditLog } from "@node-stack/types";
+import { PageHeader } from "@node-stack/ui";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import {
   Activity, Loader2, AlertCircle,
   ChevronLeft, ChevronRight, Shield, User, CreditCard,
   Settings, Key, LogIn, LogOut, Trash2, FileText,
 } from "lucide-react";
-import { PageHeader } from "@node-stack/ui";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { FC, useState } from "react";
 
 import { useAuditLogs } from "@/features/admin";
 import { cn } from "@/utils/classNames";
@@ -44,7 +45,7 @@ const getActionMeta = (action: string) =>
 
 // ─── Row ─────────────────────────────────────────────────────────────────────
 
-const AuditRow: FC<{ log: any }> = ({ log }) => {
+const AuditRow: FC<{ log: AuditLog }> = ({ log }) => {
   const meta = getActionMeta(log.action);
   const Icon = meta.icon;
 
@@ -170,7 +171,7 @@ export const AuditLogsContent: FC = () => {
           </div>
         ) : (
           <div className="divide-y divide-border-subtle">
-            {logs.map((log: any) => (
+            {logs.map(log => (
               <AuditRow key={log.id} log={log} />
             ))}
           </div>

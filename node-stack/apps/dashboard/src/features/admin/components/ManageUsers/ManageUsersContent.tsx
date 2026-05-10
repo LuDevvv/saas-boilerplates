@@ -5,8 +5,8 @@ import { Link } from "react-router-dom";
 
 import { UserTableContent } from "./UserTableContent";
 
-import { useAdminUsers, useUpdateUserStatus, useUpdateUserRole, useImpersonateUser } from "@/features/admin";
 import { appToast } from "@/components/alerts/Toasts";
+import { useAdminUsers, useUpdateUserStatus, useUpdateUserRole, useImpersonateUser } from "@/features/admin";
 
 export const ManageUsersContent: FC = () => {
   const [searchTerm, setSearchTerm] = useState("");

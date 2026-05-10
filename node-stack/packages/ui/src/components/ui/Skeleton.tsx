@@ -3,7 +3,7 @@ import { cn } from "../../utils.js";
 function Skeleton({
   className,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>): JSX.Element {
+}: React.HTMLAttributes<HTMLDivElement>): React.JSX.Element {
   return (
     <div
       className={cn(

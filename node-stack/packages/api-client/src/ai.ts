@@ -1,10 +1,10 @@
-import { AxiosInstance } from "axios";
 import { 
   SubmitAIJobDto, 
   ChatCompletionDto,
   AIJob,
   AIJobStatus
 } from "@node-stack/types";
+import { AxiosInstance } from "axios";
 
 export const ai = (client: AxiosInstance) => ({
   submitJob: async (data: SubmitAIJobDto) => {

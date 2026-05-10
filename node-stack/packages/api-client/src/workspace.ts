@@ -1,4 +1,3 @@
-import { AxiosInstance } from "axios";
 import { 
   Workspace, 
   CreateWorkspaceDto, 
@@ -9,6 +8,7 @@ import {
   WorkspaceMember,
   InviteMemberResponse
 } from "@node-stack/types";
+import { AxiosInstance } from "axios";
 
 export const workspace = (client: AxiosInstance) => ({
   list: async (params?: { page?: number; limit?: number }) => {

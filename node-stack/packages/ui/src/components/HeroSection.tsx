@@ -22,7 +22,7 @@ export function HeroSection({
   onCtaClick,
   image,
   className,
-}: HeroSectionProps): JSX.Element {
+}: HeroSectionProps): React.JSX.Element {
   const titleRef = useGsapReveal<HTMLHeadingElement>({ direction: "up", delay: 0.1 });
   const subtitleRef = useGsapReveal<HTMLParagraphElement>({ direction: "up", delay: 0.3 });
   const actionsRef = useGsapReveal<HTMLDivElement>({ direction: "up", delay: 0.5 });

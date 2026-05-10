@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
-import { writeFileSync } from 'fs';
 import { randomBytes } from 'crypto';
+import { writeFileSync } from 'fs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 

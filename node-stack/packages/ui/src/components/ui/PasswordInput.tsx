@@ -118,7 +118,7 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
   }
 );
 
-const RequirementItem = ({ label, met }: { label: string; met: boolean }): JSX.Element => (
+const RequirementItem = ({ label, met }: { label: string; met: boolean }): React.JSX.Element => (
   <div className="flex items-center gap-2">
     <div className={cn(
       "flex items-center justify-center w-4 h-4 rounded-full transition-all duration-300",

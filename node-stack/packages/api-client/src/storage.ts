@@ -1,10 +1,10 @@
-import { AxiosInstance } from "axios";
 import { 
   GetPresignedUrlDto,
   PresignedUrlResponse,
   VerifyUploadResponse,
   FileInfo
 } from "@node-stack/types";
+import { AxiosInstance } from "axios";
 
 export const storage = (client: AxiosInstance) => ({
   getUploadUrl: async (data: GetPresignedUrlDto) => {
