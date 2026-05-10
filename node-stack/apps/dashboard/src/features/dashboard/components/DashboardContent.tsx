@@ -145,8 +145,6 @@ export const DashboardContent: FC = () => {
   const { data: newsNotes, isLoading: isLoadingNews } = useReleaseNotes();
   const { visibility, widgetOrder, toggle, setWidgetOrder, resetToDefaults, isVisible } = useDashboardLayout();
 
-  if (isLoadingOnboarding && isLoadingNews) return <DashboardSkeleton />;
-
   const stepsWithInteractions = useMemo(() =>
     (onboardingSteps || []).map(step => ({
       ...step,
@@ -165,6 +163,9 @@ export const DashboardContent: FC = () => {
   );
 
   const hasAnyVisible = widgetOrder.some(id => isVisible(id));
+
+  // Skeleton DESPUÉS de todos los hooks (regla de hooks de React)
+  if (isLoadingOnboarding && isLoadingNews) return <DashboardSkeleton />;
 
   // ── Widget renderer ──────────────────────────────────────────────────────────
 

@@ -7,13 +7,13 @@ import { queryKeys } from "@/lib/react-query/queryKeys";
 import { useAuthStore } from "@/stores/authStore";
 
 export const useLogin = () => {
-  const setAuth = useAuthStore(useShallow((state) => state.setAuth));
+  const setUser = useAuthStore(useShallow((state) => state.setUser));
   const queryClient = useQueryClient();
 
   return useMutation<AuthResponse, Error, LoginDto>({
     mutationFn: (credentials) => api.auth.login(credentials),
-    onSuccess: ({ accessToken }) => {
-      setAuth(accessToken);
+    onSuccess: ({ accessToken, user }) => {
+      setUser(user);
       cookieTokenStorage.setToken(accessToken);
       queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
     },
@@ -21,13 +21,13 @@ export const useLogin = () => {
 };
 
 export const useRegister = () => {
-  const setAuth = useAuthStore(useShallow((state) => state.setAuth));
+  const setUser = useAuthStore(useShallow((state) => state.setUser));
   const queryClient = useQueryClient();
 
   return useMutation<AuthResponse, Error, RegisterDto>({
     mutationFn: (userData) => api.auth.register(userData),
-    onSuccess: ({ accessToken }) => {
-      setAuth(accessToken);
+    onSuccess: ({ accessToken, user }) => {
+      setUser(user);
       cookieTokenStorage.setToken(accessToken);
       queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
     },
@@ -47,15 +47,14 @@ export const useResetPassword = () => {
 };
 
 export const useLogout = () => {
-  const clearStore = useAuthStore(useShallow((state) => state.logout));
+  const clearUser = useAuthStore(useShallow((state) => state.clearUser));
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: () => api.auth.logout(),
     onSettled: () => {
-      clearStore();
-      cookieTokenStorage.removeToken();
       queryClient.clear();
+      clearUser(); // clears tokens + redirects via window.location
     },
   });
 };

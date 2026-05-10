@@ -66,7 +66,7 @@ axiosInstance.interceptors.response.use(
             cookieTokenStorage.clear();
             try {
               const authStore = useAuthStore.getState();
-              authStore.logout();
+              authStore.clearUser();
               if (!window.location.pathname.startsWith("/auth")) {
                 window.location.href = "/auth/sign-in";
               }
@@ -80,7 +80,7 @@ axiosInstance.interceptors.response.use(
         try {
           const authStore = useAuthStore.getState();
           if (authStore.isAuthenticated) {
-            authStore.logout();
+            authStore.clearUser();
             if (!window.location.pathname.startsWith("/auth")) {
               window.location.href = "/auth/sign-in";
             }

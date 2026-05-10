@@ -1,6 +1,17 @@
-import { QueryClient, QueryClientProvider , onlineManager } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, onlineManager } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ReactNode, useState } from "react";
+
+export const createQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 60_000,
+        retry: 1,
+        refetchOnWindowFocus: false,
+      },
+    },
+  });
 
 onlineManager.setEventListener((setOnline) => {
   if (typeof window !== "undefined") {
@@ -18,23 +29,6 @@ onlineManager.setEventListener((setOnline) => {
   return undefined;
 });
 
-export const createQueryClient = () =>
-  new QueryClient({
-    defaultOptions: {
-      queries: {
-        refetchOnWindowFocus: import.meta.env.PROD,
-        retry: false,
-        staleTime: 5 * 60 * 1000,
-        gcTime: 30 * 60 * 1000,
-        networkMode: "online",
-      },
-      mutations: {
-        retry: false,
-        networkMode: "online",
-      },
-    },
-  });
-
 export interface QueryProviderProps {
   children: ReactNode;
 }
@@ -45,7 +39,7 @@ export const QueryProvider = ({ children }: QueryProviderProps) => {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      <ReactQueryDevtools initialIsOpen={false} />
+      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   );
 };

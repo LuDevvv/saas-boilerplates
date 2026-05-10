@@ -1,32 +1,49 @@
+﻿import type { UserEntity } from "@node-stack/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import { cookieTokenStorage } from "@/lib/cookie-storage";
+
 interface AuthState {
-  token: string | null;
+  user: UserEntity | null;
   isAuthenticated: boolean;
-  setAuth: (token: string) => void;
-  logout: () => void;
+  setUser: (user: UserEntity) => void;
+  clearUser: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      token: null,
+      user: null,
       isAuthenticated: false,
-      setAuth: (token) =>
-        set({
-          token,
-          isAuthenticated: true,
-        }),
-      logout: () =>
-        set({
-          token: null,
-          isAuthenticated: false,
-        }),
+      setUser: (user) => set({ user, isAuthenticated: true }),
+      clearUser: () => {
+        set({ user: null, isAuthenticated: false });
+        // Clear tokens from cookie storage (dashboard) and localStorage (api-client interceptor)
+        try { cookieTokenStorage.clear(); } catch { /* SSR */ }
+        try {
+          localStorage.removeItem("auth_token");
+          localStorage.removeItem("refresh_token");
+        } catch { /* SSR */ }
+        // Full-page redirect flushes React Query cache and all in-memory state
+        if (typeof window !== "undefined" && !window.location.pathname.startsWith("/auth")) {
+          window.location.href = "/auth/sign-in";
+        }
+      },
     }),
     {
       name: "auth-storage",
-      partialize: (state) => ({ token: state.token, isAuthenticated: state.isAuthenticated }),
-    }
-  )
+      partialize: (state) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+      }),
+    },
+  ),
 );
+
+// Respond to the api-client interceptor's hard-logout signal (second 401 on token refresh)
+if (typeof window !== "undefined") {
+  window.addEventListener("auth:logout", () => {
+    useAuthStore.getState().clearUser();
+  });
+}

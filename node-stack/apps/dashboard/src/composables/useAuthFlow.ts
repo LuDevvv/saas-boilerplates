@@ -10,7 +10,7 @@ import { useAuthStore } from "@/stores/authStore";
 
 export const useLoginFlow = () => {
   const navigate = useNavigate();
-  const setAuth = useAuthStore(useShallow((state) => state.setAuth));
+  const setUser = useAuthStore(useShallow((state) => state.setUser));
   const queryClient = useQueryClient();
 
   return useMutation<AuthResponse, Error, LoginDto & { rememberMe?: boolean }>({
@@ -18,7 +18,7 @@ export const useLoginFlow = () => {
     onSuccess: ({ accessToken, refreshToken, user }, variables) => {
       const cookieOptions = variables.rememberMe ? { expires: 90 } : { expires: 30 };
 
-      setAuth(accessToken);
+      setUser(user);
       cookieTokenStorage.setToken(accessToken, cookieOptions);
       if (refreshToken) {
         cookieTokenStorage.setRefreshToken(refreshToken, cookieOptions);
@@ -39,13 +39,13 @@ export const useLoginFlow = () => {
 
 export const useRegisterFlow = () => {
   const navigate = useNavigate();
-  const setAuth = useAuthStore(useShallow((state) => state.setAuth));
+  const setUser = useAuthStore(useShallow((state) => state.setUser));
   const queryClient = useQueryClient();
 
   return useMutation<AuthResponse, Error, RegisterDto>({
     mutationFn: (userData) => api.auth.register(userData),
     onSuccess: ({ accessToken, refreshToken, user }) => {
-      setAuth(accessToken);
+      setUser(user);
       cookieTokenStorage.setToken(accessToken);
       if (refreshToken) {
         cookieTokenStorage.setRefreshToken(refreshToken);
@@ -65,17 +65,14 @@ export const useRegisterFlow = () => {
 };
 
 export const useLogoutFlow = () => {
-  const clearStore = useAuthStore(useShallow((state) => state.logout));
-  const navigate = useNavigate();
+  const clearUser = useAuthStore(useShallow((state) => state.clearUser));
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: () => api.auth.logout(),
     onSettled: () => {
-      clearStore();
-      cookieTokenStorage.removeToken();
       queryClient.clear();
-      navigate("/auth/sign-in");
+      clearUser(); // clears tokens + redirects via window.location
     },
   });
 };

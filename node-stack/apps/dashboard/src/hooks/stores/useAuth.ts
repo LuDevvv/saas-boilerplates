@@ -1,20 +1,16 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useShallow } from "zustand/react/shallow";
 
 import { appToast } from "@/components/alerts/Toasts";
 import { useUser } from "@/features/auth/hooks/useUser";
-import { api, cookieTokenStorage } from "@/lib/api";
+import { api } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
 
 export const useAuth = () => {
-  const token = useAuthStore(useShallow((state) => state.token));
   const isAuthenticated = useAuthStore(useShallow((state) => state.isAuthenticated));
-  const clearStore = useAuthStore(useShallow((state) => state.logout));
-  
+  const clearUser = useAuthStore(useShallow((state) => state.clearUser));
+
   const { data: user, isLoading } = useUser();
-  
-  const navigate = useNavigate();
 
   const logout = async () => {
     try {
@@ -22,9 +18,7 @@ export const useAuth = () => {
     } catch {
       // Ignore network errors on logout
     } finally {
-      clearStore();
-      cookieTokenStorage.removeToken();
-      navigate("/auth/sign-in");
+      clearUser(); // clears tokens + redirects via window.location
     }
   };
 
@@ -35,20 +29,18 @@ export const useAuth = () => {
     });
   };
 
-  const isPremium = user?.subscriptions?.some(s => s.status === 'active') || false;
-  const currentPlan = user?.subscriptions?.find(s => s.status === 'active') || null;
+  const isPremium = user?.subscriptions?.some(s => s.status === "active") || false;
+  const currentPlan = user?.subscriptions?.find(s => s.status === "active") || null;
 
-  // Sync state if user is null after loading (session expired/invalid)
+  // If the server returns null after a successful token check, the session has expired.
   useEffect(() => {
     if (!isLoading && user === null && isAuthenticated) {
-      clearStore();
-      cookieTokenStorage.removeToken();
+      clearUser();
     }
-  }, [isLoading, user, isAuthenticated, clearStore]);
+  }, [isLoading, user, isAuthenticated, clearUser]);
 
   return {
     user,
-    token,
     isAuthenticated,
     isPremium,
     currentPlan,
