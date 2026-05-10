@@ -41,6 +41,8 @@ jobs:
           cache: pnpm
           cache-dependency-path: node-stack/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      - name: build workspace packages
+        run: pnpm --filter "./packages/*" build
       - name: typecheck apps/api with workspace deps
         working-directory: node-stack/apps/api
         run: npx tsc -b --noEmit
@@ -61,12 +63,8 @@ jobs:
           cache: pnpm
           cache-dependency-path: node-stack/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-      - name: build apps/api with workspace deps
-        working-directory: node-stack/apps/api
-        run: npx tsc -b
-      - name: build apps/worker with workspace deps
-        working-directory: node-stack/apps/worker
-        run: npx tsc -b
+      - name: build all packages and apps
+        run: pnpm build
 
   test:
     runs-on: ubuntu-latest
@@ -111,6 +109,8 @@ jobs:
           cache: pnpm
           cache-dependency-path: node-stack/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      - name: build workspace packages
+        run: pnpm --filter "./packages/*" build
       - run: pnpm --filter @node-stack/db db:migrate:full
       - run: pnpm -r test --if-present
         # Phase 3b lands the test baseline (TotpSecretCipher, audit
