@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { DashboardCustomizer } from "./DashboardCustomizer";
 import { QuickActions, type QuickAction } from "./QuickActions";
 import { TutorialsWidget } from "./TutorialsWidget";
+import { DashboardSkeleton } from "./DashboardSkeleton";
 import { useOnboardingStatus, useReleaseNotes } from "../hooks/useDashboard";
 import { useDashboardLayout, type WidgetId } from "../hooks/useDashboardLayout";
 
@@ -143,6 +144,8 @@ export const DashboardContent: FC = () => {
   const { data: onboardingSteps, isLoading: isLoadingOnboarding } = useOnboardingStatus();
   const { data: newsNotes, isLoading: isLoadingNews } = useReleaseNotes();
   const { visibility, widgetOrder, toggle, setWidgetOrder, resetToDefaults, isVisible } = useDashboardLayout();
+
+  if (isLoadingOnboarding && isLoadingNews) return <DashboardSkeleton />;
 
   const stepsWithInteractions = useMemo(() =>
     (onboardingSteps || []).map(step => ({

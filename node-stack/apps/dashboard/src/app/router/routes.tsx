@@ -11,7 +11,9 @@ import {
   PricingPageSkeleton,
   CheckoutPageSkeleton,
 } from "@/features/billing/components/BillingSkeletons";
+import { DashboardSkeleton } from "@/features/dashboard/components/DashboardSkeleton";
 import { ProfileLayoutSkeleton } from "@/features/profile";
+import { StorageSkeleton } from "@/features/storage/components/StorageSkeleton";
 import { MembersLayoutSkeleton } from "@/features/workspaces/components/MembersSkeletons";
 import { useAuth } from "@/hooks/stores/useAuth";
 import MainLayout from "@/layouts/MainLayout";
@@ -59,7 +61,7 @@ const WorkspaceMembersPage = lazy(() => import("@pages/_settings/WorkspaceMember
 const ApiKeysPage = lazy(() => import("@pages/_settings/ApiKeysPage"));
 const WebhooksPage = lazy(() => import("@pages/_settings/WebhooksPage"));
 const PortabilityPage = lazy(() => import("@/features/workspaces/pages/PortabilityPage"));
-const StoragePage = lazy(() => import("@/features/storage/pages/StoragePage"));
+const StoragePage = lazy(() => import("@pages/_dashboard/StoragePage"));
 
 // Dev-only routes (only registered in development builds)
 const ComponentsCatalogPage = lazy(() => import("@pages/dev/ComponentsCatalog"));
@@ -92,7 +94,7 @@ export const AppRoutes = (): React.ReactElement => {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Suspense fallback={<LoadingFallback />} children={<DashboardPage />} />} />
+        <Route index element={<Suspense fallback={<DashboardSkeleton />} children={<DashboardPage />} />} />
         <Route path="analytics" element={<Suspense fallback={<AnalyticsLayoutSkeleton />} children={<AnalyticsPage />} />} />
 
         {/* Profile */}
@@ -112,7 +114,7 @@ export const AppRoutes = (): React.ReactElement => {
         <Route path="reports" element={<Suspense fallback={<LoadingFallback />} children={<ReportsPage />} />} />
         <Route path="news" element={<Suspense fallback={<LoadingFallback />} children={<NewsPage />} />} />
         <Route path="ai" element={<Suspense fallback={<LoadingFallback />} children={<AIPlaygroundPage />} />} />
-        <Route path="storage" element={<Suspense fallback={<LoadingFallback />} children={<StoragePage />} />} />
+        <Route path="storage" element={<Suspense fallback={<StorageSkeleton />} children={<StoragePage />} />} />
 
         {/* Dev-only catalog route */}
         {import.meta.env.DEV && (
