@@ -150,12 +150,12 @@ export default [
     },
   },
   {
-    // api-client hand-written method wrappers (auth.ts, workspace.ts, etc.) still use
-    // manual `any` type annotations. Phase 4c generated schema.ts but did not update the
-    // wrapper methods.
-    // TO REMOVE: update each method to return `paths["/api/v1/…"]["post"]["responses"]["201"]`
-    // types from schema.ts, then delete this block.
-    files: ['packages/api-client/src/*.ts'],
+    // api-client: hand-written method wrappers (auth.ts, workspace.ts, etc.) still use
+    // manual `any` type annotations; TanStack Query hooks (hooks/*.ts) have complex
+    // inferred return types that don't benefit from explicit annotations.
+    // TO REMOVE: update each wrapper method to return typed responses from schema.ts, then
+    // remove the explicit-function-return-type + no-explicit-any overrides.
+    files: ['packages/api-client/src/**/*.ts'],
     ignores: ['packages/api-client/src/schema.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any':          'off',  // TECH DEBT

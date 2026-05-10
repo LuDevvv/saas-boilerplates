@@ -142,3 +142,83 @@ export function createClient(config: ClientConfig): AxiosInstance {
 
   return axiosInstance;
 }
+
+// ─── Singleton pre-configured instance (localStorage-based auth) ────────────
+
+function _getBaseUrl(): string {
+  // Vite injects VITE_* vars into import.meta.env at build time.
+  const meta = import.meta as { env?: Record<string, string> };
+  if (meta.env?.VITE_API_URL) return meta.env.VITE_API_URL;
+  if (typeof window !== "undefined" && "__API_URL__" in (window as unknown as Record<string, unknown>)) {
+    return ((window as unknown as Record<string, unknown>).__API_URL__) as string;
+  }
+  return "http://localhost:3000";
+}
+
+let _refreshPromise: Promise<string | null> | null = null;
+
+export const apiClient = axios.create({
+  baseURL: _getBaseUrl(),
+  timeout: 10_000,
+  headers: { "Content-Type": "application/json" },
+});
+
+apiClient.interceptors.request.use((cfg: InternalAxiosRequestConfig) => {
+  try {
+    const token = localStorage.getItem("auth_token");
+    if (token) cfg.headers.Authorization = `Bearer ${token}`;
+  } catch { /* localStorage unavailable (SSR) */ }
+  return cfg;
+});
+
+type _RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean };
+
+apiClient.interceptors.response.use(
+  (res: AxiosResponse) => {
+    // Mirror createClient unwrap logic
+    if (res.data?.data !== undefined && res.data?.meta !== undefined) return res.data.data;
+    if (res.data?.data !== undefined && Object.keys(res.data as object).length === 1) return res.data.data;
+    return res.data;
+  },
+  async (error: AxiosError) => {
+    const original = error.config as _RetryConfig | undefined;
+    if (!original || original._retry || error.response?.status !== 401) {
+      return Promise.reject(error);
+    }
+    original._retry = true;
+
+    if (!_refreshPromise) {
+      const rt = (() => { try { return localStorage.getItem("refresh_token"); } catch { return null; } })();
+      if (!rt) {
+        try { localStorage.removeItem("auth_token"); localStorage.removeItem("refresh_token"); } catch { /* */ }
+        if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("auth:logout"));
+        return Promise.reject(error);
+      }
+
+      _refreshPromise = axios
+        .post<{ accessToken: string; refreshToken?: string }>(
+          `${_getBaseUrl()}/api/v1/auth/refresh`,
+          { refreshToken: rt },
+        )
+        .then((r) => {
+          const t = r.data;
+          try {
+            localStorage.setItem("auth_token", t.accessToken);
+            if (t.refreshToken) localStorage.setItem("refresh_token", t.refreshToken);
+          } catch { /* */ }
+          return t.accessToken;
+        })
+        .catch(() => {
+          try { localStorage.removeItem("auth_token"); localStorage.removeItem("refresh_token"); } catch { /* */ }
+          if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("auth:logout"));
+          return null;
+        })
+        .finally(() => { _refreshPromise = null; });
+    }
+
+    const newToken = await _refreshPromise;
+    if (!newToken) return Promise.reject(error);
+    original.headers.Authorization = `Bearer ${newToken}`;
+    return apiClient(original);
+  },
+);

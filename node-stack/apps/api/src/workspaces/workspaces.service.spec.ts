@@ -1,9 +1,9 @@
 import { ForbiddenException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
-import { vi } from 'vitest';
 import { CacheService } from '@node-stack/cache';
 import { WorkspaceRepository, AuditLogRepository, DB_TOKEN } from '@node-stack/db';
+import { vi } from 'vitest';
 
 const mockTx: any = {
   select: vi.fn(),

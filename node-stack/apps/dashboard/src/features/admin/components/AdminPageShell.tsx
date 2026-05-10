@@ -1,5 +1,5 @@
-import { FC, ReactNode, useEffect, useRef } from "react";
 import { animate } from "@motionone/dom";
+import { FC, ReactNode, useEffect, useRef } from "react";
 
 interface PageShellProps {
   children: ReactNode;

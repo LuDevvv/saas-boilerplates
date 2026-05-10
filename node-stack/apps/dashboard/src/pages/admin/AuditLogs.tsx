@@ -1,8 +1,8 @@
 import { Suspense } from "react";
 
-import { AuditLogsContent } from "@/features/admin/components/AuditLogs/AuditLogsContent";
 import { AdminPageShell } from "@/features/admin/components/AdminPageShell";
 import { AuditLogsSkeleton } from "@/features/admin/components/AdminSkeletons";
+import { AuditLogsContent } from "@/features/admin/components/AuditLogs/AuditLogsContent";
 
 const AuditLogs = () => (
   <AdminPageShell>

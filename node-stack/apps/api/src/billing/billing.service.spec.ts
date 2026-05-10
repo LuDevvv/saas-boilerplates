@@ -2,9 +2,9 @@ import { UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Test, TestingModule } from "@nestjs/testing";
-import { vi } from "vitest";
 import { CacheService } from "@node-stack/cache";
 import { BillingRepository, AuditLogRepository, DB_TOKEN } from "@node-stack/db";
+import { vi } from "vitest";
 
 vi.mock("@node-stack/db", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@node-stack/db")>();

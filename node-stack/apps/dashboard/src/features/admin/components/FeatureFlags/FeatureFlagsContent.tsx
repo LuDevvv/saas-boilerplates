@@ -3,8 +3,8 @@ import { Zap, Globe, Building2, User, Loader2, ToggleLeft, ToggleRight } from "l
 import { FC, useState } from "react";
 
 import { useFeatureFlags, useToggleFeatureFlag } from "../../hooks";
-import { FeatureFlagsSkeleton } from "@/features/admin/components/AdminSkeletons";
 
+import { FeatureFlagsSkeleton } from "@/features/admin/components/AdminSkeletons";
 import { cn } from "@/utils/classNames";
 
 type FlagScope = "all" | "global" | "workspace" | "user";

@@ -1,7 +1,7 @@
 import { NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { vi } from 'vitest';
 import { WorkspaceRepository, InvitationRepository, UserRepository, AuditLogRepository, DB_TOKEN } from '@node-stack/db';
+import { vi } from 'vitest';
 
 const mockTx: any = {
   select: vi.fn(),

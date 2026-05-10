@@ -19,27 +19,63 @@ export const ManageUsersContent: FC = () => {
   if (isLoading) return <ManageUsersSkeleton />;
 
   const handleSuspend = (userId: string) => {
-    if (confirm("¿Suspender este usuario? Se cerrarán todas sus sesiones activas.")) {
-      updateStatus.mutate({ userId, status: "suspended" });
-    }
+    appToast.warning({
+      title: "¿Suspender este usuario?",
+      description: "Se cerrarán todas sus sesiones activas inmediatamente.",
+      actions: [
+        { label: "Cancelar", variant: "ghost", onClick: () => {} },
+        {
+          label: "Suspender",
+          variant: "danger",
+          onClick: () => updateStatus.mutate({ userId, status: "suspended" }),
+        },
+      ],
+    }, { duration: 10000 });
   };
 
   const handleBan = (userId: string) => {
-    if (confirm("¿Banear permanentemente este usuario? Se cerrarán todas sus sesiones activas.")) {
-      updateStatus.mutate({ userId, status: "banned" });
-    }
+    appToast.warning({
+      title: "¿Banear permanentemente?",
+      description: "El usuario perderá el acceso y sus sesiones se cerrarán. Esta acción requiere confirmación manual para revertirse.",
+      actions: [
+        { label: "Cancelar", variant: "ghost", onClick: () => {} },
+        {
+          label: "Banear",
+          variant: "danger",
+          onClick: () => updateStatus.mutate({ userId, status: "banned" }),
+        },
+      ],
+    }, { duration: 12000 });
   };
 
   const handlePromoteAdmin = (userId: string) => {
-    if (confirm("¿Promover a Admin? Se invalidarán todas sus sesiones activas.")) {
-      updateRole.mutate({ userId, role: "admin" });
-    }
+    appToast.info({
+      title: "¿Promover a Admin?",
+      description: "Se invalidarán todas sus sesiones activas. El usuario tendrá acceso al panel de administración.",
+      actions: [
+        { label: "Cancelar", variant: "ghost", onClick: () => {} },
+        {
+          label: "Promover",
+          variant: "primary",
+          onClick: () => updateRole.mutate({ userId, role: "admin" }),
+        },
+      ],
+    }, { duration: 10000 });
   };
 
   const handleImpersonate = (userId: string) => {
-    if (confirm("¿Iniciar sesión como este usuario? Podrás actuar en su nombre durante 24h.")) {
-      impersonate.mutate(userId);
-    }
+    appToast.info({
+      title: "¿Iniciar sesión como este usuario?",
+      description: "Podrás actuar en su nombre durante 24 h. Todas sus acciones quedarán registradas como impersonación.",
+      actions: [
+        { label: "Cancelar", variant: "ghost", onClick: () => {} },
+        {
+          label: "Impersonar",
+          variant: "primary",
+          onClick: () => impersonate.mutate(userId),
+        },
+      ],
+    }, { duration: 10000 });
   };
 
   const handleExportCsv = () => {

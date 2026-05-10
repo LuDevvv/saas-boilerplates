@@ -1,7 +1,7 @@
 import { FC, lazy, Suspense } from "react";
 
-import { StorageSkeleton } from "@/features/storage/components/StorageSkeleton";
 import { PageShell } from "@/features/admin/components/AdminPageShell";
+import { StorageSkeleton } from "@/features/storage/components/StorageSkeleton";
 
 const StorageFeature = lazy(() => import("@features/storage/pages/StoragePage"));
 

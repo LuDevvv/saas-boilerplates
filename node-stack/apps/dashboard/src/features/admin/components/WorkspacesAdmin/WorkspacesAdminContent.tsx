@@ -7,8 +7,8 @@ import {
 } from "lucide-react";
 import { FC, useState } from "react";
 
-import { api } from "@/lib/api";
 import { WorkspacesAdminSkeleton } from "@/features/admin/components/AdminSkeletons";
+import { api } from "@/lib/api";
 import { cn } from "@/utils/classNames";
 
 

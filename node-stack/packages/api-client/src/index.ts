@@ -1,7 +1,14 @@
 export * from "./client.js";
+export * from "./query-client.js";
 // Generated OpenAPI schema types (auto-generated — do not edit directly).
 // Regenerate with: pnpm --filter @node-stack/api-client generate:types
 export type { paths, operations, components } from "./schema.js";
+
+// React / TanStack Query hooks
+export * from "./hooks/auth.hooks.js";
+export * from "./hooks/workspaces.hooks.js";
+export * from "./hooks/billing.hooks.js";
+export * from "./hooks/storage.hooks.js";
 
 export * from "./auth.js";
 export * from "./workspace.js";

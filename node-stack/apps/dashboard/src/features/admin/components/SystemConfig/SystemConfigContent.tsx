@@ -1,10 +1,10 @@
 import { PageHeader } from "@node-stack/ui";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Settings, RefreshCw, Loader2, Plus, Pencil, X, Check } from "lucide-react";
-import { SystemConfigSkeleton } from "@/features/admin/components/AdminSkeletons";
 import { FC, useState } from "react";
 
 import { appToast } from "@/components/alerts/Toasts";
+import { SystemConfigSkeleton } from "@/features/admin/components/AdminSkeletons";
 import { api } from "@/lib/api";
 import { cn } from "@/utils/classNames";
 
