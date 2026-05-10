@@ -1,6 +1,6 @@
 import { Controller, Get, Header, UnauthorizedException, Req } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { Request } from "express";
+import type { Request } from "express";
 
 import { Public } from "@/common/decorators/public.decorator.js";
 import { MetricsService } from "@/metrics/metrics.service.js";

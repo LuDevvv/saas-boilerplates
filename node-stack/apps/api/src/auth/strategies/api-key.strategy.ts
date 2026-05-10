@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ApiKeyRepository , verifyApiKey, extractPrefix } from '@node-stack/db';
-import { Request } from 'express';
+import type { Request } from 'express';
 import { Strategy } from 'passport-custom';
 
 

@@ -19,7 +19,7 @@ import {
 } from "@nestjs/swagger";
 import type { IStorageProvider } from "@node-stack/storage";
 import { GetPresignedUrlDto } from "@node-stack/validators";
-import { Request } from "express";
+import type { Request } from "express";
 
 import { CurrentUser } from "@/auth/decorators/index.js";
 import { JwtAuthGuard } from "@/auth/guards/jwt.guard.js";
