@@ -38,6 +38,9 @@ export const workspaces = pgTable(
     slug: text("slug").notNull().unique(),
     logoUrl: text("logo_url"),
     tier: workspaceTierEnum("tier").notNull().default("free"),
+    industry: text("industry"),
+    teamSize: text("team_size"),
+    revenueRange: text("revenue_range"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()

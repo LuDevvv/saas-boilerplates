@@ -50,6 +50,13 @@ export const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   GOOGLE_CALLBACK_URL: z.string().url().optional().or(z.literal('')),
+  META_PIXEL_ID: z.string().optional(),
+  META_ACCESS_TOKEN: z.string().optional(),
+  META_API_VERSION: z.string().optional().default('v19.0'),
+  META_TEST_EVENT_CODE: z.string().optional(),
+  WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
+  WHATSAPP_ACCESS_TOKEN: z.string().optional(),
+  WHATSAPP_WELCOME_TEMPLATE: z.string().optional().default('welcome_message'),
 }).superRefine((data, ctx) => {
   if (data.BILLING_PROVIDER === 'polar') {
     if (!data.POLAR_ACCESS_TOKEN) {

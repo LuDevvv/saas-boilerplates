@@ -6,6 +6,7 @@ import {
   ConflictException,
   BadRequestException,
 } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import {
   withSystemTx,
   AuthRepository,
@@ -51,6 +52,7 @@ export class AuthService {
     private sessionService: SessionService,
     private passwordService: PasswordService,
     private oauthService: OAuthService,
+    private eventEmitter: EventEmitter2,
   ) { }
 
   getActiveSessions(
@@ -417,36 +419,48 @@ export class AuthService {
     };
   }
 
-  async updateProfile(userId: string, data: { firstName?: string; lastName?: string; phone?: string; avatarUrl?: string }): Promise<{
+  async updateProfile(userId: string, data: {
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    avatarUrl?: string;
+    jobTitle?: string;
+  }): Promise<{
     id: string;
     email: string;
     firstName: string | null;
     lastName: string | null;
     phone: string | null;
     avatarUrl: string | null;
+    jobTitle: string | null;
     role: string;
     createdAt: Date;
     twoFactorEnabled: boolean;
     emailVerified: boolean;
   }> {
     const updateData: Partial<schema.User> = {};
-    if (data.firstName) {
-      updateData.name = data.firstName;
-    }
-    if (data.lastName !== undefined) {
-      updateData.lastName = data.lastName;
-    }
-    if (data.phone) {
-      updateData.phone = data.phone;
-    }
-    if (data.avatarUrl) {
-      updateData.avatarUrl = data.avatarUrl;
+    if (data.firstName) updateData.name = data.firstName;
+    if (data.lastName !== undefined) updateData.lastName = data.lastName;
+    if (data.phone) updateData.phone = data.phone;
+    if (data.avatarUrl) updateData.avatarUrl = data.avatarUrl;
+    if (data.jobTitle !== undefined) updateData.jobTitle = data.jobTitle;
+
+    // Mark step 1 complete when phone + name are captured together
+    if (data.phone && data.firstName) {
+      updateData.onboardingStatus = "step_1_completed";
     }
 
-    // Update user profile in repository
     const user: schema.User = await this.authRepository.updateUser(userId, updateData);
-    if (!user) {
-      throw new UnauthorizedException(AUTH_ERRORS.USER_NOT_FOUND);
+    if (!user) throw new UnauthorizedException(AUTH_ERRORS.USER_NOT_FOUND);
+
+    // Fire marketing event asynchronously — does not block the response
+    if (data.phone && data.firstName) {
+      this.eventEmitter.emit("user.lead.captured", {
+        userId: user.id,
+        email: user.email,
+        phone: user.phone,
+        firstName: user.name,
+      });
     }
 
     return {
@@ -456,6 +470,7 @@ export class AuthService {
       lastName: user.lastName,
       phone: user.phone,
       avatarUrl: user.avatarUrl,
+      jobTitle: user.jobTitle,
       role: user.role,
       createdAt: user.createdAt,
       twoFactorEnabled: user.twoFactorEnabled,

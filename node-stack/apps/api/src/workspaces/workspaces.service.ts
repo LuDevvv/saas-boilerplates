@@ -181,16 +181,31 @@ export class WorkspacesService {
     return membership;
   }
 
-  async createWorkspace(name: string, slug: string, userId: string): Promise<unknown> {
+  async createWorkspace(
+    name: string,
+    slug: string | undefined,
+    userId: string,
+    metadata: { industry?: string; teamSize?: string; revenueRange?: string } = {},
+  ): Promise<unknown> {
+    // Auto-generate slug from name when not provided (onboarding flow)
+    const resolvedSlug = slug ??
+      name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 50);
+
     // No workspaceId yet — withSystemTx so the inserts into workspaces +
     // memberships + outbox satisfy the system-bypass RLS policy.
     const workspace = await withSystemTx(async (tx: NodePgDatabase<typeof schema>) => {
-      const existing = await this.workspaceRepo.findBySlug(slug, tx);
+      const existing = await this.workspaceRepo.findBySlug(resolvedSlug, tx);
       if (existing) {
-        throw new ConflictException(`Workspace with slug "${slug}" already exists`);
+        throw new ConflictException(`Workspace with slug "${resolvedSlug}" already exists`);
       }
 
-      const ws = await this.workspaceRepo.create({ name, slug }, tx);
+      const ws = await this.workspaceRepo.create({
+        name,
+        slug: resolvedSlug,
+        industry: metadata.industry,
+        teamSize: metadata.teamSize,
+        revenueRange: metadata.revenueRange,
+      }, tx);
 
       await this.workspaceRepo.createMembership({
         userId,
@@ -215,10 +230,19 @@ export class WorkspacesService {
       return ws;
     }, this.db);
 
+    // Fetch user data to enrich the workspace.created event with marketing context
+    const creator = await this.db.query.users.findFirst({
+      where: (u, { eq }) => eq(u.id, userId),
+      columns: { email: true, name: true, phone: true },
+    });
+
     this.eventEmitter.emit("workspace.created", {
       workspaceId: workspace.id,
       userId,
       name,
+      userEmail: creator?.email,
+      userPhone: creator?.phone ?? undefined,
+      userFirstName: creator?.name ?? undefined,
     });
 
     await this.cache.invalidate(`workspaces:${workspace.id}`);

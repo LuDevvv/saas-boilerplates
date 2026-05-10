@@ -12,18 +12,31 @@ export const CreateWorkspaceSchema = z.object({
     .describe("Name of the workspace"),
   slug: z
     .string()
-    .min(1, "Slug is required")
-    .max(50, "Slug too long")
+    .min(1)
+    .max(50)
     .regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens")
-    .describe("Unique URL-friendly identifier for the workspace"),
+    .optional()
+    .describe("URL-friendly identifier; auto-generated from name if omitted"),
+  industry: z.string().max(100).optional().describe("Sector or niche of the business"),
+  teamSize: z.string().max(20).optional().describe("Number of employees (range)"),
+  revenueRange: z.string().max(50).optional().describe("Monthly/annual revenue bracket"),
 });
 
 export class CreateWorkspaceDto extends createZodDto(CreateWorkspaceSchema) {
   @ApiProperty({ example: "Engineering Team", description: "Display name of the workspace" })
   declare name: string;
 
-  @ApiProperty({ example: "engineering-team", description: "URL-friendly unique identifier" })
-  declare slug: string;
+  @ApiProperty({ example: "engineering-team", description: "URL-friendly unique identifier", required: false })
+  declare slug?: string;
+
+  @ApiProperty({ example: "tech", required: false })
+  declare industry?: string;
+
+  @ApiProperty({ example: "2-6", required: false })
+  declare teamSize?: string;
+
+  @ApiProperty({ example: "50k-200k", required: false })
+  declare revenueRange?: string;
 }
 
 // ── Member Invitation ──────────────────────────────────────

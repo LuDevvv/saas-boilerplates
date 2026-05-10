@@ -103,7 +103,11 @@ export class WorkspacesController {
     @Body() dto: CreateWorkspaceDto,
     @CurrentUser("id") userId: string,
   ): Promise<unknown> {
-    return this.workspacesService.createWorkspace(dto.name, dto.slug, userId);
+    return this.workspacesService.createWorkspace(dto.name, dto.slug, userId, {
+      industry: dto.industry,
+      teamSize: dto.teamSize,
+      revenueRange: dto.revenueRange,
+    });
   }
 
   @Get()

@@ -22,6 +22,12 @@ export const userStatusEnum = pgEnum("user_status", [
   "banned",
 ]);
 
+export const onboardingStatusEnum = pgEnum("onboarding_status", [
+  "started",
+  "step_1_completed",
+  "completed",
+]);
+
 export const users = pgTable(
   "users",
   {
@@ -48,6 +54,8 @@ export const users = pgTable(
       .defaultNow()
       .notNull()
       .$onUpdate(() => sql`now()`),
+    jobTitle: text("job_title"),
+    onboardingStatus: onboardingStatusEnum("onboarding_status").notNull().default("started"),
     deletedAt: timestamp("deleted_at"),
     deletedBy: uuid("deleted_by"),
     deletionReason: text("deletion_reason"),
