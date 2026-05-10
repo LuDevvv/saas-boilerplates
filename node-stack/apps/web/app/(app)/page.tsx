@@ -1,84 +1,114 @@
-import { HeroSection, PricingTable, WaitlistForm } from "@node-stack/ui";
+import dynamic from "next/dynamic";
+import { Navbar } from "@/components/sections/Navbar";
+import { HeroSection } from "@/components/sections/HeroSection";
+import { LogoMarquee } from "@/components/sections/LogoMarquee";
+import { FeaturesSection } from "@/components/sections/FeaturesSection";
+import { StatsSection } from "@/components/sections/StatsSection";
+import { PricingSection } from "@/components/sections/PricingSection";
+import { FAQSection } from "@/components/sections/FAQSection";
+import { CTASection } from "@/components/sections/CTASection";
+import { Footer } from "@/components/sections/Footer";
+import { FAQJsonLd } from "@/components/JsonLd";
 
-const pricingTiers = [
+const FeatureShowcase = dynamic(
+  () =>
+    import("@/components/sections/FeatureShowcase").then((m) => ({
+      default: m.FeatureShowcase,
+    })),
   {
-    name: "Starter",
-    price: "Free",
-    description: "Perfect for exploring the possibilities.",
-    features: ["Up to 3 projects", "Basic analytics", "Community support"],
-    cta: "Start for Free",
+    ssr: true,
+    loading: () => <div className="h-96 bg-neutral-50" />,
+  }
+);
+
+const HowItWorksSection = dynamic(
+  () =>
+    import("@/components/sections/HowItWorksSection").then((m) => ({
+      default: m.HowItWorksSection,
+    })),
+  {
+    ssr: true,
+    loading: () => <div className="h-96 bg-white" />,
+  }
+);
+
+const TestimonialsSection = dynamic(
+  () =>
+    import("@/components/sections/TestimonialsSection").then((m) => ({
+      default: m.TestimonialsSection,
+    })),
+  {
+    ssr: true,
+    loading: () => <div className="h-96 bg-neutral-50" />,
+  }
+);
+
+const faqItems = [
+  {
+    question: "How long does setup take?",
+    answer:
+      "Under 5 minutes to clone, install, and see the app running locally.",
   },
   {
-    name: "Pro",
-    price: "$29",
-    description: "Everything you need to scale your business.",
-    features: ["Unlimited projects", "Advanced AI integration", "Priority support", "Custom domains"],
-    cta: "Get Started",
-    highlighted: true,
+    question: "What license does NodeStack use?",
+    answer: "MIT license — use it for any project, commercial or otherwise.",
   },
   {
-    name: "Enterprise",
-    price: "Custom",
-    description: "Dedicated infrastructure for large teams.",
-    features: ["SSO & SAML", "Custom RLS policies", "24/7 Dedicated account manager", "SLA guarantees"],
-    cta: "Contact Sales",
+    question: "What database does it support?",
+    answer:
+      "PostgreSQL with Drizzle ORM. RLS policies are Postgres-specific.",
+  },
+  {
+    question: "Where can I deploy this?",
+    answer:
+      "Anywhere Node.js runs — Railway, Render, Fly.io, AWS, GCP, Azure.",
+  },
+  {
+    question: "How do I get updates?",
+    answer:
+      "Pull the latest commits. Breaking changes are documented in CHANGELOG.md.",
+  },
+  {
+    question: "Is there commercial support?",
+    answer:
+      "Community support on Discord. Enterprise plans include dedicated support.",
+  },
+  {
+    question: "Which OAuth providers are supported?",
+    answer:
+      "Google and GitHub out of the box. Add more via Passport.js strategies.",
+  },
+  {
+    question: "Can I use this for a commercial SaaS?",
+    answer:
+      "Yes. The MIT license allows full commercial use with no restrictions.",
   },
 ];
 
 export default function LandingPage() {
   return (
-    <main>
-      <HeroSection
-        title={
-          <>
-            Build your SaaS <span className="text-primary-500">faster</span> than ever before
-          </>
-        }
-        subtitle="The production-ready monorepo with NestJS, Next.js, and Drizzle. Everything you need to go from zero to one."
-        ctaText="Join the Waitlist"
-      />
-
-      <section id="waitlist" className="bg-gray-50 py-20">
-        <div className="container flex flex-col items-center text-center">
-          <h2 className="text-3xl font-heading  text-gray-900 sm:text-4xl">
-            Early Access
-          </h2>
-          <p className="mt-4 text-lg text-gray-600">
-            Join 500+ developers building the future. Get notified when we launch.
-          </p>
-          <div className="mt-10">
-            <WaitlistForm />
-          </div>
-        </div>
-      </section>
-
-      <section id="pricing" className="py-24">
-        <div className="container">
-          <div className="mb-16 text-center">
-            <h2 className="text-3xl font-heading  text-gray-900 sm:text-4xl">
-              Transparent Pricing
-            </h2>
-            <p className="mt-4 text-lg text-gray-600">
-              Choose the plan that fits your stage. Scale as you grow.
-            </p>
-          </div>
-          <PricingTable tiers={pricingTiers} />
-        </div>
-      </section>
-
-      <footer className="border-t border-gray-100 py-12">
-        <div className="container flex flex-col items-center justify-between gap-6 sm:flex-row">
-          <div className="text-xl font-heading text-gray-900">Node Stack</div>
-          <div className="flex gap-8 text-sm text-gray-500">
-            <a href="/terms" className="hover:text-primary-500 transition-colors">Terms</a>
-            <a href="/privacy" className="hover:text-primary-500 transition-colors">Privacy</a>
-            <a href="/blog" className="hover:text-primary-500 transition-colors">Blog</a>
-          </div>
-          <p className="text-sm text-gray-400">
-            &copy; {new Date().getFullYear()} Node Stack. All rights reserved.
-          </p>
-        </div>
-      </footer>
-    </main>
+    <>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary-600 focus:text-white focus:rounded-lg"
+      >
+        Skip to content
+      </a>
+      <Navbar />
+      <main id="main-content">
+        <HeroSection />
+        <LogoMarquee />
+        <FeaturesSection />
+        <StatsSection />
+        <FeatureShowcase />
+        <HowItWorksSection />
+        <TestimonialsSection />
+        <PricingSection />
+        <FAQSection />
+        <FAQJsonLd items={faqItems} />
+        <CTASection />
+      </main>
+      <Footer />
+    </>
   );
 }
