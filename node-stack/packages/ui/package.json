@@ -11,7 +11,8 @@
         "typecheck": "tsc --noEmit",
         "build": "tsc -b --clean && tsc -b",
         "storybook": "storybook dev --port 6006",
-        "build-storybook": "storybook build"
+        "build-storybook": "storybook build",
+        "test:stories": "storybook build"
     },
     "dependencies": {
         "@motionone/dom": "^10.18.0",
