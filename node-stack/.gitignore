@@ -30,6 +30,10 @@ apps/**/*.js.map
 apps/**/*.d.ts
 apps/**/*.d.ts.map
 
+# Re-include hand-written source type declarations (not build output)
+!apps/**/src/**/*.d.ts
+!packages/**/src/**/*.d.ts
+
 # Re-include config files if needed
 !**/jest.config.js
 !**/eslint.config.js
