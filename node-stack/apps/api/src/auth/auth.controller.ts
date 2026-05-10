@@ -431,6 +431,9 @@ export class AuthController {
     const base = this.configService.getOrThrow<string>("FRONTEND_URL");
     const url = new URL("/auth/callback", base);
     url.searchParams.set("token", tokens.accessToken);
+    if (tokens.refreshToken) {
+      url.searchParams.set("refreshToken", tokens.refreshToken);
+    }
     res.redirect(url.toString());
   }
 

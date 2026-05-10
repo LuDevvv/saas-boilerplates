@@ -12,7 +12,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
       clientSecret: config.getOrThrow("GOOGLE_CLIENT_SECRET"),
       callbackURL: config.getOrThrow("GOOGLE_CALLBACK_URL"),
       scope: ["email", "profile"],
-      state: true,
+      state: false,
     });
   }
 

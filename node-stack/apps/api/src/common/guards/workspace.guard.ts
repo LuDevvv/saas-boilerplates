@@ -66,8 +66,8 @@ export class WorkspaceGuard implements CanActivate {
 
     const user = req.user;
 
-    // Skip workspace check if no workspaceId is found (allows public/non-workspace routes)
-    if (!workspaceId) {
+    // Skip workspace check for auth routes or if no workspaceId is found
+    if (!workspaceId || req.url.includes("/auth/")) {
       // If the route belongs to a workspace-dependent domain, require the ID
       const isWorkspaceDomain =
         req.url.includes("/storage") ||
