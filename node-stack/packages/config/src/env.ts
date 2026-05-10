@@ -44,8 +44,13 @@ export const envSchema = z.object({
   POLAR_WEBHOOK_SECRET: z.string().optional(),
   POLAR_SERVER: z.enum(['sandbox', 'production']).default('production'),
   POLAR_PORTAL_URL: z.string().url().optional().or(z.literal('')),
-  // Polar product IDs — map semantic plan names ("pro", "elite") to actual
-  // Polar product UUIDs from your dashboard. Copy from Products → Product ID.
+  // Polar product IDs — two supported structures:
+  // A) 4 separate products (monthly + yearly as distinct Polar products):
+  POLAR_PRODUCT_ID_PRO_MONTHLY: z.string().optional(),
+  POLAR_PRODUCT_ID_PRO_YEARLY: z.string().optional(),
+  POLAR_PRODUCT_ID_ELITE_MONTHLY: z.string().optional(),
+  POLAR_PRODUCT_ID_ELITE_YEARLY: z.string().optional(),
+  // B) 2 products with Polar-managed pricing (variantId ignored):
   POLAR_PRODUCT_ID_PRO: z.string().optional(),
   POLAR_PRODUCT_ID_ELITE: z.string().optional(),
   POLAR_PRODUCT_ID_FREE: z.string().optional(),

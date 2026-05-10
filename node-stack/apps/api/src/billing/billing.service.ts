@@ -54,25 +54,38 @@ export class BillingService {
   // ─── Checkout ─────────────────────────────────────────────────────────
 
   /**
-   * Resolves a semantic plan name ("pro", "elite") to the actual Polar product
-   * ID configured in env vars. Falls through to the raw planId when Polar is
-   * not the active provider or no mapping is configured (e.g. already a UUID).
+   * Resolves a semantic plan+billing combo to the actual Polar product ID.
+   *
+   * Supports two structures:
+   *   A) 4 separate products (monthly + yearly as distinct Polar products):
+   *        POLAR_PRODUCT_ID_PRO_MONTHLY / POLAR_PRODUCT_ID_PRO_YEARLY
+   *        POLAR_PRODUCT_ID_ELITE_MONTHLY / POLAR_PRODUCT_ID_ELITE_YEARLY
+   *   B) 2 products with multiple prices (variantId ignored, Polar shows prices):
+   *        POLAR_PRODUCT_ID_PRO / POLAR_PRODUCT_ID_ELITE
+   *
+   * Structure A takes precedence when the period-specific vars are set.
    */
-  private resolvePlanId(planId: string): string {
+  private resolvePlanId(planId: string, variantId?: string): string {
     if (this.configService.get<string>('BILLING_PROVIDER') !== 'polar') return planId;
-    const mapping: Record<string, string | undefined> = {
-      free:  this.configService.get<string>('POLAR_PRODUCT_ID_FREE'),
-      pro:   this.configService.get<string>('POLAR_PRODUCT_ID_PRO'),
-      elite: this.configService.get<string>('POLAR_PRODUCT_ID_ELITE'),
-    };
-    return mapping[planId.toLowerCase()] ?? planId;
+
+    const key = planId.toLowerCase();
+    const period = (variantId ?? 'monthly').toLowerCase() === 'yearly' ? 'YEARLY' : 'MONTHLY';
+
+    // Structure A — period-specific product IDs
+    const periodKey = `POLAR_PRODUCT_ID_${key.toUpperCase()}_${period}`;
+    const periodId = this.configService.get<string>(periodKey);
+    if (periodId) return periodId;
+
+    // Structure B — single product ID per plan (Polar shows both prices)
+    const fallbackKey = `POLAR_PRODUCT_ID_${key.toUpperCase()}`;
+    return this.configService.get<string>(fallbackKey) ?? planId;
   }
 
   async createCheckout(
     data: CreateCheckoutDto & { workspaceId: string; userId: string },
   ): Promise<CheckoutUrl> {
-    // Resolve semantic plan ID ("pro") → Polar product UUID
-    const resolvedPlanId = this.resolvePlanId(data.planId);
+    // Resolve semantic plan + billing period → Polar product UUID
+    const resolvedPlanId = this.resolvePlanId(data.planId, data.variantId);
 
     // customers is RLS-protected; the read must run inside a tenant tx so
     // current_workspace_id matches the policy.
