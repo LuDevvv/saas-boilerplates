@@ -13,12 +13,12 @@
         "start:local": "node --env-file=../../.env dist/main.js",
         "db:migrate": "drizzle-kit migrate",
         "openapi:export": "node --import tsx scripts/generate-openapi-spec.ts",
-        "test": "vitest",
-        "test:unit": "vitest run --project=api-unit",
-        "test:cov": "vitest run --coverage",
-        "test:e2e": "vitest run --project=api-e2e",
-        "test:integration": "vitest run --project=api-integration",
-        "test:integration:watch": "vitest --project=api-integration --watch",
+        "test": "vitest run --config vitest.config.ts",
+        "test:unit": "vitest run --config vitest.config.ts",
+        "test:cov": "vitest run --config vitest.config.ts --coverage",
+        "test:e2e": "vitest run --config vitest.config.e2e.ts",
+        "test:integration": "vitest run --config vitest.config.integration.ts",
+        "test:integration:watch": "vitest --config vitest.config.integration.ts --watch",
         "lint": "eslint src --ext .ts --max-warnings 0"
     },
     "dependencies": {
