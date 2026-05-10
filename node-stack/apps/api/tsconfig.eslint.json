@@ -1,0 +1,28 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "../..",
+    "paths": {
+      "@/*": ["src/*"],
+      "@node-stack/ai-adapter": ["../../packages/ai-adapter/src/index.ts"],
+      "@node-stack/api-client": ["../../packages/api-client/src/index.ts"],
+      "@node-stack/billing-adapter": ["../../packages/billing-adapter/src/index.ts"],
+      "@node-stack/cache": ["../../packages/cache/src/index.ts"],
+      "@node-stack/config": ["../../packages/config/src/index.ts"],
+      "@node-stack/db": ["../../packages/db/src/index.ts"],
+      "@node-stack/db/schema": ["../../packages/db/src/schema/index.ts"],
+      "@node-stack/emails": ["../../packages/emails/src/index.ts"],
+      "@node-stack/notifications": ["../../packages/notifications/src/index.ts"],
+      "@node-stack/outbox-queue": ["../../packages/outbox-queue/src/index.ts"],
+      "@node-stack/queue": ["../../packages/queue/src/index.ts"],
+      "@node-stack/services": ["../../packages/services/src/index.ts"],
+      "@node-stack/storage": ["../../packages/storage/src/index.ts"],
+      "@node-stack/types": ["../../packages/types/src/index.ts"],
+      "@node-stack/utils": ["../../packages/utils/src/index.ts"],
+      "@node-stack/validators": ["../../packages/validators/src/index.ts"],
+      "@node-stack/webhooks-utils": ["../../packages/webhooks-utils/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*"]
+}

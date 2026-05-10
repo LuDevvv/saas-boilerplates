@@ -77,6 +77,30 @@ export default [
     },
   },
   {
+    // apps/api and apps/worker use tsconfig.eslint.json so @node-stack/* paths
+    // resolve to workspace source files for ESLint type-awareness without TS6059.
+    // The compilation tsconfigs keep rootDir intact; tsconfig.eslint.json widens
+    // rootDir to "../.." and adds paths (noEmit only, not used by tsc -b hook).
+    files: ['apps/api/**/*.ts'],
+    languageOptions: {
+      parser: tsparser,
+      parserOptions: {
+        project:         path.join(__dirname, 'apps/api/tsconfig.eslint.json'),
+        tsconfigRootDir: __dirname,
+      },
+    },
+  },
+  {
+    files: ['apps/worker/**/*.ts'],
+    languageOptions: {
+      parser: tsparser,
+      parserOptions: {
+        project:         path.join(__dirname, 'apps/worker/tsconfig.eslint.json'),
+        tsconfigRootDir: __dirname,
+      },
+    },
+  },
+  {
     files: ['**/*.tsx'],
     languageOptions: {
       parser: tsparser,
@@ -126,6 +150,24 @@ export default [
     },
   },
   {
+    // api-client hand-written method wrappers (auth.ts, workspace.ts, etc.) still use
+    // manual `any` type annotations. Phase 4c generated schema.ts but did not update the
+    // wrapper methods.
+    // TO REMOVE: update each method to return `paths["/api/v1/…"]["post"]["responses"]["201"]`
+    // types from schema.ts, then delete this block.
+    files: ['packages/api-client/src/*.ts'],
+    ignores: ['packages/api-client/src/schema.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any':          'off',  // TECH DEBT
+      '@typescript-eslint/no-unsafe-assignment':     'off',  // TECH DEBT
+      '@typescript-eslint/no-unsafe-member-access':  'off',  // TECH DEBT
+      '@typescript-eslint/no-unsafe-call':           'off',  // TECH DEBT
+      '@typescript-eslint/no-unsafe-return':         'off',  // TECH DEBT
+      '@typescript-eslint/no-unused-vars':           'off',  // TECH DEBT — stale imports
+      '@typescript-eslint/explicit-function-return-type': 'off',
+    },
+  },
+  {
     // Dashboard — intentional relaxations (see ENGINEERING_GUIDE.md §17):
     //
     // 1. no-unsafe-*: api-client methods return manually-typed values, not schema.ts types yet.
@@ -159,10 +201,7 @@ export default [
       '@typescript-eslint/no-unsafe-member-access':            'off',
       '@typescript-eslint/no-unsafe-call':                     'off',
       '@typescript-eslint/no-unsafe-return':                   'off',
-      '@typescript-eslint/no-unsafe-argument':                 'off',
       '@typescript-eslint/explicit-function-return-type':      'off',
-      '@typescript-eslint/no-floating-promises':               'off',
-      '@typescript-eslint/restrict-template-expressions':      'off',
       '@typescript-eslint/no-unused-vars':                     'off',
       'no-console':                                            'off',
     },
