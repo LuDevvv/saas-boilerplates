@@ -1,4 +1,4 @@
-﻿import type { UserEntity } from "@node-stack/types";
+import type { UserEntity } from "@node-stack/types";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -25,10 +25,8 @@ export const useAuthStore = create<AuthState>()(
           localStorage.removeItem("auth_token");
           localStorage.removeItem("refresh_token");
         } catch { /* SSR */ }
-        // Full-page redirect flushes React Query cache and all in-memory state
-        if (typeof window !== "undefined" && !window.location.pathname.startsWith("/auth")) {
-          window.location.href = "/auth/sign-in";
-        }
+        // React Router's ProtectedRoute will automatically catch the state change
+        // and safely redirect to /auth/sign-in without a harsh full-page reload.
       },
     }),
     {

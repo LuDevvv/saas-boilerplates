@@ -125,7 +125,7 @@ export const ReportsContent: FC = () => {
       <section className="space-y-4">
         <div className="flex items-center justify-between px-2">
           <h2 className="text-lg font-heading text-fg leading-none">Archivos Generados</h2>
-          <span className="text-[10px] font-bold text-fg-muted uppercase tracking-wider">
+          <span className="text-[10px] font-bold text-fg-muted uppercase ">
             {filteredReports.length} reportes
           </span>
         </div>

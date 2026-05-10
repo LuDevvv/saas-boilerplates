@@ -146,7 +146,7 @@ export function LogoMarquee() {
       className="py-14 overflow-hidden border-y border-neutral-100 bg-neutral-50/60"
     >
       {/* Eyebrow */}
-      <p className="mb-8 text-center text-xs font-semibold uppercase tracking-widest text-neutral-400">
+      <p className="mb-8 text-center text-xs font-semibold uppercase  text-neutral-400">
         Trusted by teams building with
       </p>
 

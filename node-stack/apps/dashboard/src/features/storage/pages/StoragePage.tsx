@@ -38,8 +38,8 @@ import { cn } from "@/utils/classNames";
 type FileFilter = "all" | "images" | "documents";
 
 const FILTERS: { value: FileFilter; label: string; icon: typeof Layers }[] = [
-  { value: "all",       label: "Todos",      icon: Layers },
-  { value: "images",    label: "Imágenes",   icon: ImageIcon },
+  { value: "all", label: "Todos", icon: Layers },
+  { value: "images", label: "Imágenes", icon: ImageIcon },
   { value: "documents", label: "Documentos", icon: FileText },
 ];
 
@@ -303,7 +303,7 @@ const StoragePage: FC = () => {
               <button
                 type="button"
                 disabled
-                className="w-full h-9 rounded-[10px] bg-white/10 hover:bg-white/15 border border-white/15 text-white text-[11px] font-bold uppercase tracking-wider transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                className="w-full h-9 rounded-[10px] bg-white/10 hover:bg-white/15 border border-white/15 text-white text-[11px] font-bold uppercase  transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 En beta
               </button>

@@ -75,7 +75,7 @@ export const StatRow: FC<StatRowProps> = ({
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted truncate">
+        <p className="text-[10px] font-bold uppercase  text-fg-muted truncate">
           {label}
         </p>
         <p className="text-[14px] font-semibold text-fg leading-snug truncate tabular-nums">

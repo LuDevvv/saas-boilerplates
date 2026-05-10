@@ -71,7 +71,7 @@ export function StatsSection() {
     >
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Eyebrow */}
-        <p className="mb-10 text-center text-xs font-semibold uppercase tracking-widest text-neutral-500">
+        <p className="mb-10 text-center text-xs font-semibold uppercase  text-neutral-500">
           By the numbers
         </p>
 

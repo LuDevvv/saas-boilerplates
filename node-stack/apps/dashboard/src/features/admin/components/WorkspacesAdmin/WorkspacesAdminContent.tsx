@@ -104,11 +104,11 @@ export const WorkspacesAdminContent: FC = () => {
 
   const filtered = search.trim()
     ? workspaces.filter(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (ws: any) =>
-          ws.name.toLowerCase().includes(search.toLowerCase()) ||
-          ws.slug.toLowerCase().includes(search.toLowerCase())
-      )
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (ws: any) =>
+        ws.name.toLowerCase().includes(search.toLowerCase()) ||
+        ws.slug.toLowerCase().includes(search.toLowerCase())
+    )
     : workspaces;
 
   return (
@@ -192,7 +192,7 @@ export const WorkspacesAdminContent: FC = () => {
               <thead>
                 <tr className="border-b border-border-subtle">
                   {["Workspace", "Plan", "Miembros", "Creado", "Estado", ""].map((h) => (
-                    <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-fg-muted">
+                    <th key={h} className="px-5 py-3 text-left text-[11px] font-semibold uppercase  text-fg-muted">
                       {h}
                     </th>
                   ))}

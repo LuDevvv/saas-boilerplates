@@ -27,7 +27,7 @@ export const KpiCard: FC<KpiCardProps> = ({
           "flex items-center gap-0.5 text-[10px] font-semibold px-2 py-0.5 rounded-full border uppercase",
           trend === "up" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
             : trend === "down" ? "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20"
-            : "bg-surface-hover text-fg-muted border-border"
+              : "bg-surface-hover text-fg-muted border-border"
         )}>
           {trend === "up" ? <ArrowUpRight className="h-3 w-3" /> : trend === "down" ? <ArrowDownRight className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
           {trendLabel}
@@ -35,7 +35,7 @@ export const KpiCard: FC<KpiCardProps> = ({
       )}
     </div>
     <div className="mt-4">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-fg-muted">{label}</p>
+      <p className="text-[11px] font-semibold uppercase  text-fg-muted">{label}</p>
       {loading ? (
         <div className="mt-1 h-8 w-20 rounded-lg bg-surface-muted animate-pulse" />
       ) : (

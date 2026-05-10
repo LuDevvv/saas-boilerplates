@@ -95,7 +95,7 @@ const UploadRow: FC<{
           </p>
           <div className="flex items-center gap-2 mt-1">
             {statusUI.icon}
-            <span className={cn("text-[11px] font-medium tracking-tight truncate tabular-nums", statusUI.tone)}>
+            <span className={cn("text-[11px] font-medium  truncate tabular-nums", statusUI.tone)}>
               {statusUI.label}
             </span>
             <span className="text-[11px] font-medium text-fg-muted/60 ml-auto shrink-0 tabular-nums">
@@ -116,7 +116,7 @@ const UploadRow: FC<{
           ) : item.status === "error" ? (
             <button
               onClick={() => onRetry(item.id)}
-              className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all text-[11px] font-bold uppercase tracking-wider"
+              className="flex items-center gap-1.5 h-8 px-3 rounded-xl bg-primary text-white shadow-lg shadow-primary/20 hover:shadow-primary/30 active:scale-95 transition-all text-[11px] font-bold uppercase "
             >
               <RotateCw className="h-3 w-3" />
               Reintentar
@@ -180,8 +180,8 @@ export const UploadTray: FC = () => {
     inFlight.length > 0
       ? `Subiendo ${inFlight.length} archivo${inFlight.length === 1 ? "" : "s"}…`
       : errored.length > 0
-      ? `${errored.length} subida${errored.length === 1 ? "" : "s"} fallida${errored.length === 1 ? "" : "s"}`
-      : `${completed.length} archivo${completed.length === 1 ? "" : "s"} listo${completed.length === 1 ? "" : "s"}`;
+        ? `${errored.length} subida${errored.length === 1 ? "" : "s"} fallida${errored.length === 1 ? "" : "s"}`
+        : `${completed.length} archivo${completed.length === 1 ? "" : "s"} listo${completed.length === 1 ? "" : "s"}`;
 
   return (
     <div
@@ -193,7 +193,7 @@ export const UploadTray: FC = () => {
       )}
     >
       {/* Header */}
-      <div 
+      <div
         className={cn(
           "flex items-center justify-between gap-3 px-5 py-4 border-b border-border-subtle bg-surface-muted/30 cursor-pointer select-none",
           collapsed && "border-b-0"
@@ -203,10 +203,10 @@ export const UploadTray: FC = () => {
         <div className="flex items-center gap-3 min-w-0">
           <div className={cn(
             "h-2 w-2 rounded-full",
-            inFlight.length > 0 ? "bg-primary animate-pulse" : 
-            errored.length > 0 ? "bg-red-500" : "bg-emerald-500"
+            inFlight.length > 0 ? "bg-primary animate-pulse" :
+              errored.length > 0 ? "bg-red-500" : "bg-emerald-500"
           )} />
-          <p className="text-[13px] font-black text-fg truncate uppercase tracking-wider">{heading}</p>
+          <p className="text-[13px] font-black text-fg truncate uppercase ">{heading}</p>
         </div>
         <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
           <button
@@ -229,7 +229,7 @@ export const UploadTray: FC = () => {
 
       {/* Items */}
       {!collapsed && (
-        <div 
+        <div
           ref={parent}
           className="max-h-[450px] overflow-y-auto custom-scrollbar divide-y divide-border-subtle"
         >

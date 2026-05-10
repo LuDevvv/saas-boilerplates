@@ -76,7 +76,7 @@ const ApiKeysPage: FC = () => {
               <div className="h-9 w-9 rounded-[10px] bg-primary/10 border border-primary/15 flex items-center justify-center">
                 <Terminal className="w-4 h-4 text-primary" />
               </div>
-              <h3 className="text-[13px] font-semibold text-fg uppercase tracking-wider">
+              <h3 className="text-[13px] font-semibold text-fg uppercase ">
                 Quick start
               </h3>
             </div>
@@ -98,7 +98,7 @@ const ApiKeysPage: FC = () => {
             </p>
             <Button
               variant="ghost"
-              className="mt-3 w-full justify-start text-[11px] font-bold uppercase tracking-wider text-primary p-0 h-auto hover:bg-transparent"
+              className="mt-3 w-full justify-start text-[11px] font-bold uppercase  text-primary p-0 h-auto hover:bg-transparent"
               onClick={() => window.open("https://docs.nodestack.com", "_blank")}
             >
               Ver documentación →
@@ -117,7 +117,7 @@ const ApiKeysPage: FC = () => {
                 {["JS", "PY", "GO"].map((lang) => (
                   <span
                     key={lang}
-                    className="h-8 w-8 rounded-lg bg-surface border border-border flex items-center justify-center text-[10px] font-bold text-fg-secondary tracking-wider"
+                    className="h-8 w-8 rounded-lg bg-surface border border-border flex items-center justify-center text-[10px] font-bold text-fg-secondary "
                   >
                     {lang}
                   </span>

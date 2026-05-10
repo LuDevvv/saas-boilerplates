@@ -33,7 +33,7 @@ export const AuditLogCard: FC<AuditLogCardProps> = ({ log }) => {
             {log.action.replace(/_/g, " ")}
           </span>
           {log.entityType && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-hover text-fg-secondary border border-border-subtle uppercase tracking-wider">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-hover text-fg-secondary border border-border-subtle uppercase ">
               {log.entityType}
             </span>
           )}

@@ -36,9 +36,9 @@ function StatItem({
 const HERO_WORDS = ["Build", "your", "SaaS"];
 
 export function HeroSection() {
-  const badgeRef  = useGsapReveal<HTMLDivElement>({ direction: "up", delay: 0,   duration: 0.7 });
-  const ctaRef    = useGsapReveal<HTMLDivElement>({ direction: "up", delay: 0.4, duration: 0.6 });
-  const statsRef  = useGsapReveal<HTMLDivElement>({ direction: "up", delay: 0.6, duration: 0.6 });
+  const badgeRef = useGsapReveal<HTMLDivElement>({ direction: "up", delay: 0, duration: 0.7 });
+  const ctaRef = useGsapReveal<HTMLDivElement>({ direction: "up", delay: 0.4, duration: 0.6 });
+  const statsRef = useGsapReveal<HTMLDivElement>({ direction: "up", delay: 0.6, duration: 0.6 });
   const mockupRef = useGsapReveal<HTMLDivElement>({ direction: "up", delay: 0.3, duration: 0.8 });
 
   return (
@@ -68,7 +68,7 @@ export function HeroSection() {
 
         {/* Badge */}
         <div ref={badgeRef}>
-          <span className="animate-pulse-ring mb-6 inline-flex items-center gap-1.5 rounded-full border border-primary-200 bg-primary-100 px-3.5 py-1.5 text-xs font-semibold tracking-wide text-primary-600 uppercase">
+          <span className="animate-pulse-ring mb-6 inline-flex items-center gap-1.5 rounded-full border border-primary-200 bg-primary-100 px-3.5 py-1.5 text-xs font-semibold  text-primary-600 uppercase">
             Production-ready boilerplate ✦
           </span>
         </div>
@@ -76,7 +76,7 @@ export function HeroSection() {
         {/* H1 with word-by-word animation */}
         <h1
           id="hero-heading"
-          className="mb-6 text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl lg:text-6xl leading-tight"
+          className="mb-6 text-4xl font-bold  text-neutral-900 sm:text-5xl lg:text-6xl leading-tight"
         >
           {HERO_WORDS.map((word, i) => (
             <span
@@ -151,8 +151,8 @@ export function HeroSection() {
 
             {/* Fake code */}
             <div className="px-5 py-5 font-mono text-sm leading-relaxed" aria-hidden="true">
-              <CodeLine color="text-purple-400"  indent={0} tokens={[{ t: "import", c: "text-blue-400" }, { t: " { NestFactory } ", c: "text-neutral-300" }, { t: "from", c: "text-blue-400" }, { t: " '@nestjs/core'", c: "text-green-400" }]} />
-              <CodeLine color="text-purple-400"  indent={0} tokens={[{ t: "import", c: "text-blue-400" }, { t: " { AppModule } ", c: "text-neutral-300" }, { t: "from", c: "text-blue-400" }, { t: " './app.module'", c: "text-green-400" }]} />
+              <CodeLine color="text-purple-400" indent={0} tokens={[{ t: "import", c: "text-blue-400" }, { t: " { NestFactory } ", c: "text-neutral-300" }, { t: "from", c: "text-blue-400" }, { t: " '@nestjs/core'", c: "text-green-400" }]} />
+              <CodeLine color="text-purple-400" indent={0} tokens={[{ t: "import", c: "text-blue-400" }, { t: " { AppModule } ", c: "text-neutral-300" }, { t: "from", c: "text-blue-400" }, { t: " './app.module'", c: "text-green-400" }]} />
               <div className="h-3" />
               <CodeLine indent={0} tokens={[{ t: "async function ", c: "text-purple-400" }, { t: "bootstrap", c: "text-yellow-400" }, { t: "() {", c: "text-neutral-300" }]} />
               <CodeLine indent={1} tokens={[{ t: "const ", c: "text-blue-400" }, { t: "app ", c: "text-neutral-200" }, { t: "= await ", c: "text-neutral-400" }, { t: "NestFactory", c: "text-yellow-300" }, { t: ".create(", c: "text-neutral-300" }, { t: "AppModule", c: "text-teal-400" }, { t: ");", c: "text-neutral-300" }]} />

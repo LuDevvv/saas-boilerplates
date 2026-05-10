@@ -75,12 +75,12 @@ export const PageHeader: FC<PageHeaderProps> = ({
       {breadcrumbs && breadcrumbs.length > 0 && <BreadcrumbsTrail items={breadcrumbs} />}
 
       {eyebrow && (
-        <p className="text-[11px] font-bold uppercase tracking-wider text-fg-muted mb-2">
+        <p className="text-[11px] font-bold uppercase  text-fg-muted mb-2">
           {eyebrow}
         </p>
       )}
 
-      <h1 className="text-[22px] sm:text-[26px] font-bold leading-tight tracking-tight text-fg">
+      <h1 className="text-[22px] sm:text-[26px] font-bold leading-tight  text-fg">
         {title}
       </h1>
 

@@ -37,7 +37,7 @@ const Section: FC<{ title: string; description?: string; children: React.ReactNo
 
 const ExampleRow: FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
   <div className="grid grid-cols-1 md:grid-cols-[140px_1fr] gap-3 md:gap-6 items-start">
-    <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted pt-1.5">
+    <p className="text-[10px] font-bold uppercase  text-fg-muted pt-1.5">
       {label}
     </p>
     <div className="flex flex-wrap items-start gap-3">{children}</div>
@@ -117,8 +117,8 @@ const ComponentsCatalog: FC = () => {
               value={tabValue}
               onChange={(v) => setTabValue(v as typeof tabValue)}
               options={[
-                { value: "all",      label: "Todos",     count: 24 },
-                { value: "active",   label: "Activos",   count: 18 },
+                { value: "all", label: "Todos", count: 24 },
+                { value: "active", label: "Activos", count: 18 },
                 { value: "archived", label: "Archivados", count: 6 },
               ]}
             />
@@ -140,8 +140,8 @@ const ComponentsCatalog: FC = () => {
               value={tabValue}
               onChange={(v) => setTabValue(v as typeof tabValue)}
               options={[
-                { value: "all",      label: "Todos",   icon: <Layers className="h-3.5 w-3.5" /> },
-                { value: "active",   label: "Activos", icon: <CheckCircle2 className="h-3.5 w-3.5" /> },
+                { value: "all", label: "Todos", icon: <Layers className="h-3.5 w-3.5" /> },
+                { value: "active", label: "Activos", icon: <CheckCircle2 className="h-3.5 w-3.5" /> },
                 { value: "archived", label: "Archivados", icon: <Inbox className="h-3.5 w-3.5" /> },
               ]}
             />
@@ -209,7 +209,7 @@ const ComponentsCatalog: FC = () => {
                 title="Equipos ilimitados"
                 description="Desbloquea roles personalizados con el plan Enterprise."
                 action={
-                  <button className="w-full h-9 rounded-[10px] bg-white/10 hover:bg-white/20 border border-white/15 text-white text-[11px] font-bold uppercase tracking-wider">
+                  <button className="w-full h-9 rounded-[10px] bg-white/10 hover:bg-white/20 border border-white/15 text-white text-[11px] font-bold uppercase ">
                     Ver planes
                   </button>
                 }

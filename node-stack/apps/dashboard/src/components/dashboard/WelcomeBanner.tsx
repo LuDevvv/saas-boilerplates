@@ -45,8 +45,8 @@ const LiveClock: FC = () => {
     return () => clearInterval(id);
   }, []);
 
-  const hh   = now.getHours().toString().padStart(2, "0");
-  const mm   = now.getMinutes().toString().padStart(2, "0");
+  const hh = now.getHours().toString().padStart(2, "0");
+  const mm = now.getMinutes().toString().padStart(2, "0");
   const date = now.toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" });
 
   return (
@@ -86,7 +86,7 @@ const Avatar: FC<{ firstName: string; lastName?: string; avatarUrl?: string }> =
 
   return (
     <div className="h-11 w-11 sm:h-12 sm:w-12 rounded-full bg-surface-hover flex items-center justify-center shrink-0">
-      <span className="text-[14px] sm:text-[15px] font-bold text-fg-secondary select-none tracking-tight">
+      <span className="text-[14px] sm:text-[15px] font-bold text-fg-secondary select-none ">
         {initials}
       </span>
     </div>
@@ -115,7 +115,7 @@ export const WelcomeBanner: FC<WelcomeBannerProps> = ({
 
       {/* Text */}
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] sm:text-[11px] font-semibold text-fg-muted uppercase tracking-widest leading-none">
+        <p className="text-[10px] sm:text-[11px] font-semibold text-fg-muted uppercase  leading-none">
           {getGreeting()}
         </p>
         <h2 className="text-[20px] sm:text-[24px] font-heading font-bold text-fg leading-tight mt-1">

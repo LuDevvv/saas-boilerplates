@@ -41,10 +41,10 @@ import { cn } from "@/utils/classNames";
 // ─── Config ───────────────────────────────────────────────────────────────────
 
 const TYPE_CONFIG: Record<NotificationType, { icon: React.ElementType; color: string }> = {
-  info:    { icon: Info,          color: "text-blue-500 dark:text-blue-400" },
+  info: { icon: Info, color: "text-blue-500 dark:text-blue-400" },
   warning: { icon: AlertTriangle, color: "text-amber-500 dark:text-amber-400" },
-  success: { icon: CheckCircle2,  color: "text-emerald-500 dark:text-emerald-400" },
-  error:   { icon: XCircle,       color: "text-red-500 dark:text-red-400" },
+  success: { icon: CheckCircle2, color: "text-emerald-500 dark:text-emerald-400" },
+  error: { icon: XCircle, color: "text-red-500 dark:text-red-400" },
 };
 
 function relativeTime(dateStr: string): string {
@@ -152,7 +152,7 @@ const PreferencesPanel: FC = () => {
 
       {/* Channels */}
       <div className="mt-5 space-y-2">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted">
+        <p className="text-[10px] font-bold uppercase  text-fg-muted">
           Canales
         </p>
         <ChannelToggle
@@ -180,7 +180,7 @@ const PreferencesPanel: FC = () => {
 
       {/* Quiet hours */}
       <div className="mt-6 pt-5 border-t border-border-subtle space-y-2">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted">
+        <p className="text-[10px] font-bold uppercase  text-fg-muted">
           Horario de silencio
         </p>
         <ChannelToggle
@@ -194,7 +194,7 @@ const PreferencesPanel: FC = () => {
 
       {/* Topics */}
       <div className="mt-6 pt-5 border-t border-border-subtle space-y-2">
-        <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted">
+        <p className="text-[10px] font-bold uppercase  text-fg-muted">
           Agrupación por tema
         </p>
         <TopicToggle
@@ -271,7 +271,7 @@ const TopicToggle: FC<{
     </div>
     <span
       className={cn(
-        "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border",
+        "text-[10px] font-bold uppercase  px-2 py-0.5 rounded-md border",
         enabled
           ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
           : "bg-surface-muted text-fg-muted border-border"
@@ -289,13 +289,13 @@ const NotificationsPage: FC = () => {
 
   const { data: notifications = [], isLoading, error } = useNotifications({
     ...(activeFilter === "unread" ? { unread: true } : {}),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }) as { data: Notification[]; isLoading: boolean; error: any };
 
-  const markAsRead    = useMarkAsRead();
+  const markAsRead = useMarkAsRead();
   const markAllAsRead = useMarkAllAsRead();
-  const dismiss       = useDismissNotification();
-  const seed          = useSeedNotifications();
+  const dismiss = useDismissNotification();
+  const seed = useSeedNotifications();
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -344,7 +344,7 @@ const NotificationsPage: FC = () => {
             onChange={(v) => setActiveFilter(v as FilterTab)}
             ariaLabel="Filtrar notificaciones por estado"
             options={[
-              { value: "all",    label: "Todas",   count: notifications.length },
+              { value: "all", label: "Todas", count: notifications.length },
               { value: "unread", label: "Sin leer", count: unreadCount },
             ]}
           />

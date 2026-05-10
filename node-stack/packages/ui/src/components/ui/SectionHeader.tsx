@@ -49,7 +49,7 @@ export const SectionHeader: FC<SectionHeaderProps> = ({
         {eyebrow && (
           <p
             className={cn(
-              "text-[10px] font-bold uppercase tracking-wider mb-1.5",
+              "text-[10px] font-bold uppercase  mb-1.5",
               eyebrowTone === "primary" ? "text-primary" : "text-fg-muted"
             )}
           >

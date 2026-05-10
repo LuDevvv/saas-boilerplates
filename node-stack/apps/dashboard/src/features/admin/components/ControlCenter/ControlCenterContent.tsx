@@ -250,7 +250,7 @@ export const ControlCenterContent: FC = () => {
         >
           <div className="space-y-5">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-fg-muted mb-2">Tickets ({totalTickets})</p>
+              <p className="text-[11px] font-semibold uppercase  text-fg-muted mb-2">Tickets ({totalTickets})</p>
               <StatusBreakdown
                 loading={statsLoading}
                 items={[
@@ -262,7 +262,7 @@ export const ControlCenterContent: FC = () => {
               />
             </div>
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-fg-muted mb-2">
+              <p className="text-[11px] font-semibold uppercase  text-fg-muted mb-2">
                 Tareas ({totalTasks}) · {stats?.tasks.completedThisWeek ?? 0} completadas esta semana
               </p>
               <StatusBreakdown

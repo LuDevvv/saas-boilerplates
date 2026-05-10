@@ -126,7 +126,7 @@ export function TestimonialsSection() {
       <div className="container">
         {/* Heading */}
         <div ref={headingRef} className="text-center mb-14">
-          <p className="text-sm font-semibold text-primary-600 uppercase tracking-widest mb-3">
+          <p className="text-sm font-semibold text-primary-600 uppercase  mb-3">
             Social proof
           </p>
           <h2

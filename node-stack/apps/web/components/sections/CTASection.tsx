@@ -125,7 +125,7 @@ export function CTASection() {
       <div className="container relative z-10">
         <div ref={contentRef} className="max-w-2xl mx-auto text-center flex flex-col items-center gap-8">
           {/* Eyebrow */}
-          <p className="text-primary-200 text-sm font-semibold uppercase tracking-widest">
+          <p className="text-primary-200 text-sm font-semibold uppercase ">
             Early access
           </p>
 

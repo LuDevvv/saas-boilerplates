@@ -19,12 +19,12 @@ const TableShell: FC<{ children: ReactNode }> = ({ children }) => (
       <table className="w-full text-left border-collapse">
         <thead>
           <tr className="border-b border-border-subtle bg-surface-muted">
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-fg-muted">Nombre del Reporte</th>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-fg-muted">Formato</th>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-fg-muted">Creado el</th>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-fg-muted">Tamaño</th>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-fg-muted">Estado</th>
-            <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-fg-muted text-right">Acciones</th>
+            <th className="px-6 py-4 text-[10px] font-bold uppercase  text-fg-muted">Nombre del Reporte</th>
+            <th className="px-6 py-4 text-[10px] font-bold uppercase  text-fg-muted">Formato</th>
+            <th className="px-6 py-4 text-[10px] font-bold uppercase  text-fg-muted">Creado el</th>
+            <th className="px-6 py-4 text-[10px] font-bold uppercase  text-fg-muted">Tamaño</th>
+            <th className="px-6 py-4 text-[10px] font-bold uppercase  text-fg-muted">Estado</th>
+            <th className="px-6 py-4 text-[10px] font-bold uppercase  text-fg-muted text-right">Acciones</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-border-subtle">{children}</tbody>

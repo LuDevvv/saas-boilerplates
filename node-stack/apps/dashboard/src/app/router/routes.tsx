@@ -24,6 +24,7 @@ const SignUpPage = lazy(() => import("@pages/auth/SignUp"));
 const ForgotPasswordPage = lazy(() => import("@pages/auth/ForgotPassword"));
 const ResetPasswordPage = lazy(() => import("@pages/auth/ResetPassword"));
 const VerifyEmailPage = lazy(() => import("@pages/auth/VerifyEmail"));
+const OAuthCallbackPage = lazy(() => import("@pages/auth/OAuthCallback"));
 
 // Dashboard
 const DashboardPage = lazy(() => import("@pages/index"));
@@ -87,6 +88,7 @@ export const AppRoutes = (): React.ReactElement => {
       <Route path="/auth/forgot-password" element={<Suspense fallback={<Loading />} children={guestGuard(<ForgotPasswordPage />)} />} />
       <Route path="/auth/reset-password" element={<Suspense fallback={<Loading />} children={guestGuard(<ResetPasswordPage />)} />} />
       <Route path="/auth/verify-email" element={<Suspense fallback={<Loading />} children={guestGuard(<VerifyEmailPage />)} />} />
+      <Route path="/auth/callback" element={<Suspense fallback={<Loading />} children={<OAuthCallbackPage />} />} />
 
       {/* Legacy redirects */}
       <Route path="/login" element={<Navigate to="/auth/sign-in" replace />} />

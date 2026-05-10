@@ -1,6 +1,7 @@
-﻿import { useEffect } from "react";
+import { useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { appToast } from "@/components/alerts/Toasts";
 import { useUser } from "@/features/auth/hooks/useUser";
 import { api } from "@/lib/api";
@@ -12,14 +13,23 @@ export const useAuth = () => {
 
   const { data: user, isLoading } = useUser();
 
+  const queryClient = useQueryClient();
+
   const logout = async () => {
-    try {
-      await api.auth.logout();
-    } catch {
-      // Ignore network errors on logout
-    } finally {
-      clearUser(); // clears tokens + redirects via window.location
-    }
+    // 1. Inmediatamente marcar como no autenticado para que React Router (ProtectedRoute) nos envíe al Login
+    useAuthStore.setState({ isAuthenticated: false });
+
+    // 2. Dar tiempo (50ms) a que el dashboard se desmonte antes de limpiar user a null, evitando pantallazos blancos
+    setTimeout(async () => {
+      try {
+        await api.auth.logout();
+      } catch {
+        // Ignore network errors on logout
+      } finally {
+        queryClient.clear();
+        clearUser();
+      }
+    }, 50);
   };
 
   const loginWithGoogle = async () => {

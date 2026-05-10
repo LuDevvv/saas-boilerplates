@@ -82,13 +82,13 @@ const ScopeBadge: FC<{ scope: string }> = ({ scope }) => {
   const tone = action === "Admin"
     ? "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20"
     : action === "Write"
-    ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
-    : "bg-primary/10 text-primary border-primary/20";
+      ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+      : "bg-primary/10 text-primary border-primary/20";
 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider font-mono",
+        "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-bold uppercase  font-mono",
         tone
       )}
     >
@@ -134,9 +134,8 @@ export const ApiKeyList: FC<ApiKeyListProps> = ({ keys, isLoading, onRevoke }) =
           variant="muted"
           eyebrow="ACCIÓN REQUERIDA"
           title={`Rotación próxima — ${rotationAlert.key.name}`}
-          description={`Esta clave expira en ${rotationAlert.metrics.expiresInDays} día${
-            rotationAlert.metrics.expiresInDays === 1 ? "" : "s"
-          }. Genera una nueva y migra antes de la fecha límite para evitar interrupciones.`}
+          description={`Esta clave expira en ${rotationAlert.metrics.expiresInDays} día${rotationAlert.metrics.expiresInDays === 1 ? "" : "s"
+            }. Genera una nueva y migra antes de la fecha límite para evitar interrupciones.`}
           action={
             <button className="inline-flex items-center gap-2 h-9 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-[12px] font-semibold transition-colors">
               <RefreshCw className="h-3.5 w-3.5" />
@@ -192,7 +191,7 @@ export const ApiKeyList: FC<ApiKeyListProps> = ({ keys, isLoading, onRevoke }) =
                 {/* Metrics row */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-border-subtle">
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted flex items-center gap-1.5">
+                    <p className="text-[10px] font-bold uppercase  text-fg-muted flex items-center gap-1.5">
                       <Activity size={10} />
                       Hoy
                     </p>
@@ -204,8 +203,8 @@ export const ApiKeyList: FC<ApiKeyListProps> = ({ keys, isLoading, onRevoke }) =
                           metrics.requestsTrend > 0
                             ? "text-emerald-600 dark:text-emerald-400"
                             : metrics.requestsTrend < 0
-                            ? "text-red-600 dark:text-red-400"
-                            : "text-fg-muted"
+                              ? "text-red-600 dark:text-red-400"
+                              : "text-fg-muted"
                         )}
                       >
                         {trendSign}
@@ -214,7 +213,7 @@ export const ApiKeyList: FC<ApiKeyListProps> = ({ keys, isLoading, onRevoke }) =
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted flex items-center gap-1.5">
+                    <p className="text-[10px] font-bold uppercase  text-fg-muted flex items-center gap-1.5">
                       <Clock size={10} />
                       Último uso
                     </p>
@@ -223,7 +222,7 @@ export const ApiKeyList: FC<ApiKeyListProps> = ({ keys, isLoading, onRevoke }) =
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted flex items-center gap-1.5">
+                    <p className="text-[10px] font-bold uppercase  text-fg-muted flex items-center gap-1.5">
                       <Calendar size={10} />
                       Creada
                     </p>
@@ -232,7 +231,7 @@ export const ApiKeyList: FC<ApiKeyListProps> = ({ keys, isLoading, onRevoke }) =
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted">
+                    <p className="text-[10px] font-bold uppercase  text-fg-muted">
                       Estado
                     </p>
                     <div className="mt-1">
@@ -244,7 +243,7 @@ export const ApiKeyList: FC<ApiKeyListProps> = ({ keys, isLoading, onRevoke }) =
                 {/* Scopes */}
                 {metrics.scopes.length > 0 && (
                   <div className="space-y-1.5 pt-3 border-t border-border-subtle">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted">
+                    <p className="text-[10px] font-bold uppercase  text-fg-muted">
                       Scopes ({metrics.scopes.length})
                     </p>
                     <div className="flex flex-wrap gap-1.5">

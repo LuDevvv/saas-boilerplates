@@ -13,7 +13,7 @@ export const KycCard: FC = () => (
     action={
       <Button
         variant="secondary"
-        className="w-full rounded-xl py-2 text-[11px] font-label uppercase tracking-wider"
+        className="w-full rounded-xl py-2 text-[11px] font-label uppercase "
       >
         Documentación Legal
       </Button>

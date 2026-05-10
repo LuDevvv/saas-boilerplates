@@ -289,7 +289,7 @@ const MembersPage: FC = () => {
           {/* Member count summary — shown only when data loaded */}
           {!isLoading && (members?.length ?? 0) > 0 && (
             <div className="rounded-[20px] border border-border bg-surface p-5">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-fg-muted mb-2">
+              <p className="text-[11px] font-bold uppercase  text-fg-muted mb-2">
                 Resumen
               </p>
               <div className="divide-y divide-border-subtle">

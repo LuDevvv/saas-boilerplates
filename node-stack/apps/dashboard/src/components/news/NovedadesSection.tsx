@@ -80,7 +80,7 @@ const FeaturedCard: FC<{ note: ReleaseNote }> = ({ note }) => {
       <div className="relative z-10 p-5">
         {/* Badge row */}
         <div className="flex items-center justify-between mb-3">
-          <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide", cfg.badgeFeatured)}>
+          <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ", cfg.badgeFeatured)}>
             <Icon className="h-3 w-3" />
             {cfg.label}
           </span>
@@ -124,7 +124,7 @@ const CompactCard: FC<{ note: ReleaseNote }> = ({ note }) => {
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1 flex-wrap">
-          <span className={cn("text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md", cfg.badgeCompact)}>
+          <span className={cn("text-[9px] font-bold uppercase  px-1.5 py-0.5 rounded-md", cfg.badgeCompact)}>
             {cfg.label}
           </span>
           {note.version && (

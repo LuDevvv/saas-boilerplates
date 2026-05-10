@@ -133,7 +133,7 @@ const JsonViewer: FC<{ value: unknown; label: string }> = ({ value, label }) => 
   const formatted = JSON.stringify(value, null, 2);
   return (
     <div className="space-y-2">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted">{label}</p>
+      <p className="text-[10px] font-bold uppercase  text-fg-muted">{label}</p>
       <pre className="bg-surface-elevated border border-border rounded-xl p-4 text-[12px] text-fg-secondary overflow-x-auto custom-scrollbar font-mono leading-relaxed">
         <code>{syntaxHighlight(formatted)}</code>
       </pre>
@@ -310,7 +310,7 @@ export const WebhookEventsLog: FC<WebhookEventsLogProps> = ({ webhookUrl, isLoad
             {/* Meta strip */}
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-xl border border-border bg-surface-muted p-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted">Status</p>
+                <p className="text-[10px] font-bold uppercase  text-fg-muted">Status</p>
                 <div className="mt-1">
                   <StatusPill
                     label={`${selectedDelivery.statusCode}`}
@@ -320,19 +320,19 @@ export const WebhookEventsLog: FC<WebhookEventsLogProps> = ({ webhookUrl, isLoad
                 </div>
               </div>
               <div className="rounded-xl border border-border bg-surface-muted p-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted">Latencia</p>
+                <p className="text-[10px] font-bold uppercase  text-fg-muted">Latencia</p>
                 <p className="text-[14px] font-semibold text-fg mt-1 tabular-nums">
                   {selectedDelivery.durationMs} ms
                 </p>
               </div>
               <div className="rounded-xl border border-border bg-surface-muted p-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted">Intento</p>
+                <p className="text-[10px] font-bold uppercase  text-fg-muted">Intento</p>
                 <p className="text-[14px] font-semibold text-fg mt-1 tabular-nums">
                   #{selectedDelivery.attempt}
                 </p>
               </div>
               <div className="rounded-xl border border-border bg-surface-muted p-3">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted">Cuándo</p>
+                <p className="text-[10px] font-bold uppercase  text-fg-muted">Cuándo</p>
                 <p className="text-[12px] text-fg mt-1">
                   {formatRelativeTime(selectedDelivery.createdAt)}
                 </p>
@@ -340,7 +340,7 @@ export const WebhookEventsLog: FC<WebhookEventsLogProps> = ({ webhookUrl, isLoad
             </div>
 
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted mb-1.5">
+              <p className="text-[10px] font-bold uppercase  text-fg-muted mb-1.5">
                 Endpoint
               </p>
               <code className="block text-[11px] font-mono text-fg-secondary bg-surface-muted border border-border-subtle rounded-lg px-3 py-2 break-all">

@@ -32,8 +32,8 @@ export const AdminStatCard: FC<AdminStatCardProps> = ({
             trend === "up"
               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
               : trend === "down"
-              ? "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20"
-              : "bg-surface-hover text-fg-muted border-border"
+                ? "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20"
+                : "bg-surface-hover text-fg-muted border-border"
           )}
         >
           {change}
@@ -45,7 +45,7 @@ export const AdminStatCard: FC<AdminStatCardProps> = ({
         </div>
       </div>
       <div className="mt-5 relative z-10">
-        <p className="text-[11px] font-label uppercase tracking-wider text-fg-muted mb-1">{label}</p>
+        <p className="text-[11px] font-label uppercase  text-fg-muted mb-1">{label}</p>
         <h3 className="text-[30px] font-kpi text-fg leading-none">{value}</h3>
       </div>
 

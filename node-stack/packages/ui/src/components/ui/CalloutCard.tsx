@@ -45,11 +45,11 @@ export interface CalloutCardProps {
 // ─── Style maps ──────────────────────────────────────────────────────────────
 
 const ICON_TONE_CLASSES: Record<CalloutTone, { tile: string; text: string }> = {
-  primary: { tile: "bg-primary/10",        text: "text-primary" },
-  success: { tile: "bg-emerald-500/10",    text: "text-emerald-500" },
-  info:    { tile: "bg-blue-500/10",       text: "text-blue-500 dark:text-blue-400" },
-  warning: { tile: "bg-amber-500/10",      text: "text-amber-500 dark:text-amber-400" },
-  neutral: { tile: "bg-surface-hover",     text: "text-fg-secondary" },
+  primary: { tile: "bg-primary/10", text: "text-primary" },
+  success: { tile: "bg-emerald-500/10", text: "text-emerald-500" },
+  info: { tile: "bg-blue-500/10", text: "text-blue-500 dark:text-blue-400" },
+  warning: { tile: "bg-amber-500/10", text: "text-amber-500 dark:text-amber-400" },
+  neutral: { tile: "bg-surface-hover", text: "text-fg-secondary" },
 };
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
@@ -109,9 +109,9 @@ export const CalloutCard: FC<CalloutCardProps> = ({
     : "flex flex-col gap-4";
 
   // Text colors switch in promo
-  const titleColor       = isPromo ? "text-white"       : "text-fg";
-  const descriptionColor = isPromo ? "text-white/70"    : "text-fg-secondary";
-  const eyebrowColor     = isPromo ? "text-white/60"    : "text-fg-muted";
+  const titleColor = isPromo ? "text-white" : "text-fg";
+  const descriptionColor = isPromo ? "text-white/70" : "text-fg-secondary";
+  const eyebrowColor = isPromo ? "text-white/60" : "text-fg-muted";
 
   const renderStatus = status && (
     <StatusPill label={status.label} tone={status.tone ?? "neutral"} pulse={status.pulse} />
@@ -147,13 +147,13 @@ export const CalloutCard: FC<CalloutCardProps> = ({
         {/* Text content */}
         <div className={cn("flex-1 min-w-0", isHorizontal && "sm:order-2")}>
           {eyebrow && (
-            <p className={cn("text-[10px] font-bold uppercase tracking-wider mb-1.5", eyebrowColor)}>
+            <p className={cn("text-[10px] font-bold uppercase  mb-1.5", eyebrowColor)}>
               {eyebrow}
             </p>
           )}
           <h3 className={cn(
             "font-semibold leading-snug",
-            isPromo ? "text-[14px] uppercase tracking-wide" : "text-[15px]",
+            isPromo ? "text-[14px] uppercase " : "text-[15px]",
             titleColor
           )}>
             {title}

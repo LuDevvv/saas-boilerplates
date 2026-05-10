@@ -51,7 +51,13 @@ export class EmailSender {
    */
   public async sendEmail(options: LegacyEmailOptions): Promise<void> {
     const defaultFromField = process.env.EMAIL_FROM || "noreply@nodestack.local";
-    const { to, subject, templateName, templateData, from = defaultFromField } = options;
+    let { to, subject, templateName, templateData, from = defaultFromField } = options;
+
+    // En desarrollo, desviar correos a un correo de prueba seguro si está configurado, o al de resend
+    if (process.env.NODE_ENV !== "production") {
+      to = process.env.TEST_EMAIL_ADDRESS || "delivered@resend.dev";
+      subject = `[DEV] ${subject}`;
+    }
 
     // Map old names to new types for compatibility during migration
     let mappedTemplate: EmailTemplate | null = null;

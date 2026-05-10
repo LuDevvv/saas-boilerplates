@@ -1,4 +1,4 @@
-﻿import type { LoginDto, RegisterDto, AuthResponse } from "@node-stack/types";
+import type { LoginDto, RegisterDto, AuthResponse } from "@node-stack/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useShallow } from "zustand/react/shallow";
@@ -65,14 +65,25 @@ export const useRegisterFlow = () => {
 };
 
 export const useLogoutFlow = () => {
-  const clearUser = useAuthStore(useShallow((state) => state.clearUser));
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: () => api.auth.logout(),
+    onMutate: () => {
+      // 1. Desconectar la sesión inmediatamente para que ProtectedRoute inicie la redirección al login.
+      // NO usamos clearUser() aquí para evitar que "user" sea null mientras el dashboard sigue renderizado
+      // (lo que causaba el pantallazo blanco cuando el Header intentaba leer user.firstName).
+      useAuthStore.setState({ isAuthenticated: false });
+    },
     onSettled: () => {
-      queryClient.clear();
-      clearUser(); // clears tokens + redirects via window.location
+      // 2. Dar tiempo a que React Router desmonte el Dashboard completamente,
+      // y luego limpiar la caché y el objeto del usuario de forma segura.
+      setTimeout(() => {
+        queryClient.clear();
+        useAuthStore.getState().clearUser();
+      }, 50);
     },
   });
 };
+
+

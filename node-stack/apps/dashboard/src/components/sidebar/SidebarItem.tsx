@@ -100,7 +100,7 @@ export const SidebarItem: FC<SidebarItemProps> = ({
             const tone = (isObj ? badge.tone : "primary") ?? "primary";
             const toneClass = {
               primary: "bg-primary text-primary-foreground",
-              info:    "bg-blue-500 text-white",
+              info: "bg-blue-500 text-white",
               warning: "bg-amber-500 text-white",
               success: "bg-emerald-500 text-white",
               neutral: "bg-surface-hover text-fg-secondary",
@@ -131,15 +131,15 @@ export const SidebarItem: FC<SidebarItemProps> = ({
             const label = isObj ? badge.label : String(badge);
             const tone = (isObj ? badge.tone : "primary") ?? "primary";
             const toneClass = {
-              primary:  "bg-primary text-primary-foreground",
-              info:     "bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25",
-              warning:  "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25",
+              primary: "bg-primary text-primary-foreground",
+              info: "bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25",
+              warning: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/25",
               success: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25",
-              neutral:  "bg-surface-hover text-fg-secondary border border-border",
+              neutral: "bg-surface-hover text-fg-secondary border border-border",
             }[tone];
             return (
               <span className={cn(
-                "flex h-5 min-w-[20px] items-center justify-center px-1.5 text-[9px] font-bold tracking-wider transition-colors uppercase shrink-0",
+                "flex h-5 min-w-[20px] items-center justify-center px-1.5 text-[9px] font-bold  transition-colors uppercase shrink-0",
                 toneClass,
                 label.length === 1 ? "rounded-full w-5" : "rounded-md"
               )}>
@@ -207,8 +207,8 @@ export const SidebarItem: FC<SidebarItemProps> = ({
                 className={cn(
                   "h-4 w-4 flex-shrink-0 transition-colors duration-200",
                   isSubItemActive
-                  ? "text-sidebar-text-active"
-                  : "text-sidebar-text group-hover:text-sidebar-text-active"
+                    ? "text-sidebar-text-active"
+                    : "text-sidebar-text group-hover:text-sidebar-text-active"
                 )}
               />
             )}

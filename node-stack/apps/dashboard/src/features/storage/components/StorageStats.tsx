@@ -14,8 +14,8 @@ interface StorageStatsProps {
 
 const TONE_THRESHOLDS = [
   { max: 60, bar: "bg-emerald-500", text: "text-emerald-600 dark:text-emerald-400" },
-  { max: 85, bar: "bg-amber-500",   text: "text-amber-600 dark:text-amber-400" },
-  { max: 100, bar: "bg-red-500",    text: "text-red-600 dark:text-red-400" },
+  { max: 85, bar: "bg-amber-500", text: "text-amber-600 dark:text-amber-400" },
+  { max: 100, bar: "bg-red-500", text: "text-red-600 dark:text-red-400" },
 ];
 
 export const StorageStats: FC<StorageStatsProps> = ({ usedBytes, totalBytes, fileCount, isLoading }) => {
@@ -62,7 +62,7 @@ export const StorageStats: FC<StorageStatsProps> = ({ usedBytes, totalBytes, fil
       {/* Footer stats */}
       <div className="grid grid-cols-2 gap-3 pt-5 mt-5 border-t border-border-subtle">
         <div className="flex flex-col gap-1">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted flex items-center gap-1.5">
+          <p className="text-[10px] font-bold uppercase  text-fg-muted flex items-center gap-1.5">
             <FileText className="h-3 w-3" /> Archivos
           </p>
           <p className="text-[14px] font-semibold text-fg tabular-nums">
@@ -70,7 +70,7 @@ export const StorageStats: FC<StorageStatsProps> = ({ usedBytes, totalBytes, fil
           </p>
         </div>
         <div className="flex flex-col gap-1">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-fg-muted flex items-center gap-1.5">
+          <p className="text-[10px] font-bold uppercase  text-fg-muted flex items-center gap-1.5">
             <Database className="h-3 w-3" /> Cuota
           </p>
           <p className={cn("text-[14px] font-semibold tabular-nums", tone.text)}>

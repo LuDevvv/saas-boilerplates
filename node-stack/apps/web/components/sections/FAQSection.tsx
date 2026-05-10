@@ -131,7 +131,7 @@ export function FAQSection() {
         <div className="max-w-3xl mx-auto">
           {/* Heading */}
           <div ref={headingRef} className="text-center mb-12">
-            <p className="text-sm font-semibold text-primary-600 uppercase tracking-widest mb-3">
+            <p className="text-sm font-semibold text-primary-600 uppercase  mb-3">
               FAQ
             </p>
             <h2

@@ -34,7 +34,7 @@ const NotFound = () => {
           </div>
         </div>
 
-        <p className="text-fg-muted font-label uppercase text-[10px] tracking-wider mb-12">
+        <p className="text-fg-muted font-label uppercase text-[10px]  mb-12">
           La página solicitada no pudo ser encontrada
         </p>
 
@@ -42,7 +42,7 @@ const NotFound = () => {
         <div className="flex flex-col sm:flex-row items-center gap-6">
           <button
             onClick={() => navigate(-1)}
-            className="group flex items-center gap-3 text-fg-muted hover:text-fg transition-colors font-label text-xs uppercase tracking-wider px-4 py-2"
+            className="group flex items-center gap-3 text-fg-muted hover:text-fg transition-colors font-label text-xs uppercase  px-4 py-2"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
             Regresar
@@ -63,7 +63,7 @@ const NotFound = () => {
       {/* Footer Branding */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4">
         <div className="h-px w-8 bg-border" />
-        <span className="text-[9px] font-label text-fg-disabled uppercase tracking-wider">
+        <span className="text-[9px] font-label text-fg-disabled uppercase ">
           Elora Systems v4.0
         </span>
         <div className="h-px w-8 bg-border" />

@@ -35,17 +35,17 @@ const STATUS_CONFIG: Record<
   string,
   { label: string; tone: StatusPillTone; pulse?: boolean }
 > = {
-  completed:  { label: "Completado",  tone: "success" },
-  pending:    { label: "Pendiente",   tone: "warning", pulse: true },
-  processing: { label: "Procesando",  tone: "info",    pulse: true },
-  failed:     { label: "Fallido",     tone: "danger" },
-  expired:    { label: "Expirado",    tone: "neutral" },
+  completed: { label: "Completado", tone: "success" },
+  pending: { label: "Pendiente", tone: "warning", pulse: true },
+  processing: { label: "Procesando", tone: "info", pulse: true },
+  failed: { label: "Fallido", tone: "danger" },
+  expired: { label: "Expirado", tone: "neutral" },
 };
 
 const SCHEDULE_OPTIONS = [
-  { value: "off",     label: "Desactivado",  description: "Solo bajo demanda" },
-  { value: "weekly",  label: "Semanal",      description: "Cada lunes a las 09:00" },
-  { value: "monthly", label: "Mensual",      description: "El día 1 de cada mes" },
+  { value: "off", label: "Desactivado", description: "Solo bajo demanda" },
+  { value: "weekly", label: "Semanal", description: "Cada lunes a las 09:00" },
+  { value: "monthly", label: "Mensual", description: "El día 1 de cada mes" },
 ] as const;
 
 type ScheduleValue = (typeof SCHEDULE_OPTIONS)[number]["value"];
@@ -92,7 +92,7 @@ const PortabilityPage: FC = () => {
             <div className="rounded-[20px] border border-border bg-surface overflow-hidden shadow-[var(--shadow-card)]">
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead className="bg-surface-muted text-[10px] font-bold uppercase tracking-wider text-fg-muted border-b border-border-subtle">
+                  <thead className="bg-surface-muted text-[10px] font-bold uppercase  text-fg-muted border-b border-border-subtle">
                     <tr>
                       <th className="px-6 py-3">ID</th>
                       <th className="px-6 py-3">Fecha</th>
@@ -192,7 +192,7 @@ const PortabilityPage: FC = () => {
             <div className="rounded-[20px] border border-border bg-surface p-5 shadow-[var(--shadow-card)] space-y-4">
               {/* Frequency selector */}
               <div className="space-y-2">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-fg-muted">
+                <p className="text-[11px] font-bold uppercase  text-fg-muted">
                   Frecuencia
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">

@@ -6,10 +6,10 @@ import { animate } from "@motionone/dom";
 import clsx from "clsx";
 
 const NAV_LINKS = [
-  { label: "Features",      href: "#features"     },
-  { label: "How it works",  href: "#how-it-works"  },
-  { label: "Pricing",       href: "#pricing"       },
-  { label: "FAQ",           href: "#faq"           },
+  { label: "Features", href: "#features" },
+  { label: "How it works", href: "#how-it-works" },
+  { label: "Pricing", href: "#pricing" },
+  { label: "FAQ", href: "#faq" },
 ] as const;
 
 function HexLogo() {
@@ -61,7 +61,7 @@ function MenuIcon({ open }: { open: boolean }) {
         </>
       ) : (
         <>
-          <line x1="3" y1="7"  x2="19" y2="7"  stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <line x1="3" y1="7" x2="19" y2="7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           <line x1="3" y1="11" x2="19" y2="11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           <line x1="3" y1="15" x2="19" y2="15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
         </>
@@ -71,10 +71,10 @@ function MenuIcon({ open }: { open: boolean }) {
 }
 
 export function Navbar() {
-  const [scrolled, setScrolled]       = useState(false);
-  const [mobileOpen, setMobileOpen]   = useState(false);
-  const headerRef                     = useRef<HTMLElement>(null);
-  const drawerRef                     = useRef<HTMLDivElement>(null);
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+  const drawerRef = useRef<HTMLDivElement>(null);
 
   // Scroll detection + @motionone/dom border/bg transition
   useEffect(() => {
@@ -128,7 +128,7 @@ export function Navbar() {
           aria-label="NodeStack home"
         >
           <HexLogo />
-          <span className="text-lg tracking-tight">NodeStack</span>
+          <span className="text-lg ">NodeStack</span>
         </Link>
 
         {/* Desktop links */}

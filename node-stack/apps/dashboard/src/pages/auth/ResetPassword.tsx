@@ -171,7 +171,7 @@ const ResetPassword = () => {
                   {/* Password Requirements UI */}
                   {passwordValue.length > 0 && (
                     <div className="mt-3 p-4 bg-surface-muted rounded-xl border border-border flex flex-col gap-2.5">
-                      <p className="text-[11px] font-bold text-fg-muted uppercase tracking-wider mb-1">
+                      <p className="text-[11px] font-bold text-fg-muted uppercase  mb-1">
                         Tu contraseña debe incluir:
                       </p>
                       <div className="flex items-center gap-2">

@@ -65,7 +65,7 @@ export const WebhookList: FC<WebhookListProps> = ({ webhooks, isLoading, onDelet
                     />
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[10px] font-bold text-fg-muted uppercase tracking-wider flex items-center gap-1">
+                    <span className="text-[10px] font-bold text-fg-muted uppercase  flex items-center gap-1">
                       <ShieldCheck size={10} /> Secreto:
                     </span>
                     <code className="text-[11px] font-mono text-fg-secondary bg-surface-muted border border-border-subtle px-2 py-0.5 rounded">
@@ -89,7 +89,7 @@ export const WebhookList: FC<WebhookListProps> = ({ webhooks, isLoading, onDelet
                 <Button
                   variant="outline"
                   size="sm"
-                  className="rounded-lg font-medium text-[11px] uppercase tracking-wider h-8"
+                  className="rounded-lg font-medium text-[11px] uppercase  h-8"
                   onClick={() => onToggle(webhook.id, !webhook.enabled)}
                 >
                   {webhook.enabled ? "Pausar" : "Activar"}
@@ -107,7 +107,7 @@ export const WebhookList: FC<WebhookListProps> = ({ webhooks, isLoading, onDelet
               {webhook.eventTypes.map((event) => (
                 <span
                   key={event}
-                  className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-surface-muted border border-border-subtle text-fg-secondary"
+                  className="text-[10px] font-bold uppercase  px-2 py-0.5 rounded-md bg-surface-muted border border-border-subtle text-fg-secondary"
                 >
                   {event}
                 </span>

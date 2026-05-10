@@ -134,12 +134,12 @@ function SectionHeading() {
 
   return (
     <div ref={ref} className="mb-12 text-center">
-      <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-primary-600">
+      <p className="mb-3 text-xs font-semibold uppercase  text-primary-600">
         Built for production
       </p>
       <h2
         id="features-heading"
-        className="text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl"
+        className="text-3xl font-bold  text-neutral-900 sm:text-4xl"
       >
         Everything you need to ship
       </h2>

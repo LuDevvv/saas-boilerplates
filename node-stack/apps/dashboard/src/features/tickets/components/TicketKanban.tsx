@@ -37,7 +37,7 @@ export const TicketKanban: FC<TicketKanbanProps> = ({ tickets }) => {
               <div className="flex items-center gap-2 min-w-0">
                 <span className={cn("h-2 w-2 rounded-full shrink-0", status.dotColor)} />
                 <h3 className="text-[13px] font-semibold text-fg truncate">{col.label}</h3>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-fg-muted shrink-0">
+                <span className="text-[10px] font-bold uppercase  text-fg-muted shrink-0">
                   {col.description}
                 </span>
               </div>

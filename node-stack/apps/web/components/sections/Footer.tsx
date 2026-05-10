@@ -114,7 +114,7 @@ function Logo() {
           />
         </svg>
       </div>
-      <span className="font-display font-bold text-white text-base tracking-tight">
+      <span className="font-display font-bold text-white text-base ">
         NodeStack
       </span>
     </div>
@@ -174,7 +174,7 @@ export function Footer() {
             {/* Columns 2-4: Links */}
             {COLUMNS.map((col) => (
               <div key={col.heading} className="flex flex-col gap-4">
-                <h3 className="text-white text-sm font-semibold uppercase tracking-wider mb-4">
+                <h3 className="text-white text-sm font-semibold uppercase  mb-4">
                   {col.heading}
                 </h3>
                 <nav aria-label={col.heading}>

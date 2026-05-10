@@ -114,7 +114,7 @@ const ModelSelector: FC<{
                   <p className="text-[13px] font-semibold text-fg leading-snug">{m.label}</p>
                   <p className="text-[11px] text-fg-muted mt-0.5">{m.description}</p>
                 </div>
-                <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-fg-muted">
+                <span className="shrink-0 text-[10px] font-bold uppercase  text-fg-muted">
                   {(m.contextWindow / 1000).toFixed(0)}K
                 </span>
               </button>
@@ -156,7 +156,7 @@ const PromptItem: FC<{ prompt: MockPrompt; onUse: (body: string) => void }> = ({
   >
     <div className="flex items-center justify-between gap-2 mb-1">
       <p className="text-[13px] font-semibold text-fg truncate">{prompt.title}</p>
-      <span className="shrink-0 text-[9px] font-bold uppercase tracking-wider text-primary px-1.5 py-0.5 rounded-md bg-primary/10">
+      <span className="shrink-0 text-[9px] font-bold uppercase  text-primary px-1.5 py-0.5 rounded-md bg-primary/10">
         {prompt.category}
       </span>
     </div>
@@ -184,7 +184,7 @@ const ContextWindowBar: FC<{ used: number; total: number }> = ({ used, total }) 
   const tone = pct < 60 ? "bg-emerald-500" : pct < 85 ? "bg-amber-500" : "bg-red-500";
   return (
     <div className="space-y-1.5">
-      <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-fg-muted">
+      <div className="flex items-center justify-between text-[10px] font-bold uppercase  text-fg-muted">
         <span>Ventana de contexto</span>
         <span className="tabular-nums text-fg-secondary">
           {used.toLocaleString()} / {total.toLocaleString()}
@@ -392,7 +392,7 @@ const AIPlayground: FC = () => {
                 {quotaExceeded && (
                   <button
                     onClick={() => (window.location.href = "/payments/pricing")}
-                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold uppercase tracking-wider transition-colors"
+                    className="inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold uppercase  transition-colors"
                   >
                     <Zap className="h-3 w-3" fill="currentColor" />
                     Mejorar
@@ -479,7 +479,7 @@ const AIPlayground: FC = () => {
                   <Send className="h-4 w-4" />
                 </button>
               </div>
-              <div className="mt-2.5 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-fg-muted">
+              <div className="mt-2.5 flex items-center justify-between text-[10px] font-bold uppercase  text-fg-muted">
                 <div className="flex items-center gap-3">
                   <span className="inline-flex items-center gap-1">
                     <Sparkles className="h-3 w-3" />

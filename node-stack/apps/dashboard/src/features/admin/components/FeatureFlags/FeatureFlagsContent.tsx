@@ -52,7 +52,7 @@ const FlagRow: FC<{
 
       <div className="flex items-center gap-3 shrink-0">
         <span className={cn(
-          "text-[11px] font-semibold uppercase tracking-wide",
+          "text-[11px] font-semibold uppercase ",
           flag.enabled ? "text-emerald-600 dark:text-emerald-400" : "text-fg-muted"
         )}>
           {flag.enabled ? "On" : "Off"}

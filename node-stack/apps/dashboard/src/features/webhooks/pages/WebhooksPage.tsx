@@ -103,7 +103,7 @@ const WebhooksPage: FC = () => {
             action={
               <Button
                 variant="ghost"
-                className="w-full justify-start text-[11px] font-bold uppercase tracking-wider text-primary p-0 h-auto hover:bg-transparent"
+                className="w-full justify-start text-[11px] font-bold uppercase  text-primary p-0 h-auto hover:bg-transparent"
                 onClick={() => window.open("https://docs.nodestack.com/webhooks", "_blank")}
               >
                 Ver guía de firmas →

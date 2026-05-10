@@ -86,10 +86,10 @@ const TicketDetail: FC = () => {
       ? ticket.priority === "critical"
         ? { label: "Vence en 30m", tone: "danger" as const, pulse: true }
         : ticket.priority === "high"
-        ? { label: "Vence en 2h", tone: "warning" as const, pulse: true }
-        : ticket.priority === "medium"
-        ? { label: "Vence en 24h", tone: "neutral" as const }
-        : null
+          ? { label: "Vence en 2h", tone: "warning" as const, pulse: true }
+          : ticket.priority === "medium"
+            ? { label: "Vence en 24h", tone: "neutral" as const }
+            : null
       : null;
 
   return (
@@ -105,13 +105,13 @@ const TicketDetail: FC = () => {
           </button>
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
-              <span className="text-[10px] font-bold text-fg-muted uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-fg-muted uppercase ">
                 Ticket #{ticket.id.slice(-6).toUpperCase()}
               </span>
               <StatusPill label={status.label} tone={status.tone} />
               {sla && <StatusPill label={sla.label} tone={sla.tone} pulse={sla.pulse} />}
             </div>
-            <h1 className="text-[22px] sm:text-[24px] font-bold text-fg leading-tight tracking-tight truncate max-w-2xl">
+            <h1 className="text-[22px] sm:text-[24px] font-bold text-fg leading-tight  truncate max-w-2xl">
               {ticket.subject}
             </h1>
           </div>
@@ -122,7 +122,7 @@ const TicketDetail: FC = () => {
             <button
               onClick={handleClose}
               disabled={statusMutation.isPending}
-              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl border border-red-500/25 bg-red-500/[0.06] hover:bg-red-500/10 hover:border-red-500/35 text-red-600 dark:text-red-400 text-[12px] font-semibold uppercase tracking-wider transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 h-10 px-4 rounded-xl border border-red-500/25 bg-red-500/[0.06] hover:bg-red-500/10 hover:border-red-500/35 text-red-600 dark:text-red-400 text-[12px] font-semibold uppercase  transition-colors disabled:opacity-50"
             >
               {statusMutation.isPending ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -254,7 +254,7 @@ const TicketDetail: FC = () => {
           <div className="flex flex-col gap-4">
             {/* Metadata card */}
             <div className="rounded-[20px] border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
-              <h3 className="text-[11px] font-bold text-fg-muted uppercase tracking-wider mb-4">
+              <h3 className="text-[11px] font-bold text-fg-muted uppercase  mb-4">
                 Detalles del ticket
               </h3>
 
@@ -266,7 +266,7 @@ const TicketDetail: FC = () => {
                   </span>
                   <span
                     className={cn(
-                      "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+                      "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase  border",
                       prio.chip
                     )}
                   >
@@ -317,7 +317,7 @@ const TicketDetail: FC = () => {
 
             {/* Quick assign — mock */}
             <div className="rounded-[20px] border border-border bg-surface p-5">
-              <h3 className="text-[11px] font-bold text-fg-muted uppercase tracking-wider mb-3">
+              <h3 className="text-[11px] font-bold text-fg-muted uppercase  mb-3">
                 Asignación rápida
               </h3>
               <div className="space-y-1.5">
@@ -334,14 +334,14 @@ const TicketDetail: FC = () => {
 
             {/* Tags — mock */}
             <div className="rounded-[20px] border border-border bg-surface p-5">
-              <h3 className="text-[11px] font-bold text-fg-muted uppercase tracking-wider mb-3">
+              <h3 className="text-[11px] font-bold text-fg-muted uppercase  mb-3">
                 Tags
               </h3>
               <div className="flex flex-wrap gap-1.5">
                 {["billing", "ui-bug", "premium"].map((tag) => (
                   <span
                     key={tag}
-                    className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-surface-muted border border-border-subtle text-fg-secondary"
+                    className="text-[10px] font-bold uppercase  px-2 py-0.5 rounded-md bg-surface-muted border border-border-subtle text-fg-secondary"
                   >
                     {tag}
                   </span>

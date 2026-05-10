@@ -117,7 +117,7 @@ export const TrialStatusWidget: FC<TrialStatusWidgetProps> = ({
     <div className="w-full min-w-[160px] rounded-[18px] border border-border bg-surface p-3 shadow-[var(--shadow-card)] overflow-hidden">
       <div className="flex items-center justify-between gap-2 mb-2">
         <div className="flex items-center gap-2 whitespace-nowrap">
-          <span className="text-[9px] font-bold text-fg-muted uppercase tracking-wider">Prueba</span>
+          <span className="text-[9px] font-bold text-fg-muted uppercase ">Prueba</span>
         </div>
         <div className="flex items-baseline gap-1 whitespace-nowrap">
           <span className="text-sm font-black text-fg">{daysLeft}</span>

@@ -42,7 +42,7 @@ function TextSide({
         {row.badge}
       </span>
 
-      <h3 className="text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl leading-tight">
+      <h3 className="text-2xl font-bold  text-neutral-900 sm:text-3xl leading-tight">
         {row.heading}
       </h3>
 
@@ -91,8 +91,8 @@ function VisualSide({
 function SessionMockup() {
   const sessions = [
     { device: "MacBook Pro", location: "San Francisco, CA", browser: "Chrome", active: true },
-    { device: "iPhone 16 Pro", location: "New York, NY",    browser: "Safari", active: false },
-    { device: "Windows PC",   location: "London, UK",       browser: "Firefox",active: false },
+    { device: "iPhone 16 Pro", location: "New York, NY", browser: "Safari", active: false },
+    { device: "Windows PC", location: "London, UK", browser: "Firefox", active: false },
   ];
 
   return (
@@ -144,13 +144,13 @@ function DeviceIcon({ device }: { device: string }) {
   if (device.startsWith("iPhone")) {
     return (
       <svg className="h-4 w-4 text-neutral-400" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-        <path d="M11 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h6ZM5 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H5ZM8 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/>
+        <path d="M11 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h6ZM5 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H5ZM8 14a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" />
       </svg>
     );
   }
   return (
     <svg className="h-4 w-4 text-neutral-400" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-      <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm15 7V4a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v7h14Zm-5 2v1h2a.5.5 0 0 1 0 1H4a.5.5 0 0 1 0-1h2v-1h4Z"/>
+      <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4Zm15 7V4a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v7h14Zm-5 2v1h2a.5.5 0 0 1 0 1H4a.5.5 0 0 1 0-1h2v-1h4Z" />
     </svg>
   );
 }
@@ -159,16 +159,16 @@ function DeviceIcon({ device }: { device: string }) {
 
 function WorkspaceMockup() {
   const workspaces = [
-    { name: "Acme Corp",    plan: "Pro",         avatar: "AC", color: "bg-violet-500" },
-    { name: "StartupXYZ",  plan: "Starter",      avatar: "SX", color: "bg-teal-500"  },
-    { name: "Dev Sandbox",  plan: "Free",         avatar: "DS", color: "bg-orange-500"},
+    { name: "Acme Corp", plan: "Pro", avatar: "AC", color: "bg-violet-500" },
+    { name: "StartupXYZ", plan: "Starter", avatar: "SX", color: "bg-teal-500" },
+    { name: "Dev Sandbox", plan: "Free", avatar: "DS", color: "bg-orange-500" },
   ];
 
   return (
     <div className="w-full max-w-sm rounded-2xl border border-neutral-200 bg-white shadow-xl overflow-hidden">
       {/* Header */}
       <div className="border-b border-neutral-100 bg-neutral-50 px-4 py-3">
-        <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Switch workspace</p>
+        <p className="text-xs font-semibold uppercase  text-neutral-400">Switch workspace</p>
       </div>
 
       <div className="divide-y divide-neutral-100">
@@ -192,15 +192,15 @@ function WorkspaceMockup() {
             <div className="flex items-center gap-2">
               <span className={clsx(
                 "rounded-full px-2 py-0.5 text-[11px] font-semibold",
-                ws.plan === "Pro"     && "bg-violet-100 text-violet-700",
+                ws.plan === "Pro" && "bg-violet-100 text-violet-700",
                 ws.plan === "Starter" && "bg-teal-100 text-teal-700",
-                ws.plan === "Free"    && "bg-neutral-100 text-neutral-500"
+                ws.plan === "Free" && "bg-neutral-100 text-neutral-500"
               )}>
                 {ws.plan}
               </span>
               {i === 0 && (
                 <svg className="h-4 w-4 text-primary-500" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-                  <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+                  <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z" />
                 </svg>
               )}
             </div>
@@ -360,12 +360,12 @@ function ShowcaseHeading() {
   const ref = useGsapReveal<HTMLDivElement>({ direction: "up", delay: 0, duration: 0.7 });
   return (
     <div ref={ref} className="mb-20 text-center">
-      <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-primary-600">
+      <p className="mb-3 text-xs font-semibold uppercase  text-primary-600">
         How it works
       </p>
       <h2
         id="showcase-heading"
-        className="text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl"
+        className="text-3xl font-bold  text-neutral-900 sm:text-4xl"
       >
         See what's under the hood
       </h2>

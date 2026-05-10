@@ -175,7 +175,7 @@ const NewsCard: FC<{ item: NewsItem }> = ({ item }) => {
       <div className="flex flex-col gap-2.5 p-4 flex-1">
         <div className="flex items-center gap-1.5">
           <Icon className={`w-3.5 h-3.5 ${config.textColor}`} />
-          <span className={`text-[11px] font-label uppercase tracking-wider ${config.textColor}`}>
+          <span className={`text-[11px] font-label uppercase  ${config.textColor}`}>
             {config.label}
           </span>
         </div>

@@ -29,7 +29,7 @@ export const ReportCard: FC<ReportCardProps> = ({ report, onDownload, onDelete }
         </div>
       </td>
       <td className="px-6 py-5">
-        <span className="px-2.5 py-0.5 bg-surface-muted rounded-full text-[10px] font-bold text-fg-muted uppercase tracking-wider border border-border-subtle">
+        <span className="px-2.5 py-0.5 bg-surface-muted rounded-full text-[10px] font-bold text-fg-muted uppercase  border border-border-subtle">
           {report.type.split("/")[1]?.toUpperCase() || report.type}
         </span>
       </td>

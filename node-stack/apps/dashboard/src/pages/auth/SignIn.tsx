@@ -99,14 +99,20 @@ const SignInPage = () => {
 
           <div className="mb-4">
             <div className="flex w-full gap-3">
-              <SocialButton provider="google" disabled={isPending} className="h-12 w-full border-border hover:bg-surface-hover">
+              <SocialButton
+                provider="google"
+                type="button"
+                onClick={() => { window.location.href = `${import.meta.env.VITE_API_URL ?? ""}/auth/google`; }}
+                disabled={isPending}
+                className="h-12 w-full border-border hover:bg-surface-hover"
+              >
                 Continuar con Google
               </SocialButton>
             </div>
 
             <div className="my-8 flex items-center">
               <div className="grow border-t border-border"></div>
-              <span className="mx-4 text-[10px] font-bold uppercase tracking-wider text-fg-muted">
+              <span className="mx-4 text-[10px] font-bold uppercase  text-fg-muted">
                 o ingresa con correo
               </span>
               <div className="grow border-t border-border"></div>
@@ -159,7 +165,7 @@ const SignInPage = () => {
               {/* Password Requirements UI */}
               {passwordValue.length > 0 && (
                 <div className="mt-3 p-4 bg-surface-muted rounded-xl border border-border flex flex-col gap-2.5">
-                  <p className="text-[11px] font-bold text-fg-muted uppercase tracking-wider mb-1">
+                  <p className="text-[11px] font-bold text-fg-muted uppercase  mb-1">
                     Tu contraseña debe incluir:
                   </p>
                   <div className="flex items-center gap-2">

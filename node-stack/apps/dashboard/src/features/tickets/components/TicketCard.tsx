@@ -45,13 +45,13 @@ export const TicketCard = ({ ticket, compact = false }: TicketCardProps) => {
         <div className="flex items-center gap-2 mb-2 flex-wrap">
           <span
             className={cn(
-              "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+              "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase  border",
               prio.chip
             )}
           >
             {prio.label}
           </span>
-          <span className="text-[10px] font-bold text-fg-muted uppercase tracking-wider">
+          <span className="text-[10px] font-bold text-fg-muted uppercase ">
             #{ticket.id.slice(-6).toUpperCase()}
           </span>
           {sla && (
