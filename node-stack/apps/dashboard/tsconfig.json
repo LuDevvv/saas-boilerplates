@@ -30,7 +30,9 @@
     "strict": true,
     "target": "ESNext",
     "types": [
-      "vite/client"
+      "vite/client",
+      "react",
+      "react-dom"
     ],
     "typeRoots": [
       "./node_modules/@types",

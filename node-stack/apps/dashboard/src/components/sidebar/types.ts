@@ -61,7 +61,6 @@ export interface CurrentPlan {
   planName?: string;
   status?: string;
   currentPeriodEnd?: string;
-  [key: string]: unknown;
 }
 
 export interface AccountDropdownProps {
