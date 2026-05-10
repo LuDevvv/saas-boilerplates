@@ -81,6 +81,16 @@ meta.json
 # SDD
 openspec/
 
+# Playwright / E2E outputs
+apps/e2e/playwright-report/
+apps/e2e/test-results/
+
+# Storybook build output
+packages/ui/storybook-static/
+
+# Scratch / personal notes
+scratch/
+
 #AI
 .agent/
 .agents/
