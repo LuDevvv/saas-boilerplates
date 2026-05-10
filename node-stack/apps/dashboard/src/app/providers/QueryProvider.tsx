@@ -1,8 +1,8 @@
-﻿import { QueryClient, QueryClientProvider, onlineManager } from "@tanstack/react-query";
+﻿import { AppError } from "@node-stack/api-client";
+import { QueryClient, QueryClientProvider, onlineManager } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ReactNode, useState } from "react";
 
-import { AppError } from "@node-stack/api-client";
 
 /**
  * Aligned with the api-client createQueryClient defaults.

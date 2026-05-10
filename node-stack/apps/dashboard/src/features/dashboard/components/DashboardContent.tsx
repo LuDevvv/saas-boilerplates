@@ -16,9 +16,9 @@ import { useNavigate } from "react-router-dom";
 
 
 import { DashboardCustomizer } from "./DashboardCustomizer";
+import { DashboardSkeleton } from "./DashboardSkeleton";
 import { QuickActions, type QuickAction } from "./QuickActions";
 import { TutorialsWidget } from "./TutorialsWidget";
-import { DashboardSkeleton } from "./DashboardSkeleton";
 import { useOnboardingStatus, useReleaseNotes } from "../hooks/useDashboard";
 import { useDashboardLayout, type WidgetId } from "../hooks/useDashboardLayout";
 

@@ -18,52 +18,62 @@ import { MembersLayoutSkeleton } from "@/features/workspaces/components/MembersS
 import { useAuth } from "@/hooks/stores/useAuth";
 import MainLayout from "@/layouts/MainLayout";
 
-// Lazy load pages
-const SignInPage = lazy(() => import("@pages/_auth/SignInPage"));
-const SignUpPage = lazy(() => import("@pages/_auth/SignUpPage"));
-const ForgotPasswordPage = lazy(() => import("@pages/_auth/ForgotPasswordPage"));
-const ResetPasswordPage = lazy(() => import("@pages/_auth/ResetPasswordPage"));
-const VerifyEmailPage = lazy(() => import("@pages/_auth/VerifyEmailPage"));
+// Auth
+const SignInPage = lazy(() => import("@pages/auth/SignIn"));
+const SignUpPage = lazy(() => import("@pages/auth/SignUp"));
+const ForgotPasswordPage = lazy(() => import("@pages/auth/ForgotPassword"));
+const ResetPasswordPage = lazy(() => import("@pages/auth/ResetPassword"));
+const VerifyEmailPage = lazy(() => import("@pages/auth/VerifyEmail"));
 
-const DashboardPage = lazy(() => import("@pages/_dashboard/DashboardPage"));
-const AnalyticsPage = lazy(() => import("@pages/_dashboard/AnalyticsPage"));
-const BillingPage = lazy(() => import("@pages/_payments/BillingPage"));
-const PricingPage = lazy(() => import("@pages/_payments/PricingPage"));
-const CheckoutPage = lazy(() => import("@pages/_payments/CheckoutPage"));
+// Dashboard
+const DashboardPage = lazy(() => import("@pages/index"));
+const AnalyticsPage = lazy(() => import("@pages/analytics/Analytics"));
+const StoragePage = lazy(() => import("@pages/_dashboard/StoragePage"));
 
-const PersonalProfilePage = lazy(() => import("@pages/_profile/PersonalProfilePage"));
-const CompanyProfilePage = lazy(() => import("@pages/_profile/CompanyProfilePage"));
+// Payments
+const BillingPage = lazy(() => import("@pages/payments/Billing"));
+const PricingPage = lazy(() => import("@pages/payments/Pricing"));
+const CheckoutPage = lazy(() => import("@pages/payments/Checkout"));
 
-const NotificationsPage = lazy(() => import("@pages/_notifications/NotificationsPage"));
-const TicketsPage = lazy(() => import("@pages/_tickets/TicketsPage"));
-const TicketDetailPage = lazy(() => import("@pages/_tickets/TicketDetailPage"));
+// Profile
+const PersonalProfilePage = lazy(() => import("@pages/profile/PersonalProfile"));
+const CompanyProfilePage = lazy(() => import("@pages/profile/CompanyProfile"));
+
+// Notifications & tickets
+const NotificationsPage = lazy(() => import("@pages/notifications/NotificationsPage"));
+const TicketsPage = lazy(() => import("@pages/tickets/TicketsPage"));
+const TicketDetailPage = lazy(() => import("@pages/tickets/TicketDetail"));
 const CreateTicketPage = lazy(() => import("@pages/_tickets/CreateTicketPage"));
 
-const ReportsPage = lazy(() => import("@pages/_reports/ReportsPage"));
-const NewsPage = lazy(() => import("@pages/_news/NewsPage"));
-const AIPlaygroundPage = lazy(() => import("@pages/_ai/AIPlaygroundPage"));
+// Other features
+const ReportsPage = lazy(() => import("@pages/reports/ReportsPage"));
+const NewsPage = lazy(() => import("@pages/news/News"));
+const AIPlaygroundPage = lazy(() => import("@pages/ai/AIPlayground"));
 
-const AdminOverviewPage = lazy(() => import("@pages/_admin/AdminOverviewPage"));
-const ManageUsersPage = lazy(() => import("@pages/_admin/ManageUsersPage"));
-const AuditLogsPage = lazy(() => import("@pages/_admin/AuditLogsPage"));
-const SystemConfigPage = lazy(() => import("@/pages/admin/SystemConfigPage"));
-const FeatureFlagsPage = lazy(() => import("@/pages/admin/FeatureFlagsPage"));
-const WorkspacesAdminPage = lazy(() => import("@/pages/admin/WorkspacesAdminPage"));
+// Admin
+const AdminOverviewPage = lazy(() => import("@pages/admin/AdminOverview"));
+const ManageUsersPage = lazy(() => import("@pages/admin/ManageUsers"));
+const AuditLogsPage = lazy(() => import("@pages/admin/AuditLogs"));
+const SystemConfigPage = lazy(() => import("@pages/admin/SystemConfigPage"));
+const FeatureFlagsPage = lazy(() => import("@pages/admin/FeatureFlagsPage"));
+const WorkspacesAdminPage = lazy(() => import("@pages/admin/WorkspacesAdminPage"));
 
-const OnboardingPage = lazy(() => import("@pages/_onboarding/OnboardingPage"));
-const OnboardingPricingPage = lazy(() => import("@pages/_onboarding/OnboardingPricingPage"));
+// Onboarding
+const OnboardingPage = lazy(() => import("@pages/onboarding/Onboarding"));
+const OnboardingPricingPage = lazy(() => import("@pages/onboarding/OnboardingPricing"));
 
-const TermsPage = lazy(() => import("@pages/_legal/TermsPage"));
-const PrivacyPage = lazy(() => import("@pages/_legal/PrivacyPage"));
+// Legal & error
+const TermsPage = lazy(() => import("@pages/legal/Terms"));
+const PrivacyPage = lazy(() => import("@pages/legal/Privacy"));
+const NotFoundPage = lazy(() => import("@pages/error/NotFound"));
 
-const NotFoundPage = lazy(() => import("@pages/_error/NotFoundPage"));
-const WorkspaceMembersPage = lazy(() => import("@pages/_settings/WorkspaceMembersPage"));
+// Settings
+const WorkspaceMembersPage = lazy(() => import("@pages/settings/WorkspaceMembers"));
 const ApiKeysPage = lazy(() => import("@pages/_settings/ApiKeysPage"));
 const WebhooksPage = lazy(() => import("@pages/_settings/WebhooksPage"));
 const PortabilityPage = lazy(() => import("@/features/workspaces/pages/PortabilityPage"));
-const StoragePage = lazy(() => import("@pages/_dashboard/StoragePage"));
 
-// Dev-only routes (only registered in development builds)
+// Dev-only (only registered in development builds)
 const ComponentsCatalogPage = lazy(() => import("@pages/dev/ComponentsCatalog"));
 
 const LoadingFallback = (): React.ReactElement => <PageSkeleton />;
@@ -128,7 +138,7 @@ export const AppRoutes = (): React.ReactElement => {
         <Route path="admin/config" element={<Suspense fallback={<LoadingFallback />} children={adminGuard(<SystemConfigPage />)} />} />
         <Route path="admin/feature-flags" element={<Suspense fallback={<LoadingFallback />} children={adminGuard(<FeatureFlagsPage />)} />} />
         <Route path="admin/workspaces" element={<Suspense fallback={<LoadingFallback />} children={adminGuard(<WorkspacesAdminPage />)} />} />
-        
+
         {/* Settings */}
         <Route path="settings/members" element={<Suspense fallback={<MembersLayoutSkeleton />} children={<WorkspaceMembersPage />} />} />
         <Route path="settings/api-keys" element={<Suspense fallback={<LoadingFallback />} children={<ApiKeysPage />} />} />
