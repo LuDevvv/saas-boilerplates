@@ -1,17 +1,15 @@
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 
-import { PageSkeleton } from "@/components/shared/ErrorBoundary";
-
-const FeatureFlagsContent = lazy(() =>
-  import("@/features/admin/components/FeatureFlags/FeatureFlagsContent").then((m) => ({
-    default: m.FeatureFlagsContent,
-  }))
-);
+import { FeatureFlagsContent } from "@/features/admin/components/FeatureFlags/FeatureFlagsContent";
+import { AdminPageShell } from "@/features/admin/components/AdminPageShell";
+import { FeatureFlagsSkeleton } from "@/features/admin/components/AdminSkeletons";
 
 const FeatureFlagsPage = () => (
-  <Suspense fallback={<PageSkeleton />}>
-    <FeatureFlagsContent />
-  </Suspense>
+  <AdminPageShell>
+    <Suspense fallback={<FeatureFlagsSkeleton />}>
+      <FeatureFlagsContent />
+    </Suspense>
+  </AdminPageShell>
 );
 
 export default FeatureFlagsPage;

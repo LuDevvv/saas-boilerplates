@@ -106,7 +106,7 @@ export const FeatureFlagsContent: FC = () => {
   };
 
   return (
-    <div className="pb-20 animate-in fade-in duration-500">
+    <div className="pb-20">
       <PageHeader
         eyebrow="ADMIN"
         title="Feature Flags"

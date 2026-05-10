@@ -1,12 +1,15 @@
-import { ManageUsersContent } from "@/features/admin/components/ManageUsers/ManageUsersContent";
-import { ManageUsersPage } from "@/features/admin/components/ManageUsers/ManageUsersPage";
+import { Suspense } from "react";
 
-const ManageUsers = () => {
-  return (
-    <ManageUsersPage>
+import { ManageUsersContent } from "@/features/admin/components/ManageUsers/ManageUsersContent";
+import { AdminPageShell } from "@/features/admin/components/AdminPageShell";
+import { ManageUsersSkeleton } from "@/features/admin/components/AdminSkeletons";
+
+const ManageUsers = () => (
+  <AdminPageShell>
+    <Suspense fallback={<ManageUsersSkeleton />}>
       <ManageUsersContent />
-    </ManageUsersPage>
-  );
-};
+    </Suspense>
+  </AdminPageShell>
+);
 
 export default ManageUsers;

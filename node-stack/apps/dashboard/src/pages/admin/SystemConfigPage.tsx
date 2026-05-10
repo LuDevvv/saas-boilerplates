@@ -1,17 +1,15 @@
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 
-import { PageSkeleton } from "@/components/shared/ErrorBoundary";
-
-const SystemConfigContent = lazy(() =>
-  import("@/features/admin/components/SystemConfig/SystemConfigContent").then((m) => ({
-    default: m.SystemConfigContent,
-  }))
-);
+import { SystemConfigContent } from "@/features/admin/components/SystemConfig/SystemConfigContent";
+import { AdminPageShell } from "@/features/admin/components/AdminPageShell";
+import { SystemConfigSkeleton } from "@/features/admin/components/AdminSkeletons";
 
 const SystemConfigPage = () => (
-  <Suspense fallback={<PageSkeleton />}>
-    <SystemConfigContent />
-  </Suspense>
+  <AdminPageShell>
+    <Suspense fallback={<SystemConfigSkeleton />}>
+      <SystemConfigContent />
+    </Suspense>
+  </AdminPageShell>
 );
 
 export default SystemConfigPage;

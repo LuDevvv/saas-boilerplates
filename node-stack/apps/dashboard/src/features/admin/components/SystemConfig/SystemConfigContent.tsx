@@ -184,7 +184,7 @@ export const SystemConfigContent: FC = () => {
   const entries = config ? Object.entries(config as Record<string, unknown>) : [];
 
   return (
-    <div className="pb-20 animate-in fade-in duration-500">
+    <div className="pb-20">
       <PageHeader
         eyebrow="ADMIN"
         title="Configuración del Sistema"

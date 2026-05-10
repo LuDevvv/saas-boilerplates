@@ -1,12 +1,15 @@
-import { AuditLogsContent } from "@/features/admin/components/AuditLogs/AuditLogsContent";
-import { AuditLogsPage } from "@/features/admin/components/AuditLogs/AuditLogsPage";
+import { Suspense } from "react";
 
-const AuditLogs = () => {
-  return (
-    <AuditLogsPage>
+import { AuditLogsContent } from "@/features/admin/components/AuditLogs/AuditLogsContent";
+import { AdminPageShell } from "@/features/admin/components/AdminPageShell";
+import { AuditLogsSkeleton } from "@/features/admin/components/AdminSkeletons";
+
+const AuditLogs = () => (
+  <AdminPageShell>
+    <Suspense fallback={<AuditLogsSkeleton />}>
       <AuditLogsContent />
-    </AuditLogsPage>
-  );
-};
+    </Suspense>
+  </AdminPageShell>
+);
 
 export default AuditLogs;

@@ -38,7 +38,7 @@ export const ControlCenterContent: FC = () => {
   const totalTasks = stats?.tasks.total ?? 0;
 
   return (
-    <div className="pb-20 animate-in fade-in duration-500 space-y-6">
+    <div className="pb-20 space-y-6">
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <PageHeader
         eyebrow="ADMIN"

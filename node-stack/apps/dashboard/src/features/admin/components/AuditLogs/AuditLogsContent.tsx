@@ -110,7 +110,7 @@ export const AuditLogsContent: FC = () => {
   const meta = data?.meta;
 
   return (
-    <div className="pb-20 animate-in fade-in duration-500">
+    <div className="pb-20">
       <PageHeader
         eyebrow="ADMIN"
         title="Registro de Auditoría"

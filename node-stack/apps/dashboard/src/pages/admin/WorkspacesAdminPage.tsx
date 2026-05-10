@@ -1,17 +1,15 @@
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 
-import { PageSkeleton } from "@/components/shared/ErrorBoundary";
-
-const WorkspacesAdminContent = lazy(() =>
-  import("@/features/admin/components/WorkspacesAdmin/WorkspacesAdminContent").then((m) => ({
-    default: m.WorkspacesAdminContent,
-  }))
-);
+import { WorkspacesAdminContent } from "@/features/admin/components/WorkspacesAdmin/WorkspacesAdminContent";
+import { AdminPageShell } from "@/features/admin/components/AdminPageShell";
+import { WorkspacesAdminSkeleton } from "@/features/admin/components/AdminSkeletons";
 
 const WorkspacesAdminPage = () => (
-  <Suspense fallback={<PageSkeleton />}>
-    <WorkspacesAdminContent />
-  </Suspense>
+  <AdminPageShell>
+    <Suspense fallback={<WorkspacesAdminSkeleton />}>
+      <WorkspacesAdminContent />
+    </Suspense>
+  </AdminPageShell>
 );
 
 export default WorkspacesAdminPage;
