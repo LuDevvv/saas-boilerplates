@@ -66,7 +66,7 @@ resolve: {
             return 'export const createRequire = () => ({}); export default { createRequire };';
           }
           if (['nestjs-zod', '@nestjs/common', '@nestjs/core', '@nestjs/swagger'].includes(id) || id.startsWith('@nestjs/')) {
-            return 'export const createZodDto = (s) => s; export const ApiProperty = () => (() => {}); export const ApiPropertyOptional = () => (() => {}); export const Injectable = () => (() => {}); export const Module = () => (() => {}); export const Controller = () => (() => {}); export const HttpStatus = { OK: 200, CREATED: 201 }; export const BadRequestException = class extends Error {}; export const InternalServerErrorException = class extends Error {}; export const HttpCode = () => (() => {}); export const Optional = () => (() => {}); export const SetMetadata = () => (() => {});';
+            return 'export const createZodDto = (s) => { return class { static schema = s; constructor() {} }; }; export const ApiProperty = () => (() => {}); export const ApiPropertyOptional = () => (() => {}); export const Injectable = () => (() => {}); export const Module = () => (() => {}); export const Controller = () => (() => {}); export const HttpStatus = { OK: 200, CREATED: 201 }; export const BadRequestException = class extends Error {}; export const InternalServerErrorException = class extends Error {}; export const HttpCode = () => (() => {}); export const Optional = () => (() => {}); export const SetMetadata = () => (() => {});';
           }
           return null;
         }
