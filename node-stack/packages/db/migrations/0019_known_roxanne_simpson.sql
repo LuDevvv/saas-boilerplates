@@ -99,4 +99,10 @@ ALTER TABLE "notifications" DROP COLUMN "error";--> statement-breakpoint
 ALTER TABLE "notifications" DROP COLUMN "updated_at";--> statement-breakpoint
 DROP TYPE "public"."notification_channel";--> statement-breakpoint
 DROP TYPE "public"."notification_status";--> statement-breakpoint
-DROP TYPE "public"."notification_type";
+DROP TYPE "public"."notification_type";--> statement-breakpoint
+ALTER TABLE "tickets" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
+CREATE POLICY "ticket_isolation_policy" ON "tickets"
+    USING (
+        workspace_id = NULLIF(current_setting('app.current_workspace_id', true), '')::uuid
+        OR current_setting('app.current_workspace_id', true) = 'system'
+    );
