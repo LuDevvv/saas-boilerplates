@@ -78,14 +78,19 @@ const Onboarding: React.FC = () => {
     <div className="flex h-screen overflow-hidden bg-canvas font-sans">
       
       {/* ─── PANE IZQUIERDO (Formulario) ─── */}
-      <div className="w-full lg:w-[45%] xl:w-[40%] flex flex-col p-8 lg:p-12 xl:p-16 h-screen overflow-y-auto relative z-10 bg-canvas">
+      {/* 
+        El contenedor de la izquierda toma exactamente la mitad en desktop (lg:w-1/2),
+        igual que lo hace el AuthSidebar para el lado derecho, asegurando que sumen 100% 
+        y no dejen espacios blancos en el borde de la pantalla.
+      */}
+      <div className="w-full lg:w-1/2 flex flex-col p-8 lg:p-12 xl:p-16 h-screen overflow-y-auto relative z-10 bg-canvas">
         
         {/* Contenedor principal centrado verticalmente */}
         <div className="mx-auto w-full max-w-md flex-1 flex flex-col justify-center">
           
           {/* Header / Logo */}
           <Link to="/" className="mb-8 w-fit">
-            <Logo variant="full" width={180} height={45} />
+            <Logo variant="full" width={140} height={35} />
           </Link>
 
           {/* Progreso y Botón Volver (En la misma línea para ahorrar espacio vertical) */}
@@ -167,13 +172,14 @@ const Onboarding: React.FC = () => {
 
                   <div className="space-y-2">
                     <label className="text-[13px] font-medium text-fg">¿Cuántas personas trabajan en tu empresa?</label>
-                    <div className="grid grid-cols-5 gap-2">
+                    {/* flex-wrap permite que en mobile los botones caigan naturalmente sin comprimirse */}
+                    <div className="flex flex-wrap gap-2">
                       {teamSizeOptions.map(opt => (
                         <button
                           key={opt.value}
                           type="button"
                           onClick={() => setFormData({ ...formData, teamSize: opt.value })}
-                          className={`py-2.5 px-1 text-xs font-medium rounded-lg border transition-all ${
+                          className={`flex-1 min-w-[60px] py-2.5 px-2 text-xs font-medium rounded-lg border transition-all ${
                             formData.teamSize === opt.value 
                             ? 'border-primary bg-primary/5 text-primary shadow-[0_2px_8px_-2px_rgba(0,64,128,0.10)]' 
                             : 'border-border text-fg-secondary hover:border-border-strong hover:bg-surface'
@@ -210,8 +216,8 @@ const Onboarding: React.FC = () => {
 
       {/* ─── PANE DERECHO (AuthSidebar Reutilizado) ─── */}
       <AuthSidebar
-        titleMain="Personaliza tu espacio de"
-        titleAccent="trabajo"
+        titleMain="Personaliza tu"
+        titleAccent="espacio de trabajo"
         subtitle="Configura tu cuenta en pocos pasos y descubre todo lo que nuestra plataforma puede hacer por tu empresa."
       />
 
