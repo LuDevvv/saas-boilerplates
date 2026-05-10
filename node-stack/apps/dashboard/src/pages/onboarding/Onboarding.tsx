@@ -7,6 +7,7 @@ import { Logo } from "@/assets/logo/logo";
 import { useUpdateProfile } from "@/features/auth/hooks/useUpdateProfile";
 import { useCreateWorkspace, useWorkspaces } from "@/features/workspaces/hooks/useWorkspaces";
 import { useAuth } from "@/hooks/stores/useAuth";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { AuthSidebar } from "@pages/auth/components/AuthSidebar";
 
 const Onboarding: React.FC = () => {
@@ -14,6 +15,7 @@ const Onboarding: React.FC = () => {
   const { user } = useAuth();
   const { mutateAsync: updateProfile } = useUpdateProfile();
   const { data: workspaces } = useWorkspaces();
+  const setActiveWorkspace = useWorkspaceStore((s) => s.setActiveWorkspace);
 
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -129,12 +131,15 @@ const Onboarding: React.FC = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await createWorkspace({
+      const workspace = await createWorkspace({
         name: formData.companyName,
         industry: formData.sector || undefined,
         teamSize: formData.teamSize || undefined,
         revenueRange: formData.revenue || undefined,
       });
+
+      // Set as active so X-Workspace-ID header is available in checkout
+      if (workspace?.id) setActiveWorkspace(workspace.id);
 
       localStorage.removeItem("onboarding_data");
       localStorage.removeItem("onboarding_step");

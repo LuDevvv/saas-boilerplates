@@ -24,15 +24,18 @@ import {
   Lock,
   Tag,
 } from "lucide-react";
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import * as z from "zod";
 
 import { BackButton } from "@/components/shared/BackButton";
+import { appToast } from "@/components/alerts/Toasts";
 import { useCheckout } from "@/features/billing/hooks/useBilling";
+import { useWorkspaces } from "@/features/workspaces/hooks/useWorkspaces";
 import { useAuth } from "@/hooks/stores/useAuth";
 import { useExchangeRate } from "@/hooks/useExchangeRate";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { cn } from "@/utils/classNames";
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
@@ -156,6 +159,17 @@ const Checkout: FC = () => {
   const { user }       = useAuth();
   const [showSummary, setShowSummary] = useState(false);
 
+  // Ensure workspace context is set so X-Workspace-ID header is sent
+  const activeWorkspaceId = useWorkspaceStore((s) => s.activeWorkspaceId);
+  const setActiveWorkspace = useWorkspaceStore((s) => s.setActiveWorkspace);
+  const { data: workspaces } = useWorkspaces();
+
+  useEffect(() => {
+    if (!activeWorkspaceId && Array.isArray(workspaces) && workspaces.length > 0) {
+      setActiveWorkspace((workspaces[0] as { id: string }).id);
+    }
+  }, [activeWorkspaceId, workspaces, setActiveWorkspace]);
+
   const planId      = searchParams.get("plan")    || "pro";
   const billing     = searchParams.get("billing") || "monthly";
   const isOnboarding = searchParams.get("onboarding") === "true";
@@ -190,9 +204,8 @@ const Checkout: FC = () => {
       } else {
         window.location.href = result.url;
       }
-    } catch (err: unknown) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      alert((err as any)?.message || "Error al generar la sesión de pago");
+    } catch {
+      appToast.error({ title: "Error al procesar el pago", description: "No pudimos generar la sesión de pago. Inténtalo de nuevo." });
     }
   };
 
