@@ -58,17 +58,17 @@ ALTER TABLE "inbound_webhook_logs" ALTER COLUMN "provider" SET DATA TYPE "public
 ALTER TABLE "files" ALTER COLUMN "user_id" DROP NOT NULL;--> statement-breakpoint
 ALTER TABLE "notifications" ALTER COLUMN "type" SET DATA TYPE text;--> statement-breakpoint
 ALTER TABLE "notifications" ALTER COLUMN "body" SET NOT NULL;--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "last_name" text;--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "phone" text;--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "deleted_at" timestamp;--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "deleted_by" uuid;--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "deletion_reason" text;--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "anonymized_at" timestamp;--> statement-breakpoint
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "last_name" text;--> statement-breakpoint
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "phone" text;--> statement-breakpoint
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "deleted_at" timestamp;--> statement-breakpoint
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "deleted_by" uuid;--> statement-breakpoint
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "deletion_reason" text;--> statement-breakpoint
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "anonymized_at" timestamp;--> statement-breakpoint
 ALTER TABLE "workspaces" ADD COLUMN "tier" "workspace_tier" DEFAULT 'free' NOT NULL;--> statement-breakpoint
-ALTER TABLE "workspaces" ADD COLUMN "deleted_at" timestamp;--> statement-breakpoint
-ALTER TABLE "workspaces" ADD COLUMN "deleted_by" uuid;--> statement-breakpoint
-ALTER TABLE "workspaces" ADD COLUMN "deletion_reason" text;--> statement-breakpoint
-ALTER TABLE "sessions" ADD COLUMN "remember_me" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "workspaces" ADD COLUMN IF NOT EXISTS "deleted_at" timestamp;--> statement-breakpoint
+ALTER TABLE "workspaces" ADD COLUMN IF NOT EXISTS "deleted_by" uuid;--> statement-breakpoint
+ALTER TABLE "workspaces" ADD COLUMN IF NOT EXISTS "deletion_reason" text;--> statement-breakpoint
+ALTER TABLE "sessions" ADD COLUMN IF NOT EXISTS "remember_me" boolean DEFAULT false NOT NULL;--> statement-breakpoint
 ALTER TABLE "notifications" ADD COLUMN "workspace_id" uuid;--> statement-breakpoint
 ALTER TABLE "notifications" ADD COLUMN "title" text NOT NULL;--> statement-breakpoint
 ALTER TABLE "notifications" ADD COLUMN "data" jsonb DEFAULT '{}'::jsonb NOT NULL;--> statement-breakpoint
