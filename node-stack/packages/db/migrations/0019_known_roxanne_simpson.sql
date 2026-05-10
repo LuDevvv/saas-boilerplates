@@ -1,7 +1,7 @@
 CREATE TYPE "public"."workspace_tier" AS ENUM('free', 'pro', 'enterprise');--> statement-breakpoint
 CREATE TYPE "public"."portability_status" AS ENUM('pending', 'processing', 'completed', 'failed', 'expired');--> statement-breakpoint
 CREATE TYPE "public"."ticket_status" AS ENUM('pending', 'active', 'inactive', 'deleted');--> statement-breakpoint
-ALTER TYPE "public"."membership_status" ADD VALUE 'removed';--> statement-breakpoint
+ALTER TYPE "public"."membership_status" ADD VALUE IF NOT EXISTS 'removed';--> statement-breakpoint
 CREATE TABLE "notification_settings" (
 	"user_id" uuid PRIMARY KEY NOT NULL,
 	"email_enabled" boolean DEFAULT true NOT NULL,
