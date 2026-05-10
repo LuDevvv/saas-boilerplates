@@ -29,7 +29,7 @@ describe("EncryptionUtils", () => {
   it("throws on tampered ciphertext segment", () => {
     const utils = new EncryptionUtils(TEST_KEY);
     const encrypted = utils.encrypt("hello world");
-    const [iv, tag, ct] = encrypted.split(":");
+    const [iv, tag, ct] = encrypted.split(":") as [string, string, string];
     // Flip one character of the ciphertext segment.
     const tampered = `${iv}:${tag}:${ct.slice(0, -1)}${ct.endsWith("0") ? "1" : "0"}`;
     expect(() => utils.decrypt(tampered)).toThrow();
@@ -38,7 +38,7 @@ describe("EncryptionUtils", () => {
   it("throws on tampered authTag", () => {
     const utils = new EncryptionUtils(TEST_KEY);
     const encrypted = utils.encrypt("hello world");
-    const [iv, tag, ct] = encrypted.split(":");
+    const [iv, tag, ct] = encrypted.split(":") as [string, string, string];
     const tampered = `${iv}:${tag.slice(0, -1)}${tag.endsWith("0") ? "1" : "0"}:${ct}`;
     expect(() => utils.decrypt(tampered)).toThrow();
   });
@@ -46,7 +46,7 @@ describe("EncryptionUtils", () => {
   it("throws on tampered IV", () => {
     const utils = new EncryptionUtils(TEST_KEY);
     const encrypted = utils.encrypt("hello world");
-    const [iv, tag, ct] = encrypted.split(":");
+    const [iv, tag, ct] = encrypted.split(":") as [string, string, string];
     const tampered = `${iv.slice(0, -1)}${iv.endsWith("0") ? "1" : "0"}:${tag}:${ct}`;
     expect(() => utils.decrypt(tampered)).toThrow();
   });
