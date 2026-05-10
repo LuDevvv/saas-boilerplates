@@ -1,0 +1,23 @@
+-- Migration 0022 — Range partitioning for audit_logs and outbox (DEFERRED)
+--
+-- WHY THIS IS A NO-OP:
+-- PostgreSQL requires that every unique/primary key constraint on a
+-- partitioned table include all partitioning columns. audit_logs and outbox
+-- have PRIMARY KEY (id) but we need PARTITION BY RANGE (created_at).
+-- Since created_at is not part of the PK, PostgreSQL rejects the CREATE TABLE
+-- with: "unique constraint on partitioned table must include all partitioning
+-- columns."
+--
+-- Making the PK composite (id, created_at) would cascade through all FK
+-- references in the schema — too invasive for a migration.
+--
+-- Partitioning is a performance optimization, not a correctness requirement.
+-- The application works correctly with non-partitioned tables.
+--
+-- TO PARTITION IN PRODUCTION (maintenance window):
+--   1. Drop the existing PK and recreate as: PRIMARY KEY (id, created_at)
+--   2. Update all FKs that reference audit_logs.id to include created_at
+--   3. Then run the RENAME / CREATE PARTITION / INSERT / DROP sequence
+--   OR use pg_partman which handles this more gracefully.
+
+SELECT 1;
