@@ -31,6 +31,7 @@ import * as z from "zod";
 
 import { BackButton } from "@/components/shared/BackButton";
 import { useCheckout } from "@/features/billing/hooks/useBilling";
+import { useAuth } from "@/hooks/stores/useAuth";
 import { useExchangeRate } from "@/hooks/useExchangeRate";
 import { cn } from "@/utils/classNames";
 
@@ -152,6 +153,7 @@ const OrderSummary: FC<SummaryProps> = ({ planName, basePrice, isYearly, savings
 const Checkout: FC = () => {
   const [searchParams] = useSearchParams();
   const navigate       = useNavigate();
+  const { user }       = useAuth();
   const [showSummary, setShowSummary] = useState(false);
 
   const planId      = searchParams.get("plan")    || "pro";
@@ -171,6 +173,7 @@ const Checkout: FC = () => {
   const { register, handleSubmit, formState: { errors } } = useForm<CheckoutForm>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(checkoutSchema as any),
+    defaultValues: { email: user?.email ?? "" },
   });
 
   const onSubmit = async (_data: CheckoutForm) => {
@@ -402,19 +405,26 @@ const Checkout: FC = () => {
           {/* Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-1.5">
-              <label className="text-[11px] font-bold uppercase text-fg-muted">
-                Correo electrónico
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-bold uppercase text-fg-muted">
+                  Correo electrónico
+                </label>
+                {user?.email && (
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
+                    Autocompletado desde tu cuenta
+                  </span>
+                )}
+              </div>
               <Input
                 icon={Mail}
                 placeholder="tu@email.com"
                 className="h-11 rounded-xl text-[14px]"
                 {...register("email")}
                 error={errors.email?.message}
-                autoFocus
+                autoFocus={!user?.email}
               />
               <p className="text-[11px] text-fg-muted">
-                Usaremos este correo para enviarte el recibo y acceder a tu cuenta.
+                Polar enviará el recibo a este correo. Puedes cambiarlo si necesitas facturar a otra cuenta.
               </p>
             </div>
 
