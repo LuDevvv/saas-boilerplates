@@ -112,10 +112,12 @@ jobs:
       - name: build workspace packages
         run: pnpm --filter "./packages/*" build
       - run: pnpm --filter @node-stack/db db:migrate:full
-      - run: pnpm -r test --if-present
-        # Phase 3b lands the test baseline (TotpSecretCipher, audit
-        # taxonomy, EncryptionUtils round-trip + tamper detection).
-        # The job is now mandatory; new specs that fail block merge.
+      - run: pnpm -r test --if-present --filter '!@node-stack/e2e'
+        # E2E excluded: Playwright needs a fully compiled API + dashboard
+        # running as processes, plus browser binaries. That full-stack
+        # environment is not available in this job. E2E runs separately
+        # (locally or a dedicated E2E job with proper env vars).
+        # Phase 3b unit baseline: TotpSecretCipher, EncryptionUtils, auth store.
       - name: integration tests (testcontainers postgres + redis)
         run: pnpm --filter @node-stack/api test:integration
         # Phase 3b/3c integration suite: multi-tenancy RLS,
