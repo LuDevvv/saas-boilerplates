@@ -7,11 +7,13 @@ export type SetConfigDto = Record<string, unknown>;
 export interface AuditLog {
   id: string;
   action: string;
-  userId: string;
-  userEmail?: string;
-  resourceType: string;
-  resourceId: string;
-  details?: Record<string, unknown>;
+  userId: string | null;
+  workspaceId: string | null;
+  entityType: string | null;
+  entityId: string | null;
+  metadata: Record<string, unknown> | null;
+  ipAddress: string | null;
+  userAgent: string | null;
   createdAt: string;
 }
 

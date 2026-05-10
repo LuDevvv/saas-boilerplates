@@ -32,17 +32,21 @@ export const AuditLogCard: FC<AuditLogCardProps> = ({ log }) => {
           <span className="text-fg font-label capitalize">
             {log.action.replace(/_/g, " ")}
           </span>
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-hover text-fg-secondary border border-border-subtle uppercase tracking-wider">
-            {log.resourceType}
-          </span>
+          {log.entityType && (
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-hover text-fg-secondary border border-border-subtle uppercase tracking-wider">
+              {log.entityType}
+            </span>
+          )}
         </div>
         <div className="text-sm text-fg-secondary flex flex-wrap gap-x-4 gap-y-1">
           <span className="flex items-center gap-1">
-            <User size={12} /> {log.userEmail || log.userId}
+            <User size={12} /> {log.userId ?? "Sistema"}
           </span>
-          <span className="flex items-center gap-1">
-            <FileText size={12} /> ID: {log.resourceId}
-          </span>
+          {log.entityId && (
+            <span className="flex items-center gap-1">
+              <FileText size={12} /> ID: {log.entityId.slice(0, 8)}
+            </span>
+          )}
         </div>
       </div>
       <div className="text-right shrink-0">
