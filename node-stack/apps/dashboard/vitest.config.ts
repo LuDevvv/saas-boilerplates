@@ -4,7 +4,8 @@ import react from "@vitejs/plugin-react-swc";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  plugins: [react()],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  plugins: [react() as any],
   test: {
     environment: "jsdom",
     globals: true,
