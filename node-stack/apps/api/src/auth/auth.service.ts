@@ -394,6 +394,8 @@ export class AuthService {
     lastName: string | null;
     phone: string | null;
     avatarUrl: string | null;
+    jobTitle: string | null;
+    onboardingStatus: string;
     role: string;
     createdAt: Date;
     twoFactorEnabled: boolean;
@@ -412,6 +414,8 @@ export class AuthService {
       lastName: user.lastName,
       phone: user.phone,
       avatarUrl: user.avatarUrl,
+      jobTitle: user.jobTitle,
+      onboardingStatus: user.onboardingStatus,
       role: user.role,
       createdAt: user.createdAt,
       twoFactorEnabled: user.twoFactorEnabled,

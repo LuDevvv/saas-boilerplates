@@ -17,8 +17,12 @@ import {
   BillingRepository,
   DB_TOKEN,
   withTenantTx,
+  withSystemTx,
+  schema,
   type Subscription,
- Database } from "@node-stack/db";
+  Database,
+} from "@node-stack/db";
+import { eq } from "drizzle-orm";
 import { CreateCheckoutDto } from "@node-stack/validators";
 
 import { EncryptionService } from "@/common/services/encryption.service.js";
@@ -304,6 +308,21 @@ export class BillingService {
       await this.cache.del(`billing:ws:${sub.workspaceId}:subscription`);
     }
 
+    // Mark onboarding as complete — user has now paid and set up a workspace
+    if (sub.userId) {
+      try {
+        await withSystemTx(async (tx) => {
+          await tx
+            .update(schema.users)
+            .set({ onboardingStatus: "completed" })
+            .where(eq(schema.users.id, sub.userId!));
+        }, this.db);
+        this.logger.log(`Onboarding completed for user ${sub.userId}`);
+      } catch (err) {
+        this.logger.warn(`Could not mark onboarding complete for user ${sub.userId}: ${(err as Error).message}`);
+      }
+    }
+
     this.eventEmitter.emit("billing.subscription.created", {
       subscriptionId: sub.subscriptionId,
       workspaceId: sub.workspaceId,
@@ -553,6 +572,7 @@ export class BillingService {
     subscriptionId: string;
     customerId: string | undefined;
     workspaceId: string | undefined;
+    userId: string | undefined;
     planId: string;
     variantId: string;
     status: string;
@@ -579,6 +599,11 @@ export class BillingService {
       (typeof customerMeta?.workspace_id === "string" ? customerMeta.workspace_id : undefined) ??
       (typeof meta?.workspaceId === "string" ? meta.workspaceId : undefined) ??
       (typeof dataMeta?.workspace_id === "string" ? dataMeta.workspace_id : undefined);
+
+    const userId =
+      (typeof meta?.user_id === "string" ? meta.user_id : undefined) ??
+      (typeof customerMeta?.user_id === "string" ? customerMeta.user_id : undefined) ??
+      (typeof dataMeta?.user_id === "string" ? dataMeta.user_id : undefined);
 
     const planId =
       typeof raw.productId === "string" ? raw.productId :
@@ -619,6 +644,7 @@ export class BillingService {
       subscriptionId,
       customerId,
       workspaceId,
+      userId,
       planId,
       variantId,
       status,

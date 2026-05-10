@@ -15,6 +15,7 @@ import { DashboardSkeleton } from "@/features/dashboard/components/DashboardSkel
 import { ProfileLayoutSkeleton } from "@/features/profile";
 import { StorageSkeleton } from "@/features/storage/components/StorageSkeleton";
 import { MembersLayoutSkeleton } from "@/features/workspaces/components/MembersSkeletons";
+import { useWorkspaces } from "@/features/workspaces/hooks/useWorkspaces";
 import { useAuth } from "@/hooks/stores/useAuth";
 import MainLayout from "@/layouts/MainLayout";
 
@@ -170,9 +171,10 @@ export const AppRoutes = (): React.ReactElement => {
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }): React.ReactElement => {
   const { isAuthenticated, user, isLoading } = useAuth();
+  const { data: workspaces, isLoading: isLoadingWorkspaces } = useWorkspaces();
   const location = useLocation();
 
-  if (isAuthenticated && isLoading) {
+  if (isAuthenticated && (isLoading || isLoadingWorkspaces)) {
     return <Loading />;
   }
 
@@ -182,6 +184,21 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }): React.Reac
 
   if (!user && isAuthenticated) {
     return <Loading />;
+  }
+
+  const isOnboardingRoute = location.pathname.startsWith("/onboarding");
+  const hasWorkspace = Array.isArray(workspaces) && workspaces.length > 0;
+  // onboardingStatus comes from GET /auth/me — 'completed' means paid + workspace set up
+  const onboardingDone = (user as unknown as Record<string, unknown>)?.["onboardingStatus"] === "completed";
+
+  // No workspace yet → start onboarding from the beginning
+  if (isAuthenticated && user && !hasWorkspace && !isOnboardingRoute) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  // Has workspace but hasn't paid yet → resume at pricing step
+  if (isAuthenticated && user && hasWorkspace && !onboardingDone && !isOnboardingRoute) {
+    return <Navigate to="/onboarding/pricing" replace />;
   }
 
   return <>{children}</>;
