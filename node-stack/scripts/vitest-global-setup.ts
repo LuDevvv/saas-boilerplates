@@ -74,7 +74,7 @@ export async function setup() {
     
   try {
     execSync('pnpm --filter @node-stack/db db:push', {
-      env: { ...process.env, DATABASE_URL: dbUrl, NODE_ENV: 'test' },
+      env: { ...process.env, DATABASE_URL: dbUrl, MIGRATION_DATABASE_URL: dbUrl, NODE_ENV: 'test' },
       cwd: rootDir,
       stdio: 'inherit'
     });
