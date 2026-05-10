@@ -53,9 +53,27 @@ export class BillingService {
 
   // ─── Checkout ─────────────────────────────────────────────────────────
 
+  /**
+   * Resolves a semantic plan name ("pro", "elite") to the actual Polar product
+   * ID configured in env vars. Falls through to the raw planId when Polar is
+   * not the active provider or no mapping is configured (e.g. already a UUID).
+   */
+  private resolvePlanId(planId: string): string {
+    if (this.configService.get<string>('BILLING_PROVIDER') !== 'polar') return planId;
+    const mapping: Record<string, string | undefined> = {
+      free:  this.configService.get<string>('POLAR_PRODUCT_ID_FREE'),
+      pro:   this.configService.get<string>('POLAR_PRODUCT_ID_PRO'),
+      elite: this.configService.get<string>('POLAR_PRODUCT_ID_ELITE'),
+    };
+    return mapping[planId.toLowerCase()] ?? planId;
+  }
+
   async createCheckout(
     data: CreateCheckoutDto & { workspaceId: string; userId: string },
   ): Promise<CheckoutUrl> {
+    // Resolve semantic plan ID ("pro") → Polar product UUID
+    const resolvedPlanId = this.resolvePlanId(data.planId);
+
     // customers is RLS-protected; the read must run inside a tenant tx so
     // current_workspace_id matches the policy.
     const existingCustomer = await withTenantTx(
@@ -65,7 +83,7 @@ export class BillingService {
     );
 
     const checkout = await this.provider.createCheckoutSession({
-      planId: data.planId,
+      planId: resolvedPlanId,
       variantId: data.variantId,
       successUrl: data.successUrl,
       cancelUrl: data.cancelUrl,
@@ -86,9 +104,10 @@ export class BillingService {
       userId: data.userId,
       action: "billing.checkout_created",
       entityType: "checkout",
-      entityId: data.planId,
+      entityId: resolvedPlanId,
       metadata: {
         planId: data.planId,
+        resolvedPlanId,
         variantId: data.variantId,
         checkoutUrl: checkout.url,
       },

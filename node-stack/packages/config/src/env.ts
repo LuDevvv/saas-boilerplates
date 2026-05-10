@@ -44,6 +44,11 @@ export const envSchema = z.object({
   POLAR_WEBHOOK_SECRET: z.string().optional(),
   POLAR_SERVER: z.enum(['sandbox', 'production']).default('production'),
   POLAR_PORTAL_URL: z.string().url().optional().or(z.literal('')),
+  // Polar product IDs — map semantic plan names ("pro", "elite") to actual
+  // Polar product UUIDs from your dashboard. Copy from Products → Product ID.
+  POLAR_PRODUCT_ID_PRO: z.string().optional(),
+  POLAR_PRODUCT_ID_ELITE: z.string().optional(),
+  POLAR_PRODUCT_ID_FREE: z.string().optional(),
   GITHUB_CLIENT_ID: z.string().optional(),
   GITHUB_CLIENT_SECRET: z.string().optional(),
   GITHUB_CALLBACK_URL: z.string().url().optional().or(z.literal('')),
