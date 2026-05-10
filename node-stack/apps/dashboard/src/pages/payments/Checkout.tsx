@@ -199,11 +199,8 @@ const Checkout: FC = () => {
         cancelUrl: window.location.href,
       });
 
-      if (window.polar) {
-        window.polar.checkout.open(result.url);
-      } else {
-        window.location.href = result.url;
-      }
+      // Always redirect to Polar hosted checkout — no embed SDK needed
+      window.location.href = result.url;
     } catch {
       appToast.error({ title: "Error al procesar el pago", description: "No pudimos generar la sesión de pago. Inténtalo de nuevo." });
     }
