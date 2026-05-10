@@ -21,9 +21,9 @@ export const AdminStatCard: FC<AdminStatCardProps> = ({
   color,
 }) => {
   return (
-    <div className="group relative overflow-hidden rounded-[20px] border border-border bg-surface p-6 shadow-[var(--shadow-sm)] transition-all hover:shadow-[var(--shadow-card)] hover:border-border-strong hover:-translate-y-0.5 active:scale-[0.99]">
+    <div className="group relative overflow-hidden rounded-[20px] border border-border bg-surface p-6 shadow-[var(--shadow-sm)] transition-all hover:shadow-[var(--shadow-card)] hover:border-border-strong">
       <div className="flex items-center justify-between relative z-10">
-        <div className={cn("rounded-xl p-3 transition-transform group-hover:rotate-6", color)}>
+        <div className={cn("rounded-xl p-3", color)}>
           <Icon className="h-5 w-5" />
         </div>
         <div

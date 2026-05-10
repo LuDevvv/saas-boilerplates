@@ -1,6 +1,6 @@
 import { PageHeader } from "@node-stack/ui";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Settings, RefreshCw, Loader2, AlertCircle, Plus, Pencil, X, Check } from "lucide-react";
+import { Settings, RefreshCw, Loader2, Plus, Pencil, X, Check } from "lucide-react";
 import { FC, useState } from "react";
 
 import { appToast } from "@/components/alerts/Toasts";
@@ -147,7 +147,11 @@ export const SystemConfigContent: FC = () => {
 
   const { data: config, isLoading, error } = useQuery({
     queryKey: ["admin", "config"],
-    queryFn: () => api.admin.getAllConfig(),
+    queryFn: async () => {
+      const data = await api.admin.getAllConfig();
+      return data ?? {};
+    },
+    retry: 1,
   });
 
   const setConfig = useMutation({
@@ -233,15 +237,24 @@ export const SystemConfigContent: FC = () => {
             <Loader2 className="h-6 w-6 animate-spin text-fg-muted" />
           </div>
         ) : error ? (
-          <div className="flex items-center gap-3 px-5 py-8 text-red-500">
-            <AlertCircle className="h-5 w-5 shrink-0" />
-            <p className="text-[13px]">No se pudo cargar la configuración.</p>
+          <div className="flex flex-col items-center gap-3 py-16 text-center px-6">
+            <div className="h-10 w-10 rounded-[14px] bg-surface-muted border border-border flex items-center justify-center">
+              <Settings className="h-5 w-5 text-fg-muted" />
+            </div>
+            <p className="text-[14px] font-semibold text-fg">Sin conexión con el API</p>
+            <p className="text-[12px] text-fg-muted max-w-xs">
+              La configuración se lee desde la base de datos. Verifica que el servidor esté en marcha.
+            </p>
           </div>
         ) : entries.length === 0 ? (
-          <div className="py-16 text-center">
-            <Settings className="h-8 w-8 text-fg-muted mx-auto mb-3" />
-            <p className="text-[14px] font-medium text-fg">Sin configuración</p>
-            <p className="text-[12px] text-fg-muted mt-1">Añade tu primera entrada con el botón de arriba.</p>
+          <div className="flex flex-col items-center gap-3 py-16 text-center px-6">
+            <div className="h-10 w-10 rounded-[14px] bg-surface-muted border border-border flex items-center justify-center">
+              <Settings className="h-5 w-5 text-fg-muted" />
+            </div>
+            <p className="text-[14px] font-semibold text-fg">Sin parámetros configurados</p>
+            <p className="text-[12px] text-fg-muted max-w-xs">
+              Añade tu primera entrada de configuración usando el botón "Nueva clave".
+            </p>
           </div>
         ) : (
           entries.map(([key, value]) => (

@@ -17,9 +17,9 @@ interface KpiCardProps {
 export const KpiCard: FC<KpiCardProps> = ({
   label, value, sub, icon: Icon, trend, trendLabel, color = "text-primary bg-primary/10", loading,
 }) => (
-  <div className="group relative overflow-hidden rounded-[20px] border border-border bg-surface p-5 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-card)] hover:border-border-strong hover:-translate-y-0.5 transition-all">
+  <div className="group relative overflow-hidden rounded-[20px] border border-border bg-surface p-5 shadow-[var(--shadow-sm)] hover:shadow-[var(--shadow-card)] hover:border-border-strong transition-all">
     <div className="flex items-start justify-between">
-      <div className={cn("h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0 transition-transform group-hover:scale-110", color)}>
+      <div className={cn("h-10 w-10 rounded-[12px] flex items-center justify-center shrink-0 ", color)}>
         <Icon className="h-5 w-5" />
       </div>
       {trend && trendLabel && (

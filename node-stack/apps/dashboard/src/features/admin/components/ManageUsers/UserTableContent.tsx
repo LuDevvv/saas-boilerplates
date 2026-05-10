@@ -53,7 +53,7 @@ export const UserTableContent: FC<UserTableContentProps> = ({
         <UserSearch value={searchTerm} onChange={onSearchChange} />
         <button className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 text-[13px] font-medium text-fg-secondary hover:bg-surface-hover hover:text-fg hover:border-border-strong transition-colors">
           <Filter className="h-4 w-4" />
-          Filters
+          Filtros
         </button>
       </div>
 
@@ -105,7 +105,7 @@ export const UserTableContent: FC<UserTableContentProps> = ({
                       : "bg-red-500"
                   )}
                 />
-                {user.status}
+                {user.status === "active" ? "Activo" : user.status === "suspended" ? "Suspendido" : "Baneado"}
               </span>
             </td>
             <td className="px-6 py-4 text-sm font-label text-fg-secondary">
@@ -117,13 +117,13 @@ export const UserTableContent: FC<UserTableContentProps> = ({
                   onClick={() => onPromote(user.id)}
                   className="px-2 py-1 text-[11px] font-medium rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/15 opacity-0 group-hover:opacity-100 transition-all"
                 >
-                  Promote
+                  Promover
                 </button>
                 <button
                   onClick={() => onSuspend(user.id)}
                   className="px-2 py-1 text-[11px] font-medium rounded-md bg-surface-hover text-fg-secondary hover:bg-surface-elevated hover:text-fg opacity-0 group-hover:opacity-100 transition-all"
                 >
-                  Suspend
+                  Suspender
                 </button>
                 <button
                   onClick={() => onImpersonate(user.id)}
@@ -148,8 +148,8 @@ export const UserTableContent: FC<UserTableContentProps> = ({
 
       <div className="p-6 border-t border-border-subtle flex items-center justify-between">
         <p className="text-sm font-label text-fg-muted">
-          Showing <span className="text-fg font-heading">1 to {filteredUsers.length}</span> of{" "}
-          {filteredUsers.length} users
+          Mostrando <span className="text-fg font-heading">1 – {filteredUsers.length}</span> de{" "}
+          {filteredUsers.length} usuarios
         </p>
         <div className="flex items-center gap-2">
           <button

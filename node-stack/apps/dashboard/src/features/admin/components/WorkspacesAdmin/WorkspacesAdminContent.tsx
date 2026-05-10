@@ -2,7 +2,7 @@ import { PageHeader, Input, StatusPill, type StatusPillTone } from "@node-stack/
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
-  Building2, Users, Crown, Loader2, AlertCircle, Search,
+  Building2, Users, Crown, Loader2, Search,
   ChevronLeft, ChevronRight, ExternalLink,
 } from "lucide-react";
 import { FC, useState } from "react";
@@ -170,14 +170,22 @@ export const WorkspacesAdminContent: FC = () => {
             <Loader2 className="h-6 w-6 animate-spin text-fg-muted" />
           </div>
         ) : error ? (
-          <div className="flex items-center gap-3 px-5 py-8 text-red-500">
-            <AlertCircle className="h-5 w-5 shrink-0" />
-            <p className="text-[13px]">No se pudieron cargar los workspaces.</p>
+          <div className="flex flex-col items-center gap-3 py-16 text-center px-6">
+            <div className="h-10 w-10 rounded-[14px] bg-surface-muted border border-border flex items-center justify-center">
+              <Building2 className="h-5 w-5 text-fg-muted" />
+            </div>
+            <p className="text-[14px] font-semibold text-fg">Sin conexión con el API</p>
+            <p className="text-[12px] text-fg-muted max-w-xs">
+              Verifica que el servidor esté en marcha y que tengas permisos de administrador.
+            </p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="py-16 text-center">
-            <Building2 className="h-8 w-8 text-fg-muted mx-auto mb-3" />
-            <p className="text-[14px] font-medium text-fg">Sin workspaces</p>
+          <div className="flex flex-col items-center gap-3 py-16 text-center px-6">
+            <div className="h-10 w-10 rounded-[14px] bg-surface-muted border border-border flex items-center justify-center">
+              <Building2 className="h-5 w-5 text-fg-muted" />
+            </div>
+            <p className="text-[14px] font-semibold text-fg">Sin workspaces</p>
+            <p className="text-[12px] text-fg-muted">Aún no se ha creado ningún workspace en la plataforma.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">

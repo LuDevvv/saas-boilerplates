@@ -33,11 +33,11 @@ export const createResolver = <T extends FieldValues>(schema: Parameters<typeof 
           };
         });
 
-        return { values: {} as T, errors: fieldErrors };
+        return { values: {} as never, errors: fieldErrors };
       }
 
       return {
-        values: {} as T,
+        values: {} as never,
         errors: {
           root: { message: "Error de validación inesperado", type: "validate" }
         } as FieldErrors<T>

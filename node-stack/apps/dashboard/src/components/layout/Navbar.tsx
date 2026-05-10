@@ -48,7 +48,7 @@ export const Navbar: FC<NavbarProps> = ({ onMenuClick }) => {
             isCollapsed={false}
             isPremium={isPremium}
             user={user}
-            currentPlan={currentPlan}
+            currentPlan={currentPlan as any}
             onLogout={logout}
             dropdownItems={accountDropdownItems}
           />

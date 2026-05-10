@@ -63,7 +63,7 @@ export const AccountSection: FC<AccountSectionProps> = ({
           isPremium && "ring-2 ring-primary/30 ring-offset-1 dark:ring-offset-[#0A0A0A]"
         )}>
           <AvatarImage
-            src={user?.avatarUrl}
+            src={user?.avatarUrl ?? undefined}
             alt={getDisplayName(user)}
           />
           <AvatarFallback className="text-[11px] font-semibold bg-primary/10 text-primary">

@@ -1,5 +1,5 @@
 import { PageHeader, FilterTabs } from "@node-stack/ui";
-import { Zap, Globe, Building2, User, Loader2, AlertCircle, ToggleLeft, ToggleRight } from "lucide-react";
+import { Zap, Globe, Building2, User, Loader2, ToggleLeft, ToggleRight } from "lucide-react";
 import { FC, useState } from "react";
 
 import { useFeatureFlags, useToggleFeatureFlag } from "../../hooks";
@@ -140,16 +140,23 @@ export const FeatureFlagsContent: FC = () => {
             <Loader2 className="h-6 w-6 animate-spin text-fg-muted" />
           </div>
         ) : error ? (
-          <div className="flex items-center gap-3 px-5 py-8 text-red-500">
-            <AlertCircle className="h-5 w-5 shrink-0" />
-            <p className="text-[13px]">No se pudieron cargar los feature flags.</p>
+          <div className="flex flex-col items-center gap-3 py-16 text-center px-6">
+            <div className="h-10 w-10 rounded-[14px] bg-surface-muted border border-border flex items-center justify-center">
+              <Zap className="h-5 w-5 text-fg-muted" />
+            </div>
+            <p className="text-[14px] font-semibold text-fg">Sin conexión con el API</p>
+            <p className="text-[12px] text-fg-muted max-w-xs">
+              Los feature flags se leen desde Redis. Verifica que el servidor esté en marcha.
+            </p>
           </div>
         ) : visible.length === 0 ? (
-          <div className="py-16 text-center">
-            <Zap className="h-8 w-8 text-fg-muted mx-auto mb-3" />
-            <p className="text-[14px] font-medium text-fg">Sin flags registrados</p>
-            <p className="text-[12px] text-fg-muted mt-1">
-              Los flags se crean automáticamente al activarlos por primera vez desde la API.
+          <div className="flex flex-col items-center gap-3 py-16 text-center px-6">
+            <div className="h-10 w-10 rounded-[14px] bg-surface-muted border border-border flex items-center justify-center">
+              <Zap className="h-5 w-5 text-fg-muted" />
+            </div>
+            <p className="text-[14px] font-semibold text-fg">Sin flags configurados</p>
+            <p className="text-[12px] text-fg-muted max-w-xs">
+              Los flags se crean automáticamente la primera vez que se activan desde la API o desde código.
             </p>
           </div>
         ) : (

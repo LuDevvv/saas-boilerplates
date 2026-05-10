@@ -189,7 +189,13 @@ export const Sidebar: FC<SidebarProps> = ({
                         isActive={
                           item.path === "/"
                             ? currentPage === "/"
-                            : item.path ? currentPage.startsWith(item.path) : false
+                            : item.path
+                              ? item.subItems?.length
+                                // accordion parent → prefix match
+                                ? currentPage.startsWith(item.path)
+                                // leaf item → exact OR deeper path only when no sibling starts with the same prefix
+                                : currentPage === item.path
+                              : false
                         }
                       />
                     ))}

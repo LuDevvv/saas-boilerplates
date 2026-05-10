@@ -6,18 +6,26 @@ import { api } from "@/lib/api";
 import { queryKeys } from "@/lib/react-query/queryKeys";
 
 export const useAdminStats = () => {
-  return useQuery<AdminStats, Error>({
+  return useQuery<AdminStats | null, Error>({
     queryKey: queryKeys.admin.stats(),
-    queryFn: () => api.admin.getStats(),
+    queryFn: async () => {
+      const data = await api.admin.getStats();
+      return data ?? null;
+    },
     staleTime: 30_000,
+    retry: 1,
   });
 };
 
 export const useAdminTrends = (days?: number) => {
-  return useQuery<AdminTrends, Error>({
+  return useQuery<AdminTrends | null, Error>({
     queryKey: [...queryKeys.admin.stats(), "trends", days ?? 30],
-    queryFn: () => api.admin.getTrends(days),
+    queryFn: async () => {
+      const data = await api.admin.getTrends(days);
+      return data ?? null;
+    },
     staleTime: 60_000,
+    retry: 1,
   });
 };
 
@@ -84,7 +92,11 @@ export const useUpdateUserRole = () => {
 export const useFeatureFlags = () => {
   return useQuery({
     queryKey: queryKeys.admin.featureFlags(),
-    queryFn: () => api.admin.getFeatureFlags(),
+    queryFn: async () => {
+      const data = await api.admin.getFeatureFlags();
+      return data ?? [];
+    },
+    retry: 1,
   });
 };
 
@@ -122,7 +134,11 @@ export const useAuditLogs = (params?: {
 }) => {
   return useQuery({
     queryKey: [...queryKeys.admin.auditLogs(), params],
-    queryFn: () => api.admin.getAuditLogs(params),
+    queryFn: async () => {
+      const data = await api.admin.getAuditLogs(params);
+      return data ?? { data: [], meta: { total: 0, page: 1, limit: 50, pages: 0 } };
+    },
+    retry: 1,
   });
 };
 
@@ -133,7 +149,11 @@ export const useAdminWorkspaces = (params?: {
 }) => {
   return useQuery({
     queryKey: ["admin", "workspaces", params],
-    queryFn: () => api.admin.listWorkspaces(params),
+    queryFn: async () => {
+      const data = await api.admin.listWorkspaces(params);
+      return data ?? { data: [], meta: { total: 0, page: 1, limit: 20, pages: 0 } };
+    },
+    retry: 1,
   });
 };
 

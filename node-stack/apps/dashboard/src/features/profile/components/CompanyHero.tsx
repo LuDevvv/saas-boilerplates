@@ -15,7 +15,7 @@ interface CompanyHeroProps {
 }
 
 export const CompanyHero: FC<CompanyHeroProps> = ({ isEditing, onToggleEdit, workspace, isPending: isUpdatingInfo }) => {
-  const { upload, isUploading } = useUploadFile(workspace?.id);
+  const { upload, isUploading } = useUploadFile(typeof workspace?.id === "string" ? workspace.id : null);
   const { mutateAsync: updateWorkspace, isPending: isUpdatingLogo } = useUpdateWorkspace();
 
   const handleLogoChange = async (file: File | null) => {
@@ -25,7 +25,7 @@ export const CompanyHero: FC<CompanyHeroProps> = ({ isEditing, onToggleEdit, wor
       const result = await upload(file);
       if (!result?.fileUrl) return;
       await updateWorkspace({
-        workspaceId: workspace.id,
+        workspaceId: workspace.id as string,
         data: {
           logoUrl: result.fileUrl,
         },
@@ -42,7 +42,7 @@ export const CompanyHero: FC<CompanyHeroProps> = ({ isEditing, onToggleEdit, wor
   const isLoading = isUpdatingInfo || isUpdatingLogo || isUploading;
   return (
     <HeroHeader
-      title={workspace?.name || "Compañía"}
+      title={(typeof workspace?.name === "string" ? workspace.name : null) ?? "Compañía"}
       actionsOutside={true}
       subtitle={
         <>
@@ -53,14 +53,14 @@ export const CompanyHero: FC<CompanyHeroProps> = ({ isEditing, onToggleEdit, wor
           <span className="hidden sm:inline opacity-30 mx-1">•</span>
           <div className="flex items-center gap-1.5 shrink-0">
             <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-            <span>Desde {formatEntityDate(workspace?.createdAt)}</span>
+            <span>Desde {formatEntityDate(workspace?.createdAt as string | Date | null | undefined)}</span>
           </div>
         </>
       }
       avatar={
         <ProfileAvatar 
-          src={workspace?.logoUrl} 
-          fallback={workspace?.name || "C"}
+          src={typeof workspace?.logoUrl === "string" ? workspace.logoUrl : undefined}
+          fallback={typeof workspace?.name === "string" ? workspace.name : "C"}
           size="lg"
           isUploading={isUploading}
           onImageChange={handleLogoChange}

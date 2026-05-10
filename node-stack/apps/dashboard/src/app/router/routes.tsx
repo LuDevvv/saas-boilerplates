@@ -64,9 +64,9 @@ const StoragePage = lazy(() => import("@/features/storage/pages/StoragePage"));
 // Dev-only routes (only registered in development builds)
 const ComponentsCatalogPage = lazy(() => import("@pages/dev/ComponentsCatalog"));
 
-const LoadingFallback = (): JSX.Element => <PageSkeleton />;
+const LoadingFallback = (): React.ReactElement => <PageSkeleton />;
 
-export const AppRoutes = (): JSX.Element => {
+export const AppRoutes = (): React.ReactElement => {
   return (
     <Routes>
       {/* Guest Routes - Redirect to dashboard if authenticated */}
@@ -154,7 +154,7 @@ export const AppRoutes = (): JSX.Element => {
   );
 };
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }): JSX.Element => {
+const ProtectedRoute = ({ children }: { children: React.ReactNode }): React.ReactElement => {
   const { isAuthenticated, user, isLoading } = useAuth();
   const location = useLocation();
 
