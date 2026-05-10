@@ -2,9 +2,18 @@ import { UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { Test, TestingModule } from "@nestjs/testing";
+import { vi } from "vitest";
 import { CacheService } from "@node-stack/cache";
-import { BillingRepository } from "@node-stack/db";
-import { Mocked } from "vitest";
+import { BillingRepository, AuditLogRepository, DB_TOKEN } from "@node-stack/db";
+
+vi.mock("@node-stack/db", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@node-stack/db")>();
+  return {
+    ...actual,
+    withTenantTx: vi.fn(async (_id: string, cb: (tx: unknown) => unknown) => cb({})),
+    withSystemTx: vi.fn(async (cb: (tx: unknown) => unknown) => cb({})),
+  };
+});
 
 import { BillingService } from "@/billing/billing.service.js";
 import { EncryptionService } from "@/common/services/encryption.service.js";
@@ -72,11 +81,13 @@ describe("BillingService", () => {
         BillingService,
         { provide: ConfigService, useValue: mockConfigService },
         { provide: OutboxService, useValue: mockOutbox },
-        { provide: EncryptionService, useValue: mockEncryption },
         { provide: BillingRepository, useValue: mockBillingRepo },
-        { provide: CacheService, useValue: mockCache },
+        { provide: AuditLogRepository, useValue: { create: vi.fn() } },
+        { provide: EncryptionService, useValue: mockEncryption },
         { provide: EventEmitter2, useValue: mockEventEmitter },
+        { provide: CacheService, useValue: mockCache },
         { provide: "PAYMENT_PROVIDER", useValue: mockProvider },
+        { provide: DB_TOKEN, useValue: {} },
       ],
     }).compile();
 

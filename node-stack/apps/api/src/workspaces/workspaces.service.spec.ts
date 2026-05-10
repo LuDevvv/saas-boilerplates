@@ -1,8 +1,29 @@
 import { ForbiddenException } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Test, TestingModule } from '@nestjs/testing';
+import { vi } from 'vitest';
 import { CacheService } from '@node-stack/cache';
-import { WorkspaceRepository } from '@node-stack/db';
+import { WorkspaceRepository, AuditLogRepository, DB_TOKEN } from '@node-stack/db';
+
+const mockTx: any = {
+  select: vi.fn(),
+  from: vi.fn(),
+  where: vi.fn(),
+  for: vi.fn(),
+};
+mockTx.select.mockReturnValue(mockTx);
+mockTx.from.mockReturnValue(mockTx);
+mockTx.where.mockReturnValue(mockTx);
+mockTx.for.mockResolvedValue([]);
+
+vi.mock('@node-stack/db', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@node-stack/db')>();
+  return {
+    ...actual,
+    withTenantTx: vi.fn(async (_id: string, cb: (tx: unknown) => unknown) => cb(mockTx)),
+    withSystemTx: vi.fn(async (cb: (tx: unknown) => unknown) => cb(mockTx)),
+  };
+});
 
 import { OutboxService } from '@/common/services/outbox.service.js';
 import { WorkspacesService } from '@/workspaces/workspaces.service.js';
@@ -14,15 +35,17 @@ describe('WorkspacesService', () => {
     create: vi.fn(),
     createMembership: vi.fn(),
     findAllByUserId: vi.fn(),
+    findBySlug: vi.fn().mockResolvedValue(null),
     findMembership: vi.fn(),
     findMembersByWorkspaceId: vi.fn(),
     updateMembership: vi.fn(),
     deleteMembership: vi.fn(),
     update: vi.fn(),
-    transaction: vi.fn(async (cb) => await cb({})),
   };
 
-
+  const mockAuditLog = {
+    create: vi.fn(),
+  };
 
   const mockCache = {
     invalidate: vi.fn(),
@@ -41,27 +64,32 @@ describe('WorkspacesService', () => {
       providers: [
         WorkspacesService,
         { provide: WorkspaceRepository, useValue: mockWorkspaceRepo },
+        { provide: AuditLogRepository, useValue: mockAuditLog },
         { provide: CacheService, useValue: mockCache },
         { provide: OutboxService, useValue: mockOutbox },
         { provide: EventEmitter2, useValue: mockEventEmitter },
+        { provide: DB_TOKEN, useValue: {} },
       ],
     }).compile();
 
     service = module.get<WorkspacesService>(WorkspacesService);
     vi.clearAllMocks();
+    mockTx.select.mockReturnValue(mockTx);
+    mockTx.from.mockReturnValue(mockTx);
+    mockTx.where.mockReturnValue(mockTx);
+    mockTx.for.mockResolvedValue([]);
   });
 
   describe('createWorkspace', () => {
     it('creates workspace and owner membership atomically', async () => {
       const ws = { id: 'w1', name: 'W1', slug: 'w1' };
       (mockWorkspaceRepo.create as any).mockResolvedValue(ws);
-      
+
       const result = await service.createWorkspace('W1', 'w1-slug', 'u1');
 
       expect(result.id).toBe('w1');
       expect(mockWorkspaceRepo.create).toHaveBeenCalled();
     });
-
   });
 
   describe('listWorkspaces', () => {
@@ -90,7 +118,7 @@ describe('WorkspacesService', () => {
   describe('getMembers', () => {
     it('returns formatted members list', async () => {
       (mockWorkspaceRepo.findMembersByWorkspaceId as any).mockResolvedValue([
-        { userId: 'u1', role: 'owner', createdAt: new Date(), id: 'u1', email: 'u1@test.com', name: 'User 1', avatarUrl: null }
+        { userId: 'u1', role: 'owner', createdAt: new Date(), id: 'u1', email: 'u1@test.com', name: 'User 1', avatarUrl: null },
       ]);
       (mockWorkspaceRepo.findMembership as any).mockResolvedValue({ role: 'owner' });
 
@@ -103,18 +131,17 @@ describe('WorkspacesService', () => {
   describe('updateMemberRole', () => {
     it('updates role if current user is owner', async () => {
       (mockWorkspaceRepo.findMembership as any)
-        .mockResolvedValueOnce({ role: 'owner' }) // current
-        .mockResolvedValueOnce({ role: 'member' }); // target
+        .mockResolvedValueOnce({ role: 'owner' })
+        .mockResolvedValueOnce({ role: 'member' });
 
       await service.updateMemberRole('w1', 'u2', 'admin', 'u1');
       expect(mockWorkspaceRepo.updateMembership).toHaveBeenCalledWith('w1', 'u2', { role: 'admin' }, expect.anything());
     });
 
-
     it('throws forbidden if admin tries to modify another admin', async () => {
       (mockWorkspaceRepo.findMembership as any)
-        .mockResolvedValueOnce({ role: 'admin' }) // current
-        .mockResolvedValueOnce({ role: 'admin' }); // target
+        .mockResolvedValueOnce({ role: 'admin' })
+        .mockResolvedValueOnce({ role: 'admin' });
 
       await expect(service.updateMemberRole('w1', 'u2', 'member', 'u1'))
         .rejects.toThrow(ForbiddenException);
@@ -124,9 +151,9 @@ describe('WorkspacesService', () => {
   describe('addMember', () => {
     it('creates membership and outbox event', async () => {
       (mockWorkspaceRepo.findMembership as any).mockResolvedValue({ role: 'admin' });
-      
+
       await service.addMember('w1', 'u2', 'u1', 'member');
-      
+
       expect(mockWorkspaceRepo.createMembership).toHaveBeenCalled();
       expect(mockOutbox.createEvent).toHaveBeenCalledWith('membership.added', expect.anything(), expect.anything());
     });
@@ -135,14 +162,13 @@ describe('WorkspacesService', () => {
   describe('removeMember', () => {
     it('successfully removes member', async () => {
       (mockWorkspaceRepo.findMembership as any)
-        .mockResolvedValueOnce({ role: 'owner' }) // current
-        .mockResolvedValueOnce({ role: 'member' }); // target
+        .mockResolvedValueOnce({ role: 'owner' })
+        .mockResolvedValueOnce({ role: 'member' });
 
       await service.removeMember('w1', 'u2', 'u1');
       expect(mockWorkspaceRepo.deleteMembership).toHaveBeenCalledWith('w1', 'u2', expect.anything());
       expect(mockOutbox.createEvent).toHaveBeenCalledWith('membership.removed', expect.anything(), expect.anything());
     });
-
 
     it('throws forbidden if user is not in workspace', async () => {
       (mockWorkspaceRepo.findMembership as any).mockResolvedValue(null);
@@ -150,4 +176,3 @@ describe('WorkspacesService', () => {
     });
   });
 });
-
