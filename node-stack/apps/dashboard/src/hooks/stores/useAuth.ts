@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
 import { appToast } from "@/components/alerts/Toasts";
@@ -25,7 +25,7 @@ export const useAuth = () => {
   const loginWithGoogle = async () => {
     appToast.info({
       title: "Google Auth",
-      description: "La autenticación con Google no está configurada en este boilerplate aún.",
+      description: "La autenticacion con Google no esta configurada en este boilerplate aun.",
     });
   };
 

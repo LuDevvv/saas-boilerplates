@@ -1,17 +1,34 @@
-import { QueryClient, QueryClientProvider, onlineManager } from "@tanstack/react-query";
+﻿import { QueryClient, QueryClientProvider, onlineManager } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ReactNode, useState } from "react";
 
-export const createQueryClient = () =>
-  new QueryClient({
+import { AppError } from "@node-stack/api-client";
+
+/**
+ * Aligned with the api-client createQueryClient defaults.
+ * Uses the local @tanstack/react-query instance to avoid TypeScript
+ * dual-declaration errors when api-client is a workspace reference.
+ */
+export function createQueryClient(): QueryClient {
+  return new QueryClient({
     defaultOptions: {
       queries: {
         staleTime: 60_000,
-        retry: 1,
-        refetchOnWindowFocus: false,
+        gcTime: 30 * 60 * 1000,
+        refetchOnWindowFocus: import.meta.env.PROD,
+        networkMode: "online",
+        retry: (count, error) => {
+          const err = error as AppError | undefined;
+          return count < 2 && err?.statusCode !== 401;
+        },
+      },
+      mutations: {
+        networkMode: "online",
+        retry: false,
       },
     },
   });
+}
 
 onlineManager.setEventListener((setOnline) => {
   if (typeof window !== "undefined") {
