@@ -67,9 +67,9 @@ export const CurrentPlan: React.FC = () => {
               </div>
 
               {/* Billing Details & Progress */}
-              <Card className="bg-gray-50/80 p-6 dark:bg-white/5 border border-border-subtle flex flex-col gap-6">
+              <Card className="bg-surface p-6 border border-border-subtle flex flex-col gap-6">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+                  <div className="p-2.5 bg-surface-muted border border-border rounded-xl">
                     <Calendar className="h-5 w-5 text-fg-secondary" />
                   </div>
                   <div>

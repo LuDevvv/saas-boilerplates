@@ -1,4 +1,4 @@
-import { Card, Spinner } from "@node-stack/ui";
+import { Card, Skeleton } from "@node-stack/ui";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { Smartphone, XCircle, ShieldCheck, Laptop, Globe, LogOut, Loader2 } from "lucide-react";
@@ -17,9 +17,26 @@ export const LoginHistory: FC<LoginHistoryProps> = ({ onRevokeAll, isRevokingAll
 
   if (isLoading) {
     return (
-      <Card className="card-premium p-20 flex flex-col items-center justify-center min-h-[300px]">
-        <Spinner size="lg" className="text-primary mb-6" />
-        <p className="text-sm text-gray-500 font-label">Analizando sesiones activas...</p>
+      <Card className="overflow-hidden border-border shadow-[var(--shadow-card)] rounded-[20px] bg-surface">
+        <div className="flex items-center gap-3 px-6 py-5 border-b border-border">
+          <Skeleton className="h-9 w-9 rounded-lg" />
+          <div className="space-y-1.5">
+            <Skeleton className="h-3.5 w-32" />
+            <Skeleton className="h-2.5 w-20" />
+          </div>
+        </div>
+        <div className="divide-y divide-border">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 p-4">
+              <Skeleton className="h-10 w-10 rounded-xl shrink-0" />
+              <div className="flex-1 space-y-1.5">
+                <Skeleton className="h-3.5 w-32 rounded-md" />
+                <Skeleton className="h-2.5 w-48 rounded-md" />
+              </div>
+              <Skeleton className="h-7 w-20 rounded-lg shrink-0" />
+            </div>
+          ))}
+        </div>
       </Card>
     );
   }

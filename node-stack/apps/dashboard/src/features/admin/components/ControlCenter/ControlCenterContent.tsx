@@ -13,6 +13,7 @@ import { StatusBreakdown } from "./StatusBreakdown";
 import { SystemHealth } from "./SystemHealth";
 import { AreaTrendChart, AiBarChart } from "./TrendChart";
 import { useAdminStats, useAdminTrends } from "../../hooks";
+import { ControlCenterSkeleton } from "../AdminSkeletons";
 
 import { cn } from "@/utils/classNames";
 
@@ -33,6 +34,8 @@ export const ControlCenterContent: FC = () => {
   const [days, setDays] = useState<Days>(30);
   const { data: stats, isLoading: statsLoading, refetch, isFetching } = useAdminStats();
   const { data: trends, isLoading: trendsLoading } = useAdminTrends(days);
+
+  if (statsLoading || trendsLoading) return <ControlCenterSkeleton />;
 
   const totalTickets = stats?.tickets.total ?? 0;
   const totalTasks = stats?.tasks.total ?? 0;

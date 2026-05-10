@@ -1,15 +1,16 @@
 import { FC, lazy, Suspense } from "react";
 
-import { LoadingState } from "@/components/shared/LoadingState";
+import { StorageSkeleton } from "@/features/storage/components/StorageSkeleton";
+import { PageShell } from "@/features/admin/components/AdminPageShell";
 
 const StorageFeature = lazy(() => import("@features/storage/pages/StoragePage"));
 
-const StoragePage: FC = () => {
-  return (
-    <Suspense fallback={<LoadingState message="Cargando archivos..." />}>
+const StoragePage: FC = () => (
+  <PageShell>
+    <Suspense fallback={<StorageSkeleton />}>
       <StorageFeature />
     </Suspense>
-  );
-};
+  </PageShell>
+);
 
 export default StoragePage;

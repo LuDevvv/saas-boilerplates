@@ -7,13 +7,16 @@ import { UserTableContent } from "./UserTableContent";
 
 import { appToast } from "@/components/alerts/Toasts";
 import { useAdminUsers, useUpdateUserStatus, useUpdateUserRole, useImpersonateUser } from "@/features/admin";
+import { ManageUsersSkeleton } from "@/features/admin/components/AdminSkeletons";
 
 export const ManageUsersContent: FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const { data: users } = useAdminUsers();
+  const { data: users, isLoading } = useAdminUsers();
   const updateStatus = useUpdateUserStatus();
   const updateRole = useUpdateUserRole();
   const impersonate = useImpersonateUser();
+
+  if (isLoading) return <ManageUsersSkeleton />;
 
   const handleSuspend = (userId: string) => {
     if (confirm("¿Suspender este usuario? Se cerrarán todas sus sesiones activas.")) {

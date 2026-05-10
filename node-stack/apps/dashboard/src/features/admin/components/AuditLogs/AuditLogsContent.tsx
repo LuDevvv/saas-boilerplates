@@ -3,13 +3,14 @@ import { PageHeader } from "@node-stack/ui";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
-  Activity, Loader2, AlertCircle,
+  Activity, AlertCircle,
   ChevronLeft, ChevronRight, Shield, User, CreditCard,
   Settings, Key, LogIn, LogOut, Trash2, FileText,
 } from "lucide-react";
 import { FC, useState } from "react";
 
 import { useAuditLogs } from "@/features/admin";
+import { AuditLogsSkeleton } from "@/features/admin/components/AdminSkeletons";
 import { cn } from "@/utils/classNames";
 
 // ─── Action helpers ──────────────────────────────────────────────────────────
@@ -146,9 +147,7 @@ export const AuditLogsContent: FC = () => {
 
         {/* Content */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-6 w-6 animate-spin text-fg-muted" />
-          </div>
+          <div className="p-5"><AuditLogsSkeleton /></div>
         ) : error ? (
           <div className="flex flex-col items-center gap-3 py-16 text-center px-6">
             <div className="h-10 w-10 rounded-[14px] bg-red-500/10 flex items-center justify-center">

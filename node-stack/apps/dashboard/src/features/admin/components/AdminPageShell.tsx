@@ -1,17 +1,16 @@
 import { FC, ReactNode, useEffect, useRef } from "react";
 import { animate } from "@motionone/dom";
 
-interface AdminPageShellProps {
+interface PageShellProps {
   children: ReactNode;
   className?: string;
 }
 
 /**
- * Wrapper uniforme para todas las páginas del panel admin.
- * Aplica la misma animación de entrada (slide-up + fade) que usa el LinkTransition
- * del sidebar, dando consistencia visual entre secciones.
+ * Wrapper de entrada para cualquier página.
+ * Aplica slide-up + fade en cada montaje — mismo easing que LinkTransition.
  */
-export const AdminPageShell: FC<AdminPageShellProps> = ({ children, className = "" }) => {
+export const PageShell: FC<PageShellProps> = ({ children, className = "" }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,3 +27,6 @@ export const AdminPageShell: FC<AdminPageShellProps> = ({ children, className = 
     </div>
   );
 };
+
+/** @deprecated use PageShell */
+export const AdminPageShell = PageShell;

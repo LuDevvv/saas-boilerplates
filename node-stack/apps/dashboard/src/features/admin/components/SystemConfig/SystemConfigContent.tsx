@@ -1,6 +1,7 @@
 import { PageHeader } from "@node-stack/ui";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Settings, RefreshCw, Loader2, Plus, Pencil, X, Check } from "lucide-react";
+import { SystemConfigSkeleton } from "@/features/admin/components/AdminSkeletons";
 import { FC, useState } from "react";
 
 import { appToast } from "@/components/alerts/Toasts";
@@ -233,9 +234,7 @@ export const SystemConfigContent: FC = () => {
         )}
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-6 w-6 animate-spin text-fg-muted" />
-          </div>
+          <div className="p-5"><SystemConfigSkeleton /></div>
         ) : error ? (
           <div className="flex flex-col items-center gap-3 py-16 text-center px-6">
             <div className="h-10 w-10 rounded-[14px] bg-surface-muted border border-border flex items-center justify-center">

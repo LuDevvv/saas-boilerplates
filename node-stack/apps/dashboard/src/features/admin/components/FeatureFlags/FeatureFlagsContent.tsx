@@ -3,6 +3,7 @@ import { Zap, Globe, Building2, User, Loader2, ToggleLeft, ToggleRight } from "l
 import { FC, useState } from "react";
 
 import { useFeatureFlags, useToggleFeatureFlag } from "../../hooks";
+import { FeatureFlagsSkeleton } from "@/features/admin/components/AdminSkeletons";
 
 import { cn } from "@/utils/classNames";
 
@@ -136,9 +137,7 @@ export const FeatureFlagsContent: FC = () => {
         </div>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-6 w-6 animate-spin text-fg-muted" />
-          </div>
+          <div className="p-5"><FeatureFlagsSkeleton /></div>
         ) : error ? (
           <div className="flex flex-col items-center gap-3 py-16 text-center px-6">
             <div className="h-10 w-10 rounded-[14px] bg-surface-muted border border-border flex items-center justify-center">

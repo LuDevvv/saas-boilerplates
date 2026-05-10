@@ -1,7 +1,12 @@
-import MembersPage from "@features/workspaces/pages/MembersPage";
 import { FC } from "react";
 
-// Inner Suspense removed — lazy loading + MembersLayoutSkeleton handled by routes.tsx.
-const WorkspaceMembersPage: FC = () => <MembersPage />;
+import { PageShell } from "@/features/admin/components/AdminPageShell";
+import MembersPage from "@features/workspaces/pages/MembersPage";
+
+const WorkspaceMembersPage: FC = () => (
+  <PageShell>
+    <MembersPage />
+  </PageShell>
+);
 
 export default WorkspaceMembersPage;

@@ -2,12 +2,13 @@ import { PageHeader, Input, StatusPill, type StatusPillTone } from "@node-stack/
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import {
-  Building2, Users, Crown, Loader2, Search,
+  Building2, Users, Crown, Search,
   ChevronLeft, ChevronRight, ExternalLink,
 } from "lucide-react";
 import { FC, useState } from "react";
 
 import { api } from "@/lib/api";
+import { WorkspacesAdminSkeleton } from "@/features/admin/components/AdminSkeletons";
 import { cn } from "@/utils/classNames";
 
 
@@ -166,9 +167,7 @@ export const WorkspacesAdminContent: FC = () => {
 
         {/* Table */}
         {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 className="h-6 w-6 animate-spin text-fg-muted" />
-          </div>
+          <div className="p-5"><WorkspacesAdminSkeleton /></div>
         ) : error ? (
           <div className="flex flex-col items-center gap-3 py-16 text-center px-6">
             <div className="h-10 w-10 rounded-[14px] bg-surface-muted border border-border flex items-center justify-center">
