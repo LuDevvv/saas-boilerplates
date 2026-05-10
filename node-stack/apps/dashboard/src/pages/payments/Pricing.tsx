@@ -2,10 +2,6 @@ import { Button, BillingToggle } from "@node-stack/ui";
 import {
   Check,
   CheckCircle2,
-  Minus,
-  Plus,
-  Users,
-  Building2,
   MessageSquare,
   ArrowRight,
   TrendingDown,
@@ -24,7 +20,7 @@ const PLANS = [
   {
     id: "free",
     name: "Starter",
-    description: "Para proyectos personales y pequeñas pruebas.",
+    description: "Para proyectos personales y primeros pasos.",
     price: 0,
     yearlyPrice: 0,
     features: [
@@ -54,7 +50,7 @@ const PLANS = [
   {
     id: "elite",
     name: "Unlimited",
-    description: "Soluciones personalizadas para corporaciones.",
+    description: "Infraestructura dedicada para organizaciones.",
     price: 99,
     yearlyPrice: 990,
     features: [
@@ -63,48 +59,11 @@ const PLANS = [
       "SLA del 99.99%",
       "Almacenamiento ilimitado",
       "Manager dedicado",
+      "Integraciones personalizadas",
     ],
     popular: false,
   },
 ] as const;
-
-// ─── Add-on stepper ───────────────────────────────────────────────────────────
-
-const AddonCard: FC<{
-  icon: typeof Users;
-  title: string;
-  description: string;
-  value: number;
-  onDecrement: () => void;
-  onIncrement: () => void;
-}> = ({ icon: Icon, title, description, value, onDecrement, onIncrement }) => (
-  <div className="rounded-[20px] border border-border bg-surface p-5 flex items-center gap-4">
-    <div className="h-10 w-10 rounded-[12px] bg-primary/10 flex items-center justify-center shrink-0">
-      <Icon className="h-5 w-5 text-primary" />
-    </div>
-    <div className="flex-1 min-w-0">
-      <p className="text-[14px] font-semibold text-fg">{title}</p>
-      <p className="text-[12px] text-fg-muted mt-0.5">{description}</p>
-    </div>
-    <div className="flex items-center gap-1 bg-surface-muted rounded-xl border border-border p-1 shrink-0">
-      <button
-        onClick={onDecrement}
-        className="h-8 w-8 rounded-lg flex items-center justify-center text-fg-muted hover:text-fg hover:bg-surface-hover transition-all active:scale-90"
-      >
-        <Minus className="h-3.5 w-3.5" />
-      </button>
-      <span className="w-8 text-center text-[14px] font-bold text-fg tabular-nums">
-        {value}
-      </span>
-      <button
-        onClick={onIncrement}
-        className="h-8 w-8 rounded-lg flex items-center justify-center text-fg-muted hover:text-fg hover:bg-surface-hover transition-all active:scale-90"
-      >
-        <Plus className="h-3.5 w-3.5" />
-      </button>
-    </div>
-  </div>
-);
 
 // ─── Pricing page ─────────────────────────────────────────────────────────────
 
@@ -113,21 +72,17 @@ interface PricingProps {
 }
 
 const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
-  const { currentPlan }   = useAuth();
-  const navigate          = useNavigate();
-  const { toDOP }         = useExchangeRate();
-  const [isAnnual, setIsAnnual]               = useState(false);
-  const [extraUsers, setExtraUsers]           = useState(0);
-  const [extraCompanies, setExtraCompanies]   = useState(0);
+  const { currentPlan } = useAuth();
+  const navigate        = useNavigate();
+  const { toDOP }       = useExchangeRate();
+  const [isAnnual, setIsAnnual] = useState(false);
 
   const handleSelectPlan = (planId: string) => {
-    const cycle   = isAnnual ? "yearly" : "monthly";
-    const addons  = `&users=${extraUsers}&workspaces=${extraCompanies}`;
+    const cycle = isAnnual ? "yearly" : "monthly";
     const onboarding = isOnboarding ? "&onboarding=true" : "";
-    navigate(`/payments/checkout?plan=${planId}&billing=${cycle}${addons}${onboarding}`);
+    navigate(`/payments/checkout?plan=${planId}&billing=${cycle}${onboarding}`);
   };
 
-  // Annual savings for Growth plan (most common reference)
   const growthSavings = PLANS[1].price * 12 - PLANS[1].yearlyPrice;
 
   return (
@@ -149,7 +104,7 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
           Cancela en cualquier momento.
         </p>
 
-        {/* Billing toggle with context */}
+        {/* Billing toggle */}
         <div className="mt-8 flex flex-col items-center gap-3">
           <p className="text-[12px] text-fg-muted font-medium">
             Ciclo de facturación
@@ -237,7 +192,6 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
                     )}
                   </div>
 
-                  {/* DOP conversion */}
                   {plan.price > 0 && dopEquiv && (
                     <p className="text-[11px] text-gray-400 mt-0.5">
                       ≈ {dopEquiv}/mes
@@ -305,46 +259,6 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
             </div>
           );
         })}
-      </div>
-
-      {/* ── Add-ons ── */}
-      <div className="max-w-[1100px] mx-auto mb-16">
-        <div className="text-center mb-8">
-          <h2 className="text-[20px] font-bold text-fg">
-            Personaliza tu plan
-          </h2>
-          <p className="text-[13px] text-gray-400 mt-1">
-            Añade solo lo que necesitas, cuando lo necesitas.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <AddonCard
-            icon={Users}
-            title="Usuarios adicionales"
-            description="+US$ 5 por usuario al mes"
-            value={extraUsers}
-            onDecrement={() => setExtraUsers(Math.max(0, extraUsers - 1))}
-            onIncrement={() => setExtraUsers(extraUsers + 1)}
-          />
-          <AddonCard
-            icon={Building2}
-            title="Compañías extra"
-            description="+US$ 10 por compañía al mes"
-            value={extraCompanies}
-            onDecrement={() => setExtraCompanies(Math.max(0, extraCompanies - 1))}
-            onIncrement={() => setExtraCompanies(extraCompanies + 1)}
-          />
-        </div>
-
-        {(extraUsers > 0 || extraCompanies > 0) && (
-          <div className="mt-4 flex items-center justify-end gap-3 px-1">
-            <p className="text-[12px] text-gray-400">Add-ons adicionales:</p>
-            <span className="text-[15px] font-semibold text-fg tabular-nums">
-              +US$ {extraUsers * 5 + extraCompanies * 10}/mes
-            </span>
-          </div>
-        )}
       </div>
 
       {/* ── Enterprise CTA ── */}
