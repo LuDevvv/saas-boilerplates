@@ -5,7 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 
 import { Logo } from "@/assets/logo/logo";
 import { useUpdateProfile } from "@/features/auth/hooks/useUpdateProfile";
-import { useCreateWorkspace } from "@/features/workspaces/hooks/useWorkspaces";
+import { useCreateWorkspace, useWorkspaces } from "@/features/workspaces/hooks/useWorkspaces";
 import { useAuth } from "@/hooks/stores/useAuth";
 import { AuthSidebar } from "@pages/auth/components/AuthSidebar";
 
@@ -13,6 +13,7 @@ const Onboarding: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { mutateAsync: updateProfile } = useUpdateProfile();
+  const { data: workspaces } = useWorkspaces();
 
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,12 +46,13 @@ const Onboarding: React.FC = () => {
     localStorage.setItem("onboarding_step", step.toString());
   }, [step]);
 
-  // Lead recovery: user has a phone (step 1 done) but no workspace → jump to step 2
+  // Lead recovery: user captured phone (step 1 done) but has no workspace → resume at step 2
   useEffect(() => {
-    if (user?.phone && !(user as unknown as Record<string, unknown>)["workspaceId"]) {
+    const hasWorkspace = Array.isArray(workspaces) && workspaces.length > 0;
+    if (user?.phone && !hasWorkspace) {
       setStep(2);
     }
-  }, [user?.phone]);
+  }, [user?.phone, workspaces]);
 
   const jobTitleOptions = [
     { value: "founder", label: "Propietario/a" },

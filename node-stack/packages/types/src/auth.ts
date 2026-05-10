@@ -19,6 +19,7 @@ export interface UpdateProfileDto {
   lastName?: string;
   phone?: string;
   avatarUrl?: string;
+  jobTitle?: string;
 }
 
 // Placeholder DTO shapes for auth flows whose canonical schema lives
@@ -49,6 +50,8 @@ export interface UserEntity {
   lastName?: string | null;
   phone: string | null;
   avatarUrl?: string;
+  jobTitle?: string | null;
+  onboardingStatus?: 'started' | 'step_1_completed' | 'completed';
   role: string;
   createdAt: string;
   twoFactorEnabled: boolean;

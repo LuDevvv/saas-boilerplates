@@ -3,6 +3,9 @@ export interface CreateWorkspaceDto {
   name: string;
   slug?: string;
   description?: string;
+  industry?: string;
+  teamSize?: string;
+  revenueRange?: string;
 }
 
 export interface UpdateWorkspaceDto {
