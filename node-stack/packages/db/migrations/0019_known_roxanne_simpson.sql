@@ -86,9 +86,9 @@ CREATE INDEX "idx_ticket_created_by" ON "tickets" USING btree ("created_by");-->
 CREATE INDEX "idx_ticket_workspace_status" ON "tickets" USING btree ("workspace_id","status");--> statement-breakpoint
 ALTER TABLE "files" ADD CONSTRAINT "files_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "idx_users_deleted_at" ON "users" USING btree ("deleted_at") WHERE "users"."deleted_at" IS NOT NULL;--> statement-breakpoint
-CREATE INDEX "idx_workspaces_deleted_at" ON "workspaces" USING btree ("deleted_at") WHERE "workspaces"."deleted_at" IS NOT NULL;--> statement-breakpoint
-CREATE INDEX "idx_files_user_id" ON "files" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_users_deleted_at" ON "users" USING btree ("deleted_at") WHERE "users"."deleted_at" IS NOT NULL;--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_workspaces_deleted_at" ON "workspaces" USING btree ("deleted_at") WHERE "workspaces"."deleted_at" IS NOT NULL;--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_files_user_id" ON "files" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "idx_ai_logs_workspace_created_at" ON "ai_logs" USING btree ("workspace_id","created_at");--> statement-breakpoint
 CREATE INDEX "idx_notifications_workspace_user" ON "notifications" USING btree ("workspace_id","user_id");--> statement-breakpoint
 ALTER TABLE "notifications" DROP COLUMN "status";--> statement-breakpoint
