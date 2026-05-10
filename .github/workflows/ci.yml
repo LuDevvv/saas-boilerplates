@@ -18,7 +18,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -33,7 +33,7 @@ jobs:
     env:
       NODE_OPTIONS: --max-old-space-size=8192
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -53,7 +53,7 @@ jobs:
     env:
       NODE_OPTIONS: --max-old-space-size=8192
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
@@ -103,7 +103,7 @@ jobs:
       ENCRYPTION_KEY: '1111111111111111111111111111111111111111111111111111111111111111'
       TRUST_PROXY: '1'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
