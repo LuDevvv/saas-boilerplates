@@ -7,14 +7,18 @@ import { cn } from "../../utils.js";
  * A standard card skeleton with a header and grid content.
  * Moldable for various dashboard sections.
  */
-export const CardSkeleton: FC<{ className?: string; rows?: number }> = ({ 
+export const CardSkeleton: FC<{ className?: string; rows?: number; style?: React.CSSProperties }> = ({ 
   className, 
-  rows = 4 
+  rows = 4,
+  style
 }) => (
-  <div className={cn(
-    "p-6 bg-surface border border-border-subtle rounded-[20px] shadow-sm space-y-8",
-    className
-  )}>
+  <div 
+    style={style}
+    className={cn(
+      "p-6 bg-surface border border-border-subtle rounded-[20px] shadow-sm space-y-8",
+      className
+    )}
+  >
     <div className="flex items-center justify-between mb-2">
       <div className="flex items-center gap-4">
         <Skeleton className="h-10 w-10 rounded-lg" />
@@ -42,14 +46,18 @@ export const CardSkeleton: FC<{ className?: string; rows?: number }> = ({
 /**
  * A standard form skeleton with input field placeholders.
  */
-export const FormSkeleton: FC<{ className?: string; fields?: number }> = ({ 
+export const FormSkeleton: FC<{ className?: string; fields?: number; style?: React.CSSProperties }> = ({ 
   className,
-  fields = 3
+  fields = 3,
+  style
 }) => (
-  <div className={cn(
-    "p-6 space-y-6 bg-surface backdrop-blur-md border border-border-subtle rounded-[20px] shadow-sm",
-    className
-  )}>
+  <div 
+    style={style}
+    className={cn(
+      "p-6 space-y-6 bg-surface backdrop-blur-md border border-border-subtle rounded-[20px] shadow-sm",
+      className
+    )}
+  >
     <div className="flex items-center gap-4 border-b border-border-subtle pb-5">
       <Skeleton className="h-10 w-10 rounded-lg" />
       <div className="space-y-2">

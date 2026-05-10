@@ -38,7 +38,7 @@ type MemberSummary = {
 export class WorkspaceRepository {
   constructor(
     @Inject(DB_TOKEN) private readonly db: Tx,
-  ) {}
+  ) { }
 
   async findAllByUserId(
     userId: string,
