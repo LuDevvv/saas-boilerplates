@@ -14,6 +14,7 @@ export interface CreateSubscriptionData {
 export interface CheckoutData {
   customerId?: string;
   email?: string;
+  name?: string;
   planId: string;
   variantId?: string;
   successUrl: string;

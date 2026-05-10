@@ -153,6 +153,7 @@ export class PolarProvider implements PaymentProvider {
       successUrl: data.successUrl,
       ...(data.customerId && { customerId: data.customerId }),
       ...(data.email && { customerEmail: data.email }),
+      ...(data.name && { customerName: data.name }),
       metadata: data.metadata ?? {},
     });
 

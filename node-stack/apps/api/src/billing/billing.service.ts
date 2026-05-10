@@ -84,11 +84,15 @@ export class BillingService {
   async createCheckout(
     data: CreateCheckoutDto & { workspaceId: string; userId: string },
   ): Promise<CheckoutUrl> {
-    // Resolve semantic plan + billing period → Polar product UUID
     const resolvedPlanId = this.resolvePlanId(data.planId, data.variantId);
 
-    // customers is RLS-protected; the read must run inside a tenant tx so
-    // current_workspace_id matches the policy.
+    // Fetch user email + name to pre-fill Polar checkout fields
+    const user = await this.db.query.users.findFirst({
+      where: (u, { eq }) => eq(u.id, data.userId),
+      columns: { email: true, name: true },
+    });
+
+    // customers is RLS-protected; must run inside tenant tx
     const existingCustomer = await withTenantTx(
       data.workspaceId,
       (tx) => this.billingRepo.findCustomerByWorkspaceId(data.workspaceId, tx),
@@ -100,6 +104,8 @@ export class BillingService {
       variantId: data.variantId,
       successUrl: data.successUrl,
       cancelUrl: data.cancelUrl,
+      email: user?.email,
+      name: user?.name ?? undefined,
       ...(existingCustomer && {
         customerId: this.encryption.decrypt(
           existingCustomer.providerCustomerId,
