@@ -14,12 +14,12 @@ type Story = StoryObj<typeof WaitlistForm>;
 export const Default: Story = {
   args: {
     apiEndpoint: "/api/waitlist",
-    onSuccess: () => console.log("Joined waitlist!"),
+    onSuccess: () => {},
   },
 };
 
 export const WithoutEndpoint: Story = {
   args: {
-    onSuccess: () => console.log("Submitted"),
+    onSuccess: () => {},
   },
 };

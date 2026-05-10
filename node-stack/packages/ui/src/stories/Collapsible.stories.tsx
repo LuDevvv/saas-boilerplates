@@ -1,6 +1,6 @@
-import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
 import { ChevronDown } from "lucide-react";
+import { useState } from "react";
 
 import { Button } from "../components/ui/Button.js";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../components/ui/Collapsible.js";

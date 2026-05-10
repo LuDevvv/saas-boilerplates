@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
+import React from "react";
 
 import { TwoColumnAside, TwoColumnLayout, TwoColumnMain } from "../components/ui/TwoColumnLayout.js";
 
@@ -11,7 +12,7 @@ const meta: Meta<typeof TwoColumnLayout> = {
 export default meta;
 type Story = StoryObj<typeof TwoColumnLayout>;
 
-const boxStyle = (bg: string) => ({
+const boxStyle = (bg: string): React.CSSProperties => ({
   background: bg,
   borderRadius: "8px",
   padding: "24px",

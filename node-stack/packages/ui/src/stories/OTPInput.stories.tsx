@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react";
+import React, { useRef, useState } from "react";
 
 import { OTPInput } from "../components/ui/OTPInput.js";
 
@@ -11,11 +11,11 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj;
 
-function OTPDemo({ length = 6, disabled = false }: { length?: number; disabled?: boolean }) {
+function OTPDemo({ length = 6, disabled = false }: { length?: number; disabled?: boolean }): React.JSX.Element {
   const [code, setCode] = useState<string[]>(Array(length).fill(""));
   const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(length).fill(null));
 
-  const handleChange = (index: number, value: string) => {
+  const handleChange = (index: number, value: string): void => {
     const next = [...code];
     next[index] = value;
     setCode(next);
@@ -24,13 +24,13 @@ function OTPDemo({ length = 6, disabled = false }: { length?: number; disabled?:
     }
   };
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === "Backspace" && !code[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
   };
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>): void => {
     e.preventDefault();
     const pasted = e.clipboardData.getData("text").slice(0, length);
     const next = [...code];

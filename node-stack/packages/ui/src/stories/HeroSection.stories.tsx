@@ -16,7 +16,7 @@ export const Default: Story = {
     title: "Build production-ready SaaS apps faster",
     subtitle: "A complete boilerplate with authentication, billing, and team management — so you can focus on what makes your product unique.",
     ctaText: "Get Started Free",
-    onCtaClick: () => console.log("CTA clicked"),
+    onCtaClick: () => {},
   },
 };
 
