@@ -84,15 +84,17 @@ const VerifyEmail: React.FC = () => {
         onSuccess: () => {
           appToast.success({
             title: "¡Email verificado!",
-            description: "Tu cuenta ha sido activada correctamente.",
+            description: "Bienvenido/a — configuremos tu cuenta.",
           });
-          navigate("/auth/sign-in");
+          // Navigation to /onboarding handled by useVerifyEmail hook after storing tokens
         },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onError: (error: any) => {
           appToast.error({
             title: "Error de verificación",
-            description: error.response?.data?.message || "El código es incorrecto o ha expirado.",
+            description: error?.message?.includes("expirado") || error?.message?.includes("incorrecto")
+              ? error.message
+              : "El código es incorrecto o ha expirado.",
           });
         }
       }

@@ -39,24 +39,16 @@ export const useLoginFlow = () => {
 
 export const useRegisterFlow = () => {
   const navigate = useNavigate();
-  const setUser = useAuthStore(useShallow((state) => state.setUser));
-  const queryClient = useQueryClient();
 
-  return useMutation<AuthResponse, Error, RegisterDto>({
-    mutationFn: (userData) => api.auth.register(userData),
-    onSuccess: ({ accessToken, refreshToken, user }) => {
-      setUser(user);
-      cookieTokenStorage.setToken(accessToken);
-      if (refreshToken) {
-        cookieTokenStorage.setRefreshToken(refreshToken);
-      }
-      queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
-
+  return useMutation<{ email: string; verificationRequired: boolean }, Error, RegisterDto>({
+    mutationFn: (userData) =>
+      api.auth.register(userData) as unknown as Promise<{ email: string; verificationRequired: boolean }>,
+    onSuccess: ({ email }) => {
       appToast.success({
         title: "¡Cuenta creada!",
-        description: `Bienvenido ${user.firstName || user.email}`,
+        description: "Revisa tu correo — te enviamos un código de verificación.",
       });
-      navigate("/");
+      navigate(`/auth/verify-email?email=${encodeURIComponent(email)}`);
     },
     onError: () => {
       // Handled by the component

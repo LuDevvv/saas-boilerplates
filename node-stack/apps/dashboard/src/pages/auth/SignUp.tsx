@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { RegisterDto } from "@node-stack/types";
-import { Input, Button, PhoneInput, Checkbox, SocialButton } from "@node-stack/ui";
+import { Input, Button, Checkbox, SocialButton } from "@node-stack/ui";
 import { SignUpSchema, type SignUpDto } from "@node-stack/validators";
 import { Eye, EyeOff } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -33,7 +33,7 @@ const SignUpPage = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(SignUpSchema as any),
     mode: "onChange",
-    defaultValues: { acceptedTerms: true, firstName: "", lastName: "", email: "", phone: "", password: "", confirmPassword: "" },
+    defaultValues: { acceptedTerms: true, firstName: "", lastName: "", email: "", password: "", confirmPassword: "" },
   });
 
   // Sync server errors with form fields and show toast
@@ -64,7 +64,7 @@ const SignUpPage = () => {
     const { confirmPassword: _confirmPassword, acceptedTerms: _acceptedTerms, ...registrationData } = data;
     try {
       await registerUser(registrationData as RegisterDto);
-      navigate("/onboarding");
+      // Navigation to /auth/verify-email is handled by useRegisterFlow onSuccess
     } catch {
       // Error handled in useEffect
     }
@@ -145,19 +145,6 @@ const SignUpPage = () => {
               className="h-12 rounded-xl"
               error={errors.email?.message}
               {...register("email")}
-            />
-
-            <Controller
-              name="phone"
-              control={control}
-              render={({ field, fieldState }) => (
-                <PhoneInput
-                  label="Teléfono"
-                  value={field.value || ""}
-                  onChange={field.onChange}
-                  error={fieldState.error?.message}
-                />
-              )}
             />
 
             <div className="space-y-1">

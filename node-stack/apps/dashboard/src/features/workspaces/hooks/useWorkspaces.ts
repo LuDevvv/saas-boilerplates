@@ -27,7 +27,8 @@ export const useCreateWorkspace = () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.workspaces.list() });
       appToast.success({ title: "Compañía creada", description: "La nueva compañía está lista para usarse." });
     },
-    onError: (err) => appToast.error(err),
+    // Don't show raw API errors to user — the calling component (Onboarding) handles them
+    onError: () => {},
   });
 };
 

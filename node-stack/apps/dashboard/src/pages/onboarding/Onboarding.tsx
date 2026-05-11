@@ -1,6 +1,6 @@
 import { Button, Input, Select, PhoneInput } from "@node-stack/ui";
 import { ArrowRight, ChevronLeft, User, Briefcase } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 
 import { Logo } from "@/assets/logo/logo";
@@ -16,10 +16,14 @@ const Onboarding: React.FC = () => {
   const { mutateAsync: updateProfile } = useUpdateProfile();
   const { data: workspaces } = useWorkspaces();
   const setActiveWorkspace = useWorkspaceStore((s) => s.setActiveWorkspace);
+  const clearWorkspace = useWorkspaceStore((s) => s.clearWorkspace);
 
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  // Tracks whether we've done the initial step recovery — prevents the "lead recovery"
+  // useEffect from fighting with the "Volver" button (re-jumping to step 2 after going back).
+  const stepRecovered = useRef(false);
 
   const [formData, setFormData] = useState(() => {
     const saved = localStorage.getItem("onboarding_data");
@@ -48,13 +52,19 @@ const Onboarding: React.FC = () => {
     localStorage.setItem("onboarding_step", step.toString());
   }, [step]);
 
-  // Lead recovery: user captured phone (step 1 done) but has no workspace → resume at step 2
+  // Lead recovery: run ONCE on initial load — if user already completed step 1 (has phone)
+  // but has no workspace yet, resume at step 2. Using a ref prevents this from firing
+  // again when the user clicks "Volver" (back), which would fight the back navigation.
   useEffect(() => {
+    if (stepRecovered.current) return;
+    if (workspaces === undefined) return; // data not loaded yet
+    stepRecovered.current = true;
+
     const hasWorkspace = Array.isArray(workspaces) && workspaces.length > 0;
     if (user?.phone && !hasWorkspace) {
       setStep(2);
     }
-  }, [user?.phone, workspaces]);
+  }, [user?.phone, workspaces]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const jobTitleOptions = [
     { value: "founder", label: "Propietario/a" },
@@ -131,6 +141,11 @@ const Onboarding: React.FC = () => {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
+      // Clear any stale workspace ID from a previous session before creating.
+      // Without this, the axios interceptor sends the old x-workspace-id header
+      // and the workspace guard rejects the request (403 "not a member").
+      clearWorkspace();
+
       const workspace = await createWorkspace({
         name: formData.companyName,
         industry: formData.sector || undefined,
@@ -138,14 +153,14 @@ const Onboarding: React.FC = () => {
         revenueRange: formData.revenue || undefined,
       });
 
-      // Set as active so X-Workspace-ID header is available in checkout
+      // Set the new workspace as active so the checkout flow has the correct ID
       if (workspace?.id) setActiveWorkspace(workspace.id);
 
       localStorage.removeItem("onboarding_data");
       localStorage.removeItem("onboarding_step");
       navigate("/onboarding/pricing");
     } catch {
-      setErrors({ companyName: "Hubo un error al crear tu espacio. Inténtalo de nuevo." });
+      setErrors({ companyName: "Hubo un error al crear tu empresa. Inténtalo de nuevo." });
     } finally {
       setIsSubmitting(false);
     }

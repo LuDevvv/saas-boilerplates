@@ -93,11 +93,8 @@ export class AuthService {
     dto: RegisterDto,
     userAgent?: string,
     ipAddress?: string,
-  ): Promise<
-    TokenPair & { token: string; user: { id: string; email: string; firstName: string | null; lastName: string | null; phone: string | null } }
-  > {
+  ): Promise<{ email: string; verificationRequired: true }> {
     const passwordHash = await this.passwordService.hashPassword(dto.password);
-    const sessionId = crypto.randomUUID();
 
     let outboxEventId: string | null = null;
     const user = await withSystemTx(async (tx: Database) => {
@@ -116,19 +113,6 @@ export class AuthService {
           passwordHash,
           name: dto.firstName,
           lastName: dto.lastName,
-        },
-        tx,
-      );
-
-      const expiresAt = this.getSessionExpiry(false);
-      await this.authRepository.createSession(
-        {
-          id: sessionId,
-          userId: newUser.id,
-          expiresAt,
-          rememberMe: false,
-          userAgent,
-          ipAddress,
         },
         tx,
       );
@@ -160,8 +144,58 @@ export class AuthService {
       await OutboxProducer.addProcessOutboxJob(outboxEventId);
     }
 
-    const tokens = await this.generateTokens(user.id, user.email, sessionId);
+    // Send OTP verification email — user cannot login until they verify
+    await this.sendVerificationEmail(user.id);
 
+    return { email: user.email, verificationRequired: true as const };
+  }
+
+  /** Verify OTP code sent to email, create session, and return tokens. */
+  async verifyEmailWithCode(
+    email: string,
+    code: string,
+    userAgent?: string,
+    ipAddress?: string,
+  ): Promise<TokenPair & { token: string; user: { id: string; email: string; firstName: string | null; lastName: string | null; phone: string | null } }> {
+    const user = await this.authRepository.findUserByEmail(email.toLowerCase());
+    if (!user) {
+      throw new BadRequestException("Código incorrecto o expirado");
+    }
+
+    const verification = await this.authRepository.findVerificationToken("email_verification", code);
+    if (!verification || verification.userId !== user.id || verification.expiresAt < new Date()) {
+      throw new BadRequestException("Código incorrecto o expirado");
+    }
+
+    const sessionId = crypto.randomUUID();
+    await withSystemTx(async (tx: Database) => {
+      await this.authRepository.updateUser(user.id, { emailVerified: true }, tx);
+      await this.authRepository.deleteVerificationToken(code, tx);
+
+      const expiresAt = this.getSessionExpiry(false);
+      await this.authRepository.createSession(
+        { id: sessionId, userId: user.id, expiresAt, rememberMe: false, userAgent, ipAddress },
+        tx,
+      );
+
+      await this.authRepository.createOutboxEvent("user.email_verified", { userId: user.id }, tx);
+
+      await this.auditLog.create(
+        {
+          workspaceId: null,
+          userId: user.id,
+          action: "auth.user_registered",
+          entityType: "user",
+          entityId: user.id,
+          metadata: { email: user.email, method: "otp_verification" },
+          ipAddress: ipAddress ?? null,
+          userAgent: userAgent ?? null,
+        },
+        tx,
+      );
+    }, this.authRepository.db);
+
+    const tokens = await this.generateTokens(user.id, user.email, sessionId);
     return {
       ...tokens,
       token: tokens.accessToken,
@@ -287,9 +321,9 @@ export class AuthService {
     const user = await this.authRepository.findUserById(userId);
     if (!user || user.emailVerified) return;
 
-    const token = crypto.randomBytes(32).toString("hex");
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 1);
+    // Generate 6-digit OTP (stored as the token value)
+    const token = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 min
 
     let outboxEventId: string | null = null;
     await withSystemTx(async (tx: Database) => {

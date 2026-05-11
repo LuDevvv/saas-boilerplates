@@ -66,6 +66,26 @@ export class WorkspaceGuard implements CanActivate {
 
     const user = req.user;
 
+    // Skip workspace membership check when creating a new workspace.
+    // The x-workspace-id header may carry a stale value from a previous session,
+    // but the user has no membership yet — checking it would always 403.
+    const workspaceIdFromUrlParams =
+      (params["workspaceId"] as string | undefined) ??
+      ((params["id"] as string | undefined) &&
+        (req.url.includes("/workspaces/") ||
+          req.url.includes("/api-keys") ||
+          req.url.includes("/storage"))
+        ? (params["id"] as string)
+        : undefined);
+
+    if (
+      req.method === "POST" &&
+      !workspaceIdFromUrlParams &&
+      /\/workspaces\/?$/.test(req.url)
+    ) {
+      return true;
+    }
+
     // Skip workspace check for auth routes or if no workspaceId is found
     if (!workspaceId || req.url.includes("/auth/")) {
       // If the route belongs to a workspace-dependent domain, require the ID

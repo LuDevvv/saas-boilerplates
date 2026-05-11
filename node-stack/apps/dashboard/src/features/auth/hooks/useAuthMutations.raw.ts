@@ -1,5 +1,6 @@
 ﻿import type { LoginDto, RegisterDto, AuthResponse, VerifyEmailDto } from "@node-stack/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { useShallow } from "zustand/react/shallow";
 
 import { api, cookieTokenStorage } from "@/lib/api";
@@ -60,8 +61,19 @@ export const useLogout = () => {
 };
 
 export const useVerifyEmail = () => {
-  return useMutation<{ message: string }, Error, VerifyEmailDto>({
-    mutationFn: (data) => api.auth.verifyEmail(data),
+  const navigate = useNavigate();
+  const setUser = useAuthStore(useShallow((state) => state.setUser));
+  const queryClient = useQueryClient();
+
+  return useMutation<AuthResponse, Error, VerifyEmailDto>({
+    mutationFn: (data) => api.auth.verifyEmail(data) as unknown as Promise<AuthResponse>,
+    onSuccess: ({ accessToken, refreshToken, user }) => {
+      setUser(user);
+      cookieTokenStorage.setToken(accessToken);
+      if (refreshToken) cookieTokenStorage.setRefreshToken(refreshToken);
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
+      navigate("/onboarding");
+    },
   });
 };
 

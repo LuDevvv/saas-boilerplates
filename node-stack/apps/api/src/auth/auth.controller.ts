@@ -385,7 +385,14 @@ export class AuthController {
     description: "Confirms a user's email address using a valid verification token.",
   })
   @ApiResponse({ status: 200, description: "Email verified successfully." })
-  async verifyEmail(@Body() dto: VerifyEmailDto): Promise<{ message: string }> {
+  async verifyEmail(@Body() dto: VerifyEmailDto, @Req() req: Request): Promise<{ message: string } | unknown> {
+    // OTP code-based verification: returns tokens so the client can log in immediately
+    if (dto.email && dto.code) {
+      const userAgent = req.headers["user-agent"];
+      const ipAddress = extractClientIp(req);
+      return this.authService.verifyEmailWithCode(dto.email, dto.code, userAgent, ipAddress);
+    }
+    // Token link-based verification (legacy)
     await this.authService.verifyEmail(dto.token, dto.email, dto.code);
     return { message: "Email verified successfully." };
   }
