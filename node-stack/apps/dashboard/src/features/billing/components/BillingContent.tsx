@@ -8,6 +8,7 @@ import { BillingLayoutSkeleton } from "./BillingSkeletons";
 import { PaymentHistory, type PaymentRecord } from "./PaymentHistory";
 import { PlanCard } from "./PlanCard";
 import { SupportCard } from "./SupportCard";
+import { UsageWidget } from "./UsageWidget";
 import { useSubscription, useInvoices, useCancelSubscription, useCustomerPortal, useRefreshSubscription, useUncancelSubscription } from "../hooks/useBilling";
 
 import { appToast } from "@/components/alerts/Toasts";
@@ -211,6 +212,11 @@ export const BillingContent: FC = () => {
             {pendingSection === "orders" ? "Abriendo..." : "Ver historial en Polar"}
           </button>
         </div>
+      )}
+
+      {/* ── Usage widget — shown when active subscription exists ── */}
+      {planInfo.isPremium && (
+        <UsageWidget planName={planInfo.planId} isLoading={isLoadingSub} />
       )}
 
       {/* ── Support CTA ── */}

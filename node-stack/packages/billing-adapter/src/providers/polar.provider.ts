@@ -246,6 +246,9 @@ export class PolarProvider implements PaymentProvider {
       // Checkout localization (Polar beta feature — no-op if not enabled for the org)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ...(data.locale && { locale: data.locale as any }),
+      // Show discount code input in the checkout form
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      allowDiscountCodes: (data.allowDiscountCodes ?? true) as any,
       metadata: data.metadata ?? {},
     });
 

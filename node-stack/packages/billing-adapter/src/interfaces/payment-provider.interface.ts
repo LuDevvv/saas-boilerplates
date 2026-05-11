@@ -24,6 +24,8 @@ export interface CheckoutData {
   embedOrigin?: string;
   /** BCP 47 locale code for checkout UI language (e.g. "es") — beta feature */
   locale?: string;
+  /** Show discount code input in the checkout form (default: true) */
+  allowDiscountCodes?: boolean;
   metadata?: Record<string, string>;
 }
 

@@ -518,6 +518,13 @@ const Checkout: FC = () => {
             </button>
 
             {!isFree && (
+              <p className="text-[11px] text-fg-muted text-center">
+                <Tag className="inline h-3 w-3 mr-1 opacity-60" />
+                ¿Tienes un código de descuento? Podrás ingresarlo dentro del formulario de pago.
+              </p>
+            )}
+
+            {!isFree && (
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-1">
                 <div className="flex items-center gap-2 text-[11px] text-fg-muted">
                   <Lock className="h-3.5 w-3.5 shrink-0" />
