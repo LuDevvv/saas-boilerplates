@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Req,
+  Query,
   HttpCode,
   HttpStatus,
 } from "@nestjs/common";
@@ -103,10 +104,13 @@ export class BillingController {
 
   @Get("portal")
   @RequirePermissions(Permission.BILLING_READ)
-  @ApiOperation({ summary: "Get customer portal link" })
+  @ApiOperation({ summary: "Get customer portal link (section: subscriptions | orders)" })
   @ApiResponse({ status: 200, description: "Customer portal link retrieved" })
-  async portal(@Workspace() workspace: WorkspaceContext): Promise<{ url: string | null }> {
-    return this.billing.portal(workspace.id);
+  async portal(
+    @Workspace() workspace: WorkspaceContext,
+    @Query("section") section?: string,
+  ): Promise<{ url: string | null }> {
+    return this.billing.portal(workspace.id, section);
   }
 
   @Get("invoices")

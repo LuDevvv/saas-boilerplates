@@ -78,7 +78,7 @@ export const AccountSection: FC<AccountSectionProps> = ({
               {getDisplayName(user)}
             </p>
             <p className="text-[11px] text-fg-muted truncate leading-snug">
-              {isPremium ? (currentPlan?.planId ?? "Pro") : "Plan Gratuito"}
+              {isPremium ? (currentPlan?.planName ?? currentPlan?.planId ?? "Pro") : "Plan Gratuito"}
             </p>
           </div>
         )}

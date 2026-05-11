@@ -19,6 +19,8 @@ export const useSubscription = () => {
     queryKey: queryKeys.billing.subscription(),
     queryFn: () => api.billing.getSubscription(),
     enabled: !!workspaceId,
+    staleTime: 0,
+    refetchOnMount: true,
   });
 };
 
@@ -47,8 +49,8 @@ export const useCheckout = () => {
 };
 
 export const useCustomerPortal = () => {
-  return useMutation<PortalResponse, Error, { returnUrl?: string }>({
-    mutationFn: () => api.billing.getPortalUrl(),
+  return useMutation<PortalResponse, Error, { section?: string }>({
+    mutationFn: ({ section } = {}) => api.billing.getPortalUrl(section),
   });
 };
 

@@ -582,7 +582,7 @@ export class BillingService {
     );
   }
 
-  async portal(workspaceId: string): Promise<{ url: string | null }> {
+  async portal(workspaceId: string, section?: string): Promise<{ url: string | null }> {
     const customer = await withTenantTx(
       workspaceId,
       (tx) => this.billingRepo.findCustomerByWorkspaceId(workspaceId, tx),
@@ -593,16 +593,22 @@ export class BillingService {
     }
 
     const polarPortal = this.configService.get<string>("POLAR_PORTAL_URL", "https://polar.sh");
+    const sectionPath = section === "orders" ? "/purchases/orders" : "/purchases";
 
     try {
       const decryptedCustomerId = this.encryption.decrypt(customer.providerCustomerId);
       const session = await this.provider.createCustomerSession(decryptedCustomerId);
-      // Polar returns customer_portal_url with the token already embedded — prefer that
-      const url = session.customerPortalUrl ?? `${polarPortal}?customer_session_token=${session.token}`;
-      return { url };
+
+      // Navigate to the correct section within the portal
+      if (session.customerPortalUrl) {
+        const parsed = new URL(session.customerPortalUrl);
+        parsed.pathname = sectionPath;
+        return { url: parsed.toString() };
+      }
+      return { url: `${polarPortal}${sectionPath}?customer_session_token=${session.token}` };
     } catch (err) {
-      this.logger.warn(`Could not create customer session for portal: ${(err as Error).message}`);
-      return { url: `${polarPortal}/purchases/subscriptions` };
+      this.logger.warn(`Could not create customer session: ${(err as Error).message}`);
+      return { url: `${polarPortal}${sectionPath}` };
     }
   }
 

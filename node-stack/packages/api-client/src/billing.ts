@@ -22,8 +22,9 @@ export const billing = (client: AxiosInstance) => ({
     return r as unknown as CheckoutResponse;
   },
 
-  getPortalUrl: async (): Promise<PortalResponse> => {
-    const r = await client.get("/billing/portal");
+  getPortalUrl: async (section?: string): Promise<PortalResponse> => {
+    const params = section ? `?section=${section}` : "";
+    const r = await client.get(`/billing/portal${params}`);
     return r as unknown as PortalResponse;
   },
 

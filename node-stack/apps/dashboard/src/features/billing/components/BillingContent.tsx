@@ -21,14 +21,17 @@ export const BillingContent: FC = () => {
   const portalMutation = useCustomerPortal();
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [pendingSection, setPendingSection] = useState<"payment" | "orders" | null>(null);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleUpgrade = () => navigate("/payments/pricing");
 
-  const handleOpenPortal = async () => {
+  const handleOpenPortal = async (section: "payment" | "orders") => {
+    setPendingSection(section);
     try {
-      const result = await portalMutation.mutateAsync({});
+      const portalSection = section === "orders" ? "orders" : undefined;
+      const result = await portalMutation.mutateAsync({ section: portalSection });
       if (result?.url) {
         window.open(result.url, "_blank", "noopener,noreferrer");
       } else {
@@ -36,6 +39,8 @@ export const BillingContent: FC = () => {
       }
     } catch {
       appToast.error({ title: "Error", description: "No se pudo abrir el portal." });
+    } finally {
+      setPendingSection(null);
     }
   };
 
@@ -145,12 +150,12 @@ export const BillingContent: FC = () => {
               cumpliendo con PCI-DSS.
             </p>
             <button
-              onClick={handleOpenPortal}
-              disabled={portalMutation.isPending}
-              className="inline-flex items-center gap-2 h-9 px-5 rounded-xl border border-border text-[13px] font-medium text-fg hover:bg-surface-hover transition-all active:scale-[0.98]"
+              onClick={() => handleOpenPortal("payment")}
+              disabled={pendingSection === "payment"}
+              className="inline-flex items-center gap-2 h-9 px-5 rounded-xl border border-border text-[13px] font-medium text-fg hover:bg-surface-hover transition-all active:scale-[0.98] disabled:opacity-60"
             >
               <ExternalLink className="h-3.5 w-3.5 text-fg-muted" />
-              {portalMutation.isPending ? "Abriendo..." : "Gestionar métodos de pago"}
+              {pendingSection === "payment" ? "Abriendo..." : "Gestionar métodos de pago"}
             </button>
           </div>
         </div>
@@ -168,12 +173,12 @@ export const BillingContent: FC = () => {
             Las facturas de tus pagos aparecerán aquí. También puedes verlas en el portal de Polar.
           </p>
           <button
-            onClick={handleOpenPortal}
-            disabled={portalMutation.isPending}
-            className="inline-flex items-center gap-2 h-9 px-5 rounded-xl border border-border text-[13px] font-medium text-fg hover:bg-surface-hover transition-all active:scale-[0.98]"
+            onClick={() => handleOpenPortal("orders")}
+            disabled={pendingSection === "orders"}
+            className="inline-flex items-center gap-2 h-9 px-5 rounded-xl border border-border text-[13px] font-medium text-fg hover:bg-surface-hover transition-all active:scale-[0.98] disabled:opacity-60"
           >
             <ExternalLink className="h-3.5 w-3.5 text-fg-muted" />
-            Ver en Polar
+            {pendingSection === "orders" ? "Abriendo..." : "Ver historial en Polar"}
           </button>
         </div>
       )}

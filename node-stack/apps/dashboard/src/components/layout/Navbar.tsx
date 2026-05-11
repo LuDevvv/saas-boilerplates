@@ -11,6 +11,7 @@ import { ThemeToggle } from "../ui/ThemeToggle";
 import { Logo } from "@/assets/logo/logo";
 import { accountDropdownItems } from "@/config/navigation";
 import { useAuth } from "@/hooks/stores/useAuth";
+import { useSubscription } from "@/features/billing/hooks/useBilling";
 
 interface NavbarProps {
   onMenuClick?: () => void;
@@ -18,8 +19,27 @@ interface NavbarProps {
   subtitle?: string;
 }
 
+const PLAN_NAMES: Record<string, string> = {
+  pro: "Growth",
+  elite: "Unlimited",
+  free: "Starter",
+};
+
 export const Navbar: FC<NavbarProps> = ({ onMenuClick }) => {
-  const { user, isPremium, logout, currentPlan } = useAuth();
+  const { user, logout } = useAuth();
+  const { data: subscription } = useSubscription();
+
+  const hasActiveSub = !!subscription && subscription.status !== "none" && subscription.status !== "cancelled" && subscription.status !== "canceled";
+  const isPremium = hasActiveSub;
+
+  const currentPlan = hasActiveSub
+    ? {
+        planId: subscription.planId,
+        planName: subscription.planName ?? PLAN_NAMES[subscription.planId] ?? "Growth",
+        status: subscription.status,
+        currentPeriodEnd: subscription.currentPeriodEnd,
+      }
+    : null;
 
   return (
     <header className="sticky top-0 z-30 flex h-[68px] w-full items-center justify-between bg-white dark:bg-canvas px-6 border-b border-sidebar-border transition-all duration-300">
