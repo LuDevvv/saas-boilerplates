@@ -12,15 +12,7 @@ import { IStorageProvider, FileMetadata } from "../interface.js";
 import { StorageConfig } from "../storage.service.js";
 
 export class S3StorageProvider implements IStorageProvider {
-  /** Internal client — used for headObject, delete, upload, ping.
-   *  Uses the endpoint the API container can reach (e.g. http://minio:9000). */
   private client: S3Client;
-
-  /** Presign client — used only for getUploadUrl / getDownloadUrl.
-   *  Uses a publicly accessible endpoint (e.g. http://localhost:9000) so the
-   *  presigned URLs the browser receives are actually reachable. Falls back to
-   *  `client` when no publicEndpoint is configured. */
-  private presignClient: S3Client;
 
   constructor(private config: StorageConfig) {
     this.client = new S3Client({
@@ -32,18 +24,6 @@ export class S3StorageProvider implements IStorageProvider {
       },
       forcePathStyle: !!config.endpoint,
     });
-
-    this.presignClient = config.publicEndpoint
-      ? new S3Client({
-          endpoint: config.publicEndpoint,
-          region: config.region ?? "auto",
-          credentials: {
-            accessKeyId: config.accessKeyId,
-            secretAccessKey: config.secretAccessKey,
-          },
-          forcePathStyle: true,
-        })
-      : this.client;
   }
 
   async getUploadUrl(key: string, contentType: string, expires: number = 3600): Promise<string> {
@@ -52,7 +32,7 @@ export class S3StorageProvider implements IStorageProvider {
       Key: key,
       ContentType: contentType,
     });
-    return getSignedUrl(this.presignClient, command, { expiresIn: expires });
+    return getSignedUrl(this.client, command, { expiresIn: expires });
   }
 
   async getDownloadUrl(key: string, expires: number = 3600): Promise<string> {
@@ -60,7 +40,7 @@ export class S3StorageProvider implements IStorageProvider {
       Bucket: this.config.bucket,
       Key: key,
     });
-    return getSignedUrl(this.presignClient, command, { expiresIn: expires });
+    return getSignedUrl(this.client, command, { expiresIn: expires });
   }
 
   async delete(key: string): Promise<void> {
@@ -92,11 +72,8 @@ export class S3StorageProvider implements IStorageProvider {
     });
     const response = await this.client.send(command);
     const body = response.Body;
-    if (!body) {
-      return new Uint8Array(0);
-    }
-    const bytes = await body.transformToByteArray();
-    return bytes;
+    if (!body) return new Uint8Array(0);
+    return body.transformToByteArray();
   }
 
   async upload(options: {
@@ -117,10 +94,7 @@ export class S3StorageProvider implements IStorageProvider {
 
   async ping(): Promise<boolean> {
     try {
-      const command = new HeadBucketCommand({
-        Bucket: this.config.bucket,
-      });
-      await this.client.send(command);
+      await this.client.send(new HeadBucketCommand({ Bucket: this.config.bucket }));
       return true;
     } catch {
       return false;

@@ -6,44 +6,26 @@ import { IdempotencyService } from "@/common/services/idempotency.service.js";
 import { StorageController } from "@/storage/storage.controller.js";
 import { AppStorageService } from "@/storage/storage.service.js";
 
-/** Returns undefined for unset values or un-replaced .env.example placeholders
- *  (<...>), letting the caller fall back to the next option. */
-function stripPlaceholder(value: string | undefined): string | undefined {
+/** Returns undefined for unset or un-replaced .env.example placeholders (<...>). */
+function env(value: string | undefined): string | undefined {
   if (!value) return undefined;
-  const trimmed = value.trim();
-  return trimmed && !/<[^>]+>/.test(trimmed) ? trimmed : undefined;
+  const t = value.trim();
+  return t && !/<[^>]+>/.test(t) ? t : undefined;
 }
 
-/** Ensures a storage endpoint has a valid http/https scheme.
- *  Throws a descriptive error at startup so mis-configured endpoints surface
- *  immediately instead of causing cryptic TypeErrors at request time. */
-function normalizeEndpoint(value: string | undefined): string | undefined {
+/** Validates that an endpoint is a full URL; throws a startup error otherwise. */
+function requireValidEndpoint(value: string | undefined): string | undefined {
   if (!value) return undefined;
-
   const normalized = /^https?:\/\//i.test(value) ? value : `http://${value}`;
-
   try {
     new URL(normalized);
   } catch {
     throw new Error(
       `[StorageModule] Invalid storage endpoint "${value}". ` +
-      `Use a full URL, e.g. "http://minio:9000" (Docker) or "http://localhost:9000" (local).`,
+      `Set STORAGE_S3_ENDPOINT to a full URL like "https://<id>.r2.cloudflarestorage.com".`,
     );
   }
-
   return normalized;
-}
-
-/** Extracts just the origin (scheme + host + port) from a URL that may include
- *  a bucket path, e.g. "http://localhost:9000/app" → "http://localhost:9000". */
-function originOf(value: string | undefined): string | undefined {
-  if (!value) return undefined;
-  try {
-    const u = new URL(value);
-    return `${u.protocol}//${u.host}`;
-  } catch {
-    return undefined;
-  }
 }
 
 @Module({
@@ -64,41 +46,15 @@ function originOf(value: string | undefined): string | undefined {
         const provider = (process.env.STORAGE_PROVIDER || "local").toLowerCase() as "s3" | "local";
 
         if (provider === "s3") {
-          // stripPlaceholder() skips un-replaced .env.example values like
-          // <tu-account-id> so they fall through to the MINIO_* fallback.
-          const internalEndpoint = normalizeEndpoint(
-            stripPlaceholder(process.env.STORAGE_S3_ENDPOINT) ||
-            stripPlaceholder(process.env.MINIO_ENDPOINT),
-          );
-
-          // Public endpoint for presigned URLs the browser can reach.
-          // Explicitly set via STORAGE_S3_PUBLIC_ENDPOINT, or extracted from
-          // MINIO_PUBLIC_URL (e.g. "http://localhost:9000/app" → "http://localhost:9000").
-          const publicEndpoint = normalizeEndpoint(
-            stripPlaceholder(process.env.STORAGE_S3_PUBLIC_ENDPOINT) ||
-            originOf(stripPlaceholder(process.env.STORAGE_S3_PUBLIC_URL)) ||
-            originOf(stripPlaceholder(process.env.MINIO_PUBLIC_URL)),
-          );
-
           return createStorageProvider({
             provider: "s3",
             s3: {
-              endpoint: internalEndpoint,
-              publicEndpoint:
-                publicEndpoint !== internalEndpoint ? publicEndpoint : undefined,
+              endpoint: requireValidEndpoint(env(process.env.STORAGE_S3_ENDPOINT)),
               region: process.env.STORAGE_S3_REGION || "auto",
-              accessKeyId:
-                stripPlaceholder(process.env.STORAGE_S3_ACCESS_KEY) ||
-                process.env.MINIO_ACCESS_KEY || "",
-              secretAccessKey:
-                stripPlaceholder(process.env.STORAGE_S3_SECRET_KEY) ||
-                process.env.MINIO_SECRET_KEY || "",
-              bucket:
-                stripPlaceholder(process.env.STORAGE_S3_BUCKET) ||
-                process.env.MINIO_BUCKET || "attachments",
-              publicUrl:
-                stripPlaceholder(process.env.STORAGE_S3_PUBLIC_URL) ||
-                process.env.MINIO_PUBLIC_URL,
+              accessKeyId: env(process.env.STORAGE_S3_ACCESS_KEY) || "",
+              secretAccessKey: env(process.env.STORAGE_S3_SECRET_KEY) || "",
+              bucket: env(process.env.STORAGE_S3_BUCKET) || "app",
+              publicUrl: env(process.env.STORAGE_S3_PUBLIC_URL),
             },
           });
         }
@@ -106,7 +62,7 @@ function originOf(value: string | undefined): string | undefined {
         return createStorageProvider({
           provider: "local",
           local: {
-            basePath: process.env.STORAGE_LOCAL_PATH || "./storage",
+            basePath: process.env.STORAGE_LOCAL_PATH || "./uploads",
             baseUrl:
               process.env.STORAGE_LOCAL_URL ||
               "http://localhost:4000/api/v1/storage",

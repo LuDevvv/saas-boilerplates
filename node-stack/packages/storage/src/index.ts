@@ -15,8 +15,6 @@ export interface UnifiedStorageConfig {
   provider: "s3" | "local";
   s3?: {
     endpoint?: string;
-    /** Public-facing endpoint used for presigned URL generation. */
-    publicEndpoint?: string;
     region?: string;
     accessKeyId: string;
     secretAccessKey: string;
