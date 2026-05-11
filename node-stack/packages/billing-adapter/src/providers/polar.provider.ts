@@ -15,6 +15,7 @@ import type {
   CheckoutUrl,
   WebhookEvent,
   WebhookEventType,
+  BillingOrder,
 } from "../interfaces/payment-provider.interface.js";
 
 export interface PolarProviderConfig {
@@ -66,6 +67,7 @@ interface PolarEventLike {
 export class PolarProvider implements PaymentProvider {
   private readonly client: Polar;
   private readonly webhookSecret?: string;
+  private readonly server: "sandbox" | "production";
   private readonly circuitBreaker: CircuitBreaker<[CheckoutData], CheckoutUrl>;
 
   constructor(config: PolarProviderConfig);
@@ -80,9 +82,10 @@ export class PolarProvider implements PaymentProvider {
         ? { accessToken: configOrApiKey, webhookSecret }
         : configOrApiKey;
 
+    this.server = config.server ?? "production";
     this.client = new Polar({
       accessToken: config.accessToken,
-      server: config.server ?? "production",
+      server: this.server,
     });
     this.webhookSecret = config.webhookSecret;
     this.circuitBreaker = new CircuitBreaker<[CheckoutData], CheckoutUrl>(
@@ -129,6 +132,58 @@ export class PolarProvider implements PaymentProvider {
       subscriptionUpdate: {
         cancelAtPeriodEnd: true,
       },
+    });
+  }
+
+  async upgradeSubscription(subscriptionId: string, productId: string): Promise<void> {
+    await this.client.subscriptions.update({
+      id: subscriptionId,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      subscriptionUpdate: { productId } as any,
+    });
+  }
+
+  async createCustomerSession(customerId: string): Promise<{ token: string }> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const client = this.client as any;
+    if (typeof client.customerSessions?.create !== "function") {
+      throw new Error("customerSessions.create not available in this SDK version");
+    }
+    const session = await client.customerSessions.create({ customerId });
+    return { token: session.token as string };
+  }
+
+  async listOrders(customerSessionToken: string, limit = 20): Promise<BillingOrder[]> {
+    const baseUrl =
+      this.server === "sandbox"
+        ? "https://sandbox-api.polar.sh"
+        : "https://api.polar.sh";
+
+    const res = await fetch(
+      `${baseUrl}/v1/customer-portal/orders?limit=${limit}&sorting=-created_at`,
+      {
+        headers: {
+          Authorization: `Bearer ${customerSessionToken}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!res.ok) return [];
+
+    const body = (await res.json()) as { items?: Record<string, unknown>[] };
+    return (body.items ?? []).map((o) => {
+      const product = o["product"] as Record<string, unknown> | undefined;
+      return {
+        id: o["id"] as string,
+        number: ((o["id"] as string) ?? "").slice(0, 8).toUpperCase(),
+        amount: (o["amount"] as number) ?? 0,
+        currency: (o["currency"] as string) ?? "usd",
+        status: (o["status"] as string) ?? "paid",
+        createdAt: new Date((o["createdAt"] as string) ?? Date.now()),
+        productName: product?.["name"] as string | undefined,
+        invoiceUrl: o["receiptUrl"] as string | undefined,
+      };
     });
   }
 

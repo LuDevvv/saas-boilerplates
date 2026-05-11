@@ -2,8 +2,12 @@ import {
   Controller,
   Post,
   Get,
+  Patch,
+  Delete,
   Body,
   Req,
+  HttpCode,
+  HttpStatus,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -15,7 +19,7 @@ import {
 import { Throttle, SkipThrottle } from "@nestjs/throttler";
 import type { CheckoutUrl, WebhookEventType } from "@node-stack/billing-adapter";
 import { Permission } from "@node-stack/types";
-import { CreateCheckoutDto } from "@node-stack/validators";
+import { CreateCheckoutDto, ChangePlanDto } from "@node-stack/validators";
 import type { Request } from "express";
 
 import { CurrentUser } from "@/auth/decorators/index.js";
@@ -107,9 +111,74 @@ export class BillingController {
 
   @Get("invoices")
   @RequirePermissions(Permission.BILLING_READ)
-  @ApiOperation({ summary: "Get invoices" })
+  @ApiOperation({ summary: "Get invoices via Polar Customer Session" })
   @ApiResponse({ status: 200, description: "Invoices retrieved" })
-  async invoices(@Workspace() workspace: WorkspaceContext): Promise<never[]> {
+  async invoices(@Workspace() workspace: WorkspaceContext): Promise<Record<string, unknown>[]> {
     return this.billing.invoices(workspace.id);
+  }
+
+  @Delete("subscription")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermissions(Permission.BILLING_WRITE)
+  @ApiOperation({ summary: "Cancel subscription at period end" })
+  @ApiResponse({ status: 204, description: "Cancellation scheduled" })
+  async cancelSubscription(
+    @Workspace() workspace: WorkspaceContext,
+    @CurrentUser() user: UserPayload,
+  ): Promise<void> {
+    return this.billing.cancelSubscription(workspace.id, user.id);
+  }
+
+  @Patch("subscription")
+  @RequirePermissions(Permission.BILLING_WRITE)
+  @ApiOperation({ summary: "Upgrade or downgrade subscription plan" })
+  @ApiResponse({ status: 200, description: "Plan changed" })
+  async changePlan(
+    @Body() body: ChangePlanDto,
+    @Workspace() workspace: WorkspaceContext,
+    @CurrentUser() user: UserPayload,
+  ): Promise<Record<string, unknown>> {
+    return this.billing.changePlan(workspace.id, user.id, body.planId, body.variantId);
+  }
+
+  @Get("plans")
+  @RequirePermissions(Permission.BILLING_READ)
+  @ApiOperation({ summary: "List available plans" })
+  @ApiResponse({ status: 200, description: "Plans retrieved" })
+  async plans(): Promise<Record<string, unknown>[]> {
+    return [
+      {
+        id: "pro",
+        name: "Growth",
+        description: "Para negocios que necesitan escalar con potencia.",
+        priceMonthly: 29,
+        priceYearly: 290,
+        trialDays: 0,
+        features: [
+          "Proyectos ilimitados",
+          "Analíticas avanzadas",
+          "Soporte prioritario 24/7",
+          "10 GB de almacenamiento",
+          "Exportación de datos",
+          "Acceso API",
+        ],
+      },
+      {
+        id: "elite",
+        name: "Unlimited",
+        description: "Infraestructura dedicada para organizaciones.",
+        priceMonthly: 99,
+        priceYearly: 990,
+        trialDays: 0,
+        features: [
+          "Todo lo de Growth",
+          "Infraestructura dedicada",
+          "SLA del 99.99%",
+          "Almacenamiento ilimitado",
+          "Manager dedicado",
+          "Integraciones personalizadas",
+        ],
+      },
+    ];
   }
 }

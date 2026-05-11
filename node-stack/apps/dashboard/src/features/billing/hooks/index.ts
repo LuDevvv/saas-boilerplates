@@ -1,8 +1,9 @@
 export {
   useSubscription,
   useInvoices,
-  usePaymentMethods,
+  usePlans,
   useCheckout,
   useCustomerPortal,
   useCancelSubscription,
+  useChangePlan,
 } from "./useBilling";

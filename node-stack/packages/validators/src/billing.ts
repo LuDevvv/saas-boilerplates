@@ -22,3 +22,16 @@ export class CreateCheckoutDto extends createZodDto(createCheckoutSchema) {
   @ApiProperty({ example: "https://app.com/billing", description: "URL to redirect if payment is cancelled" })
   cancelUrl!: string;
 }
+
+export const changePlanSchema = z.object({
+  planId: z.string().min(1, "Plan ID is required"),
+  variantId: z.string().optional(),
+});
+
+export class ChangePlanDto extends createZodDto(changePlanSchema) {
+  @ApiProperty({ example: "elite", description: "Target plan ID (pro, elite)" })
+  planId!: string;
+
+  @ApiProperty({ example: "yearly", required: false, description: "Billing interval (monthly/yearly)" })
+  variantId?: string;
+}

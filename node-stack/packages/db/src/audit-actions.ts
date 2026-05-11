@@ -39,6 +39,9 @@ export const AUDIT_ACTIONS = [
   "billing.subscription_created",
   "billing.subscription_updated",
   "billing.subscription_canceled",
+  // Billing user-initiated actions
+  "billing.subscription_cancel_requested",
+  "billing.plan_changed",
   // Admin
   "admin.user_role_changed",
   "admin.user_impersonated",

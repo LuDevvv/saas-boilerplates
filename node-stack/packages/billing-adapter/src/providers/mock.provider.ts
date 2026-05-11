@@ -7,6 +7,7 @@ import type {
   Subscription,
   CheckoutUrl,
   WebhookEvent,
+  BillingOrder,
 } from "../interfaces/payment-provider.interface.js";
 
 export class MockProvider implements PaymentProvider {
@@ -38,6 +39,29 @@ export class MockProvider implements PaymentProvider {
 
   async cancelSubscription(_subscriptionId: string): Promise<void> {
     return;
+  }
+
+  async upgradeSubscription(_subscriptionId: string, _productId: string): Promise<void> {
+    return;
+  }
+
+  async createCustomerSession(_customerId: string): Promise<{ token: string }> {
+    return { token: "mock_session_token" };
+  }
+
+  async listOrders(_customerSessionToken: string, _limit?: number): Promise<BillingOrder[]> {
+    return [
+      {
+        id: "mock_ord_001",
+        number: "MOCK0001",
+        amount: 2900,
+        currency: "usd",
+        status: "paid",
+        createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+        productName: "Growth (Monthly)",
+        invoiceUrl: undefined,
+      },
+    ];
   }
 
   async getSubscription(subscriptionId: string): Promise<Subscription> {

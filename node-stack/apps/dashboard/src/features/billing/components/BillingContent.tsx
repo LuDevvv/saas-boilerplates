@@ -1,77 +1,50 @@
 import { ConfirmDialog, Skeleton } from "@node-stack/ui";
+import { ExternalLink } from "lucide-react";
 import { FC, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
 
-import { AddCardModal } from "./AddCardModal";
 import { BillingLayoutSkeleton } from "./BillingSkeletons";
 import { PaymentHistory, type PaymentRecord } from "./PaymentHistory";
-import { PaymentMethodCard, type PaymentMethod } from "./PaymentMethodCard";
 import { PlanCard } from "./PlanCard";
 import { SupportCard } from "./SupportCard";
-import { useSubscription, useInvoices, usePaymentMethods, useCancelSubscription } from "../hooks/useBilling";
+import { useSubscription, useInvoices, useCancelSubscription, useCustomerPortal } from "../hooks/useBilling";
 
 import { appToast } from "@/components/alerts/Toasts";
-import { useAuth } from "@/hooks/stores/useAuth";
-
-// ─── Demo data — displayed when API stubs return empty (remove for production) ─
-
-const DEMO_METHODS: PaymentMethod[] = [
-  { id: "demo-1", type: "Visa", last4: "4242", expiry: "12/26", isDefault: true },
-  { id: "demo-2", type: "Mastercard", last4: "8888", expiry: "08/27", isDefault: false },
-];
-
-const DEMO_INVOICES: PaymentRecord[] = [
-  { id: "INV-2026-003", number: "INV-2026-003", date: "1 may 2026", amount: "$29.00", status: "Pagado", pdfUrl: undefined },
-  { id: "INV-2026-002", number: "INV-2026-002", date: "1 abr 2026", amount: "$29.00", status: "Pagado", pdfUrl: undefined },
-  { id: "INV-2026-001", number: "INV-2026-001", date: "1 mar 2026", amount: "$29.00", status: "Pendiente", pdfUrl: undefined },
-];
 
 export const BillingContent: FC = () => {
   const navigate = useNavigate();
-  const { isPremium } = useAuth();
 
   const { data: subscription, isLoading: isLoadingSub } = useSubscription();
   const { data: invoices, isLoading: isLoadingInvoices } = useInvoices();
-  const { data: paymentMethods, isLoading: isLoadingMethods } = usePaymentMethods();
   const cancelMutation = useCancelSubscription();
+  const portalMutation = useCustomerPortal();
 
-  const [isCardModalOpen, setIsCardModalOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
-  const handleAddCard = async () => {
-    appToast.info({
-      title: "Integración requerida",
-      description: "El procesamiento de tarjetas debe conectarse con Stripe Elements.",
-    });
-    setIsCardModalOpen(false);
-  };
-
-  const handleDeleteMethod = (id: string) => {
-    appToast.info({
-      title: "En desarrollo",
-      description: `La eliminación del método ${id} requiere integración con Stripe.`,
-    });
-  };
-
-  const handleSetDefault = (id: string) => {
-    appToast.info({
-      title: "En desarrollo",
-      description: `Cambiar el método principal ${id} requiere integración con Stripe.`,
-    });
-  };
-
   const handleUpgrade = () => navigate("/payments/pricing");
+
+  const handleOpenPortal = async () => {
+    try {
+      const result = await portalMutation.mutateAsync({});
+      if (result?.url) {
+        window.open(result.url, "_blank", "noopener,noreferrer");
+      } else {
+        appToast.info({ title: "Portal no disponible", description: "No hay una suscripción activa." });
+      }
+    } catch {
+      appToast.error({ title: "Error", description: "No se pudo abrir el portal." });
+    }
+  };
 
   const executeCancelPlan = async () => {
     try {
-      await cancelMutation.mutateAsync({});
+      await cancelMutation.mutateAsync();
       setIsCancelModalOpen(false);
       appToast.success({
-        title: "Plan cancelado",
+        title: "Cancelación programada",
         description: "Mantendrás el acceso hasta el final del ciclo actual.",
       });
     } catch {
@@ -82,15 +55,21 @@ export const BillingContent: FC = () => {
   // ── Derived data ──────────────────────────────────────────────────────────
 
   const planInfo = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const sub = subscription as any;
-    const status: string = sub?.status ?? (isPremium ? "active" : "free");
-    const isTrialing = status === "trialing";
+    const sub = subscription;
+    const hasActiveSubscription = sub && sub.status !== "none" && sub.status !== "cancelled" && sub.status !== "canceled";
+    const status: string = sub?.status ?? "none";
+    const isTrialing = status === "trialing" || status === "trialling";
+
     return {
-      planId: sub?.planId || (isPremium ? "pro" : "free"),
-      name: sub?.planName || (isPremium ? "Growth" : "Starter"),
-      price: isTrialing ? "$0.00" : isPremium ? "$29.00" : "$0.00",
-      status,
+      planId: sub?.planId ?? "free",
+      name: sub?.planName ?? "Starter",
+      interval: sub?.interval ?? "monthly",
+      price: hasActiveSubscription
+        ? (sub.interval === "yearly"
+          ? `$${sub.planId === "pro" ? 290 : 990}/año`
+          : `$${sub.planId === "pro" ? 29 : 99}/mes`)
+        : "$0.00",
+      status: hasActiveSubscription ? status : "free",
       trialEndsAt: isTrialing && sub?.currentPeriodEnd ? sub.currentPeriodEnd : undefined,
       daysRemaining: sub?.currentPeriodEnd
         ? Math.max(0, Math.ceil((new Date(sub.currentPeriodEnd).getTime() - Date.now()) / 86_400_000))
@@ -98,34 +77,24 @@ export const BillingContent: FC = () => {
       nextBillingDate: sub?.currentPeriodEnd
         ? new Date(sub.currentPeriodEnd).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })
         : "",
+      isPremium: !!hasActiveSubscription,
+      cancelAt: sub?.cancelAt,
     };
-  }, [subscription, isPremium]);
+  }, [subscription]);
 
-  const invoicesData = useMemo(() =>
-    (invoices || []).map(inv => ({
+  const invoicesData = useMemo<PaymentRecord[]>(() =>
+    (invoices ?? []).map(inv => ({
       id: inv.id,
       number: inv.number,
       date: inv.date ? new Date(inv.date).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" }) : "N/A",
       amount: `$${(inv.amount / 100).toFixed(2)}`,
       status: inv.status === "paid" ? "Pagado" : inv.status.charAt(0).toUpperCase() + inv.status.slice(1),
-      pdfUrl: inv.pdfUrl,
+      pdfUrl: inv.invoiceUrl ?? inv.pdfUrl,
     })),
     [invoices]
   );
 
-  const mappedMethods: PaymentMethod[] = useMemo(() =>
-    (paymentMethods || []).map(m => ({
-      id: m.id,
-      type: m.brand || "Card",
-      last4: m.last4,
-      expiry: `${String(m.expiryMonth).padStart(2, "0")}/${m.expiryYear}`,
-      isDefault: m.isDefault,
-    })),
-    [paymentMethods]
-  );
-
-  // Show full-page skeleton on initial simultaneous load
-  const isInitialLoad = isLoadingSub && isLoadingInvoices && isLoadingMethods;
+  const isInitialLoad = isLoadingSub && isLoadingInvoices;
   if (isInitialLoad) return <BillingLayoutSkeleton />;
 
   return (
@@ -146,13 +115,13 @@ export const BillingContent: FC = () => {
         </div>
       </div>
 
-      {/* ── Plans + Payment Methods ── */}
+      {/* ── Plan + Payment Methods ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {isLoadingSub ? (
           <Skeleton className="h-[340px] rounded-[20px]" />
         ) : (
           <PlanCard
-            isPremium={isPremium}
+            isPremium={planInfo.isPremium}
             planId={planInfo.planId}
             planName={planInfo.name}
             price={planInfo.price}
@@ -165,35 +134,55 @@ export const BillingContent: FC = () => {
           />
         )}
 
-        <PaymentMethodCard
-          methods={isLoadingMethods ? [] : (mappedMethods.length > 0 ? mappedMethods : DEMO_METHODS)}
-          isLoading={isLoadingMethods}
-          onAdd={() => { setIsEditing(false); setIsCardModalOpen(true); }}
-          onDelete={handleDeleteMethod}
-          onSetDefault={handleSetDefault}
-        />
+        {/* Payment methods — managed via Polar portal (PCI compliance) */}
+        <div className="rounded-[20px] border border-border bg-white dark:bg-surface overflow-hidden flex flex-col">
+          <div className="px-5 py-4 border-b border-border">
+            <h3 className="text-[14px] font-semibold text-fg">Métodos de pago</h3>
+          </div>
+          <div className="flex flex-col items-center justify-center flex-1 px-6 py-10 text-center gap-4">
+            <p className="text-[13px] text-fg-muted leading-relaxed max-w-xs">
+              Los métodos de pago se gestionan de forma segura a través del portal de Polar,
+              cumpliendo con PCI-DSS.
+            </p>
+            <button
+              onClick={handleOpenPortal}
+              disabled={portalMutation.isPending}
+              className="inline-flex items-center gap-2 h-9 px-5 rounded-xl border border-border text-[13px] font-medium text-fg hover:bg-surface-hover transition-all active:scale-[0.98]"
+            >
+              <ExternalLink className="h-3.5 w-3.5 text-fg-muted" />
+              {portalMutation.isPending ? "Abriendo..." : "Gestionar métodos de pago"}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* ── Invoice history ── */}
-      <PaymentHistory
-        payments={isLoadingInvoices ? [] : (invoicesData.length > 0 ? invoicesData : DEMO_INVOICES)}
-        isLoading={isLoadingInvoices}
-      />
+      {isLoadingInvoices ? (
+        <Skeleton className="h-48 rounded-[20px]" />
+      ) : invoicesData.length > 0 ? (
+        <PaymentHistory payments={invoicesData} isLoading={false} />
+      ) : (
+        <div className="rounded-[20px] border border-border bg-white dark:bg-surface px-6 py-8 flex flex-col items-center text-center gap-3">
+          <p className="text-[14px] font-semibold text-fg">Historial de facturas</p>
+          <p className="text-[13px] text-fg-muted max-w-sm leading-relaxed">
+            Las facturas de tus pagos aparecerán aquí. También puedes verlas en el portal de Polar.
+          </p>
+          <button
+            onClick={handleOpenPortal}
+            disabled={portalMutation.isPending}
+            className="inline-flex items-center gap-2 h-9 px-5 rounded-xl border border-border text-[13px] font-medium text-fg hover:bg-surface-hover transition-all active:scale-[0.98]"
+          >
+            <ExternalLink className="h-3.5 w-3.5 text-fg-muted" />
+            Ver en Polar
+          </button>
+        </div>
+      )}
 
       {/* ── Support CTA ── */}
       <SupportCard
         onContactSupport={() =>
           appToast.info({ title: "Soporte de pagos", description: "Contáctanos en soporte@nodestack.com" })
         }
-      />
-
-      {/* ── Add card drawer ── */}
-      <AddCardModal
-        isOpen={isCardModalOpen}
-        onClose={() => setIsCardModalOpen(false)}
-        onSubmit={handleAddCard}
-        isEditing={isEditing}
-        isSubmitting={false}
       />
 
       {/* ── Cancel confirm ── */}

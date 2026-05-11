@@ -5,13 +5,15 @@ import {
   MessageSquare,
   ArrowRight,
   TrendingDown,
+  Loader2,
 } from "lucide-react";
 import { FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { BackButton } from "@/components/shared/BackButton";
-import { useAuth } from "@/hooks/stores/useAuth";
 import { useExchangeRate } from "@/hooks/useExchangeRate";
+import { useSubscription, useChangePlan } from "@/features/billing/hooks/useBilling";
+import { appToast } from "@/components/alerts/Toasts";
 import { cn } from "@/utils/classNames";
 
 // ─── Plan catalog ─────────────────────────────────────────────────────────────
@@ -77,13 +79,42 @@ interface PricingProps {
 }
 
 const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
-  const { currentPlan } = useAuth();
   const navigate        = useNavigate();
   const { toDOP }       = useExchangeRate();
   const [isAnnual, setIsAnnual] = useState(false);
+  const [changingPlan, setChangingPlan] = useState<string | null>(null);
 
-  const handleSelectPlan = (planId: string, trialDays: number) => {
+  const { data: subscription } = useSubscription();
+  const changePlanMutation = useChangePlan();
+
+  const hasActiveSub =
+    !!subscription &&
+    subscription.status !== "none" &&
+    subscription.status !== "cancelled" &&
+    subscription.status !== "canceled";
+
+  const handleSelectPlan = async (planId: string, trialDays: number) => {
+    if (planId === "free") return;
     const cycle = isAnnual ? "yearly" : "monthly";
+
+    // If user already has an active subscription, upgrade/downgrade in-place
+    if (hasActiveSub) {
+      setChangingPlan(planId);
+      try {
+        await changePlanMutation.mutateAsync({ planId, variantId: cycle });
+        appToast.success({
+          title: "Plan actualizado",
+          description: "Tu suscripción ha sido actualizada correctamente.",
+        });
+        navigate("/payments");
+      } catch {
+        appToast.error({ title: "Error", description: "No se pudo cambiar el plan." });
+      } finally {
+        setChangingPlan(null);
+      }
+      return;
+    }
+
     const onboarding = isOnboarding ? "&onboarding=true" : "";
     const trial = trialDays > 0 ? `&trial=${trialDays}` : "";
     navigate(`/payments/checkout?plan=${planId}&billing=${cycle}${trial}${onboarding}`);
@@ -138,8 +169,9 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 max-w-[1100px] mx-auto mb-16">
         {PLANS.map((plan) => {
           const isCurrent =
-            currentPlan?.planId === plan.id ||
-            (plan.id === "pro" && currentPlan?.planId === "premium");
+            hasActiveSub &&
+            (subscription?.planId === plan.id ||
+              (plan.id === "pro" && subscription?.planId === "premium"));
 
           const displayPrice = isAnnual
             ? Math.round(plan.yearlyPrice / 12)
@@ -256,13 +288,15 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
                     onClick={() => handleSelectPlan(plan.id, plan.trialDays)}
                     variant="outline"
                     className="w-full h-11 rounded-xl text-[13px] font-medium"
+                    disabled={!!changingPlan}
                   >
                     Comenzar gratis
                   </Button>
-                ) : plan.trialDays > 0 ? (
+                ) : plan.trialDays > 0 && !hasActiveSub ? (
                   <button
                     onClick={() => handleSelectPlan(plan.id, plan.trialDays)}
-                    className="w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-medium transition-all active:scale-[0.98] shadow-[0_4px_14px_-2px_rgba(5,150,105,0.30)]"
+                    disabled={!!changingPlan}
+                    className="w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-medium transition-all active:scale-[0.98] shadow-[0_4px_14px_-2px_rgba(5,150,105,0.30)] disabled:opacity-60"
                   >
                     Probar gratis {plan.trialDays} días
                     <ArrowRight className="inline ml-1.5 h-4 w-4" />
@@ -270,10 +304,20 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
                 ) : (
                   <button
                     onClick={() => handleSelectPlan(plan.id, plan.trialDays)}
-                    className="w-full h-11 rounded-xl bg-primary hover:bg-primary-600 text-primary-foreground text-[13px] font-medium transition-all active:scale-[0.98] shadow-[0_4px_14px_-2px_rgba(0,64,128,0.20)] dark:shadow-[0_4px_14px_-2px_rgba(91,168,229,0.20)]"
+                    disabled={!!changingPlan}
+                    className="w-full h-11 rounded-xl bg-primary hover:bg-primary-600 text-primary-foreground text-[13px] font-medium transition-all active:scale-[0.98] shadow-[0_4px_14px_-2px_rgba(0,64,128,0.20)] dark:shadow-[0_4px_14px_-2px_rgba(91,168,229,0.20)] disabled:opacity-60 inline-flex items-center justify-center gap-2"
                   >
-                    Mejorar a {plan.name}
-                    <ArrowRight className="inline ml-1.5 h-4 w-4" />
+                    {changingPlan === plan.id ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Cambiando...
+                      </>
+                    ) : (
+                      <>
+                        {hasActiveSub ? "Cambiar a" : "Mejorar a"} {plan.name}
+                        <ArrowRight className="h-4 w-4" />
+                      </>
+                    )}
                   </button>
                 )}
               </div>

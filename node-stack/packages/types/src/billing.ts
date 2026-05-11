@@ -16,10 +16,41 @@ export interface Invoice {
   number: string;
   amount: number;
   currency: string;
-  status: "draft" | "open" | "paid" | "void" | "uncollectible";
+  status: string;
   date: string;
-  invoiceUrl: string;
-  pdfUrl: string;
+  productName?: string;
+  invoiceUrl?: string;
+  pdfUrl?: string;
 }
 
 export type InvoicesResponse = PaginatedResponse<Invoice>;
+
+export interface BillingSubscription {
+  id: string;
+  status: string;
+  planId: string;
+  planName: string;
+  interval: "monthly" | "yearly";
+  polarProductId?: string;
+  variantId?: string;
+  currentPeriodStart?: string;
+  currentPeriodEnd?: string;
+  cancelAt?: string;
+  endsAt?: string;
+  workspaceId: string;
+}
+
+export interface BillingPlan {
+  id: string;
+  name: string;
+  description: string;
+  priceMonthly: number;
+  priceYearly: number;
+  trialDays: number;
+  features: string[];
+}
+
+export interface ChangePlanDto {
+  planId: string;
+  variantId?: string;
+}

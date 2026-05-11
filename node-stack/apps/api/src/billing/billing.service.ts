@@ -55,6 +55,38 @@ export class BillingService {
     @Inject(DB_TOKEN) private readonly db: Database,
   ) {}
 
+  // ─── Plan resolution helpers ──────────────────────────────────────────
+
+  /**
+   * Maps a Polar product UUID back to a human-readable plan slug and name.
+   */
+  private reversePlanId(polarProductId: string): {
+    slug: string;
+    name: string;
+    interval: "monthly" | "yearly";
+  } {
+    const candidates: Array<{
+      key: string;
+      slug: string;
+      name: string;
+      interval: "monthly" | "yearly";
+    }> = [
+      { key: "POLAR_PRODUCT_ID_PRO_MONTHLY", slug: "pro", name: "Growth", interval: "monthly" },
+      { key: "POLAR_PRODUCT_ID_PRO_YEARLY", slug: "pro", name: "Growth", interval: "yearly" },
+      { key: "POLAR_PRODUCT_ID_ELITE_MONTHLY", slug: "elite", name: "Unlimited", interval: "monthly" },
+      { key: "POLAR_PRODUCT_ID_ELITE_YEARLY", slug: "elite", name: "Unlimited", interval: "yearly" },
+      { key: "POLAR_PRODUCT_ID_PRO", slug: "pro", name: "Growth", interval: "monthly" },
+      { key: "POLAR_PRODUCT_ID_ELITE", slug: "elite", name: "Unlimited", interval: "monthly" },
+    ];
+    for (const c of candidates) {
+      const id = this.configService.get<string>(c.key);
+      if (id && id === polarProductId) {
+        return { slug: c.slug, name: c.name, interval: c.interval };
+      }
+    }
+    return { slug: "pro", name: "Growth", interval: "monthly" };
+  }
+
   // ─── Checkout ─────────────────────────────────────────────────────────
 
   /**
@@ -530,10 +562,14 @@ export class BillingService {
           return { status: "none" as const, workspaceId };
         }
 
+        const planInfo = this.reversePlanId(sub.planId ?? "");
         return {
           id: sub.id,
           status: sub.status,
-          planId: sub.planId,
+          planId: planInfo.slug,
+          planName: planInfo.name,
+          interval: planInfo.interval,
+          polarProductId: sub.planId,
           variantId: sub.variantId,
           currentPeriodStart: sub.currentPeriodStart,
           currentPeriodEnd: sub.currentPeriodEnd,
@@ -563,10 +599,90 @@ export class BillingService {
     return { url: `${polarDashboard}/purchases/subscriptions` };
   }
 
-  async invoices(_workspaceId: string): Promise<never[]> {
-    // Polar doesn't expose invoices via API — return empty list.
-    // Use the portal for history.
-    return [];
+  async cancelSubscription(workspaceId: string, userId: string): Promise<void> {
+    const sub = await withTenantTx(
+      workspaceId,
+      (tx) => this.billingRepo.findSubscriptionByWorkspaceId(workspaceId, tx),
+      this.db,
+    );
+    if (!sub?.providerSubscriptionId) {
+      throw new Error("No active subscription found");
+    }
+
+    await this.provider.cancelSubscription(sub.providerSubscriptionId);
+
+    await this.auditLog.create({
+      workspaceId,
+      userId,
+      action: "billing.subscription_cancel_requested",
+      entityType: "subscription",
+      entityId: sub.providerSubscriptionId,
+      metadata: { providerSubscriptionId: sub.providerSubscriptionId },
+    });
+
+    // Invalidate cache — webhook will update the DB record when Polar fires
+    await this.cache.del(`billing:ws:${workspaceId}:subscription`);
+  }
+
+  async changePlan(
+    workspaceId: string,
+    userId: string,
+    planId: string,
+    variantId?: string,
+  ): Promise<Record<string, unknown>> {
+    const sub = await withTenantTx(
+      workspaceId,
+      (tx) => this.billingRepo.findSubscriptionByWorkspaceId(workspaceId, tx),
+      this.db,
+    );
+    if (!sub?.providerSubscriptionId) {
+      throw new Error("No active subscription to change");
+    }
+
+    const newProductId = this.resolvePlanId(planId, variantId);
+    await this.provider.upgradeSubscription(sub.providerSubscriptionId, newProductId);
+
+    await this.auditLog.create({
+      workspaceId,
+      userId,
+      action: "billing.plan_changed",
+      entityType: "subscription",
+      entityId: sub.providerSubscriptionId,
+      metadata: { planId, variantId, newProductId },
+    });
+
+    await this.cache.del(`billing:ws:${workspaceId}:subscription`);
+
+    return this.getSubscription(workspaceId);
+  }
+
+  async invoices(workspaceId: string): Promise<Record<string, unknown>[]> {
+    const customer = await withTenantTx(
+      workspaceId,
+      (tx) => this.billingRepo.findCustomerByWorkspaceId(workspaceId, tx),
+      this.db,
+    );
+    if (!customer) return [];
+
+    try {
+      const decryptedCustomerId = this.encryption.decrypt(customer.providerCustomerId);
+      const { token } = await this.provider.createCustomerSession(decryptedCustomerId);
+      const orders = await this.provider.listOrders(token, 50);
+      return orders.map((o) => ({
+        id: o.id,
+        number: o.number,
+        amount: o.amount,
+        currency: o.currency,
+        status: o.status,
+        date: o.createdAt,
+        productName: o.productName,
+        invoiceUrl: o.invoiceUrl,
+        pdfUrl: o.invoiceUrl,
+      }));
+    } catch (err) {
+      this.logger.warn(`Could not fetch invoices for workspace ${workspaceId}: ${(err as Error).message}`);
+      return [];
+    }
   }
 
   // ─── Helpers ──────────────────────────────────────────────────────────

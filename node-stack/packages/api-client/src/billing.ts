@@ -1,18 +1,20 @@
-import { 
-  Subscription, 
+import {
   CreateCheckoutDto,
   CheckoutResponse,
   PortalResponse,
-  Invoice
+  Invoice,
+  BillingSubscription,
+  BillingPlan,
+  ChangePlanDto,
 } from "@node-stack/types";
 import { AxiosInstance } from "axios";
 
 // The createClient response interceptor already unwraps response.data.
 // Accessing .data again would return undefined. Return the awaited result directly.
 export const billing = (client: AxiosInstance) => ({
-  getSubscription: async (): Promise<Subscription | null> => {
+  getSubscription: async (): Promise<BillingSubscription | null> => {
     const r = await client.get("/billing/subscription");
-    return r as unknown as Subscription | null;
+    return r as unknown as BillingSubscription | null;
   },
 
   createCheckout: async (data: CreateCheckoutDto): Promise<CheckoutResponse> => {
@@ -28,5 +30,19 @@ export const billing = (client: AxiosInstance) => ({
   listInvoices: async (): Promise<Invoice[]> => {
     const r = await client.get("/billing/invoices");
     return r as unknown as Invoice[];
+  },
+
+  cancelSubscription: async (): Promise<void> => {
+    await client.delete("/billing/subscription");
+  },
+
+  changePlan: async (data: ChangePlanDto): Promise<BillingSubscription> => {
+    const r = await client.patch("/billing/subscription", data);
+    return r as unknown as BillingSubscription;
+  },
+
+  getPlans: async (): Promise<BillingPlan[]> => {
+    const r = await client.get("/billing/plans");
+    return r as unknown as BillingPlan[];
   },
 });

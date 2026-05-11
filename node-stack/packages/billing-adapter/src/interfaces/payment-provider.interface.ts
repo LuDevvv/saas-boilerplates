@@ -74,12 +74,26 @@ export type WebhookEventType =
   | "payment.failed"
   | "customer.created";
 
+export interface BillingOrder {
+  id: string;
+  number: string;
+  amount: number;
+  currency: string;
+  status: string;
+  createdAt: Date;
+  productName?: string;
+  invoiceUrl?: string;
+}
+
 export interface PaymentProvider {
   createCustomer(data: CreateCustomerData): Promise<Customer>;
   createSubscription(data: CreateSubscriptionData): Promise<Subscription>;
   cancelSubscription(subscriptionId: string): Promise<void>;
+  upgradeSubscription(subscriptionId: string, productId: string): Promise<void>;
   getSubscription(subscriptionId: string): Promise<Subscription>;
   createCheckoutSession(data: CheckoutData): Promise<CheckoutUrl>;
+  createCustomerSession(customerId: string): Promise<{ token: string }>;
+  listOrders(customerSessionToken: string, limit?: number): Promise<BillingOrder[]>;
   handleWebhook(
     payload: unknown,
     signatureOrHeaders?: string | Record<string, string>,

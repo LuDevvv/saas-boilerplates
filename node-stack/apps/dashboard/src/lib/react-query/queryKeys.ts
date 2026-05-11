@@ -55,6 +55,7 @@ export const queryKeys = {
     invoices: () => [...queryKeys.billing.all, "invoices"] as const,
     paymentMethods: () => [...queryKeys.billing.all, "paymentMethods"] as const,
     usage: () => [...queryKeys.billing.all, "usage"] as const,
+    plans: () => [...queryKeys.billing.all, "plans"] as const,
   },
 
   settings: {
