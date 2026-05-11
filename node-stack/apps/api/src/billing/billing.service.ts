@@ -591,12 +591,19 @@ export class BillingService {
     if (!customer) {
       return { url: null };
     }
-    // Polar customer portal is at the Polar dashboard — return a direct link
-    const polarDashboard = this.configService.get<string>(
-      "POLAR_PORTAL_URL",
-      "https://polar.sh",
-    );
-    return { url: `${polarDashboard}/purchases/subscriptions` };
+
+    const polarPortal = this.configService.get<string>("POLAR_PORTAL_URL", "https://polar.sh");
+
+    try {
+      const decryptedCustomerId = this.encryption.decrypt(customer.providerCustomerId);
+      const session = await this.provider.createCustomerSession(decryptedCustomerId);
+      // Polar returns customer_portal_url with the token already embedded — prefer that
+      const url = session.customerPortalUrl ?? `${polarPortal}?customer_session_token=${session.token}`;
+      return { url };
+    } catch (err) {
+      this.logger.warn(`Could not create customer session for portal: ${(err as Error).message}`);
+      return { url: `${polarPortal}/purchases/subscriptions` };
+    }
   }
 
   async cancelSubscription(workspaceId: string, userId: string): Promise<void> {

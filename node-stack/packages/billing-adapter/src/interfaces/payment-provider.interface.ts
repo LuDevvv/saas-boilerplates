@@ -92,7 +92,7 @@ export interface PaymentProvider {
   upgradeSubscription(subscriptionId: string, productId: string): Promise<void>;
   getSubscription(subscriptionId: string): Promise<Subscription>;
   createCheckoutSession(data: CheckoutData): Promise<CheckoutUrl>;
-  createCustomerSession(customerId: string): Promise<{ token: string }>;
+  createCustomerSession(customerId: string): Promise<{ token: string; customerPortalUrl?: string }>;
   listOrders(customerSessionToken: string, limit?: number): Promise<BillingOrder[]>;
   handleWebhook(
     payload: unknown,

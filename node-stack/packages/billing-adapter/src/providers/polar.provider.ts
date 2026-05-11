@@ -68,6 +68,7 @@ export class PolarProvider implements PaymentProvider {
   private readonly client: Polar;
   private readonly webhookSecret?: string;
   private readonly server: "sandbox" | "production";
+  private readonly accessToken: string;
   private readonly circuitBreaker: CircuitBreaker<[CheckoutData], CheckoutUrl>;
 
   constructor(config: PolarProviderConfig);
@@ -83,6 +84,7 @@ export class PolarProvider implements PaymentProvider {
         : configOrApiKey;
 
     this.server = config.server ?? "production";
+    this.accessToken = config.accessToken;
     this.client = new Polar({
       accessToken: config.accessToken,
       server: this.server,
@@ -92,6 +94,28 @@ export class PolarProvider implements PaymentProvider {
       this.createCheckoutSessionInternal.bind(this),
       { failureThreshold: 5, recoveryTimeout: 30_000 },
     );
+  }
+
+  private get apiBase(): string {
+    return this.server === "sandbox"
+      ? "https://sandbox-api.polar.sh"
+      : "https://api.polar.sh";
+  }
+
+  private async polarFetch<T>(path: string, options?: RequestInit): Promise<T> {
+    const res = await fetch(`${this.apiBase}${path}`, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        "Content-Type": "application/json",
+        ...(options?.headers ?? {}),
+      },
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`Polar API ${options?.method ?? "GET"} ${path} failed ${res.status}: ${body}`);
+    }
+    return res.json() as Promise<T>;
   }
 
   // ─── Customer Operations ─────────────────────────────────────────────
@@ -143,24 +167,20 @@ export class PolarProvider implements PaymentProvider {
     });
   }
 
-  async createCustomerSession(customerId: string): Promise<{ token: string }> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const client = this.client as any;
-    if (typeof client.customerSessions?.create !== "function") {
-      throw new Error("customerSessions.create not available in this SDK version");
-    }
-    const session = await client.customerSessions.create({ customerId });
-    return { token: session.token as string };
+  async createCustomerSession(customerId: string): Promise<{ token: string; customerPortalUrl?: string }> {
+    const data = await this.polarFetch<{ token: string; customer_portal_url?: string }>(
+      "/v1/customer-sessions",
+      {
+        method: "POST",
+        body: JSON.stringify({ customer_id: customerId }),
+      },
+    );
+    return { token: data.token, customerPortalUrl: data.customer_portal_url };
   }
 
   async listOrders(customerSessionToken: string, limit = 20): Promise<BillingOrder[]> {
-    const baseUrl =
-      this.server === "sandbox"
-        ? "https://sandbox-api.polar.sh"
-        : "https://api.polar.sh";
-
     const res = await fetch(
-      `${baseUrl}/v1/customer-portal/orders?limit=${limit}&sorting=-created_at`,
+      `${this.apiBase}/v1/customer-portal/orders?limit=${limit}&sorting=-created_at`,
       {
         headers: {
           Authorization: `Bearer ${customerSessionToken}`,

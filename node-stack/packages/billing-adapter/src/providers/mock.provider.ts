@@ -45,8 +45,8 @@ export class MockProvider implements PaymentProvider {
     return;
   }
 
-  async createCustomerSession(_customerId: string): Promise<{ token: string }> {
-    return { token: "mock_session_token" };
+  async createCustomerSession(_customerId: string): Promise<{ token: string; customerPortalUrl?: string }> {
+    return { token: "mock_session_token", customerPortalUrl: undefined };
   }
 
   async listOrders(_customerSessionToken: string, _limit?: number): Promise<BillingOrder[]> {

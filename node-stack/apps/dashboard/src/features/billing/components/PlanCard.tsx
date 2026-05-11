@@ -86,7 +86,7 @@ export const PlanCard: FC<PlanCardProps> = ({
       </div>
 
       {/* ── Current plan — left-aligned ── */}
-      <div className="px-5 py-5 bg-primary/[0.04] dark:bg-primary/[0.07] border-b border-border">
+      <div className="px-5 py-5 border-b border-border">
         {/* Tag row */}
         <div className="flex items-center justify-between mb-3">
           <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary/10 dark:bg-primary/20 text-primary text-[10px] font-bold uppercase">
