@@ -72,14 +72,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             disabled={disabled}
             type={type}
+            required={required}
             className={cn(
               "flex h-12 w-full py-2 text-sm font-medium text-fg outline-none transition-all duration-300",
               rightElement || error || success ? "pr-12" : "pr-4",
               icon ? "pl-11" : "pl-6",
-              "bg-surface-muted",
+              "bg-surface",
               "border border-border rounded-xl",
               "placeholder:text-fg-muted placeholder:font-normal",
-              "focus:outline-none focus:border-primary",
+              "focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 focus:border-primary",
               "disabled:opacity-50 disabled:cursor-not-allowed",
               error
                 ? "border-danger focus:border-danger"

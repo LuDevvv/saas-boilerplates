@@ -67,8 +67,8 @@ export const SearchInput: FC<SearchInputProps> = ({
           "bg-gray-50 dark:bg-white/[0.04]",
           "border border-border",
           "hover:border-gray-300 dark:hover:border-white/20",
-          "focus:border-[var(--primary)]/35 focus:bg-white dark:focus:bg-white/[0.06]",
-          "focus:ring-4 focus:ring-[var(--primary)]/[0.07] dark:focus:ring-[var(--primary)]/[0.10]",
+          "focus:border-[var(--primary)]/50 focus:bg-white dark:focus:bg-white/[0.06]",
+          "focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0",
           "text-fg",
           "placeholder:text-gray-400 dark:placeholder:text-gray-500",
           "font-label"

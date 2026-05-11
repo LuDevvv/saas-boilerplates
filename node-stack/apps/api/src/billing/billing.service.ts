@@ -753,7 +753,9 @@ export class BillingService {
           {
             workspaceId,
             providerSubscriptionId: sub.providerSubscriptionId,
-            planId: sub.planId ?? polarSub.planId,
+            // Always use Polar's current value — this picks up plan changes made
+            // in the portal (upgrades, downgrades) that webhooks couldn't deliver.
+            planId: polarSub.planId || sub.planId || "",
             variantId: polarSub.variantId ?? sub.variantId ?? undefined,
             status: this.mapStatus(polarSub.status),
             currentPeriodStart: polarSub.currentPeriodStart,

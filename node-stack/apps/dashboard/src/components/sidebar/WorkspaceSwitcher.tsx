@@ -27,13 +27,13 @@ const WorkspaceAvatar = ({ name, logoUrl }: { name: string; logoUrl?: string }) 
       <img
         src={logoUrl}
         alt={name}
-        className="h-9 w-9 shrink-0 rounded-xl object-contain"
+        className="h-8 w-8 shrink-0 rounded-lg object-contain"
       />
     );
   }
   const initial = (name ?? "?")[0].toUpperCase();
   return (
-    <div className="h-9 w-9 shrink-0 flex items-center justify-center rounded-xl bg-primary text-primary-foreground text-[15px] font-bold select-none">
+    <div className="h-8 w-8 shrink-0 flex items-center justify-center rounded-lg bg-primary/15 dark:bg-primary/25 text-primary text-[13px] font-bold select-none">
       {initial}
     </div>
   );
@@ -75,7 +75,7 @@ export const WorkspaceSwitcher = ({ isCollapsed }: WorkspaceSwitcherProps) => {
         <button
           onClick={() => setIsOpen(!isOpen)}
           className={cn(
-            "flex items-center outline-none focus:outline-none focus:ring-0 focus-visible:ring-0 group transition-all duration-300 active:scale-[0.97] border-none ring-transparent",
+            "flex items-center outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0 group transition-colors duration-200 border-none ring-transparent",
             isCollapsed ? "w-full justify-center gap-0" : "gap-[10px]"
           )}
         >
@@ -120,7 +120,7 @@ export const WorkspaceSwitcher = ({ isCollapsed }: WorkspaceSwitcherProps) => {
                     setIsOpen(false);
                   }}
                   className={cn(
-                    "flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm transition-all duration-200 outline-none focus:outline-none focus-visible:outline-none focus:ring-0 active:scale-[0.97]",
+                    "flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm transition-all duration-200 outline-none focus:outline-none focus-visible:outline-none focus:ring-0 ",
                     activeWorkspaceId === workspace.id
                       ? "bg-sidebar-active text-sidebar-text-active font-bold"
                       : "text-sidebar-text hover:bg-sidebar-active/50"
@@ -139,7 +139,7 @@ export const WorkspaceSwitcher = ({ isCollapsed }: WorkspaceSwitcherProps) => {
             <div className="mt-1.5 border-t border-sidebar-border pt-1.5">
               <button
                 onClick={() => { setIsOpen(false); setIsCreateOpen(true); }}
-                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-label text-sidebar-text hover:bg-sidebar-active/50 hover:text-sidebar-text-active outline-none focus:outline-none focus-visible:outline-none focus:ring-0 active:scale-[0.97] transition-all duration-200"
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-label text-sidebar-text hover:bg-sidebar-active/50 hover:text-sidebar-text-active outline-none focus:outline-none focus-visible:outline-none focus:ring-0  transition-all duration-200"
               >
                 <Plus className="h-4 w-4" />
                 Crear compañía
