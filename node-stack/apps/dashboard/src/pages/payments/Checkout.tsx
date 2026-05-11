@@ -195,7 +195,7 @@ const Checkout: FC = () => {
       const result = await createCheckout({
         planId,
         variantId: billing,
-        successUrl: `${window.location.origin}/payments?success=true`,
+        successUrl: `${window.location.origin}/payments/success`,
         cancelUrl: window.location.href,
       });
 

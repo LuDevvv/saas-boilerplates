@@ -64,6 +64,9 @@ const WorkspacesAdminPage = lazy(() => import("@pages/admin/WorkspacesAdminPage"
 const OnboardingPage = lazy(() => import("@pages/onboarding/Onboarding"));
 const OnboardingPricingPage = lazy(() => import("@pages/onboarding/OnboardingPricing"));
 
+// Payment success (standalone — bypasses onboarding gate)
+const PaymentSuccessPage = lazy(() => import("@pages/payments/PaymentSuccess"));
+
 // Legal & error
 const TermsPage = lazy(() => import("@pages/legal/Terms"));
 const PrivacyPage = lazy(() => import("@pages/legal/Privacy"));
@@ -154,6 +157,11 @@ export const AppRoutes = (): React.ReactElement => {
         path="/payments/checkout"
         element={<Suspense fallback={<CheckoutPageSkeleton />} children={protectedGuard(<CheckoutPage />)} />}
       />
+      {/* Payment success: bypasses onboarding gate — user just paid, let them through */}
+      <Route
+        path="/payments/success"
+        element={<Suspense fallback={<Loading />} children={protectedGuard(<PaymentSuccessPage />)} />}
+      />
       <Route
         path="/onboarding"
         element={<Suspense fallback={<Loading />} children={protectedGuard(<OnboardingPage />)} />}
@@ -187,17 +195,19 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }): React.Reac
   }
 
   const isOnboardingRoute = location.pathname.startsWith("/onboarding");
-  const hasWorkspace = Array.isArray(workspaces) && workspaces.length > 0;
+  const isSuccessRoute    = location.pathname === "/payments/success";
+  const hasWorkspace      = Array.isArray(workspaces) && workspaces.length > 0;
   // onboardingStatus comes from GET /auth/me — 'completed' means paid + workspace set up
   const onboardingDone = (user as unknown as Record<string, unknown>)?.["onboardingStatus"] === "completed";
 
   // No workspace yet → start onboarding from the beginning
-  if (isAuthenticated && user && !hasWorkspace && !isOnboardingRoute) {
+  if (isAuthenticated && user && !hasWorkspace && !isOnboardingRoute && !isSuccessRoute) {
     return <Navigate to="/onboarding" replace />;
   }
 
   // Has workspace but hasn't paid yet → resume at pricing step
-  if (isAuthenticated && user && hasWorkspace && !onboardingDone && !isOnboardingRoute) {
+  // (skip if they're on the success page — they just paid)
+  if (isAuthenticated && user && hasWorkspace && !onboardingDone && !isOnboardingRoute && !isSuccessRoute) {
     return <Navigate to="/onboarding/pricing" replace />;
   }
 
