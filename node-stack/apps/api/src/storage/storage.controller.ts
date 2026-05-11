@@ -49,10 +49,10 @@ export class StorageController {
   ) {}
 
   @Public()
-  @Put("upload/*")
+  @Put("upload/*path")
   @ApiOperation({ summary: "Handle local storage upload (Dev only)" })
   async uploadLocal(
-    @Param("0") key: string,
+    @Param("path") key: string,
     @Req() req: Request,
   ): Promise<{ ok: boolean }> {
     const chunks: Buffer[] = [];
