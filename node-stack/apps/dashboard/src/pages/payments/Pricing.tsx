@@ -1,4 +1,4 @@
-import { Button, BillingToggle } from "@node-stack/ui";
+import { BillingToggle } from "@node-stack/ui";
 import {
   Check,
   CheckCircle2,
@@ -21,21 +21,6 @@ import { cn } from "@/utils/classNames";
 // trialDays: set to the number of trial days configured on the product in Polar.
 // Set to 0 to hide the trial badge. Must match what's configured in Polar dashboard.
 const PLANS = [
-  {
-    id: "free",
-    name: "Starter",
-    description: "Para proyectos personales y primeros pasos.",
-    price: 0,
-    yearlyPrice: 0,
-    trialDays: 0,
-    features: [
-      "Hasta 3 proyectos activos",
-      "Analíticas básicas",
-      "Soporte por email",
-      "100 MB de almacenamiento",
-    ],
-    popular: false,
-  },
   {
     id: "pro",
     name: "Growth",
@@ -244,11 +229,9 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
                   )}
 
                   <p className="text-[11px] text-gray-400 mt-1">
-                    {plan.price === 0
-                      ? "Siempre gratuito"
-                      : isAnnual
-                        ? `US$ ${plan.yearlyPrice} facturado anualmente · Ahorras US$ ${annualSavings}`
-                        : "Facturado mensualmente"}
+                    {isAnnual
+                      ? `US$ ${plan.yearlyPrice} facturado anualmente · Ahorras US$ ${annualSavings}`
+                      : "Facturado mensualmente"}
                   </p>
                 </div>
 
@@ -283,15 +266,6 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
                     <CheckCircle2 className="h-4 w-4 shrink-0" />
                     Plan Actual
                   </div>
-                ) : plan.price === 0 ? (
-                  <Button
-                    onClick={() => handleSelectPlan(plan.id, plan.trialDays)}
-                    variant="outline"
-                    className="w-full h-11 rounded-xl text-[13px] font-medium"
-                    disabled={!!changingPlan}
-                  >
-                    Comenzar gratis
-                  </Button>
                 ) : plan.trialDays > 0 && !hasActiveSub ? (
                   <button
                     onClick={() => handleSelectPlan(plan.id, plan.trialDays)}

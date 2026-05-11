@@ -70,21 +70,25 @@ export const BillingContent: FC = () => {
       ? (interval === "yearly" ? 990 : 99)
       : (interval === "yearly" ? 290 : 29);
 
+    const cancelAtDate = sub?.cancelAt || null;
+    const periodEndDate = sub?.currentPeriodEnd || null;
+    const refDate = cancelAtDate ?? periodEndDate;
+
     return {
-      planId: sub?.planId ?? "free",
-      name: sub?.planName ?? "Starter",
+      planId: sub?.planId ?? "pro",
+      name: sub?.planName ?? "Growth",
       interval,
       price: hasActiveSubscription ? `$${planPrice}` : "$0",
-      status: hasActiveSubscription ? status : "free",
-      trialEndsAt: isTrialing && sub?.currentPeriodEnd ? sub.currentPeriodEnd : undefined,
-      daysRemaining: sub?.currentPeriodEnd
-        ? Math.max(0, Math.ceil((new Date(sub.currentPeriodEnd).getTime() - Date.now()) / 86_400_000))
+      status: hasActiveSubscription ? status : "none",
+      trialEndsAt: isTrialing && periodEndDate ? periodEndDate : undefined,
+      cancelAt: cancelAtDate ?? undefined,
+      daysRemaining: refDate
+        ? Math.max(0, Math.ceil((new Date(refDate).getTime() - Date.now()) / 86_400_000))
         : 0,
-      nextBillingDate: sub?.currentPeriodEnd
-        ? new Date(sub.currentPeriodEnd).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })
+      nextBillingDate: periodEndDate
+        ? new Date(periodEndDate).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })
         : "",
       isPremium: !!hasActiveSubscription,
-      cancelAt: sub?.cancelAt,
     };
   }, [subscription]);
 
@@ -134,6 +138,7 @@ export const BillingContent: FC = () => {
             interval={planInfo.interval}
             status={planInfo.status}
             trialEndsAt={planInfo.trialEndsAt}
+            cancelAt={planInfo.cancelAt}
             daysRemaining={planInfo.daysRemaining}
             nextBillingDate={planInfo.nextBillingDate}
             onUpgrade={handleUpgrade}

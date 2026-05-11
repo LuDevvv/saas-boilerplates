@@ -620,16 +620,36 @@ export class BillingService {
 
     await this.provider.cancelSubscription(sub.providerSubscriptionId);
 
-    await this.auditLog.create({
-      workspaceId,
-      userId,
-      action: "billing.subscription_cancel_requested",
-      entityType: "subscription",
-      entityId: sub.providerSubscriptionId,
-      metadata: { providerSubscriptionId: sub.providerSubscriptionId },
-    });
+    // Optimistically record cancelAt in the DB so the UI reflects the pending
+    // cancellation immediately — the webhook will confirm it when it fires.
+    await withTenantTx(workspaceId, async (tx) => {
+      await this.billingRepo.upsertSubscription(
+        {
+          workspaceId,
+          providerSubscriptionId: sub.providerSubscriptionId,
+          planId: sub.planId ?? "",
+          variantId: sub.variantId ?? undefined,
+          status: sub.status,
+          currentPeriodStart: sub.currentPeriodStart ?? undefined,
+          currentPeriodEnd: sub.currentPeriodEnd ?? undefined,
+          cancelAt: sub.currentPeriodEnd ?? new Date(),
+        },
+        tx,
+      );
 
-    // Invalidate cache — webhook will update the DB record when Polar fires
+      await this.auditLog.create(
+        {
+          workspaceId,
+          userId,
+          action: "billing.subscription_cancel_requested",
+          entityType: "subscription",
+          entityId: sub.providerSubscriptionId,
+          metadata: { providerSubscriptionId: sub.providerSubscriptionId },
+        },
+        tx,
+      );
+    }, this.db);
+
     await this.cache.del(`billing:ws:${workspaceId}:subscription`);
   }
 
