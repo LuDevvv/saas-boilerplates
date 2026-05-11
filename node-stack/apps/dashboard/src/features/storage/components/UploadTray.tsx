@@ -14,6 +14,7 @@ import {
   File as FileIcon,
 } from "lucide-react";
 import { FC, useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 import { useUploadFile } from "../hooks/useStorage";
 import { useUploadStore, type UploadItem } from "../stores/uploadStore";
@@ -170,6 +171,11 @@ export const UploadTray: FC = () => {
 
   if (items.length === 0 || !isOpen) return null;
 
+  // Portal to document.body ensures position:fixed is viewport-relative even
+  // when rendered inside a parent with CSS transforms (MotionContainer, etc.)
+  const portalTarget = typeof document !== "undefined" ? document.body : null;
+  if (!portalTarget) return null;
+
   const inFlight = items.filter(
     (it) => it.status === "uploading" || it.status === "queued"
   );
@@ -183,12 +189,12 @@ export const UploadTray: FC = () => {
         ? `${errored.length} subida${errored.length === 1 ? "" : "s"} fallida${errored.length === 1 ? "" : "s"}`
         : `${completed.length} archivo${completed.length === 1 ? "" : "s"} listo${completed.length === 1 ? "" : "s"}`;
 
-  return (
+  return createPortal(
     <div
       role="region"
       aria-label="Bandeja de subidas"
       className={cn(
-        "fixed bottom-6 right-6 z-[100] w-[380px] max-w-[calc(100vw-3rem)] rounded-[24px] border border-border bg-surface-elevated shadow-2xl shadow-primary/10 overflow-hidden transition-all duration-500 ease-in-out animate-in slide-in-from-bottom-8 fade-in",
+        "fixed bottom-6 right-6 z-[9999] w-[380px] max-w-[calc(100vw-3rem)] rounded-[24px] border border-border bg-surface-elevated shadow-2xl shadow-primary/10 overflow-hidden transition-all duration-500 ease-in-out animate-in slide-in-from-bottom-8 fade-in",
         collapsed ? "h-[64px]" : "h-auto"
       )}
     >
@@ -244,6 +250,7 @@ export const UploadTray: FC = () => {
           ))}
         </div>
       )}
-    </div>
+    </div>,
+    portalTarget,
   );
 };

@@ -1,6 +1,14 @@
 import { Module } from "@nestjs/common";
 import { createStorageProvider } from "@node-stack/storage";
 
+/** Ensures an endpoint string has an http/https scheme.
+ *  MINIO_ENDPOINT=localhost:9000 would otherwise throw "Invalid URL"
+ *  inside the AWS SDK when generating presigned URLs. */
+function normalizeEndpoint(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  return /^https?:\/\//i.test(value) ? value : `http://${value}`;
+}
+
 import { AnalyticsModule } from "@/analytics/analytics.module.js";
 import { IdempotencyService } from "@/common/services/idempotency.service.js";
 import { StorageController } from "@/storage/storage.controller.js";
@@ -27,7 +35,7 @@ import { AppStorageService } from "@/storage/storage.service.js";
           return createStorageProvider({
             provider: "s3",
             s3: {
-              endpoint: process.env.STORAGE_S3_ENDPOINT || process.env.MINIO_ENDPOINT,
+              endpoint: normalizeEndpoint(process.env.STORAGE_S3_ENDPOINT || process.env.MINIO_ENDPOINT),
               region: process.env.STORAGE_S3_REGION || "us-east-1",
               accessKeyId: process.env.STORAGE_S3_ACCESS_KEY || process.env.MINIO_ACCESS_KEY || "",
               secretAccessKey: process.env.STORAGE_S3_SECRET_KEY || process.env.MINIO_SECRET_KEY || "",

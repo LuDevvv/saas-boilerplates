@@ -166,7 +166,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
   private isDbError(exception: unknown): boolean {
     if (typeof exception !== "object" || exception === null) return false;
     const err = exception as Partial<DbError>;
-    return typeof err.code === "string" && !!(err.detail ?? err.message);
+    // PostgreSQL error codes are exactly 5 alphanumeric chars starting with a digit
+    // (e.g., "23505", "08003"). This prevents Node.js codes like "ERR_INVALID_URL"
+    // from being misclassified as DB errors.
+    return (
+      typeof err.code === "string" &&
+      /^\d[0-9A-Z]{4}$/.test(err.code) &&
+      !!(err.detail ?? err.message)
+    );
   }
 
   private isStripeError(exception: unknown): boolean {

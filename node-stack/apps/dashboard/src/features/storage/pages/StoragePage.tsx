@@ -21,7 +21,6 @@ import { FC, useState, useCallback, useMemo, useRef } from "react";
 import { FileGrid } from "../components/FileGrid";
 import { FileUploadButton } from "../components/FileUploadButton";
 import { StorageStats } from "../components/StorageStats";
-import { UploadTray } from "../components/UploadTray";
 import {
   useStorageFiles,
   useStorageStats,
@@ -312,8 +311,6 @@ const StoragePage: FC = () => {
         </TwoColumnLayout.Aside>
       </TwoColumnLayout>
 
-      {/* Floating upload tray — global state, persists across renders */}
-      <UploadTray />
     </div>
   );
 };
