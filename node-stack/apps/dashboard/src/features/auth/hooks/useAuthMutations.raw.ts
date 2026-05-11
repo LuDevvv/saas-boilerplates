@@ -6,6 +6,7 @@ import { useShallow } from "zustand/react/shallow";
 import { api, cookieTokenStorage } from "@/lib/api";
 import { queryKeys } from "@/lib/react-query/queryKeys";
 import { useAuthStore } from "@/stores/authStore";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
 
 export const useLogin = () => {
   const setUser = useAuthStore(useShallow((state) => state.setUser));
@@ -49,13 +50,15 @@ export const useResetPassword = () => {
 
 export const useLogout = () => {
   const clearUser = useAuthStore(useShallow((state) => state.clearUser));
+  const clearWorkspace = useWorkspaceStore(useShallow((state) => state.clearWorkspace));
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: () => api.auth.logout(),
     onSettled: () => {
       queryClient.clear();
-      clearUser(); // clears tokens + redirects via window.location
+      clearWorkspace(); // workspace ID must not leak to the next session
+      clearUser();      // clears tokens + redirects via window.location
     },
   });
 };
