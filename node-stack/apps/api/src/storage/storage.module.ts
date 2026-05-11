@@ -6,21 +6,17 @@ import { IdempotencyService } from "@/common/services/idempotency.service.js";
 import { StorageController } from "@/storage/storage.controller.js";
 import { AppStorageService } from "@/storage/storage.service.js";
 
-/**
- * Returns undefined for unset values OR un-replaced .env.example placeholders
- * (anything containing <...>), allowing the caller to fall back to the next option.
- */
+/** Returns undefined for unset values or un-replaced .env.example placeholders
+ *  (<...>), letting the caller fall back to the next option. */
 function stripPlaceholder(value: string | undefined): string | undefined {
   if (!value) return undefined;
   const trimmed = value.trim();
   return trimmed && !/<[^>]+>/.test(trimmed) ? trimmed : undefined;
 }
 
-/**
- * Ensures a storage endpoint has a valid http/https scheme.
- * Throws a descriptive error at startup rather than letting the AWS SDK
- * throw a cryptic TypeError at request time.
- */
+/** Ensures a storage endpoint has a valid http/https scheme.
+ *  Throws a descriptive error at startup so mis-configured endpoints surface
+ *  immediately instead of causing cryptic TypeErrors at request time. */
 function normalizeEndpoint(value: string | undefined): string | undefined {
   if (!value) return undefined;
 
@@ -36,6 +32,18 @@ function normalizeEndpoint(value: string | undefined): string | undefined {
   }
 
   return normalized;
+}
+
+/** Extracts just the origin (scheme + host + port) from a URL that may include
+ *  a bucket path, e.g. "http://localhost:9000/app" → "http://localhost:9000". */
+function originOf(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  try {
+    const u = new URL(value);
+    return `${u.protocol}//${u.host}`;
+  } catch {
+    return undefined;
+  }
 }
 
 @Module({
@@ -58,13 +66,26 @@ function normalizeEndpoint(value: string | undefined): string | undefined {
         if (provider === "s3") {
           // stripPlaceholder() skips un-replaced .env.example values like
           // <tu-account-id> so they fall through to the MINIO_* fallback.
+          const internalEndpoint = normalizeEndpoint(
+            stripPlaceholder(process.env.STORAGE_S3_ENDPOINT) ||
+            stripPlaceholder(process.env.MINIO_ENDPOINT),
+          );
+
+          // Public endpoint for presigned URLs the browser can reach.
+          // Explicitly set via STORAGE_S3_PUBLIC_ENDPOINT, or extracted from
+          // MINIO_PUBLIC_URL (e.g. "http://localhost:9000/app" → "http://localhost:9000").
+          const publicEndpoint = normalizeEndpoint(
+            stripPlaceholder(process.env.STORAGE_S3_PUBLIC_ENDPOINT) ||
+            originOf(stripPlaceholder(process.env.STORAGE_S3_PUBLIC_URL)) ||
+            originOf(stripPlaceholder(process.env.MINIO_PUBLIC_URL)),
+          );
+
           return createStorageProvider({
             provider: "s3",
             s3: {
-              endpoint: normalizeEndpoint(
-                stripPlaceholder(process.env.STORAGE_S3_ENDPOINT) ||
-                stripPlaceholder(process.env.MINIO_ENDPOINT),
-              ),
+              endpoint: internalEndpoint,
+              publicEndpoint:
+                publicEndpoint !== internalEndpoint ? publicEndpoint : undefined,
               region: process.env.STORAGE_S3_REGION || "auto",
               accessKeyId:
                 stripPlaceholder(process.env.STORAGE_S3_ACCESS_KEY) ||

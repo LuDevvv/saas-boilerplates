@@ -9,6 +9,10 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export interface StorageConfig {
   endpoint?: string;
+  /** Public-facing endpoint for presigned URL generation (browser-accessible).
+   *  Use when the internal endpoint (e.g. http://minio:9000 in Docker) differs
+   *  from what browsers can reach (e.g. http://localhost:9000). */
+  publicEndpoint?: string;
   region?: string;
   accessKeyId: string;
   secretAccessKey: string;
