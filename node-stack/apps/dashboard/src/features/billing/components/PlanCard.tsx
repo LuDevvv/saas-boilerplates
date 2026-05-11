@@ -37,6 +37,7 @@ interface PlanCardProps {
   planId?: string;
   planName: string;
   price: string;
+  interval?: "monthly" | "yearly";
   status?: string;          // 'active' | 'trialing' | 'past_due' | 'canceled'
   trialEndsAt?: string;     // ISO date string when trial ends
   daysRemaining?: number;
@@ -53,6 +54,7 @@ export const PlanCard: FC<PlanCardProps> = ({
   planId,
   planName,
   price,
+  interval = "monthly",
   status = "active",
   trialEndsAt,
   daysRemaining,
@@ -123,13 +125,15 @@ export const PlanCard: FC<PlanCardProps> = ({
           ))}
         </div>
 
-        {/* Price — left-aligned, medium weight */}
+        {/* Price */}
         <div className="flex items-baseline gap-1 mt-4">
-          <span className="text-[26px] font-semibold text-fg tabular-nums leading-none">
+          <span className="text-[22px] font-bold text-fg tabular-nums leading-none">
             {price}
           </span>
           {price !== "$0.00" && (
-            <span className="text-[12px] text-fg-muted ml-0.5">/mes</span>
+            <span className="text-[11px] text-fg-muted ml-0.5">
+              /{interval === "yearly" ? "año" : "mes"}
+            </span>
           )}
         </div>
 

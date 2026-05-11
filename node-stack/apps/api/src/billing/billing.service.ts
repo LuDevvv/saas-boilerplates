@@ -593,22 +593,18 @@ export class BillingService {
     }
 
     const polarPortal = this.configService.get<string>("POLAR_PORTAL_URL", "https://polar.sh");
-    const sectionPath = section === "orders" ? "/purchases/orders" : "/purchases";
+    void section; // section reserved for future Polar portal deep-linking
 
     try {
       const decryptedCustomerId = this.encryption.decrypt(customer.providerCustomerId);
       const session = await this.provider.createCustomerSession(decryptedCustomerId);
-
-      // Navigate to the correct section within the portal
-      if (session.customerPortalUrl) {
-        const parsed = new URL(session.customerPortalUrl);
-        parsed.pathname = sectionPath;
-        return { url: parsed.toString() };
-      }
-      return { url: `${polarPortal}${sectionPath}?customer_session_token=${session.token}` };
+      // Use customerPortalUrl exactly as returned by Polar — it contains the correct
+      // auth entry point. Modifying the pathname breaks Polar's auth redirect flow.
+      const url = session.customerPortalUrl ?? `${polarPortal}?customer_session_token=${session.token}`;
+      return { url };
     } catch (err) {
       this.logger.warn(`Could not create customer session: ${(err as Error).message}`);
-      return { url: `${polarPortal}${sectionPath}` };
+      return { url: `${polarPortal}/purchases` };
     }
   }
 

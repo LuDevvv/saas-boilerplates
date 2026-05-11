@@ -65,15 +65,16 @@ export const BillingContent: FC = () => {
     const status: string = sub?.status ?? "none";
     const isTrialing = status === "trialing" || status === "trialling";
 
+    const interval = sub?.interval ?? "monthly";
+    const planPrice = sub?.planId === "elite"
+      ? (interval === "yearly" ? 990 : 99)
+      : (interval === "yearly" ? 290 : 29);
+
     return {
       planId: sub?.planId ?? "free",
       name: sub?.planName ?? "Starter",
-      interval: sub?.interval ?? "monthly",
-      price: hasActiveSubscription
-        ? (sub.interval === "yearly"
-          ? `$${sub.planId === "pro" ? 290 : 990}/año`
-          : `$${sub.planId === "pro" ? 29 : 99}/mes`)
-        : "$0.00",
+      interval,
+      price: hasActiveSubscription ? `$${planPrice}` : "$0",
       status: hasActiveSubscription ? status : "free",
       trialEndsAt: isTrialing && sub?.currentPeriodEnd ? sub.currentPeriodEnd : undefined,
       daysRemaining: sub?.currentPeriodEnd
@@ -130,6 +131,7 @@ export const BillingContent: FC = () => {
             planId={planInfo.planId}
             planName={planInfo.name}
             price={planInfo.price}
+            interval={planInfo.interval}
             status={planInfo.status}
             trialEndsAt={planInfo.trialEndsAt}
             daysRemaining={planInfo.daysRemaining}

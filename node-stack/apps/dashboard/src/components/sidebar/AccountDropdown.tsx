@@ -49,7 +49,7 @@ export const AccountDropdown: FC<AccountDropdownProps> = ({
 
   const fullName = getFullName?.() || user?.email || "Usuario";
   const email = user?.email ?? "";
-  const plan = isPremium ? (currentPlan?.planId ?? "Pro") : "Plan Gratuito";
+  const plan = isPremium ? (currentPlan?.planName ?? currentPlan?.planId ?? "Pro") : "Plan Gratuito";
 
   return (
     <div

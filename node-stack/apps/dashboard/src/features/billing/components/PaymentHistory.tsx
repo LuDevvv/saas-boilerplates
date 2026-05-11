@@ -1,5 +1,5 @@
 import { Badge, FilterTabs, SearchInput } from "@node-stack/ui";
-import { FileText, Download, Receipt } from "lucide-react";
+import { FileText, ExternalLink, Receipt } from "lucide-react";
 import { FC, useState, useMemo } from "react";
 
 import { cn } from "@/utils/classNames";
@@ -89,14 +89,19 @@ const InvoiceRow: FC<{ payment: PaymentRecord }> = ({ payment }) => (
       </Badge>
     </div>
 
-    <button
-      onClick={() => payment.pdfUrl && window.open(payment.pdfUrl, "_blank")}
-      disabled={!payment.pdfUrl}
-      title={payment.pdfUrl ? "Descargar factura" : "PDF no disponible"}
-      className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/[0.08] transition-all active:scale-90 disabled:opacity-35 disabled:cursor-not-allowed"
-    >
-      <Download className="h-4 w-4" />
-    </button>
+    {payment.pdfUrl ? (
+      <a
+        href={payment.pdfUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        title="Ver factura"
+        className="h-8 w-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-primary hover:bg-primary/[0.07] transition-all active:scale-90"
+      >
+        <ExternalLink className="h-3.5 w-3.5" />
+      </a>
+    ) : (
+      <div className="h-8 w-8" />
+    )}
   </div>
 );
 
