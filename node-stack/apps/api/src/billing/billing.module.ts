@@ -6,12 +6,14 @@ import { DatabaseModule } from "@node-stack/db";
 
 import { BillingController } from "@/billing/billing.controller.js";
 import { BillingService } from "@/billing/billing.service.js";
+import { PlanLimitsService } from "@/billing/plan-limits.service.js";
 
 @Module({
   imports: [DatabaseModule],
   controllers: [BillingController],
   providers: [
     BillingService,
+    PlanLimitsService,
     {
       provide: "PAYMENT_PROVIDER",
       useFactory: async (config: ConfigService): Promise<PaymentProvider> => {
@@ -38,6 +40,8 @@ import { BillingService } from "@/billing/billing.service.js";
       inject: [ConfigService],
     },
   ],
-  exports: [BillingService],
+  // Export both services so other modules can inject PlanLimitsService
+  // for feature gating and limit enforcement.
+  exports: [BillingService, PlanLimitsService],
 })
 export class BillingModule {}

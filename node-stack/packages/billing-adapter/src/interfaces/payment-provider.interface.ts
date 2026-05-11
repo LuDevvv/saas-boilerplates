@@ -105,4 +105,19 @@ export interface PaymentProvider {
     payload: unknown,
     signatureOrHeaders?: string | Record<string, string>,
   ): Promise<WebhookEvent>;
+
+  /**
+   * Ingest a meter event for a customer. Used for usage-based billing.
+   *
+   * @param externalCustomerId  Workspace/customer ID in YOUR system (Polar links it via external_customer_id)
+   * @param eventName           Event name that the meter's filter matches on (e.g. "api_call")
+   * @param value               Numeric value to aggregate (default 1 for count meters)
+   * @param metadata            Optional key/value pairs attached to the event
+   */
+  ingestMeterEvent(
+    externalCustomerId: string,
+    eventName: string,
+    value?: number,
+    metadata?: Record<string, string>,
+  ): Promise<void>;
 }

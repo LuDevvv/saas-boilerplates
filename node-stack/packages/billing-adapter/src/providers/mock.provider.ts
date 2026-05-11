@@ -49,6 +49,15 @@ export class MockProvider implements PaymentProvider {
     return;
   }
 
+  async ingestMeterEvent(
+    _externalCustomerId: string,
+    _eventName: string,
+    _value?: number,
+    _metadata?: Record<string, string>,
+  ): Promise<void> {
+    return;
+  }
+
   async createCustomerSession(_customerId: string): Promise<{ token: string; customerPortalUrl?: string }> {
     return { token: "mock_session_token", customerPortalUrl: undefined };
   }

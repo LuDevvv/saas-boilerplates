@@ -736,6 +736,44 @@ export class BillingService {
    * makes changes in the Polar portal (e.g. cancel) and the local DB is stale
    * because the webhook couldn't reach localhost.
    */
+  /**
+   * Ingests a meter event for a workspace to Polar.
+   * Call this from any service when billable consumption occurs.
+   *
+   * Example:
+   *   await this.billing.reportMeterEvent(workspaceId, "api_call");
+   *   await this.billing.reportMeterEvent(workspaceId, "storage_mb", storageDelta);
+   *
+   * No-op if:
+   *  - No customer record exists (free plan / not subscribed)
+   *  - Provider doesn't support metering (mock provider)
+   *  - Polar API is unavailable (fails silently with a warning)
+   */
+  async reportMeterEvent(
+    workspaceId: string,
+    eventName: string,
+    value = 1,
+    metadata?: Record<string, string>,
+  ): Promise<void> {
+    const customer = await withTenantTx(
+      workspaceId,
+      (tx) => this.billingRepo.findCustomerByWorkspaceId(workspaceId, tx),
+      this.db,
+    );
+    if (!customer) return;
+
+    try {
+      const decryptedCustomerId = this.encryption.decrypt(customer.providerCustomerId);
+      // Use workspaceId as external_customer_id so Polar can link events to customers
+      await this.provider.ingestMeterEvent(workspaceId, eventName, value, metadata);
+      void decryptedCustomerId; // available if Polar requires Polar customer ID instead
+    } catch (err) {
+      this.logger.warn(
+        `Could not ingest meter event "${eventName}" for workspace ${workspaceId}: ${(err as Error).message}`,
+      );
+    }
+  }
+
   async refreshSubscription(workspaceId: string): Promise<Record<string, unknown>> {
     const sub = await withTenantTx(
       workspaceId,

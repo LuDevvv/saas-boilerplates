@@ -185,6 +185,22 @@ export class PolarProvider implements PaymentProvider {
     return { token: data.token, customerPortalUrl: data.customer_portal_url };
   }
 
+  async ingestMeterEvent(
+    externalCustomerId: string,
+    eventName: string,
+    value = 1,
+    metadata: Record<string, string> = {},
+  ): Promise<void> {
+    await this.polarFetch("/v1/events", {
+      method: "POST",
+      body: JSON.stringify({
+        name: eventName,
+        external_customer_id: externalCustomerId,
+        metadata: { ...metadata, value: String(value) },
+      }),
+    });
+  }
+
   async listOrders(customerSessionToken: string, limit = 20): Promise<BillingOrder[]> {
     const res = await fetch(
       `${this.apiBase}/v1/customer-portal/orders?limit=${limit}&sorting=-created_at`,

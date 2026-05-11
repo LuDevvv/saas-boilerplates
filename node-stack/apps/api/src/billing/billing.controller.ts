@@ -25,6 +25,7 @@ import type { Request } from "express";
 
 import { CurrentUser } from "@/auth/decorators/index.js";
 import { BillingService } from "@/billing/billing.service.js";
+import { PlanLimitsService } from "@/billing/plan-limits.service.js";
 import { Idempotent } from "@/common/decorators/idempotent.decorator.js";
 import { RequirePermissions } from "@/common/decorators/permissions.decorator.js";
 import { Public } from "@/common/decorators/public.decorator.js";
@@ -41,7 +42,10 @@ import type { UserPayload, WorkspaceContext } from "@/common/types/index.js";
 @Idempotent()
 @Controller("billing")
 export class BillingController {
-  constructor(private readonly billing: BillingService) {}
+  constructor(
+    private readonly billing: BillingService,
+    private readonly planLimits: PlanLimitsService,
+  ) {}
 
   @Throttle({ medium: { ttl: 60000, limit: 5 } })
   @Post("checkout")
@@ -167,6 +171,14 @@ export class BillingController {
     @CurrentUser() user: UserPayload,
   ): Promise<Record<string, unknown>> {
     return this.billing.changePlan(workspace.id, user.id, body.planId, body.variantId);
+  }
+
+  @Get("usage")
+  @RequirePermissions(Permission.BILLING_READ)
+  @ApiOperation({ summary: "Get plan usage snapshot for the workspace" })
+  @ApiResponse({ status: 200, description: "Usage data" })
+  async usage(@Workspace() workspace: WorkspaceContext): Promise<Record<string, unknown>> {
+    return this.planLimits.getUsageSnapshot(workspace.id);
   }
 
   @Get("plans")
