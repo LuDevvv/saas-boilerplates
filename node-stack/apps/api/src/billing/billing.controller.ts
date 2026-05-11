@@ -129,6 +129,18 @@ export class BillingController {
     return this.billing.invoices(workspace.id);
   }
 
+  @Post("subscription/reactivate")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermissions(Permission.BILLING_WRITE)
+  @ApiOperation({ summary: "Reactivate a pending-cancellation subscription" })
+  @ApiResponse({ status: 204, description: "Subscription reactivated" })
+  async uncancelSubscription(
+    @Workspace() workspace: WorkspaceContext,
+    @CurrentUser() user: UserPayload,
+  ): Promise<void> {
+    return this.billing.uncancelSubscription(workspace.id, user.id);
+  }
+
   @Delete("subscription")
   @HttpCode(HttpStatus.NO_CONTENT)
   @RequirePermissions(Permission.BILLING_WRITE)

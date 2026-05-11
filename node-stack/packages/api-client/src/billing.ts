@@ -38,6 +38,10 @@ export const billing = (client: AxiosInstance) => ({
     return r as unknown as BillingSubscription;
   },
 
+  uncancelSubscription: async (): Promise<void> => {
+    await client.post("/billing/subscription/reactivate");
+  },
+
   cancelSubscription: async (): Promise<void> => {
     await client.delete("/billing/subscription");
   },

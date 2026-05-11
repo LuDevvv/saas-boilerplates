@@ -45,6 +45,10 @@ export class MockProvider implements PaymentProvider {
     return;
   }
 
+  async uncancelSubscription(_subscriptionId: string): Promise<void> {
+    return;
+  }
+
   async createCustomerSession(_customerId: string): Promise<{ token: string; customerPortalUrl?: string }> {
     return { token: "mock_session_token", customerPortalUrl: undefined };
   }

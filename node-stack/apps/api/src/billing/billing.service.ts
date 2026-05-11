@@ -653,6 +653,50 @@ export class BillingService {
     await this.cache.del(`billing:ws:${workspaceId}:subscription`);
   }
 
+  async uncancelSubscription(workspaceId: string, userId: string): Promise<void> {
+    const sub = await withTenantTx(
+      workspaceId,
+      (tx) => this.billingRepo.findSubscriptionByWorkspaceId(workspaceId, tx),
+      this.db,
+    );
+    if (!sub?.providerSubscriptionId) {
+      throw new Error("No active subscription found");
+    }
+
+    await this.provider.uncancelSubscription(sub.providerSubscriptionId);
+
+    // Optimistically remove cancelAt from the DB record
+    await withTenantTx(workspaceId, async (tx) => {
+      await this.billingRepo.upsertSubscription(
+        {
+          workspaceId,
+          providerSubscriptionId: sub.providerSubscriptionId,
+          planId: sub.planId ?? "",
+          variantId: sub.variantId ?? undefined,
+          status: sub.status,
+          currentPeriodStart: sub.currentPeriodStart ?? undefined,
+          currentPeriodEnd: sub.currentPeriodEnd ?? undefined,
+          cancelAt: null,
+        },
+        tx,
+      );
+
+      await this.auditLog.create(
+        {
+          workspaceId,
+          userId,
+          action: "billing.subscription_cancel_requested",
+          entityType: "subscription",
+          entityId: sub.providerSubscriptionId,
+          metadata: { action: "uncancel", providerSubscriptionId: sub.providerSubscriptionId },
+        },
+        tx,
+      );
+    }, this.db);
+
+    await this.cache.del(`billing:ws:${workspaceId}:subscription`);
+  }
+
   async changePlan(
     workspaceId: string,
     userId: string,

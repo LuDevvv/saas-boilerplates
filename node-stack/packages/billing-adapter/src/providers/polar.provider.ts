@@ -167,6 +167,13 @@ export class PolarProvider implements PaymentProvider {
     });
   }
 
+  async uncancelSubscription(subscriptionId: string): Promise<void> {
+    await this.client.subscriptions.update({
+      id: subscriptionId,
+      subscriptionUpdate: { cancelAtPeriodEnd: false },
+    });
+  }
+
   async createCustomerSession(customerId: string): Promise<{ token: string; customerPortalUrl?: string }> {
     const data = await this.polarFetch<{ token: string; customer_portal_url?: string }>(
       "/v1/customer-sessions",

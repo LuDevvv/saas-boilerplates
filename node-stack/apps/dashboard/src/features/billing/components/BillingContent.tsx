@@ -8,7 +8,7 @@ import { BillingLayoutSkeleton } from "./BillingSkeletons";
 import { PaymentHistory, type PaymentRecord } from "./PaymentHistory";
 import { PlanCard } from "./PlanCard";
 import { SupportCard } from "./SupportCard";
-import { useSubscription, useInvoices, useCancelSubscription, useCustomerPortal, useRefreshSubscription } from "../hooks/useBilling";
+import { useSubscription, useInvoices, useCancelSubscription, useCustomerPortal, useRefreshSubscription, useUncancelSubscription } from "../hooks/useBilling";
 
 import { appToast } from "@/components/alerts/Toasts";
 
@@ -18,6 +18,7 @@ export const BillingContent: FC = () => {
   const { data: subscription, isLoading: isLoadingSub } = useSubscription();
   const { data: invoices, isLoading: isLoadingInvoices } = useInvoices();
   const cancelMutation = useCancelSubscription();
+  const uncancelMutation = useUncancelSubscription();
   const portalMutation = useCustomerPortal();
   const refreshMutation = useRefreshSubscription();
 
@@ -49,6 +50,18 @@ export const BillingContent: FC = () => {
       appToast.error({ title: "Error", description: "No se pudo abrir el portal." });
     } finally {
       setPendingSection(null);
+    }
+  };
+
+  const handleReactivate = async () => {
+    try {
+      await uncancelMutation.mutateAsync();
+      appToast.success({
+        title: "Suscripción reactivada",
+        description: "Tu plan continuará al finalizar el ciclo actual.",
+      });
+    } catch {
+      appToast.error({ title: "Error", description: "No se pudo reactivar la suscripción." });
     }
   };
 
@@ -151,6 +164,8 @@ export const BillingContent: FC = () => {
             nextBillingDate={planInfo.nextBillingDate}
             onUpgrade={handleUpgrade}
             onCancel={() => setIsCancelModalOpen(true)}
+            onReactivate={handleReactivate}
+            isReactivating={uncancelMutation.isPending}
           />
         )}
 
