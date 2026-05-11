@@ -134,6 +134,7 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
           <BillingToggle
             isAnnualBilling={isAnnual}
             onChange={setIsAnnual}
+            discountLabel=""
           />
           <div className={cn(
             "flex items-center gap-1.5 text-[12px] font-medium transition-all duration-300",
@@ -220,20 +221,15 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
                       ${displayPrice}
                     </span>
                     {plan.price > 0 && (
-                      <div className="flex flex-col items-start ml-1 gap-0.5">
-                        <span className="text-[13px] text-gray-400 leading-none">/mes</span>
-                        {isAnnual && (
-                          <span className="text-[8px] font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded leading-none">
-                            anual
-                          </span>
-                        )}
-                      </div>
+                      <span className="text-[13px] text-gray-400 ml-1">
+                        /{isAnnual ? "año" : "mes"}
+                      </span>
                     )}
                   </div>
 
                   {plan.price > 0 && dopEquiv && (
                     <p className="text-[11px] text-gray-400 mt-0.5">
-                      ≈ {dopEquiv}{isAnnual ? "/mes equiv." : "/mes"}
+                      ≈ {dopEquiv}/mes
                     </p>
                   )}
 
@@ -288,7 +284,7 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
                   <button
                     onClick={() => handleSelectPlan(plan.id, plan.trialDays)}
                     disabled={!!changingPlan}
-                    className="w-full h-11 rounded-xl bg-primary hover:bg-primary-600 text-primary-foreground text-[13px] font-medium transition-all active:scale-[0.98] shadow-[0_4px_14px_-2px_rgba(0,64,128,0.20)] dark:shadow-[0_4px_14px_-2px_rgba(91,168,229,0.20)] disabled:opacity-60 inline-flex items-center justify-center gap-2"
+                    className="w-full h-11 rounded-xl bg-primary hover:bg-primary-600 text-primary-foreground text-[13px] font-medium transition-colors shadow-[0_4px_14px_-2px_rgba(0,64,128,0.20)] dark:shadow-[0_4px_14px_-2px_rgba(91,168,229,0.20)] disabled:opacity-60 inline-flex items-center justify-center gap-2"
                   >
                     {changingPlan === plan.id ? (
                       <>
@@ -297,7 +293,18 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
                       </>
                     ) : (
                       <>
-                        {hasActiveSub ? "Cambiar a" : "Mejorar a"} {plan.name}
+                        {(() => {
+                          if (!hasActiveSub) return `Suscribirse a ${plan.name}`;
+                          // Compare current vs selected plan cost to determine upgrade/downgrade
+                          const PRICES: Record<string, { monthly: number; yearly: number }> = {
+                            pro: { monthly: 29, yearly: 290 },
+                            elite: { monthly: 99, yearly: 990 },
+                          };
+                          const currentCost = PRICES[subscription?.planId ?? ""]?.[subscription?.interval ?? "monthly"] ?? 0;
+                          const selectedCost = isAnnual ? plan.yearlyPrice : plan.price;
+                          if (selectedCost > currentCost) return `Mejorar a ${plan.name}`;
+                          return `Cambiar a ${plan.name}`;
+                        })()}
                         <ArrowRight className="h-4 w-4" />
                       </>
                     )}
