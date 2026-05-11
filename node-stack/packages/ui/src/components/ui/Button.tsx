@@ -13,17 +13,17 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses = {
   primary:
-    "bg-primary hover:bg-primary-600 text-primary-foreground shadow-[0_4px_14px_-2px_rgba(0,64,128,0.20)] dark:shadow-[0_4px_14px_-2px_rgba(91,168,229,0.20)] hover:-translate-y-[1px] active:scale-95 transition-all duration-200",
+    "bg-primary hover:bg-primary-600 text-primary-foreground shadow-[0_4px_14px_-2px_rgba(0,64,128,0.20)] dark:shadow-[0_4px_14px_-2px_rgba(91,168,229,0.20)] transition-colors duration-200",
   secondary:
-    "bg-surface border border-border text-fg-secondary hover:bg-surface-hover hover:border-border-strong hover:text-fg active:scale-95 transition-all duration-200",
+    "bg-surface border border-border text-fg-secondary hover:bg-surface-hover hover:border-border-strong hover:text-fg transition-colors duration-200",
   outline:
-    "bg-transparent border-2 border-primary text-primary hover:bg-primary/10 hover:-translate-y-[1px] active:scale-95 transition-all duration-200",
+    "bg-transparent border-2 border-primary text-primary hover:bg-primary/10 transition-colors duration-200",
   ghost:
-    "bg-transparent text-fg-secondary hover:bg-surface-hover hover:text-fg active:scale-95 transition-all duration-200",
+    "bg-transparent text-fg-secondary hover:bg-surface-hover hover:text-fg transition-colors duration-200",
   danger:
-    "bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/15 hover:border-red-300 dark:hover:border-red-500/30 active:scale-95 transition-all duration-200",
+    "bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/15 hover:border-red-300 dark:hover:border-red-500/30 transition-colors duration-200",
   success:
-    "bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/15 active:scale-95 transition-all duration-200",
+    "bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-500/15 transition-colors duration-200",
 };
 
 const sizeClasses = {

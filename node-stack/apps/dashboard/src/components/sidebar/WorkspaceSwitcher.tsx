@@ -1,8 +1,6 @@
 import { ChevronsUpDown, Check, Plus } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
-
-import { Logo } from "@/assets/logo/logo";
 import { CreateWorkspaceModal } from "@/features/workspaces/components/CreateWorkspaceModal";
 import { useWorkspaces } from "@/features/workspaces/hooks/useWorkspaces";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
@@ -11,6 +9,35 @@ import { cn } from "@/utils/classNames";
 interface WorkspaceSwitcherProps {
   isCollapsed: boolean;
 }
+
+const ROLE_LABELS: Record<string, string> = {
+  owner:  "Propietario",
+  admin:  "Administrador",
+  member: "Miembro",
+  guest:  "Invitado",
+};
+
+const translateRole = (role: string) =>
+  ROLE_LABELS[role?.toLowerCase()] ?? role;
+
+/** Workspace avatar: logo image if available, otherwise first letter. */
+const WorkspaceAvatar = ({ name, logoUrl }: { name: string; logoUrl?: string }) => {
+  if (logoUrl) {
+    return (
+      <img
+        src={logoUrl}
+        alt={name}
+        className="h-9 w-9 shrink-0 rounded-xl object-contain"
+      />
+    );
+  }
+  const initial = (name ?? "?")[0].toUpperCase();
+  return (
+    <div className="h-9 w-9 shrink-0 flex items-center justify-center rounded-xl bg-primary text-primary-foreground text-[15px] font-bold select-none">
+      {initial}
+    </div>
+  );
+};
 
 export const WorkspaceSwitcher = ({ isCollapsed }: WorkspaceSwitcherProps) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -52,22 +79,19 @@ export const WorkspaceSwitcher = ({ isCollapsed }: WorkspaceSwitcherProps) => {
             isCollapsed ? "w-full justify-center gap-0" : "gap-[10px]"
           )}
         >
-          {/* Brand Logo - Using the official Solo variant */}
-          <div className="relative h-9 w-9 shrink-0 flex items-center justify-center rounded-xl bg-primary/10 dark:bg-primary/20 transition-transform duration-300 group-hover:scale-105">
-            <Logo variant="solo" width={24} height={24} className="dark:brightness-110" />
-          </div>
+          <WorkspaceAvatar name={selectedWorkspace.name} logoUrl={selectedWorkspace.logoUrl} />
 
           {/* Workspace Info — only rendered when expanded so flex centering stays clean */}
           {!isCollapsed && (
             <div className="flex flex-col items-start overflow-hidden">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-fg whitespace-nowrap">
+                <span className="text-sm font-bold text-fg whitespace-nowrap truncate max-w-[120px]">
                   {selectedWorkspace.name}
                 </span>
                 <ChevronsUpDown className="h-3.5 w-3.5 text-sidebar-text/40 group-hover:text-sidebar-text-active transition-colors shrink-0" />
               </div>
-              <span className="text-[10px] font-label text-sidebar-text/50 uppercase whitespace-nowrap">
-                {selectedWorkspace.role}
+              <span className="text-[10px] font-label text-sidebar-text/50 whitespace-nowrap">
+                {translateRole(selectedWorkspace.role)}
               </span>
             </div>
           )}
@@ -104,8 +128,8 @@ export const WorkspaceSwitcher = ({ isCollapsed }: WorkspaceSwitcherProps) => {
                 >
                   <div className="flex flex-col items-start">
                     <span>{workspace.name}</span>
-                    <span className="text-[10px] font-label text-sidebar-text/70 uppercase">
-                      {workspace.role}
+                    <span className="text-[10px] font-label text-sidebar-text/70">
+                      {translateRole(workspace.role)}
                     </span>
                   </div>
                   {activeWorkspaceId === workspace.id && <Check className="h-4 w-4 text-sidebar-text-active" />}
