@@ -105,7 +105,7 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
     navigate(`/payments/checkout?plan=${planId}&billing=${cycle}${trial}${onboarding}`);
   };
 
-  const growthSavings = PLANS[1].price * 12 - PLANS[1].yearlyPrice;
+  const growthSavings = PLANS[0].price * 12 - PLANS[0].yearlyPrice;
 
   return (
     <div className="pb-10 animate-in fade-in duration-500">
@@ -134,7 +134,6 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
           <BillingToggle
             isAnnualBilling={isAnnual}
             onChange={setIsAnnual}
-            discountLabel="Ahorra 15%"
           />
           <div className={cn(
             "flex items-center gap-1.5 text-[12px] font-medium transition-all duration-300",
@@ -221,19 +220,26 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
                       ${displayPrice}
                     </span>
                     {plan.price > 0 && (
-                      <span className="text-[13px] text-gray-400 ml-1">/mes</span>
+                      <div className="flex flex-col items-start ml-1 gap-0.5">
+                        <span className="text-[13px] text-gray-400 leading-none">/mes</span>
+                        {isAnnual && (
+                          <span className="text-[8px] font-bold uppercase tracking-wide text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded leading-none">
+                            anual
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
 
                   {plan.price > 0 && dopEquiv && (
                     <p className="text-[11px] text-gray-400 mt-0.5">
-                      ≈ {dopEquiv}/mes
+                      ≈ {dopEquiv}{isAnnual ? "/mes equiv." : "/mes"}
                     </p>
                   )}
 
                   <p className="text-[11px] text-gray-400 mt-1">
                     {isAnnual
-                      ? `US$ ${plan.yearlyPrice} facturado anualmente · Ahorras US$ ${annualSavings}`
+                      ? `US$ ${plan.yearlyPrice}/año · Ahorras US$ ${annualSavings}`
                       : "Facturado mensualmente"}
                   </p>
                 </div>
