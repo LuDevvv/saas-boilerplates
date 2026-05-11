@@ -205,8 +205,8 @@ export const Sidebar: FC<SidebarProps> = ({
             </nav>
 
             <div className={cn(
-              "flex-none z-20 bg-inherit pb-6 space-y-4 transition-all duration-300",
-              displayCollapsed ? "px-0 flex flex-col items-center" : "px-4 animate-fade-in"
+              "flex-none z-20 bg-inherit pb-6 space-y-4 transition-all duration-300 border-t border-sidebar-border pt-4",
+              displayCollapsed ? "px-2 flex flex-col items-center" : "px-4 animate-fade-in"
             )}>
               <TrialStatusWidget isCollapsed={displayCollapsed} />
               {/* <UpgradePremiumWidget isCollapsed={displayCollapsed} /> */}

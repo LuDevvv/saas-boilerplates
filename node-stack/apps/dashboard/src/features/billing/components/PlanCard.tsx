@@ -1,5 +1,5 @@
 import { Button } from "@node-stack/ui";
-import { CheckCircle2, Calendar, ChevronRight, Hourglass, AlertCircle, Clock, PauseCircle, XCircle } from "lucide-react";
+import { CheckCircle2, Calendar, ChevronRight, Hourglass, AlertCircle, PauseCircle, XCircle } from "lucide-react";
 import { FC, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -52,12 +52,10 @@ function getStatusBadge(
   trialDaysLeft: number,
 ): BadgeConfig {
   if (cancelAt && (status === "active" || status === "trialing" || status === "trialling")) {
-    const cancelDate = new Date(cancelAt).toLocaleDateString("es-ES", { day: "numeric", month: "short" });
-    const days = Math.max(0, Math.ceil((new Date(cancelAt).getTime() - Date.now()) / 86_400_000));
     return {
-      label: `Cancela el ${cancelDate} · ${days}d`,
-      className: "text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/25 bg-amber-50 dark:bg-amber-500/10",
-      icon: ({ className }) => <Clock className={className} />,
+      label: "Cancelación programada",
+      className: "text-primary border border-primary/30 bg-primary/[0.07] dark:bg-primary/[0.12]",
+      icon: ({ className }) => <Hourglass className={className} />,
     };
   }
 
@@ -221,45 +219,41 @@ export const PlanCard: FC<PlanCardProps> = ({
               <span>Período de prueba</span>
               <span>{trialDaysLeft}d restantes</span>
             </div>
-            <div className="relative h-1.5 w-full rounded-full bg-amber-100 dark:bg-amber-500/10 overflow-hidden">
+            <div className="relative h-1.5 w-full rounded-full bg-primary/10 overflow-hidden">
               <div
-                className="absolute top-0 left-0 h-full bg-amber-400 rounded-full transition-all duration-700"
+                className="absolute top-0 left-0 h-full bg-primary rounded-full transition-all duration-700"
                 style={{ width: `${(trialDaysLeft / 14) * 100}%` }}
               />
             </div>
           </div>
         )}
 
-        {/* Cancel progress bar */}
+        {/* Cancel progress bar — shows date + days in one row, no need for a separate calendar line */}
         {isCancelling && (
           <div className="mt-3">
             <div className="flex justify-between text-[10px] text-fg-muted mb-1">
-              <span>Acceso restante</span>
+              <span className="flex items-center gap-1">
+                <Calendar className="h-3 w-3 shrink-0" />
+                Acceso hasta: {nextBillingDate}
+              </span>
               <span>{daysRemaining ?? 0}d</span>
             </div>
-            <div className="relative h-1.5 w-full rounded-full bg-amber-100 dark:bg-amber-500/10 overflow-hidden">
+            <div className="relative h-1.5 w-full rounded-full bg-primary/10 overflow-hidden">
               <div
-                className="absolute top-0 left-0 h-full bg-amber-400 rounded-full transition-all duration-700"
+                className="absolute top-0 left-0 h-full bg-primary rounded-full transition-all duration-700"
                 style={{ width: `${cancelProgress}%` }}
               />
             </div>
           </div>
         )}
 
-        {/* Next billing / cancellation date */}
-        {isPremium && nextBillingDate && (
+        {/* Next billing / trial date — only when NOT cancelling (cancel row already shows date) */}
+        {isPremium && nextBillingDate && !isCancelling && (
           <div className="flex items-center gap-1.5 mt-2 text-[11px] text-fg-muted">
             <Calendar className="h-3 w-3 shrink-0" />
-            {isTrialing && !isCancelling
-              ? `Prueba gratuita hasta: ${nextBillingDate}`
-              : isCancelling
-                ? `Acceso hasta: ${nextBillingDate}`
-                : `Próximo cargo: ${nextBillingDate}`}
-            {(daysRemaining ?? 0) > 0 && (
-              <span className="ml-1 text-[10px] bg-surface-hover px-1.5 py-0.5 rounded-md">
-                {daysRemaining}d
-              </span>
-            )}
+            {isTrialing
+              ? `Prueba hasta: ${nextBillingDate}`
+              : `Próximo cargo: ${nextBillingDate}`}
           </div>
         )}
 

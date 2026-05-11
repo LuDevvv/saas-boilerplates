@@ -1,4 +1,4 @@
-import { ArrowUpCircle, Zap, Clock } from "lucide-react";
+import { ArrowUpCircle, Zap } from "lucide-react";
 import { FC, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -88,31 +88,50 @@ const CancellingWidget: FC<SidebarWidgetProps & { cancelDate: string; daysLeft: 
   cancelDate,
   daysLeft,
 }) => {
+  const navigate = useNavigate();
+  const progress = Math.max(0, Math.min(100, (daysLeft / 30) * 100));
+
   if (isCollapsed) {
     return (
       <div className="flex justify-center w-full px-0">
         <div
-          className="h-10 w-10 flex items-center justify-center rounded-full border border-amber-200 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 shadow-sm cursor-default"
-          title={`Cancela el ${cancelDate} · ${daysLeft}d restantes`}
+          className="h-10 w-10 flex items-center justify-center rounded-full border border-border bg-surface shadow-sm cursor-pointer hover:bg-surface-hover active:scale-95 transition-colors"
+          title={`Acceso hasta: ${cancelDate} · ${daysLeft}d`}
+          onClick={() => navigate("/payments")}
         >
-          <Clock className="h-4 w-4 text-amber-500" />
+          <CircularProgress daysLeft={daysLeft} progress={progress} />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full min-w-[160px] rounded-[18px] border border-amber-200 dark:border-amber-500/25 bg-amber-50 dark:bg-amber-500/[0.08] p-3 overflow-hidden">
-      <div className="flex items-center gap-1.5 mb-1.5">
-        <Clock className="h-3 w-3 text-amber-500 shrink-0" />
-        <span className="text-[9px] font-bold text-amber-600 dark:text-amber-400 uppercase">Cancelación programada</span>
+    <div className="w-full min-w-[160px] rounded-[18px] border border-border bg-surface p-3 shadow-[var(--shadow-card)] overflow-hidden">
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <span className="text-[9px] font-bold text-fg-muted uppercase">Suscripción</span>
+        <div className="flex items-baseline gap-1 whitespace-nowrap">
+          <span className="text-sm font-black text-fg">{daysLeft}</span>
+          <span className="text-[9px] font-bold text-fg-muted uppercase">días</span>
+        </div>
       </div>
-      <p className="text-[11px] font-semibold text-fg leading-snug mb-0.5">
-        Acceso hasta el {cancelDate}
+
+      <div className="relative h-1 w-full rounded-full bg-primary/10 overflow-hidden mb-2.5">
+        <div
+          className="absolute top-0 left-0 h-full bg-primary rounded-full transition-all duration-700 ease-out"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      <p className="text-[10px] font-medium text-fg-secondary leading-snug mb-3 line-clamp-2">
+        Acceso hasta el {cancelDate}.
       </p>
-      <p className="text-[10px] text-fg-muted leading-snug">
-        {daysLeft > 0 ? `${daysLeft}d de acceso restante` : "Acceso terminando pronto"}
-      </p>
+
+      <button
+        onClick={() => navigate("/payments")}
+        className="w-full flex items-center justify-center h-8 rounded-lg bg-primary text-primary-foreground text-[10px] font-black active:scale-95 transition-colors hover:bg-primary-600 px-2"
+      >
+        Ver planes
+      </button>
     </div>
   );
 };
