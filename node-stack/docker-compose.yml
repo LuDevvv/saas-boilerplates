@@ -126,6 +126,13 @@ services:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
       - FORCE_COLOR=1
+      # Storage — override whatever .env says so Docker networking is always correct
+      - STORAGE_PROVIDER=s3
+      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_ACCESS_KEY=minioadmin
+      - MINIO_SECRET_KEY=minioadmin
+      - MINIO_BUCKET=app
+      - MINIO_PUBLIC_URL=http://localhost:9000/app
     depends_on:
       postgres:
         condition: service_healthy
