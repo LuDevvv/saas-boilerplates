@@ -1,4 +1,4 @@
-import { 
+import {
   GetPresignedUrlDto,
   PresignedUrlResponse,
   VerifyUploadResponse,
@@ -18,14 +18,14 @@ export const storage = (client: AxiosInstance) => ({
   },
 
   getDownloadUrl: async (fileId: string) => {
-    return client.get<{ downloadUrl: string }>(`/storage/${fileId}`) as unknown as Promise<{ downloadUrl: string }>;
+    return client.get<{ url: string }>(`/storage/${fileId}`) as unknown as Promise<{ url: string }>;
   },
 
   deleteFile: async (fileId: string) => {
-    return client.delete<{ success: boolean }>(`/storage/${fileId}`) as unknown as Promise<{ success: boolean }>;
+    return client.delete<{ ok: boolean }>(`/storage/${fileId}`) as unknown as Promise<{ ok: boolean }>;
   },
 
-  listFiles: async (workspaceId: string) => {
-    return client.get<FileInfo[]>(`/storage/workspaces/${workspaceId}`) as unknown as Promise<FileInfo[]>;
+  listFiles: async (_workspaceId?: string) => {
+    return client.get<FileInfo[]>("/storage") as unknown as Promise<FileInfo[]>;
   },
 });

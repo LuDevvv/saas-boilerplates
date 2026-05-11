@@ -61,6 +61,8 @@ workspace.workspace_closed, workspace.workspace_hard_deleted,
 // billing
 billing.subscription_created, billing.subscription_updated,
 billing.subscription_canceled,
+// storage
+storage.upload_rejected, storage.file_deleted,
 // admin
 admin.user_role_changed, admin.user_impersonated,
 // system

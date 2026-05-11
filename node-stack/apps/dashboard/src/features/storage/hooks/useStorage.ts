@@ -14,7 +14,7 @@ import { api } from "@/lib/api";
 export const useStorageFiles = (workspaceId: string | null) => {
   return useQuery({
     queryKey: workspaceId ? ["storage", "files", workspaceId] : [],
-    queryFn: () => api.storage.getDownloadUrl(workspaceId!), // Adjust to a real list endpoint when available
+    queryFn: () => api.storage.listFiles(workspaceId!),
     enabled: !!workspaceId,
   });
 };
@@ -40,7 +40,7 @@ export const useStorageStats = (workspaceId: string | null) => {
   return useQuery({
     queryKey: workspaceId ? ["storage", "stats", workspaceId] : [],
     queryFn: async () => {
-      // TODO: implement backend endpoint
+      // TODO: implement backend endpoint for quota tracking
       return { usedBytes: 0, fileCount: 0, totalBytes: 5 * 1024 * 1024 * 1024 };
     },
     enabled: !!workspaceId,
@@ -53,6 +53,8 @@ interface UploadResult {
   fileUrl: string;
 }
 
+type UploadContext = "attachment" | "avatar" | "export";
+
 /**
  * Single-file upload entrypoint that ALSO mirrors progress into the global
  * upload tray store. Each call:
@@ -62,13 +64,17 @@ interface UploadResult {
  * 3. Marks the item success/error.
  * 4. Returns `{ fileUrl }` on success or rejects (caller handles).
  *
- * Multiple concurrent uploads are supported — each call gets its own item.
+ * `context` controls the backend upload policy:
+ *   - "avatar"     → 5 MB limit, image types only (JPEG/PNG/WebP/GIF)
+ *   - "attachment" → 50 MB limit, images + PDF + spreadsheets + text/CSV (default)
+ *   - "export"     → 100 MB limit, JSON/CSV only
  *
- * For backward compatibility we still expose `isUploading` / `progress`
- * derived from the queue (true if any item belonging to this hook instance is
- * uploading). Use the store directly for richer state.
+ * Multiple concurrent uploads are supported — each call gets its own item.
  */
-export const useUploadFile = (workspaceId: string | null) => {
+export const useUploadFile = (
+  workspaceId: string | null,
+  context: UploadContext = "attachment",
+) => {
   const queryClient = useQueryClient();
   const addItem = useUploadStore((s) => s.add);
   const setProgress = useUploadStore((s) => s.setProgress);
@@ -101,7 +107,7 @@ export const useUploadFile = (workspaceId: string | null) => {
           fileName: file.name,
           mimeType: file.type,
           fileSize: file.size,
-          context: "attachment",
+          context,
         } as GetPresignedUrlDto);
 
         await new Promise<void>((resolve, reject) => {
@@ -153,7 +159,7 @@ export const useUploadFile = (workspaceId: string | null) => {
         throw error;
       }
     },
-    [workspaceId, queryClient, addItem, setProgress, setStatus, setAbort]
+    [workspaceId, context, queryClient, addItem, setProgress, setStatus, setAbort]
   );
 
   /** Re-attempts an existing failed upload using its stored File reference. */

@@ -20,6 +20,7 @@ import {
   verifyMagicBytes,
 } from "@node-stack/storage";
 import type { FileMetadata, IStorageProvider } from "@node-stack/storage";
+import type { FileInfo } from "@node-stack/types";
 import {
   GetPresignedUrlDto,
   UPLOAD_POLICIES,
@@ -36,6 +37,7 @@ export class AppStorageService {
 
   constructor(
     @Inject("STORAGE_SERVICE") private readonly storage: IStorageProvider,
+    @Inject("STORAGE_PROVIDER_TYPE") private readonly providerType: "s3" | "local",
     private readonly fileRepo: FileRepository,
     private readonly auditLog: AuditLogRepository,
     private readonly usageQuotaService: UsageQuotaService,
@@ -95,7 +97,7 @@ export class AppStorageService {
             size: dto.fileSize,
             mimeType: dto.mimeType,
             key,
-            provider: "s3",
+            provider: this.providerType,
             status: "pending",
           },
           tx,
@@ -217,6 +219,73 @@ export class AppStorageService {
     }
     const url = await this.storage.getDownloadUrl(file.key);
     return { url };
+  }
+
+  async listFiles(workspaceId: string): Promise<FileInfo[]> {
+    const records = await withTenantTx(
+      workspaceId,
+      (tx) => this.fileRepo.listByWorkspace(workspaceId, tx),
+      this.db,
+    );
+
+    const uploaded = records.filter((f) => f.status === "uploaded");
+
+    const results = await Promise.all(
+      uploaded.map(async (file): Promise<FileInfo | null> => {
+        try {
+          const url = await this.storage.getDownloadUrl(file.key);
+          return {
+            id: file.id,
+            name: file.name,
+            url,
+            size: file.size,
+            type: file.mimeType,
+            status: file.status,
+            createdAt: file.createdAt.toISOString(),
+          };
+        } catch {
+          return null;
+        }
+      }),
+    );
+
+    return results.filter((f): f is FileInfo => f !== null);
+  }
+
+  async deleteFile(fileId: string, workspaceId: string): Promise<void> {
+    await withTenantTx(
+      workspaceId,
+      async (tx) => {
+        const file = await this.fileRepo.findById(fileId, tx);
+        if (!file || file.workspaceId !== workspaceId) {
+          throw new NotFoundException("File not found");
+        }
+
+        await this.fileRepo.updateStatus(fileId, "deleted", tx);
+
+        await this.auditLog.create(
+          {
+            workspaceId,
+            userId: file.userId,
+            action: "storage.file_deleted",
+            entityType: "file",
+            entityId: file.id,
+            metadata: { name: file.name, mimeType: file.mimeType, size: file.size },
+          },
+          tx,
+        );
+
+        // Best-effort: may already be gone on the provider side
+        try {
+          await this.storage.delete(file.key);
+        } catch (error) {
+          this.logger.warn(
+            `Failed to delete file from storage key=${file.key}: ${(error as Error).message}`,
+          );
+        }
+      },
+      this.db,
+    );
   }
 
   private async rejectUpload(

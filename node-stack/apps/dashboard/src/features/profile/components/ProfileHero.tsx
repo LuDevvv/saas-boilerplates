@@ -7,6 +7,7 @@ import { FC } from "react";
 import { useUpdateProfile } from "@/features/auth/hooks/useUpdateProfile";
 import { useUploadFile } from "@/features/storage/hooks/useStorage";
 import { useAuth } from "@/hooks/stores/useAuth";
+import { useWorkspaceStore } from "@/stores/workspaceStore";
 
 interface ProfileHeroProps {
   isEditing: boolean;
@@ -15,7 +16,8 @@ interface ProfileHeroProps {
 
 export const ProfileHero: FC<ProfileHeroProps> = ({ isEditing, onToggleEdit }) => {
   const { user } = useAuth();
-  const { upload, isUploading } = useUploadFile(null);
+  const { activeWorkspaceId } = useWorkspaceStore();
+  const { upload, isUploading } = useUploadFile(activeWorkspaceId, "avatar");
   const { mutateAsync: updateProfile } = useUpdateProfile();
 
   const handleImageChange = async (file: File | null) => {

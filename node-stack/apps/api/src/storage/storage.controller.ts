@@ -18,6 +18,7 @@ import {
   ApiHeader,
 } from "@nestjs/swagger";
 import type { IStorageProvider } from "@node-stack/storage";
+import type { FileInfo } from "@node-stack/types";
 import { GetPresignedUrlDto } from "@node-stack/validators";
 import type { Request } from "express";
 
@@ -54,12 +55,6 @@ export class StorageController {
     @Param("0") key: string,
     @Req() req: Request,
   ): Promise<{ ok: boolean }> {
-    // If we're using the local provider, we need to save the raw body to disk.
-    // The 'body' here might be a Buffer if we use a RawBody decorator or a custom middleware.
-    // But since this is a dev boilerplate, we'll assume the local provider's 'upload'
-    // method is what we want to call.
-
-    // We'll use a stream-to-buffer approach for simplicity in dev.
     const chunks: Buffer[] = [];
     for await (const chunk of req) {
       chunks.push(chunk as Buffer);
@@ -72,6 +67,15 @@ export class StorageController {
     });
 
     return { ok: true };
+  }
+
+  @Get()
+  @ApiOperation({ summary: "List workspace files" })
+  @ApiResponse({ status: 200, description: "List of uploaded files" })
+  async listFiles(
+    @Workspace() workspace: WorkspaceContext,
+  ): Promise<FileInfo[]> {
+    return this.appStorageService.listFiles(workspace.id);
   }
 
   @Post("upload-url")
@@ -125,17 +129,18 @@ export class StorageController {
   async getFile(
     @Param("fileId") fileId: string,
     @Workspace() workspace: WorkspaceContext,
-  ): Promise<unknown> {
+  ): Promise<{ url: string }> {
     return this.appStorageService.getDownloadUrl(fileId, workspace.id);
   }
 
   @Delete(":fileId")
   @ApiOperation({ summary: "Delete file" })
-  @ApiResponse({ status: 200, description: "File deletion initiated" })
+  @ApiResponse({ status: 200, description: "File deleted" })
   async delete(
-    @Param("fileId") _fileId: string,
-    @Workspace() _workspace: WorkspaceContext,
-  ): Promise<{ ok: boolean; message: string }> {
-    return { ok: true, message: "Deletion not fully implemented in DB layer yet" };
+    @Param("fileId") fileId: string,
+    @Workspace() workspace: WorkspaceContext,
+  ): Promise<{ ok: boolean }> {
+    await this.appStorageService.deleteFile(fileId, workspace.id);
+    return { ok: true };
   }
 }

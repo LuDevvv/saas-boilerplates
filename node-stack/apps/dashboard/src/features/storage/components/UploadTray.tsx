@@ -188,7 +188,7 @@ export const UploadTray: FC = () => {
       role="region"
       aria-label="Bandeja de subidas"
       className={cn(
-        "fixed bottom-6 right-6 z-[100] w-[380px] max-w-[calc(100vw-3rem)] rounded-[24px] border border-border bg-surface-elevated/90 backdrop-blur-xl shadow-2xl shadow-primary/10 overflow-hidden transition-all duration-500 ease-in-out animate-in slide-in-from-bottom-8 fade-in",
+        "fixed bottom-6 right-6 z-[100] w-[380px] max-w-[calc(100vw-3rem)] rounded-[24px] border border-border bg-surface-elevated shadow-2xl shadow-primary/10 overflow-hidden transition-all duration-500 ease-in-out animate-in slide-in-from-bottom-8 fade-in",
         collapsed ? "h-[64px]" : "h-auto"
       )}
     >

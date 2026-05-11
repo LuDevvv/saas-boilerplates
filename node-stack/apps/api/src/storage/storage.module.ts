@@ -14,6 +14,11 @@ import { AppStorageService } from "@/storage/storage.service.js";
     AppStorageService,
     IdempotencyService,
     {
+      provide: "STORAGE_PROVIDER_TYPE",
+      useFactory: () =>
+        (process.env.STORAGE_PROVIDER || "local").toLowerCase() as "s3" | "local",
+    },
+    {
       provide: "STORAGE_SERVICE",
       useFactory: () => {
         const provider = (process.env.STORAGE_PROVIDER || "local").toLowerCase() as "s3" | "local";
