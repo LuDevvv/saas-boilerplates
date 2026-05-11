@@ -15,7 +15,7 @@ interface CompanyHeroProps {
 }
 
 export const CompanyHero: FC<CompanyHeroProps> = ({ isEditing, onToggleEdit, workspace, isPending: isUpdatingInfo }) => {
-  const { upload, isUploading } = useUploadFile(typeof workspace?.id === "string" ? workspace.id : null, "avatar");
+  const { upload, isUploading } = useUploadFile(typeof workspace?.id === "string" ? workspace.id : null, "avatar", { silent: true });
   const { mutateAsync: updateWorkspace, isPending: isUpdatingLogo } = useUpdateWorkspace();
 
   const handleLogoChange = async (file: File | null) => {

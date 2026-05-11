@@ -17,7 +17,7 @@ interface ProfileHeroProps {
 export const ProfileHero: FC<ProfileHeroProps> = ({ isEditing, onToggleEdit }) => {
   const { user } = useAuth();
   const { activeWorkspaceId } = useWorkspaceStore();
-  const { upload, isUploading } = useUploadFile(activeWorkspaceId, "avatar");
+  const { upload, isUploading } = useUploadFile(activeWorkspaceId, "avatar", { silent: true });
   const { mutateAsync: updateProfile } = useUpdateProfile();
 
   const handleImageChange = async (file: File | null) => {

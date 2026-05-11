@@ -56,24 +56,21 @@ interface UploadResult {
 type UploadContext = "attachment" | "avatar" | "export";
 
 /**
- * Single-file upload entrypoint that ALSO mirrors progress into the global
- * upload tray store. Each call:
- *
- * 1. Creates a queue item via `useUploadStore.add`.
- * 2. Streams progress via XHR.
- * 3. Marks the item success/error.
- * 4. Returns `{ fileUrl }` on success or rejects (caller handles).
+ * Single-file upload entrypoint.
  *
  * `context` controls the backend upload policy:
  *   - "avatar"     → 5 MB limit, image types only (JPEG/PNG/WebP/GIF)
  *   - "attachment" → 50 MB limit, images + PDF + spreadsheets + text/CSV (default)
  *   - "export"     → 100 MB limit, JSON/CSV only
  *
- * Multiple concurrent uploads are supported — each call gets its own item.
+ * `silent: true` skips the global UploadTray entirely — use for avatar/logo
+ * uploads where the result should update an inline element, not the file tray.
+ * Defaults to false so the tray shows for storage-page uploads.
  */
 export const useUploadFile = (
   workspaceId: string | null,
   context: UploadContext = "attachment",
+  { silent = false }: { silent?: boolean } = {},
 ) => {
   const queryClient = useQueryClient();
   const addItem = useUploadStore((s) => s.add);
@@ -81,7 +78,6 @@ export const useUploadFile = (
   const setStatus = useUploadStore((s) => s.setStatus);
   const setAbort = useUploadStore((s) => s.setAbort);
 
-  // Aggregate state for backward-compat callers (Profile/Company/Reports)
   const items = useUploadStore((s) => s.items);
   const inFlight = items.filter((it) => it.status === "uploading" || it.status === "queued");
   const isUploading = inFlight.length > 0;
@@ -97,6 +93,40 @@ export const useUploadFile = (
         return;
       }
 
+      // Silent mode: skip the global tray; use a plain XHR with no store interaction
+      if (silent) {
+        try {
+          const { uploadUrl, fileUrl } = await api.storage.getUploadUrl({
+            fileName: file.name,
+            mimeType: file.type,
+            fileSize: file.size,
+            context,
+          } as GetPresignedUrlDto);
+
+          await new Promise<void>((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.addEventListener("load", () => {
+              if (xhr.status >= 200 && xhr.status < 300) resolve();
+              else reject(new Error(`Subida falló (HTTP ${xhr.status})`));
+            });
+            xhr.addEventListener("error", () => reject(new Error("Error de red durante la subida")));
+            xhr.open("PUT", uploadUrl, true);
+            xhr.setRequestHeader("Content-Type", file.type);
+            xhr.send(file);
+          });
+
+          const fileId = fileUrl.split("/").pop() || "";
+          await api.storage.confirmUpload(fileId);
+          return { fileUrl };
+        } catch (error: unknown) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const message = (error as any)?.message || "No se pudo subir el archivo";
+          appToast.error({ title: "Error de carga", description: message });
+          throw error;
+        }
+      }
+
+      // Normal mode: mirror progress into the global upload tray store
       const itemId = addItem(file);
 
       try {
@@ -112,7 +142,6 @@ export const useUploadFile = (
 
         await new Promise<void>((resolve, reject) => {
           const xhr = new XMLHttpRequest();
-          // Allow cancellation via the store
           setAbort(itemId, () => xhr.abort());
 
           xhr.upload.addEventListener("progress", (event) => {
@@ -142,7 +171,6 @@ export const useUploadFile = (
         setStatus(itemId, "success", { fileUrl });
         queryClient.invalidateQueries({ queryKey: ["storage", "files", workspaceId] });
 
-        // Auto-remove successful items from the tray after a moment
         setTimeout(() => useUploadStore.getState().remove(itemId), 4000);
 
         return { fileUrl };
@@ -159,15 +187,13 @@ export const useUploadFile = (
         throw error;
       }
     },
-    [workspaceId, context, queryClient, addItem, setProgress, setStatus, setAbort]
+    [workspaceId, context, silent, queryClient, addItem, setProgress, setStatus, setAbort]
   );
 
-  /** Re-attempts an existing failed upload using its stored File reference. */
   const retry = useCallback(
     async (itemId: string): Promise<UploadResult | undefined> => {
       const item = useUploadStore.getState().items.find((it) => it.id === itemId);
       if (!item) return;
-      // Remove the failed item so the retry produces a fresh queue entry
       useUploadStore.getState().remove(itemId);
       return upload(item.file);
     },
