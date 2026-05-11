@@ -64,6 +64,16 @@ export const useCancelSubscription = () => {
   });
 };
 
+export const useRefreshSubscription = () => {
+  const queryClient = useQueryClient();
+  return useMutation<BillingSubscription, Error, void>({
+    mutationFn: () => api.billing.refreshSubscription(),
+    onSuccess: (data) => {
+      queryClient.setQueryData(queryKeys.billing.subscription(), data);
+    },
+  });
+};
+
 export const useChangePlan = () => {
   const queryClient = useQueryClient();
   return useMutation<BillingSubscription, Error, ChangePlanDto>({

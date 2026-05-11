@@ -6,4 +6,5 @@ export {
   useCustomerPortal,
   useCancelSubscription,
   useChangePlan,
+  useRefreshSubscription,
 } from "./useBilling";

@@ -92,6 +92,14 @@ export class BillingController {
     return { received: true, eventId: event.id, type: event.type };
   }
 
+  @Post("subscription/refresh")
+  @RequirePermissions(Permission.BILLING_READ)
+  @ApiOperation({ summary: "Force-sync subscription state from Polar" })
+  @ApiResponse({ status: 200, description: "Subscription refreshed" })
+  async refreshSubscription(@Workspace() workspace: WorkspaceContext): Promise<Record<string, unknown>> {
+    return this.billing.refreshSubscription(workspace.id);
+  }
+
   @Get("subscription")
   @RequirePermissions(Permission.BILLING_READ)
   @ApiOperation({ summary: "Get subscription details" })

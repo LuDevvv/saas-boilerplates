@@ -685,6 +685,49 @@ export class BillingService {
     return this.getSubscription(workspaceId);
   }
 
+  /**
+   * Force-syncs the subscription state from Polar — useful when the user
+   * makes changes in the Polar portal (e.g. cancel) and the local DB is stale
+   * because the webhook couldn't reach localhost.
+   */
+  async refreshSubscription(workspaceId: string): Promise<Record<string, unknown>> {
+    const sub = await withTenantTx(
+      workspaceId,
+      (tx) => this.billingRepo.findSubscriptionByWorkspaceId(workspaceId, tx),
+      this.db,
+    );
+
+    if (!sub?.providerSubscriptionId) {
+      return { status: "none" as const, workspaceId };
+    }
+
+    try {
+      const polarSub = await this.provider.getSubscription(sub.providerSubscriptionId);
+
+      await withTenantTx(workspaceId, async (tx) => {
+        await this.billingRepo.upsertSubscription(
+          {
+            workspaceId,
+            providerSubscriptionId: sub.providerSubscriptionId,
+            planId: sub.planId ?? polarSub.planId,
+            variantId: polarSub.variantId ?? sub.variantId ?? undefined,
+            status: this.mapStatus(polarSub.status),
+            currentPeriodStart: polarSub.currentPeriodStart,
+            currentPeriodEnd: polarSub.currentPeriodEnd,
+            cancelAt: polarSub.cancelAt ?? null,
+            endsAt: null,
+          },
+          tx,
+        );
+      }, this.db);
+    } catch (err) {
+      this.logger.warn(`Could not refresh subscription from Polar: ${(err as Error).message}`);
+    }
+
+    await this.cache.del(`billing:ws:${workspaceId}:subscription`);
+    return this.getSubscription(workspaceId);
+  }
+
   async invoices(workspaceId: string): Promise<Record<string, unknown>[]> {
     const customer = await withTenantTx(
       workspaceId,

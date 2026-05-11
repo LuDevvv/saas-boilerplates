@@ -151,10 +151,13 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
       </div>
 
       {/* ── Plan cards ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 max-w-[1100px] mx-auto mb-16">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-[800px] mx-auto mb-16">
         {PLANS.map((plan) => {
+          const currentInterval = subscription?.interval ?? "monthly";
+          const selectedInterval = isAnnual ? "yearly" : "monthly";
           const isCurrent =
             hasActiveSub &&
+            currentInterval === selectedInterval &&
             (subscription?.planId === plan.id ||
               (plan.id === "pro" && subscription?.planId === "premium"));
 

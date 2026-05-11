@@ -1,6 +1,6 @@
 import { ConfirmDialog, Skeleton } from "@node-stack/ui";
 import { ExternalLink } from "lucide-react";
-import { FC, useState, useMemo } from "react";
+import { FC, useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 
@@ -8,7 +8,7 @@ import { BillingLayoutSkeleton } from "./BillingSkeletons";
 import { PaymentHistory, type PaymentRecord } from "./PaymentHistory";
 import { PlanCard } from "./PlanCard";
 import { SupportCard } from "./SupportCard";
-import { useSubscription, useInvoices, useCancelSubscription, useCustomerPortal } from "../hooks/useBilling";
+import { useSubscription, useInvoices, useCancelSubscription, useCustomerPortal, useRefreshSubscription } from "../hooks/useBilling";
 
 import { appToast } from "@/components/alerts/Toasts";
 
@@ -19,6 +19,14 @@ export const BillingContent: FC = () => {
   const { data: invoices, isLoading: isLoadingInvoices } = useInvoices();
   const cancelMutation = useCancelSubscription();
   const portalMutation = useCustomerPortal();
+  const refreshMutation = useRefreshSubscription();
+
+  // Sync subscription state from Polar on mount to pick up portal-side changes
+  // (cancellations, plan changes) that didn't reach our API via webhook.
+  useEffect(() => {
+    refreshMutation.mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [pendingSection, setPendingSection] = useState<"payment" | "orders" | null>(null);
