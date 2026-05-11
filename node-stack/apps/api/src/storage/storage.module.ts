@@ -7,33 +7,31 @@ import { StorageController } from "@/storage/storage.controller.js";
 import { AppStorageService } from "@/storage/storage.service.js";
 
 /**
- * Normalizes an endpoint string to have an http/https scheme.
- * MINIO_ENDPOINT=localhost:9000 → http://localhost:9000
- * Throws a clear error at startup if the value is still not a valid URL.
+ * Returns undefined for unset values OR un-replaced .env.example placeholders
+ * (anything containing <...>), allowing the caller to fall back to the next option.
+ */
+function stripPlaceholder(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  return trimmed && !/<[^>]+>/.test(trimmed) ? trimmed : undefined;
+}
+
+/**
+ * Ensures a storage endpoint has a valid http/https scheme.
+ * Throws a descriptive error at startup rather than letting the AWS SDK
+ * throw a cryptic TypeError at request time.
  */
 function normalizeEndpoint(value: string | undefined): string | undefined {
   if (!value) return undefined;
-  const trimmed = value.trim();
-  if (!trimmed) return undefined;
 
-  // Detect un-replaced .env.example placeholders like <tu-account-id>
-  if (/<[^>]+>/.test(trimmed)) {
-    throw new Error(
-      `[StorageModule] Endpoint "${trimmed}" still contains a placeholder (e.g. <tu-account-id>). ` +
-      `Replace it with your actual Cloudflare R2 or S3 endpoint in apps/api/.env, ` +
-      `or leave STORAGE_S3_ENDPOINT empty to use MINIO_ENDPOINT for local Docker development.`,
-    );
-  }
-
-  const normalized = /^https?:\/\//i.test(trimmed) ? trimmed : `http://${trimmed}`;
+  const normalized = /^https?:\/\//i.test(value) ? value : `http://${value}`;
 
   try {
     new URL(normalized);
   } catch {
     throw new Error(
-      `[StorageModule] Invalid endpoint "${value}" (normalized to "${normalized}"). ` +
-      `Set MINIO_ENDPOINT or STORAGE_S3_ENDPOINT to a full URL, e.g. "http://minio:9000" ` +
-      `(Docker) or "http://localhost:9000" (local).`,
+      `[StorageModule] Invalid storage endpoint "${value}". ` +
+      `Use a full URL, e.g. "http://minio:9000" (Docker) or "http://localhost:9000" (local).`,
     );
   }
 
@@ -58,15 +56,28 @@ function normalizeEndpoint(value: string | undefined): string | undefined {
         const provider = (process.env.STORAGE_PROVIDER || "local").toLowerCase() as "s3" | "local";
 
         if (provider === "s3") {
+          // stripPlaceholder() skips un-replaced .env.example values like
+          // <tu-account-id> so they fall through to the MINIO_* fallback.
           return createStorageProvider({
             provider: "s3",
             s3: {
-              endpoint: normalizeEndpoint(process.env.STORAGE_S3_ENDPOINT || process.env.MINIO_ENDPOINT),
-              region: process.env.STORAGE_S3_REGION || "us-east-1",
-              accessKeyId: process.env.STORAGE_S3_ACCESS_KEY || process.env.MINIO_ACCESS_KEY || "",
-              secretAccessKey: process.env.STORAGE_S3_SECRET_KEY || process.env.MINIO_SECRET_KEY || "",
-              bucket: process.env.STORAGE_S3_BUCKET || process.env.MINIO_BUCKET || "attachments",
-              publicUrl: process.env.STORAGE_S3_PUBLIC_URL || process.env.MINIO_PUBLIC_URL,
+              endpoint: normalizeEndpoint(
+                stripPlaceholder(process.env.STORAGE_S3_ENDPOINT) ||
+                stripPlaceholder(process.env.MINIO_ENDPOINT),
+              ),
+              region: process.env.STORAGE_S3_REGION || "auto",
+              accessKeyId:
+                stripPlaceholder(process.env.STORAGE_S3_ACCESS_KEY) ||
+                process.env.MINIO_ACCESS_KEY || "",
+              secretAccessKey:
+                stripPlaceholder(process.env.STORAGE_S3_SECRET_KEY) ||
+                process.env.MINIO_SECRET_KEY || "",
+              bucket:
+                stripPlaceholder(process.env.STORAGE_S3_BUCKET) ||
+                process.env.MINIO_BUCKET || "attachments",
+              publicUrl:
+                stripPlaceholder(process.env.STORAGE_S3_PUBLIC_URL) ||
+                process.env.MINIO_PUBLIC_URL,
             },
           });
         }
