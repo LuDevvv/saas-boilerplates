@@ -20,6 +20,10 @@ export interface CheckoutData {
   variantId?: string;
   successUrl: string;
   cancelUrl: string;
+  /** Origin of the embedding page (e.g. "https://app.example.com") — required for embedded checkout iframe messaging */
+  embedOrigin?: string;
+  /** BCP 47 locale code for checkout UI language (e.g. "es") — beta feature */
+  locale?: string;
   metadata?: Record<string, string>;
 }
 

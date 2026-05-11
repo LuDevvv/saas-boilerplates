@@ -240,6 +240,12 @@ export class PolarProvider implements PaymentProvider {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         customerBillingAddress: { country: data.billingCountry as any },
       }),
+      // Required for embedded checkout iframe ↔ parent page messaging
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...(data.embedOrigin && { embedOrigin: data.embedOrigin as any }),
+      // Checkout localization (Polar beta feature — no-op if not enabled for the org)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...(data.locale && { locale: data.locale as any }),
       metadata: data.metadata ?? {},
     });
 

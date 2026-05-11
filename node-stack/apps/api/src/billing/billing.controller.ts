@@ -55,11 +55,15 @@ export class BillingController {
     @Body() body: CreateCheckoutDto,
     @Workspace() workspace: WorkspaceContext,
     @CurrentUser() user: UserPayload,
+    @Req() req: Request,
   ): Promise<CheckoutUrl> {
+    // Forward the dashboard's origin so Polar can allow the embedded iframe
+    const embedOrigin = req.headers["origin"] as string | undefined;
     return this.billing.createCheckout({
       ...body,
       workspaceId: workspace.id,
       userId: user.id,
+      embedOrigin,
     });
   }
 

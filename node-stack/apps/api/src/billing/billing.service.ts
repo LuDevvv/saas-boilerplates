@@ -118,7 +118,7 @@ export class BillingService {
   }
 
   async createCheckout(
-    data: CreateCheckoutDto & { workspaceId: string; userId: string },
+    data: CreateCheckoutDto & { workspaceId: string; userId: string; embedOrigin?: string },
   ): Promise<CheckoutUrl> {
     const resolvedPlanId = this.resolvePlanId(data.planId, data.variantId);
 
@@ -145,6 +145,8 @@ export class BillingService {
       email: user?.email,
       name: user?.name ?? undefined,
       billingCountry,
+      embedOrigin: data.embedOrigin,
+      locale: "es",
       ...(existingCustomer && {
         customerId: this.encryption.decrypt(
           existingCustomer.providerCustomerId,

@@ -1,14 +1,16 @@
 /**
- * Checkout page — integrated for Polar.sh
+ * Checkout page — Polar.sh embedded checkout
  *
  * Flow:
- *  1. User selects a plan on the Pricing page → redirected here with query params
+ *  1. User selects a plan → redirected here with query params
  *  2. They confirm their email and review the order summary
  *  3. On submit → api.billing.createCheckout() → Polar checkout URL
- *  4. Redirect to Polar's hosted checkout (handles card, 3DS, receipts)
- *  5. After payment Polar redirects to /payments?success=true
+ *  4. PolarEmbedCheckout.create() opens an inline iframe overlay
+ *     (no page redirect — user stays in our app)
+ *  5. On success → navigate to /payments/success
  */
 
+import { PolarEmbedCheckout } from "@polar-sh/checkout/embed";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@node-stack/ui";
 import {
@@ -16,7 +18,6 @@ import {
   ChevronDown,
   ChevronUp,
   ChevronLeft,
-  ExternalLink,
   Loader2,
   Mail,
   ShieldCheck,
@@ -24,7 +25,7 @@ import {
   Lock,
   Tag,
 } from "lucide-react";
-import { FC, useState, useEffect } from "react";
+import { FC, useState, useEffect, useRef, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import * as z from "zod";
@@ -175,7 +176,10 @@ const Checkout: FC = () => {
   const [searchParams] = useSearchParams();
   const navigate       = useNavigate();
   const { user }       = useAuth();
-  const [showSummary, setShowSummary] = useState(false);
+  const [showSummary, setShowSummary]       = useState(false);
+  const [isEmbedLoading, setIsEmbedLoading] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const checkoutRef = useRef<any>(null);
 
   // Ensure workspace context is set so X-Workspace-ID header is sent
   const activeWorkspaceId = useWorkspaceStore((s) => s.activeWorkspaceId);
@@ -209,7 +213,11 @@ const Checkout: FC = () => {
     defaultValues: { email: user?.email ?? "" },
   });
 
-  const onSubmit = async (_data: CheckoutForm) => {
+  // Detect dark mode from the document root class
+  const embedTheme = document.documentElement.classList.contains("dark") ? "dark" : "light";
+
+  const onSubmit = useCallback(async (_data: CheckoutForm) => {
+    setIsEmbedLoading(true);
     try {
       const result = await createCheckout({
         planId,
@@ -218,12 +226,30 @@ const Checkout: FC = () => {
         cancelUrl: window.location.href,
       });
 
-      // Always redirect to Polar hosted checkout — no embed SDK needed
-      window.location.href = result.url;
+      const checkout = await PolarEmbedCheckout.create(result.url, {
+        theme: embedTheme,
+        onLoaded: () => setIsEmbedLoading(false),
+      });
+
+      checkoutRef.current = checkout;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      checkout.addEventListener("success", (event: any) => {
+        // Prevent Polar's automatic redirect — we handle navigation ourselves
+        event.preventDefault?.();
+        navigate("/payments/success");
+      });
+
+      checkout.addEventListener("close", () => {
+        checkoutRef.current = null;
+        setIsEmbedLoading(false);
+      });
     } catch {
+      setIsEmbedLoading(false);
       appToast.error({ title: "Error al procesar el pago", description: "No pudimos generar la sesión de pago. Inténtalo de nuevo." });
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [planId, billing, embedTheme, navigate, createCheckout]);
 
   return (
     <div className="min-h-screen bg-[var(--canvas)] dark:bg-canvas flex flex-col lg:flex-row animate-in fade-in duration-500">
@@ -460,18 +486,18 @@ const Checkout: FC = () => {
 
             <button
               type="submit"
-              disabled={isPending}
+              disabled={isPending || isEmbedLoading}
               className={cn(
-                "w-full rounded-xl text-white text-[14px] font-semibold transition-all active:scale-[0.98]",
+                "w-full rounded-xl text-white text-[14px] font-semibold transition-colors",
                 "shadow-lg shadow-primary/20 disabled:opacity-70 disabled:cursor-not-allowed",
                 "flex items-center justify-center gap-2"
               )}
               style={{ background: "linear-gradient(to right, #4D94DB, #004080)", height: "52px" }}
             >
-              {isPending ? (
+              {(isPending || isEmbedLoading) ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
-                  Redirigiendo a pago...
+                  {isPending ? "Preparando pago..." : "Abriendo formulario..."}
                 </>
               ) : isFree ? (
                 <>
@@ -480,13 +506,13 @@ const Checkout: FC = () => {
                 </>
               ) : trialDays > 0 ? (
                 <>
+                  <Lock className="h-4 w-4 opacity-80" />
                   Iniciar prueba gratuita de {trialDays} días
-                  <ExternalLink className="h-4 w-4 opacity-70" />
                 </>
               ) : (
                 <>
-                  Ir a pago seguro · US$ {basePrice}.00
-                  <ExternalLink className="h-4 w-4 opacity-70" />
+                  <Lock className="h-4 w-4 opacity-80" />
+                  Pagar US$ {basePrice}.00 de forma segura
                 </>
               )}
             </button>
