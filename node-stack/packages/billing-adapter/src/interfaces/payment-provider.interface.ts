@@ -15,6 +15,7 @@ export interface CheckoutData {
   customerId?: string;
   email?: string;
   name?: string;
+  billingCountry?: string;  // ISO 3166-1 alpha-2, e.g. "DO" — pre-fills billing address country
   planId: string;
   variantId?: string;
   successUrl: string;

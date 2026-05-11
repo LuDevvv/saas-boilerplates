@@ -84,10 +84,14 @@ export const BillingContent: FC = () => {
   const planInfo = useMemo(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sub = subscription as any;
+    const status: string = sub?.status ?? (isPremium ? "active" : "free");
+    const isTrialing = status === "trialing";
     return {
       planId: sub?.planId || (isPremium ? "pro" : "free"),
       name: sub?.planName || (isPremium ? "Growth" : "Starter"),
-      price: isPremium ? "$29.00" : "$0.00",
+      price: isTrialing ? "$0.00" : isPremium ? "$29.00" : "$0.00",
+      status,
+      trialEndsAt: isTrialing && sub?.currentPeriodEnd ? sub.currentPeriodEnd : undefined,
       daysRemaining: sub?.currentPeriodEnd
         ? Math.max(0, Math.ceil((new Date(sub.currentPeriodEnd).getTime() - Date.now()) / 86_400_000))
         : 0,
@@ -152,6 +156,8 @@ export const BillingContent: FC = () => {
             planId={planInfo.planId}
             planName={planInfo.name}
             price={planInfo.price}
+            status={planInfo.status}
+            trialEndsAt={planInfo.trialEndsAt}
             daysRemaining={planInfo.daysRemaining}
             nextBillingDate={planInfo.nextBillingDate}
             onUpgrade={handleUpgrade}

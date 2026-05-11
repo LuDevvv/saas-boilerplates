@@ -98,13 +98,15 @@ interface SummaryProps {
   basePrice: number;
   isYearly: boolean;
   savings: number;
+  trialDays?: number;
   isMobile?: boolean;
 }
 
-const OrderSummary: FC<SummaryProps> = ({ planName, basePrice, isYearly, savings, isMobile }) => {
-  const textMuted  = isMobile ? "text-fg-muted"       : "text-white/45";
-  const textNormal = isMobile ? "text-fg"             : "text-white/80";
-  const textBold   = isMobile ? "text-fg font-bold"   : "text-white font-bold";
+const OrderSummary: FC<SummaryProps> = ({ planName, basePrice, isYearly, savings, trialDays = 0, isMobile }) => {
+  const textMuted  = isMobile ? "text-fg-muted"     : "text-white/45";
+  const textNormal = isMobile ? "text-fg"           : "text-white/80";
+  const textBold   = isMobile ? "text-fg font-bold" : "text-white font-bold";
+  const isTrial    = trialDays > 0;
 
   return (
     <div className={cn(
@@ -115,15 +117,27 @@ const OrderSummary: FC<SummaryProps> = ({ planName, basePrice, isYearly, savings
         <div className="min-w-0">
           <p className={cn("text-[14px] font-semibold", textNormal)}>Plan {planName}</p>
           <p className={cn("text-[11px] mt-0.5", textMuted)}>
-            {isYearly ? "Facturación anual" : "Facturación mensual"}
+            {isTrial ? `Prueba gratuita · ${trialDays} días` : isYearly ? "Facturación anual" : "Facturación mensual"}
           </p>
         </div>
-        <p className={cn("text-[14px] shrink-0", textNormal)}>
-          US$ {basePrice}.00
+        <p className={cn("text-[14px] shrink-0 font-semibold", isTrial ? "text-emerald-400" : textNormal)}>
+          {isTrial ? "Gratis" : `US$ ${basePrice}.00`}
         </p>
       </div>
 
-      {isYearly && savings > 0 && (
+      {isTrial && (
+        <div className={cn(
+          "flex items-center gap-2 px-3 py-1.5 rounded-[10px]",
+          isMobile ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-white/[0.07]"
+        )}>
+          <Tag className={cn("h-3.5 w-3.5 shrink-0", isMobile ? "text-emerald-600 dark:text-emerald-400" : "text-white/60")} />
+          <p className={cn("text-[11px] font-semibold", isMobile ? "text-emerald-600 dark:text-emerald-400" : "text-white/60")}>
+            Después de la prueba: US$ {basePrice}.00/{isYearly ? "año" : "mes"}
+          </p>
+        </div>
+      )}
+
+      {!isTrial && isYearly && savings > 0 && (
         <div className={cn(
           "flex items-center gap-2 px-3 py-1.5 rounded-[10px]",
           isMobile ? "bg-emerald-500/10 border border-emerald-500/20" : "bg-white/[0.07]"
@@ -139,12 +153,16 @@ const OrderSummary: FC<SummaryProps> = ({ planName, basePrice, isYearly, savings
         "flex items-center justify-between pt-4 border-t",
         isMobile ? "border-border" : "border-white/10"
       )}>
-        <p className={cn("text-[13px] font-semibold uppercase", textMuted)}>Total hoy</p>
+        <p className={cn("text-[13px] font-semibold uppercase", textMuted)}>
+          {isTrial ? "Hoy" : "Total hoy"}
+        </p>
         <p className={cn("text-[20px] font-semibold tabular-nums leading-none", textBold)}>
-          US$ {basePrice}.00
-          <span className={cn("text-[12px] font-normal ml-1", textMuted)}>
-            /{isYearly ? "año" : "mes"}
-          </span>
+          {isTrial ? "US$ 0.00" : `US$ ${basePrice}.00`}
+          {!isTrial && (
+            <span className={cn("text-[12px] font-normal ml-1", textMuted)}>
+              /{isYearly ? "año" : "mes"}
+            </span>
+          )}
         </p>
       </div>
     </div>
@@ -170,8 +188,9 @@ const Checkout: FC = () => {
     }
   }, [activeWorkspaceId, workspaces, setActiveWorkspace]);
 
-  const planId      = searchParams.get("plan")    || "pro";
-  const billing     = searchParams.get("billing") || "monthly";
+  const planId       = searchParams.get("plan")    || "pro";
+  const billing      = searchParams.get("billing") || "monthly";
+  const trialDays    = parseInt(searchParams.get("trial") || "0", 10);
   const isOnboarding = searchParams.get("onboarding") === "true";
 
   const isYearly     = billing === "yearly";
@@ -352,7 +371,7 @@ const Checkout: FC = () => {
                 <div className="text-left">
                   <p className="text-[11px] text-fg-muted">Resumen del pedido</p>
                   <p className="text-[15px] font-semibold text-fg tabular-nums">
-                    US$ {basePrice}.00
+                    {trialDays > 0 ? "US$ 0.00" : `US$ ${basePrice}.00`}
                   </p>
                 </div>
               </div>
@@ -369,6 +388,7 @@ const Checkout: FC = () => {
                   basePrice={basePrice}
                   isYearly={isYearly}
                   savings={annualSavings}
+                  trialDays={trialDays}
                   isMobile
                 />
               </div>
@@ -457,6 +477,11 @@ const Checkout: FC = () => {
                 <>
                   <Zap className="h-5 w-5" />
                   Activar Plan Gratuito
+                </>
+              ) : trialDays > 0 ? (
+                <>
+                  Iniciar prueba gratuita de {trialDays} días
+                  <ExternalLink className="h-4 w-4 opacity-70" />
                 </>
               ) : (
                 <>

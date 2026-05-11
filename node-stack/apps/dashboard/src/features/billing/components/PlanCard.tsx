@@ -1,5 +1,5 @@
 import { Button } from "@node-stack/ui";
-import { CheckCircle2, Calendar, ChevronRight } from "lucide-react";
+import { CheckCircle2, Calendar, ChevronRight, Hourglass } from "lucide-react";
 import { FC } from "react";
 
 import { cn } from "@/utils/classNames";
@@ -37,6 +37,8 @@ interface PlanCardProps {
   planId?: string;
   planName: string;
   price: string;
+  status?: string;          // 'active' | 'trialing' | 'past_due' | 'canceled'
+  trialEndsAt?: string;     // ISO date string when trial ends
   daysRemaining?: number;
   nextBillingDate?: string;
   onUpgrade: () => void;
@@ -51,11 +53,18 @@ export const PlanCard: FC<PlanCardProps> = ({
   planId,
   planName,
   price,
+  status = "active",
+  trialEndsAt,
   daysRemaining,
   nextBillingDate,
   onUpgrade,
   onCancel,
 }) => {
+  const isTrialing = status === "trialing";
+  const trialDaysLeft = trialEndsAt
+    ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86_400_000))
+    : 0;
+
   const currentId = planId || (isPremium ? "pro" : "free");
   const currentPlan = PLAN_CATALOG.find(p => p.id === currentId) ?? PLAN_CATALOG[0];
   const otherPlans = PLAN_CATALOG.filter(p => p.id !== currentId);
@@ -83,10 +92,17 @@ export const PlanCard: FC<PlanCardProps> = ({
           <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary/10 dark:bg-primary/20 text-primary text-[10px] font-bold uppercase">
             Plan actual
           </span>
-          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/25">
-            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            Activo
-          </div>
+          {isTrialing ? (
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-500/25 bg-amber-50 dark:bg-amber-500/10">
+              <Hourglass className="h-2.5 w-2.5" />
+              Prueba · {trialDaysLeft}d restantes
+            </div>
+          ) : (
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/25">
+              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              Activo
+            </div>
+          )}
         </div>
 
         {/* Plan name + subtitle */}
@@ -117,11 +133,13 @@ export const PlanCard: FC<PlanCardProps> = ({
           )}
         </div>
 
-        {/* Next billing date */}
+        {/* Billing / trial info */}
         {isPremium && nextBillingDate && (
           <div className="flex items-center gap-1.5 mt-2 text-[11px] text-fg-muted">
             <Calendar className="h-3 w-3 shrink-0" />
-            Próximo cargo: {nextBillingDate}
+            {isTrialing
+              ? `Prueba gratuita hasta: ${nextBillingDate}`
+              : `Próximo cargo: ${nextBillingDate}`}
             {(daysRemaining ?? 0) > 0 && (
               <span className="ml-1 text-[10px] bg-surface-hover px-1.5 py-0.5 rounded-md">
                 {daysRemaining}d

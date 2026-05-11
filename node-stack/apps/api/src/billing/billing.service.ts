@@ -103,6 +103,8 @@ export class BillingService {
       this.db,
     );
 
+    const billingCountry = this.configService.get<string>('POLAR_DEFAULT_BILLING_COUNTRY');
+
     const checkout = await this.provider.createCheckoutSession({
       planId: resolvedPlanId,
       variantId: data.variantId,
@@ -110,6 +112,7 @@ export class BillingService {
       cancelUrl: data.cancelUrl,
       email: user?.email,
       name: user?.name ?? undefined,
+      billingCountry,
       ...(existingCustomer && {
         customerId: this.encryption.decrypt(
           existingCustomer.providerCustomerId,

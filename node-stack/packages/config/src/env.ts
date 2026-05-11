@@ -54,6 +54,8 @@ export const envSchema = z.object({
   POLAR_PRODUCT_ID_PRO: z.string().optional(),
   POLAR_PRODUCT_ID_ELITE: z.string().optional(),
   POLAR_PRODUCT_ID_FREE: z.string().optional(),
+  // ISO 3166-1 alpha-2 country code pre-filled in billing address (e.g. "DO" for Dominican Republic)
+  POLAR_DEFAULT_BILLING_COUNTRY: z.string().length(2).optional(),
   GITHUB_CLIENT_ID: z.string().optional(),
   GITHUB_CLIENT_SECRET: z.string().optional(),
   GITHUB_CALLBACK_URL: z.string().url().optional().or(z.literal('')),

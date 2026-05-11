@@ -16,6 +16,8 @@ import { cn } from "@/utils/classNames";
 
 // ─── Plan catalog ─────────────────────────────────────────────────────────────
 
+// trialDays: set to the number of trial days configured on the product in Polar.
+// Set to 0 to hide the trial badge. Must match what's configured in Polar dashboard.
 const PLANS = [
   {
     id: "free",
@@ -23,6 +25,7 @@ const PLANS = [
     description: "Para proyectos personales y primeros pasos.",
     price: 0,
     yearlyPrice: 0,
+    trialDays: 0,
     features: [
       "Hasta 3 proyectos activos",
       "Analíticas básicas",
@@ -37,6 +40,7 @@ const PLANS = [
     description: "Para negocios que necesitan escalar con potencia.",
     price: 29,
     yearlyPrice: 290,
+    trialDays: 0,   // e.g. set to 7 if you configure a 7-day trial in Polar
     features: [
       "Proyectos ilimitados",
       "Analíticas avanzadas",
@@ -53,6 +57,7 @@ const PLANS = [
     description: "Infraestructura dedicada para organizaciones.",
     price: 99,
     yearlyPrice: 990,
+    trialDays: 0,
     features: [
       "Todo lo de Growth",
       "Infraestructura dedicada",
@@ -77,10 +82,11 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
   const { toDOP }       = useExchangeRate();
   const [isAnnual, setIsAnnual] = useState(false);
 
-  const handleSelectPlan = (planId: string) => {
+  const handleSelectPlan = (planId: string, trialDays: number) => {
     const cycle = isAnnual ? "yearly" : "monthly";
     const onboarding = isOnboarding ? "&onboarding=true" : "";
-    navigate(`/payments/checkout?plan=${planId}&billing=${cycle}${onboarding}`);
+    const trial = trialDays > 0 ? `&trial=${trialDays}` : "";
+    navigate(`/payments/checkout?plan=${planId}&billing=${cycle}${trial}${onboarding}`);
   };
 
   const growthSavings = PLANS[1].price * 12 - PLANS[1].yearlyPrice;
@@ -168,11 +174,18 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
                     </p>
                   </div>
 
-                  {plan.popular && !isCurrent && (
-                    <span className="shrink-0 text-[10px] font-bold uppercase text-primary-foreground px-2.5 py-1 rounded-full bg-primary">
-                      Popular
-                    </span>
-                  )}
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    {plan.popular && !isCurrent && (
+                      <span className="text-[10px] font-bold uppercase text-primary-foreground px-2.5 py-1 rounded-full bg-primary">
+                        Popular
+                      </span>
+                    )}
+                    {plan.trialDays > 0 && !isCurrent && (
+                      <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                        {plan.trialDays}d gratis
+                      </span>
+                    )}
+                  </div>
                   {isCurrent && (
                     <div className="shrink-0 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/25">
                       <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -240,15 +253,23 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
                   </div>
                 ) : plan.price === 0 ? (
                   <Button
-                    onClick={() => handleSelectPlan(plan.id)}
+                    onClick={() => handleSelectPlan(plan.id, plan.trialDays)}
                     variant="outline"
                     className="w-full h-11 rounded-xl text-[13px] font-medium"
                   >
                     Comenzar gratis
                   </Button>
+                ) : plan.trialDays > 0 ? (
+                  <button
+                    onClick={() => handleSelectPlan(plan.id, plan.trialDays)}
+                    className="w-full h-11 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-medium transition-all active:scale-[0.98] shadow-[0_4px_14px_-2px_rgba(5,150,105,0.30)]"
+                  >
+                    Probar gratis {plan.trialDays} días
+                    <ArrowRight className="inline ml-1.5 h-4 w-4" />
+                  </button>
                 ) : (
                   <button
-                    onClick={() => handleSelectPlan(plan.id)}
+                    onClick={() => handleSelectPlan(plan.id, plan.trialDays)}
                     className="w-full h-11 rounded-xl bg-primary hover:bg-primary-600 text-primary-foreground text-[13px] font-medium transition-all active:scale-[0.98] shadow-[0_4px_14px_-2px_rgba(0,64,128,0.20)] dark:shadow-[0_4px_14px_-2px_rgba(91,168,229,0.20)]"
                   >
                     Mejorar a {plan.name}

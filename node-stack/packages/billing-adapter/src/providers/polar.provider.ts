@@ -154,6 +154,10 @@ export class PolarProvider implements PaymentProvider {
       ...(data.customerId && { customerId: data.customerId }),
       ...(data.email && { customerEmail: data.email }),
       ...(data.name && { customerName: data.name }),
+      ...(data.billingCountry && {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        customerBillingAddress: { country: data.billingCountry as any },
+      }),
       metadata: data.metadata ?? {},
     });
 
