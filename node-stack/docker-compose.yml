@@ -126,8 +126,15 @@ services:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
       - FORCE_COLOR=1
-      # Storage — override whatever .env says so Docker networking is always correct
+      # Storage — override whatever .env says so Docker networking is always correct.
+      # STORAGE_S3_* is explicitly set to MinIO values so any R2 placeholder in
+      # apps/api/.env doesn't win (environment: takes priority over env_file:).
       - STORAGE_PROVIDER=s3
+      - STORAGE_S3_ENDPOINT=http://minio:9000
+      - STORAGE_S3_ACCESS_KEY=minioadmin
+      - STORAGE_S3_SECRET_KEY=minioadmin
+      - STORAGE_S3_BUCKET=app
+      - STORAGE_S3_PUBLIC_URL=http://localhost:9000/app
       - MINIO_ENDPOINT=http://minio:9000
       - MINIO_ACCESS_KEY=minioadmin
       - MINIO_SECRET_KEY=minioadmin

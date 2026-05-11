@@ -16,6 +16,15 @@ function normalizeEndpoint(value: string | undefined): string | undefined {
   const trimmed = value.trim();
   if (!trimmed) return undefined;
 
+  // Detect un-replaced .env.example placeholders like <tu-account-id>
+  if (/<[^>]+>/.test(trimmed)) {
+    throw new Error(
+      `[StorageModule] Endpoint "${trimmed}" still contains a placeholder (e.g. <tu-account-id>). ` +
+      `Replace it with your actual Cloudflare R2 or S3 endpoint in apps/api/.env, ` +
+      `or leave STORAGE_S3_ENDPOINT empty to use MINIO_ENDPOINT for local Docker development.`,
+    );
+  }
+
   const normalized = /^https?:\/\//i.test(trimmed) ? trimmed : `http://${trimmed}`;
 
   try {
