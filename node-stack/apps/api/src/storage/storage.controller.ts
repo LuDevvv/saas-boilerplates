@@ -117,10 +117,15 @@ export class StorageController {
       body.fileId,
       workspace.id,
     );
-    return {
-      success: file.status === "uploaded",
-      fileUrl: `${process.env.VITE_API_URL || "http://localhost:4000/api/v1"}/storage/${file.id}`,
-    };
+    // Return a presigned download URL (7 days) so the caller can use it
+    // directly as <img src> or store it as avatarUrl/logoUrl without needing
+    // a separate authenticated request to resolve the file.
+    const { url } = await this.appStorageService.getDownloadUrl(
+      file.id,
+      workspace.id,
+      7 * 24 * 60 * 60,
+    );
+    return { success: file.status === "uploaded", fileUrl: url };
   }
 
   @Get(":fileId")

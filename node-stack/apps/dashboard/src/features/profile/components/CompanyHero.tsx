@@ -26,13 +26,12 @@ export const CompanyHero: FC<CompanyHeroProps> = ({ isEditing, onToggleEdit, wor
       if (!result?.fileUrl) return;
       await updateWorkspace({
         workspaceId: workspace.id as string,
-        data: {
-          logoUrl: result.fileUrl,
-        },
+        data: { logoUrl: result.fileUrl },
+        silent: true,
       });
       appToast.success({
         title: "Logo actualizado",
-        description: "El logo de la compañía se ha guardado correctamente."
+        description: "El logo de la compañía se ha guardado correctamente.",
       });
     } catch {
       // Handled by hook

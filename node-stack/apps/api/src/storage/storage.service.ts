@@ -204,6 +204,7 @@ export class AppStorageService {
   async getDownloadUrl(
     fileId: string,
     workspaceId: string,
+    expiresIn = 3600,
   ): Promise<{ url: string }> {
     const file = await withTenantTx(
       workspaceId,
@@ -217,7 +218,7 @@ export class AppStorageService {
     ) {
       throw new NotFoundException("File not found or not uploaded yet");
     }
-    const url = await this.storage.getDownloadUrl(file.key);
+    const url = await this.storage.getDownloadUrl(file.key, expiresIn);
     return { url };
   }
 

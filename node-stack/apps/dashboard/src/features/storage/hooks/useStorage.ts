@@ -116,8 +116,9 @@ export const useUploadFile = (
           });
 
           const fileId = fileUrl.split("/").pop() || "";
-          await api.storage.confirmUpload(fileId);
-          return { fileUrl };
+          const confirmed = await api.storage.confirmUpload(fileId);
+          // Use the real R2 presigned URL from confirm, not the API endpoint URL
+          return { fileUrl: confirmed.fileUrl || fileUrl };
         } catch (error: unknown) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const message = (error as any)?.message || "No se pudo subir el archivo";
@@ -165,15 +166,17 @@ export const useUploadFile = (
 
         setProgress(itemId, 95);
         const fileId = fileUrl.split("/").pop() || "";
-        await api.storage.confirmUpload(fileId);
+        const confirmed = await api.storage.confirmUpload(fileId);
+        // Use the real R2 presigned URL so callers can use it as <img src>
+        const finalUrl = confirmed.fileUrl || fileUrl;
 
         setProgress(itemId, 100);
-        setStatus(itemId, "success", { fileUrl });
+        setStatus(itemId, "success", { fileUrl: finalUrl });
         queryClient.invalidateQueries({ queryKey: ["storage", "files", workspaceId] });
 
         setTimeout(() => useUploadStore.getState().remove(itemId), 4000);
 
-        return { fileUrl };
+        return { fileUrl: finalUrl };
       } catch (error: unknown) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const message = (error as any)?.message || "No se pudo subir el archivo";
