@@ -5,6 +5,7 @@ import { AnalyticsModule } from "@/analytics/analytics.module.js";
 import { IdempotencyService } from "@/common/services/idempotency.service.js";
 import { StorageController } from "@/storage/storage.controller.js";
 import { AppStorageService } from "@/storage/storage.service.js";
+import { ThumbnailService } from "@/storage/thumbnail.service.js";
 
 /** Returns undefined for unset or un-replaced .env.example placeholders (<...>). */
 function env(value: string | undefined): string | undefined {
@@ -34,6 +35,7 @@ function requireValidEndpoint(value: string | undefined): string | undefined {
   controllers: [StorageController],
   providers: [
     AppStorageService,
+    ThumbnailService,
     IdempotencyService,
     {
       provide: "STORAGE_PROVIDER_TYPE",
@@ -71,6 +73,6 @@ function requireValidEndpoint(value: string | undefined): string | undefined {
       },
     },
   ],
-  exports: ["STORAGE_SERVICE"],
+  exports: ["STORAGE_SERVICE", ThumbnailService],
 })
 export class StorageModule {}

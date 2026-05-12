@@ -461,7 +461,7 @@ export class AuthService {
     firstName?: string;
     lastName?: string;
     phone?: string;
-    avatarUrl?: string;
+    avatarUrl?: string | null;
     jobTitle?: string;
   }): Promise<{
     id: string;
@@ -480,7 +480,7 @@ export class AuthService {
     if (data.firstName) updateData.name = data.firstName;
     if (data.lastName !== undefined) updateData.lastName = data.lastName;
     if (data.phone) updateData.phone = data.phone;
-    if (data.avatarUrl) updateData.avatarUrl = data.avatarUrl;
+    if (data.avatarUrl !== undefined) updateData.avatarUrl = data.avatarUrl ?? null;
     if (data.jobTitle !== undefined) updateData.jobTitle = data.jobTitle;
 
     // Mark step 1 complete when phone + name are captured together

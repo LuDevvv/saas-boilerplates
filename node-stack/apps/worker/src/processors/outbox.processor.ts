@@ -1,6 +1,7 @@
 import { Processor, InjectQueue } from "@nestjs/bullmq";
 import { Logger, Inject } from "@nestjs/common";
-import { schema, eq, RequestContextService, DB_TOKEN, type Database } from "@node-stack/db";
+import { schema, eq, withSystemTx, RequestContextService, DB_TOKEN, type Database } from "@node-stack/db";
+import { EmailSender } from "@node-stack/emails";
 import { Job, Queue } from "bullmq";
 
 import { BaseWorker } from "../base.worker.js";
@@ -8,7 +9,9 @@ import { WebhookDispatcher } from "./webhook-dispatcher.service.js";
 
 interface OutboxEventPayload {
   email?: string;
+  name?: string;
   token?: string;
+  code?: string;
   userId?: string;
   subscriptionId?: string;
   invitationId?: string;
@@ -20,6 +23,7 @@ export class OutboxProcessor extends BaseWorker {
   protected readonly queueName = "outbox";
   private successCount = 0;
   private failureCount = 0;
+  private readonly emailSender = new EmailSender();
 
   constructor(
     @InjectQueue("outbox") private jobQueue: Queue,
@@ -80,7 +84,6 @@ export class OutboxProcessor extends BaseWorker {
         `Processed outbox ${outboxId} (${event.eventType}) - success (#${this.successCount})`,
       );
 
-      // Trigger Webhook Dispatcher
       await this.webhookDispatcher?.dispatch(
         event.eventType,
         event.payload as Record<string, unknown>,
@@ -130,9 +133,6 @@ export class OutboxProcessor extends BaseWorker {
 
     for (const event of pendingEvents) {
       try {
-        // We push to queue and mark as processed in DB.
-        // Even though Redis and Postgres aren't in a single transaction,
-        // we can use a DB transaction to ensure consistency if the queue add fails.
         await this.jobQueue.add("process-outbox", { outboxId: event.id });
 
         await this.db
@@ -140,7 +140,7 @@ export class OutboxProcessor extends BaseWorker {
           .set({
             processed: true,
             processedAt: new Date(),
-            lastError: null // Clear any previous errors if it was a retry
+            lastError: null,
           })
           .where(eq(schema.outbox.id, event.id));
       } catch (error) {
@@ -156,23 +156,97 @@ export class OutboxProcessor extends BaseWorker {
       case "user.registered":
         return async (event: Record<string, unknown>) => {
           const payload = event.payload as OutboxEventPayload;
-          this.logger.log(`[DEV: EMAIL MOCK] Welcome to the platform! Sent to: ${payload.email}`);
+          if (!payload.email) return;
+          const email = payload.email;
+          const name: string = payload.name ?? email.split("@")[0] ?? "Usuario";
+          const dashboardUrl = process.env.FRONTEND_URL ?? "http://localhost:5173";
+          await this.emailSender.sendTyped(
+            email,
+            "¡Bienvenido a NodeStack!",
+            { name: "WELCOME", data: { name, dashboardUrl } },
+          );
         };
-      case "user.forgot_password":
-        return async (event: Record<string, unknown>) => {
-          const payload = event.payload as OutboxEventPayload;
-          this.logger.log(`\n==========================================\n[DEV: EMAIL MOCK] Password Reset\nTo: ${payload.email}\n[BODY]: You requested a password reset. Here is your secret token: ${payload.token}\n==========================================\n`);
-        };
+
       case "user.email_verification":
         return async (event: Record<string, unknown>) => {
           const payload = event.payload as OutboxEventPayload;
-          this.logger.log(`\n==========================================\n[DEV: EMAIL MOCK] Email Verification\nTo: ${payload.email}\n[BODY]: Please verify your email. Here is your secret token: ${payload.token}\n==========================================\n`);
+          if (!payload.email) return;
+          const code = payload.token ?? payload.code ?? "";
+          await this.emailSender.sendTyped(
+            payload.email,
+            "Verifica tu correo electrónico",
+            { name: "OTP_VERIFICATION", data: { code, expiresInMinutes: 15 } },
+          );
         };
+
+      case "user.forgot_password":
+        return async (event: Record<string, unknown>) => {
+          const payload = event.payload as OutboxEventPayload;
+          if (!payload.email || !payload.token) return;
+          const dashboardUrl = process.env.FRONTEND_URL ?? "http://localhost:5173";
+          const resetUrl = `${dashboardUrl}/auth/reset-password?token=${payload.token}`;
+          await this.emailSender.sendTyped(
+            payload.email,
+            "Restablecer tu contraseña",
+            { name: "RESET_PASSWORD", data: { resetUrl, expiresInHours: 1 } },
+          );
+        };
+
       case "user.password_changed":
-        return async (_event: Record<string, unknown>) => {
-          this.logger.log(`[DEV: EMAIL MOCK] Your password was successfully changed.`);
+        return async (event: Record<string, unknown>) => {
+          const payload = event.payload as OutboxEventPayload;
+          let email = payload.email;
+          if (!email && payload.userId) {
+            const user = await this.db.query.users.findFirst({
+              where: eq(schema.users.id, payload.userId),
+              columns: { email: true, name: true },
+            });
+            email = user?.email;
+          }
+          if (!email) return;
+          const name: string = payload.name ?? email.split("@")[0] ?? "Usuario";
+          await this.emailSender.sendTyped(
+            email,
+            "Tu contraseña ha sido actualizada",
+            { name: "PASSWORD_CHANGED", data: { name } },
+          );
         };
-      // Add more event types as needed
+
+      case "invitation.sent":
+        return async (event: Record<string, unknown>) => {
+          const payload = event.payload as OutboxEventPayload & {
+            workspaceId?: string;
+            token?: string;
+            expiresAt?: string;
+          };
+          if (!payload.email || !payload.token || !payload.workspaceId) return;
+
+          const frontendUrl = process.env.FRONTEND_URL ?? "http://localhost:5173";
+          const acceptUrl = `${frontendUrl}/invitations/${payload.token}`;
+
+          // Resolve workspace name for the email subject/body
+          const wsRows = await withSystemTx(async (tx) => {
+            return tx
+              .select({ name: schema.workspaces.name })
+              .from(schema.workspaces)
+              .where(eq(schema.workspaces.id, payload.workspaceId!))
+              .limit(1);
+          }, this.db);
+          const workspaceName = wsRows[0]?.name ?? "tu equipo";
+
+          const expiresAt = payload.expiresAt
+            ? new Date(payload.expiresAt).toLocaleDateString("es-ES", {
+                day: "numeric", month: "long", year: "numeric",
+              })
+            : undefined;
+
+          await this.emailSender.sendTyped(
+            payload.email,
+            `Invitación para unirte a ${workspaceName}`,
+            { name: "INVITATION", data: { workspaceName, acceptUrl, expiresAt } },
+          );
+        };
+
       default:
         return null;
     }
@@ -182,15 +256,11 @@ export class OutboxProcessor extends BaseWorker {
     if (this.backoffType === "fixed") {
       return this.baseDelayMs;
     }
-    // exponential backoff
     return this.baseDelayMs * Math.pow(2, attempt - 1);
   }
 
-  /** Override base onModuleDestroy to include worker stats */
   async onModuleDestroy(): Promise<void> {
-    this.logger.log(
-      `[Worker] Gracefully closing BullMQ outbox worker...`,
-    );
+    this.logger.log(`[Worker] Gracefully closing BullMQ outbox worker...`);
     await this.worker.close();
     this.logger.log(
       `[Worker] Outbox worker closed. Stats: ${this.successCount} succeeded, ${this.failureCount} failed.`,

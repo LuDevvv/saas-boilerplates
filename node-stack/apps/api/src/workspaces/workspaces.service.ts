@@ -19,6 +19,7 @@ import type { Database } from "@node-stack/db";
 import type { UpdateMemberRoleDto, UpdateWorkspaceDto } from "@node-stack/validators";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
+import { PlanLimitsService } from "@/billing/plan-limits.service.js";
 import { OutboxService } from "@/common/services/outbox.service.js";
 
 type WorkspaceRole = "owner" | "admin" | "member" | "guest";
@@ -43,6 +44,7 @@ export class WorkspacesService {
     private readonly cache: CacheService,
     private readonly outbox: OutboxService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly planLimits: PlanLimitsService,
     @Inject(DB_TOKEN) private readonly db: Database,
   ) {}
 
@@ -187,6 +189,9 @@ export class WorkspacesService {
     userId: string,
     metadata: { industry?: string; teamSize?: string; revenueRange?: string } = {},
   ): Promise<unknown> {
+    // Enforce workspace limit before any DB writes
+    await this.planLimits.assertWorkspaceLimit(userId);
+
     // Auto-generate slug from name when not provided (onboarding flow)
     const resolvedSlug = slug ??
       name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 50);

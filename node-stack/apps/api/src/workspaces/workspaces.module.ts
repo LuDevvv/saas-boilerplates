@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { DatabaseModule } from "@node-stack/db";
 
 import { ApiKeysService } from "@/api-keys/api-keys.service.js";
+import { BillingModule } from "@/billing/billing.module.js";
 import { IdempotencyService } from "@/common/services/idempotency.service.js";
 import { OutboxService } from "@/common/services/outbox.service.js";
 import { InvitationsModule } from "@/workspaces/invitations.module.js";
@@ -15,8 +16,9 @@ import { WorkspacesService } from "@/workspaces/workspaces.service.js";
 
 @Module({
   imports: [
-    InvitationsModule, 
+    InvitationsModule,
     DatabaseModule,
+    BillingModule,
   ],
   controllers: [WorkspacesController, WebhooksController],
   providers: [

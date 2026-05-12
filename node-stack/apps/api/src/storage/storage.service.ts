@@ -30,6 +30,7 @@ import {
 import type { UploadContext } from "@node-stack/validators";
 
 import { UsageQuotaService } from "@/analytics/usage-quota.service.js";
+import { ThumbnailService } from "@/storage/thumbnail.service.js";
 
 @Injectable()
 export class AppStorageService {
@@ -41,6 +42,7 @@ export class AppStorageService {
     private readonly fileRepo: FileRepository,
     private readonly auditLog: AuditLogRepository,
     private readonly usageQuotaService: UsageQuotaService,
+    private readonly thumbnailService: ThumbnailService,
     @Inject(DB_TOKEN) private readonly db: Database,
   ) {}
 
@@ -195,10 +197,52 @@ export class AppStorageService {
           throw new UnsupportedMediaTypeException(verdict.reason);
         }
 
-        return await this.fileRepo.updateStatus(fileId, "uploaded", tx);
+        const uploadedFile = await this.fileRepo.updateStatus(fileId, "uploaded", tx);
+        return uploadedFile;
       },
       this.db,
     );
+  }
+
+  /**
+   * Generates a WebP thumbnail for an already-confirmed image file and
+   * persists the URL back to the `files` row.
+   *
+   * Called asynchronously after `completeUpload` so it never blocks the
+   * HTTP response to the client.
+   *
+   * @param fileId      DB file record ID
+   * @param workspaceId Workspace that owns the file
+   */
+  async generateThumbnailAsync(fileId: string, workspaceId: string): Promise<void> {
+    try {
+      const file = await withTenantTx(
+        workspaceId,
+        (tx) => this.fileRepo.findById(fileId, tx),
+        this.db,
+      );
+      if (!file || !this.thumbnailService.canThumbnail(file.mimeType)) return;
+
+      // Fetch the raw image bytes from storage (first 5 MB max to handle large files)
+      const MAX_BYTES = 5 * 1024 * 1024;
+      const head = await this.storage.headObject(file.key);
+      const fetchBytes = Math.min(head.contentLength ?? MAX_BYTES, MAX_BYTES);
+      const imageBytes = await this.storage.getObjectBytes(file.key, fetchBytes);
+
+      const result = await this.thumbnailService.generate(file.key, imageBytes, file.mimeType);
+      if (!result) return;
+
+      await withTenantTx(
+        workspaceId,
+        (tx) => this.fileRepo.updateThumbnailUrl(fileId, result.thumbnailUrl, tx),
+        this.db,
+      );
+
+      this.logger.log(`Thumbnail stored for file ${fileId}: ${result.thumbnailKey}`);
+    } catch (err: unknown) {
+      // Best-effort — never surfaces to the user
+      this.logger.warn(`generateThumbnailAsync failed for ${fileId}: ${(err as Error).message}`);
+    }
   }
 
   async getDownloadUrl(
@@ -222,6 +266,21 @@ export class AppStorageService {
     return { url };
   }
 
+  /**
+   * Returns a permanent public R2 URL if STORAGE_S3_PUBLIC_URL is configured,
+   * or a presigned download URL as fallback.
+   *
+   * Public URLs go through Cloudflare's edge network and are cached indefinitely,
+   * making thumbnail/preview loading dramatically faster than presigned URLs.
+   */
+  getPublicOrSignedUrl(key: string, expiresIn = 3600): Promise<string> | string {
+    const publicBase = process.env.STORAGE_S3_PUBLIC_URL;
+    if (publicBase) {
+      return `${publicBase.replace(/\/$/, "")}/${key}`;
+    }
+    return this.storage.getDownloadUrl(key, expiresIn);
+  }
+
   async listFiles(workspaceId: string): Promise<FileInfo[]> {
     const records = await withTenantTx(
       workspaceId,
@@ -234,11 +293,12 @@ export class AppStorageService {
     const results = await Promise.all(
       uploaded.map(async (file): Promise<FileInfo | null> => {
         try {
-          const url = await this.storage.getDownloadUrl(file.key);
+          const url = await this.getPublicOrSignedUrl(file.key);
           return {
             id: file.id,
             name: file.name,
             url,
+            thumbnailUrl: file.thumbnailUrl ?? null,
             size: file.size,
             type: file.mimeType,
             status: file.status,

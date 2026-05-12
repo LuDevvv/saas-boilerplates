@@ -22,8 +22,8 @@ import {
   type Subscription,
   Database,
 } from "@node-stack/db";
-import { eq } from "drizzle-orm";
 import { CreateCheckoutDto } from "@node-stack/validators";
+import { eq, and } from "drizzle-orm";
 
 import { EncryptionService } from "@/common/services/encryption.service.js";
 import { OutboxService } from "@/common/services/outbox.service.js";
@@ -35,6 +35,7 @@ const STATUS_MAP: Record<string, Subscription["status"]> = {
   past_due: "past_due",
   canceled: "cancelled",
   cancelled: "cancelled",
+  revoked: "cancelled",
   unpaid: "unpaid",
   paused: "paused",
 };
@@ -256,6 +257,15 @@ export class BillingService {
         break;
       case "customer.created":
         await this.handleCustomerCreated(event.id, eventData);
+        break;
+      case "payment.succeeded":
+        // Maps from order.created / checkout.created / checkout.updated.
+        // Subscription state is handled by subscription.* events — just ack.
+        this.logger.log(`Payment event acknowledged: ${event.id}`);
+        await this.billingRepo.markEventProcessed({
+          providerEventId: event.id,
+          eventType: event.type,
+        });
         break;
       default:
         this.logger.log(`Unhandled event type: ${event.type}`);
@@ -782,7 +792,11 @@ export class BillingService {
     );
 
     if (!sub?.providerSubscriptionId) {
-      return { status: "none" as const, workspaceId };
+      // No DB record — webhook delivery likely failed during checkout.
+      // Try to pull the subscription directly from Polar by the owner's email.
+      await this.syncSubscriptionFromPolar(workspaceId);
+      await this.cache.del(`billing:ws:${workspaceId}:subscription`);
+      return this.getSubscription(workspaceId);
     }
 
     try {
@@ -812,6 +826,102 @@ export class BillingService {
 
     await this.cache.del(`billing:ws:${workspaceId}:subscription`);
     return this.getSubscription(workspaceId);
+  }
+
+  /**
+   * Pull subscription state from Polar when the DB has no record.
+   * This handles the case where webhook delivery failed during checkout
+   * (e.g. ngrok tunnel not running in development).
+   */
+  private async syncSubscriptionFromPolar(workspaceId: string): Promise<void> {
+    try {
+      // 1. Find workspace owner's email
+      const memberships = await withTenantTx(workspaceId, async (tx) => {
+        return tx
+          .select({ userId: schema.memberships.userId })
+          .from(schema.memberships)
+          .where(
+            and(
+              eq(schema.memberships.workspaceId, workspaceId),
+              eq(schema.memberships.role, "owner"),
+            ),
+          )
+          .limit(1);
+      }, this.db);
+
+      const ownerId = memberships[0]?.userId;
+      if (!ownerId) return;
+
+      const user = await this.db.query.users.findFirst({
+        where: eq(schema.users.id, ownerId),
+        columns: { email: true },
+      });
+      if (!user?.email) return;
+
+      // 2. Find Polar customer by email
+      const customers = await this.provider.findCustomersByEmail(user.email);
+      if (!customers.length) return;
+
+      const polarCustomer = customers[0]!;
+
+      // 3. Get their subscriptions — pick the most recently created active/trialing one.
+      // Sort newest-first so we don't accidentally pick an old revoked subscription.
+      const subs = await this.provider.listSubscriptionsByCustomer(polarCustomer.id);
+      const activeSub = subs
+        .sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0))
+        .find((s) => s.status === "active" || s.status === "trialing");
+      if (!activeSub) {
+        this.logger.warn(`syncSubscriptionFromPolar: no active subscription found for ${user.email} (${subs.length} total)`);
+        return;
+      }
+
+      // 4. Persist customer + subscription to DB so subsequent calls work normally
+      await withTenantTx(workspaceId, async (tx) => {
+        await this.billingRepo.upsertCustomer(
+          {
+            workspaceId,
+            providerCustomerId: this.encryption.encrypt(polarCustomer.id),
+            provider: "polar",
+          },
+          tx,
+        );
+        await this.billingRepo.upsertSubscription(
+          {
+            workspaceId,
+            providerSubscriptionId: activeSub.id,
+            planId: activeSub.planId,
+            variantId: activeSub.variantId,
+            status: this.mapStatus(activeSub.status),
+            currentPeriodStart: activeSub.currentPeriodStart,
+            currentPeriodEnd: activeSub.currentPeriodEnd,
+            cancelAt: activeSub.cancelAt ?? null,
+            endsAt: null,
+          },
+          tx,
+        );
+      }, this.db);
+
+      // Mark onboarding complete — the webhook fallback path bypasses
+      // handleSubscriptionCreated, so we update it here instead.
+      try {
+        await withSystemTx(async (tx) => {
+          await tx
+            .update(schema.users)
+            .set({ onboardingStatus: "completed" })
+            .where(eq(schema.users.id, ownerId));
+        }, this.db);
+      } catch (err) {
+        this.logger.warn(`syncSubscriptionFromPolar: could not mark onboarding complete: ${(err as Error).message}`);
+      }
+
+      this.logger.log(
+        `syncSubscriptionFromPolar: bootstrapped sub ${activeSub.id} for workspace ${workspaceId}`,
+      );
+    } catch (err) {
+      this.logger.warn(
+        `syncSubscriptionFromPolar failed: ${(err as Error).message}`,
+      );
+    }
   }
 
   async invoices(workspaceId: string): Promise<Record<string, unknown>[]> {

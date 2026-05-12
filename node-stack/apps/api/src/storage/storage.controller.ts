@@ -117,15 +117,19 @@ export class StorageController {
       body.fileId,
       workspace.id,
     );
-    // Return a presigned download URL (7 days) so the caller can use it
-    // directly as <img src> or store it as avatarUrl/logoUrl without needing
-    // a separate authenticated request to resolve the file.
-    const { url } = await this.appStorageService.getDownloadUrl(
-      file.id,
-      workspace.id,
+    // Prefer a permanent public R2 URL (served via Cloudflare CDN, cached globally)
+    // over a presigned URL so avatarUrl/logoUrl never expire and benefit from CDN.
+    // Falls back to a 7-day presigned URL when STORAGE_S3_PUBLIC_URL is not set.
+    const fileUrl = await this.appStorageService.getPublicOrSignedUrl(
+      file.key,
       7 * 24 * 60 * 60,
     );
-    return { success: file.status === "uploaded", fileUrl: url };
+
+    // Fire-and-forget thumbnail generation — runs after the response is sent.
+    // Does not block the HTTP response; failure is logged and never surfaces.
+    void this.appStorageService.generateThumbnailAsync(file.id, workspace.id);
+
+    return { success: file.status === "uploaded", fileUrl };
   }
 
   @Get(":fileId")

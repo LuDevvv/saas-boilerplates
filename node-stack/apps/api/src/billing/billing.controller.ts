@@ -177,8 +177,11 @@ export class BillingController {
   @RequirePermissions(Permission.BILLING_READ)
   @ApiOperation({ summary: "Get plan usage snapshot for the workspace" })
   @ApiResponse({ status: 200, description: "Usage data" })
-  async usage(@Workspace() workspace: WorkspaceContext): Promise<Record<string, unknown>> {
-    return this.planLimits.getUsageSnapshot(workspace.id);
+  async usage(
+    @Workspace() workspace: WorkspaceContext,
+    @CurrentUser() user: UserPayload,
+  ): Promise<Record<string, unknown>> {
+    return this.planLimits.getUsageSnapshot(workspace.id, user.id);
   }
 
   @Get("plans")

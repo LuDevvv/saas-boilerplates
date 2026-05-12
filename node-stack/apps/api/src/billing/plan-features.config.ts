@@ -1,15 +1,20 @@
 /**
- * Plan feature definitions for the boilerplate.
+ * Plan feature definitions — single source of truth for limits and feature flags.
  *
- * This file is the single source of truth for what each plan includes.
- * Limits are enforced by PlanLimitsService at the service layer — Polar
- * handles billing, YOUR code handles access control.
+ * Live plans (sold in Polar):
+ *   "pro"   → Growth   ($29/mo · $290/yr)   25 members · 10 GB · 1 workspace
+ *   "elite" → Unlimited ($99/mo · $990/yr)   unlimited everything
  *
- * To adapt for a specific product (e.g. DR accounting software):
- *  - Rename plans (e.g. emprendedor / pyme / empresarial)
- *  - Adjust numeric limits per plan
- *  - Add domain-specific feature flags (e.g. hasNomina, hasEFactura)
- *  - Wire Polar meter slugs after creating meters in your Polar dashboard
+ * "free" is NOT sold; it is the enforcement fallback for workspaces with no
+ * active subscription. The UI never displays "free plan" to end-users.
+ *
+ * PlanLimitsService resolves the Polar product UUID stored in the DB to one
+ * of these slugs via env vars (POLAR_PRODUCT_ID_PRO_*, POLAR_PRODUCT_ID_ELITE_*).
+ *
+ * To adapt for a specific product:
+ *   - Rename plans (e.g. starter / business / enterprise)
+ *   - Adjust numeric limits
+ *   - Add domain-specific feature flags
  */
 
 export type PlanFeatureKey =
