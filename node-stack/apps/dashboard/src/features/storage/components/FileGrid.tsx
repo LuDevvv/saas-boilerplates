@@ -19,7 +19,7 @@ import {
   ExternalLink,
   File as FileIcon,
 } from "lucide-react";
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import { cn } from "@/utils/classNames";
 import { formatBytes } from "@/utils/formatters";
@@ -48,6 +48,29 @@ const getFileIconAndTone = (type: string) => {
   return { Icon: FileIcon, ...ICON_TONE.generic };
 };
 
+const ImageThumbnail: FC<{ url: string; name: string }> = ({ url, name }) => {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return (
+      <div className="h-10 w-10 rounded-[10px] flex items-center justify-center shrink-0 bg-violet-500/10">
+        <ImageIcon className="h-5 w-5 text-violet-500 dark:text-violet-400" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-10 w-10 rounded-[10px] overflow-hidden shrink-0 bg-surface-muted border border-border-subtle">
+      <img
+        src={url}
+        alt={name}
+        className="h-full w-full object-cover"
+        onError={() => setFailed(true)}
+      />
+    </div>
+  );
+};
+
 export const FileGrid: FC<FileGridProps> = ({
   files,
   isLoading,
@@ -68,6 +91,7 @@ export const FileGrid: FC<FileGridProps> = ({
   return (
     <div className={cn("grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4", className)}>
       {files.map((file) => {
+        const isImage = file.type.startsWith("image/");
         const { Icon, tile, text } = getFileIconAndTone(file.type);
         return (
           <article
@@ -79,11 +103,15 @@ export const FileGrid: FC<FileGridProps> = ({
               "transition-all duration-200"
             )}
           >
-            {/* Top row: icon tile + actions */}
+            {/* Top row: thumbnail/icon + actions */}
             <div className="flex items-start justify-between gap-2">
-              <div className={cn("h-10 w-10 rounded-[10px] flex items-center justify-center shrink-0", tile)}>
-                <Icon className={cn("h-5 w-5", text)} />
-              </div>
+              {isImage ? (
+                <ImageThumbnail url={file.url} name={file.name} />
+              ) : (
+                <div className={cn("h-10 w-10 rounded-[10px] flex items-center justify-center shrink-0", tile)}>
+                  <Icon className={cn("h-5 w-5", text)} />
+                </div>
+              )}
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

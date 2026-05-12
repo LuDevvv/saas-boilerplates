@@ -131,8 +131,8 @@ const StoragePage: FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleDownload = async (file: any) => {
     try {
-      const { downloadUrl } = await api.storage.getDownloadUrl(file.id);
-      window.open(downloadUrl, "_blank");
+      const { url } = await api.storage.getDownloadUrl(file.id);
+      window.open(url, "_blank");
     } catch (err) {
       console.error("Download failed", err);
     }
@@ -288,8 +288,8 @@ const StoragePage: FC = () => {
           <StorageStats
             usedBytes={stats?.usedBytes ?? 0}
             totalBytes={stats?.totalBytes ?? 5 * 1024 * 1024 * 1024}
-            fileCount={stats?.fileCount ?? allFiles.length}
-            isLoading={isLoadingStats}
+            fileCount={allFiles.length}
+            isLoading={isLoadingStats && isLoadingFiles}
           />
 
           <CalloutCard
