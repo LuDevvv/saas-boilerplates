@@ -46,7 +46,7 @@
     "@node-stack/types": "workspace:*",
     "@node-stack/validators": "workspace:*",
     "axios": "^1.7.9",
-    "zod": "^3.23.8"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tanstack/react-query": "^5.91.0",
