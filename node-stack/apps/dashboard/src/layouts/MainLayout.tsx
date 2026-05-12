@@ -1,8 +1,9 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
 
-import { UploadTray } from "@/features/storage";
 import NavbarSidebarLayout from "./NavBarSideBarLayout";
+
+import { UploadTray } from "@/features/storage";
 
 const MainLayout: React.FC = () => {
   return (

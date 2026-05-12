@@ -42,6 +42,8 @@ export const FileUploadButton: FC<FileUploadButtonProps> = ({
 
   const heightClass = size === "sm" ? "h-9 px-4 text-[12px]" : "h-10 px-5 text-[13px]";
 
+  const isFullWidth = className?.includes("w-full");
+
   return (
     <div className={`relative ${className ?? ""}`}>
       <input
@@ -56,7 +58,7 @@ export const FileUploadButton: FC<FileUploadButtonProps> = ({
       <Button
         onClick={() => fileInputRef.current?.click()}
         disabled={isUploading}
-        className={`rounded-xl bg-primary hover:bg-primary-600 text-primary-foreground font-medium ${heightClass} transition-all active:scale-[0.98]`}
+        className={`rounded-xl bg-primary hover:bg-primary-600 text-primary-foreground font-medium ${heightClass} transition-all active:scale-[0.98]${isFullWidth ? " w-full" : ""}`}
       >
         {isUploading ? (
           <>

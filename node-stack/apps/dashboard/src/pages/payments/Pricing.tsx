@@ -10,10 +10,10 @@ import {
 import { FC, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { BackButton } from "@/components/shared/BackButton";
-import { useExchangeRate } from "@/hooks/useExchangeRate";
-import { useSubscription, useChangePlan } from "@/features/billing/hooks/useBilling";
 import { appToast } from "@/components/alerts/Toasts";
+import { BackButton } from "@/components/shared/BackButton";
+import { useSubscription, useChangePlan } from "@/features/billing/hooks/useBilling";
+import { useExchangeRate } from "@/hooks/useExchangeRate";
 import { cn } from "@/utils/classNames";
 
 // ─── Plan catalog ─────────────────────────────────────────────────────────────
@@ -221,9 +221,7 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
                       ${displayPrice}
                     </span>
                     {plan.price > 0 && (
-                      <span className="text-[13px] text-gray-400 ml-1">
-                        /{isAnnual ? "año" : "mes"}
-                      </span>
+                      <span className="text-[13px] text-gray-400 ml-1">/mes</span>
                     )}
                   </div>
 
@@ -235,7 +233,7 @@ const Pricing: FC<PricingProps> = ({ isOnboarding = false }) => {
 
                   <p className="text-[11px] text-gray-400 mt-1">
                     {isAnnual
-                      ? `US$ ${plan.yearlyPrice}/año · Ahorras US$ ${annualSavings}`
+                      ? `Facturado como US$ ${plan.yearlyPrice} al año · Ahorras US$ ${annualSavings}`
                       : "Facturado mensualmente"}
                   </p>
                 </div>

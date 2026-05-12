@@ -10,9 +10,9 @@
  *  5. On success → navigate to /payments/success
  */
 
-import { PolarEmbedCheckout } from "@polar-sh/checkout/embed";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@node-stack/ui";
+import { PolarEmbedCheckout } from "@polar-sh/checkout/embed";
 import {
   CheckCircle2,
   ChevronDown,
@@ -30,9 +30,9 @@ import { useForm } from "react-hook-form";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import * as z from "zod";
 
-import { BackButton } from "@/components/shared/BackButton";
 import { appToast } from "@/components/alerts/Toasts";
-import { useCheckout } from "@/features/billing/hooks/useBilling";
+import { BackButton } from "@/components/shared/BackButton";
+import { useCheckout, useRefreshSubscription } from "@/features/billing/hooks/useBilling";
 import { useWorkspaces } from "@/features/workspaces/hooks/useWorkspaces";
 import { useAuth } from "@/hooks/stores/useAuth";
 import { useExchangeRate } from "@/hooks/useExchangeRate";
@@ -179,7 +179,25 @@ const Checkout: FC = () => {
   const [showSummary, setShowSummary]       = useState(false);
   const [isEmbedLoading, setIsEmbedLoading] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const checkoutRef = useRef<any>(null);
+  const checkoutRef      = useRef<any>(null);
+  const pollIdRef        = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const fallbackPollRef  = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const stopPolling = useCallback(() => {
+    clearInterval(pollIdRef.current);
+    pollIdRef.current = undefined;
+    clearTimeout(fallbackPollRef.current);
+    fallbackPollRef.current = undefined;
+  }, []);
+
+  // On unmount: stop polling AND force-close the embed iframe.
+  // The embed is injected into document.body (outside React tree) so it won't
+  // auto-remove when this component unmounts — we must close it explicitly.
+  useEffect(() => () => {
+    stopPolling();
+    checkoutRef.current?.close();
+    checkoutRef.current = null;
+  }, [stopPolling]);
 
   // Ensure workspace context is set so X-Workspace-ID header is sent
   const activeWorkspaceId = useWorkspaceStore((s) => s.activeWorkspaceId);
@@ -213,6 +231,8 @@ const Checkout: FC = () => {
     defaultValues: { email: user?.email ?? "" },
   });
 
+  const { mutateAsync: refreshSubscription } = useRefreshSubscription();
+
   // Detect dark mode from the document root class
   const embedTheme = document.documentElement.classList.contains("dark") ? "dark" : "light";
 
@@ -228,19 +248,58 @@ const Checkout: FC = () => {
 
       const checkout = await PolarEmbedCheckout.create(result.url, {
         theme: embedTheme,
-        onLoaded: () => setIsEmbedLoading(false),
       });
 
       checkoutRef.current = checkout;
 
+      // Shared polling logic — polls refreshSubscription until active subscription found.
+      // refreshSubscription calls Polar's API directly when no DB record exists,
+      // so this works even when webhooks can't reach our backend (dev / ngrok down).
+      const startPoll = () => {
+        if (pollIdRef.current) return; // already polling
+        let pollAttempts = 0;
+        pollIdRef.current = setInterval(async () => {
+          if (++pollAttempts > 30) { stopPolling(); return; } // 90s max
+          try {
+            const sub = await refreshSubscription();
+            if (sub?.status === "active" || sub?.status === "trialing") {
+              stopPolling();
+              // Force-close embed before navigating — close() bypasses the
+              // "confirmed" lock and directly removes the iframe from document.body.
+              checkoutRef.current?.close();
+              navigate("/payments/success");
+            }
+          } catch { /* ignore — keep polling */ }
+        }, 3000);
+      };
+
+      // "loaded" fires when the iframe finishes rendering.
+      // Also start a fallback poll 15s later in case "confirmed" never fires
+      // (e.g. Google Pay / Apple Pay quick-pay or event propagation failure).
+      checkout.addEventListener("loaded", () => {
+        setIsEmbedLoading(false);
+        fallbackPollRef.current = setTimeout(startPoll, 15_000);
+      });
+
+      // "confirmed" fires when the user clicks Pay inside the embed.
+      // Speed up from fallback cadence to immediate 3s polling.
+      checkout.addEventListener("confirmed", () => {
+        clearTimeout(fallbackPollRef.current);
+        fallbackPollRef.current = undefined;
+        startPoll();
+      });
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       checkout.addEventListener("success", (event: any) => {
+        stopPolling();
         // Prevent Polar's automatic redirect — we handle navigation ourselves
         event.preventDefault?.();
+        checkoutRef.current?.close();
         navigate("/payments/success");
       });
 
       checkout.addEventListener("close", () => {
+        stopPolling();
         checkoutRef.current = null;
         setIsEmbedLoading(false);
       });
@@ -249,7 +308,7 @@ const Checkout: FC = () => {
       appToast.error({ title: "Error al procesar el pago", description: "No pudimos generar la sesión de pago. Inténtalo de nuevo." });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [planId, billing, embedTheme, navigate, createCheckout]);
+  }, [planId, billing, embedTheme, navigate, createCheckout, refreshSubscription, stopPolling]);
 
   return (
     <div className="min-h-screen bg-[var(--canvas)] dark:bg-canvas flex flex-col lg:flex-row animate-in fade-in duration-500">
@@ -301,17 +360,28 @@ const Checkout: FC = () => {
 
           {/* Receipt breakdown */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between text-[13px]">
-              <span className="text-white/50">
-                Plan {plan.name} · {isYearly ? "anual" : "mensual"}
-              </span>
-              <span className="text-white/75 tabular-nums">US$ {basePrice}.00</span>
-            </div>
-
-            {isYearly && annualSavings > 0 && (
+            {isYearly && annualSavings > 0 ? (
+              <>
+                {/* Show original cost (monthly × 12) so the math is legible */}
+                <div className="flex items-center justify-between text-[13px]">
+                  <span className="text-white/50">
+                    Plan {plan.name} · 12 meses
+                  </span>
+                  <span className="text-white/40 tabular-nums line-through">
+                    US$ {basePrice + annualSavings}.00
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[13px]">
+                  <span className="text-emerald-400">Descuento anual</span>
+                  <span className="text-emerald-400 tabular-nums">-US$ {annualSavings}.00</span>
+                </div>
+              </>
+            ) : (
               <div className="flex items-center justify-between text-[13px]">
-                <span className="text-emerald-400">Descuento anual 15%</span>
-                <span className="text-emerald-400 tabular-nums">-US$ {annualSavings}.00</span>
+                <span className="text-white/50">
+                  Plan {plan.name} · mensual
+                </span>
+                <span className="text-white/75 tabular-nums">US$ {basePrice}.00</span>
               </div>
             )}
 

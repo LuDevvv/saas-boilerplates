@@ -1,6 +1,7 @@
 import { ChevronsUpDown, Check, Plus } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
+
 import { CreateWorkspaceModal } from "@/features/workspaces/components/CreateWorkspaceModal";
 import { useWorkspaces } from "@/features/workspaces/hooks/useWorkspaces";
 import { useWorkspaceStore } from "@/stores/workspaceStore";

@@ -1,7 +1,7 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 
-import { useQueryClient } from "@tanstack/react-query";
 import { appToast } from "@/components/alerts/Toasts";
 import { useUser } from "@/features/auth/hooks/useUser";
 import { api } from "@/lib/api";

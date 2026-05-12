@@ -18,8 +18,8 @@ import { CheckCircle2, Loader2, Users, XCircle, LogIn, UserPlus } from "lucide-r
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { api } from "@/lib/api";
 import { useAuth } from "@/hooks/stores/useAuth";
+import { api } from "@/lib/api";
 
 const PENDING_KEY = "pending_invitation";
 

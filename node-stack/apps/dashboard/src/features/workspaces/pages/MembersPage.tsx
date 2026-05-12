@@ -8,6 +8,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  Clock,
+  X,
+  Mail,
 } from "lucide-react";
 import { FC, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +22,8 @@ import {
   useInviteMember,
   useUpdateMemberRole,
   useRemoveMember,
+  useWorkspaceInvitations,
+  useCancelInvitation,
 } from "../hooks/useWorkspaceMembers";
 
 import { useAuth } from "@/hooks/stores/useAuth";
@@ -121,6 +126,10 @@ const ROLE_DEFS = [
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
+const ROLE_LABEL: Record<string, string> = {
+  owner: "Propietario", admin: "Administrador", member: "Miembro", guest: "Invitado",
+};
+
 const MembersPage: FC = () => {
   const { activeWorkspaceId } = useWorkspaceStore();
   const { user: currentUser } = useAuth();
@@ -130,9 +139,11 @@ const MembersPage: FC = () => {
   const [page, setPage] = useState(1);
 
   const { data: members, isLoading } = useWorkspaceMembers(activeWorkspaceId);
+  const { data: pendingInvitations } = useWorkspaceInvitations(activeWorkspaceId);
   const inviteMutation = useInviteMember(activeWorkspaceId);
   const updateRoleMutation = useUpdateMemberRole(activeWorkspaceId);
   const removeMutation = useRemoveMember(activeWorkspaceId);
+  const cancelInviteMutation = useCancelInvitation(activeWorkspaceId);
 
   const canInvite = useMemo(
     () => members?.find(m => m.userId === currentUser?.id)?.role !== "member",
@@ -240,6 +251,64 @@ const MembersPage: FC = () => {
                 onChange={setPage}
               />
             </>
+          )}
+
+          {/* ── Pending Invitations (inside left col to stay within grid) ── */}
+          {canInvite && (pendingInvitations?.length ?? 0) > 0 && (
+            <div className="space-y-2 pt-2">
+              {/* Section header */}
+              <div className="flex items-center gap-2 px-0.5">
+                <Clock className="h-3.5 w-3.5 text-fg-muted" />
+                <p className="text-[11px] font-bold uppercase tracking-wide text-fg-muted">
+                  Invitaciones pendientes
+                </p>
+                <span className="inline-flex items-center justify-center h-4 min-w-[16px] px-1 rounded-full bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-400 text-[10px] font-bold tabular-nums">
+                  {pendingInvitations?.length}
+                </span>
+              </div>
+
+              {/* Invitation rows — styled like the member table */}
+              <div className="rounded-[14px] border border-border bg-white dark:bg-surface overflow-hidden">
+                <div className="divide-y divide-border">
+                  {pendingInvitations?.map((inv) => (
+                    <div key={inv.id} className="flex items-center gap-3 px-4 py-3 group">
+                      {/* Avatar placeholder */}
+                      <div className="h-8 w-8 rounded-full bg-amber-50 dark:bg-amber-500/10 border border-amber-200/50 dark:border-amber-500/20 flex items-center justify-center shrink-0">
+                        <Mail className="h-3.5 w-3.5 text-amber-500" />
+                      </div>
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-medium text-fg truncate leading-snug">
+                          {inv.email}
+                        </p>
+                        <p className="text-[11px] text-fg-muted mt-0.5">
+                          {ROLE_LABEL[inv.role] ?? inv.role} · Expira{" "}
+                          {new Date(inv.expiresAt).toLocaleDateString("es-ES", {
+                            day: "numeric", month: "short",
+                          })}
+                        </p>
+                      </div>
+
+                      {/* Status badge */}
+                      <span className="shrink-0 inline-flex items-center h-[22px] px-2.5 rounded-full border border-amber-200 dark:border-amber-500/25 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 text-[10px] font-semibold">
+                        Pendiente
+                      </span>
+
+                      {/* Cancel button */}
+                      <button
+                        onClick={() => cancelInviteMutation.mutate(inv.id)}
+                        disabled={cancelInviteMutation.isPending}
+                        title="Cancelar invitación"
+                        className="shrink-0 h-7 w-7 flex items-center justify-center rounded-[8px] text-fg-muted opacity-0 group-hover:opacity-100 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all disabled:opacity-40"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           )}
         </div>
 
@@ -350,9 +419,7 @@ const MembersPage: FC = () => {
         isOpen={isInviteOpen}
         onClose={() => setIsInviteOpen(false)}
         isLoading={inviteMutation.isPending}
-        onInvite={async (data) => {
-          await inviteMutation.mutateAsync(data);
-        }}
+        onInvite={(data) => inviteMutation.mutateAsync(data)}
       />
     </div>
   );

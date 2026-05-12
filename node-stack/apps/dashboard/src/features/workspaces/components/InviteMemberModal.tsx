@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Input } from "@node-stack/ui";
-import { Loader2, Mail, ShieldCheck, User, Eye } from "lucide-react";
-import { FC } from "react";
+import { AlertCircle, Loader2, Mail, ShieldCheck, User, Eye } from "lucide-react";
+import { FC, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -18,6 +18,7 @@ type InviteFormValues = z.infer<typeof inviteSchema>;
 interface InviteMemberModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Resolves on success, throws on failure — error message shown inside modal */
   onInvite: (data: InviteFormValues) => Promise<void>;
   isLoading: boolean;
 }
@@ -59,6 +60,8 @@ export const InviteMemberModal: FC<InviteMemberModalProps> = ({
   onInvite,
   isLoading,
 }) => {
+  const [apiError, setApiError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -76,12 +79,24 @@ export const InviteMemberModal: FC<InviteMemberModalProps> = ({
 
   const handleClose = () => {
     reset();
+    setApiError(null);
     onClose();
   };
 
   const onSubmit = async (data: InviteFormValues) => {
-    await onInvite(data);
-    handleClose();
+    setApiError(null);
+    try {
+      await onInvite(data);
+      handleClose(); // only close on success
+    } catch (err: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const msg = (err as any)?.response?.data?.message ?? (err as any)?.message ?? "";
+      const ERROR_MAP: Record<string, string> = {
+        "A pending invitation already exists": "Ya existe una invitación pendiente para este correo. Cancélala primero.",
+        "User is already a member": "Este usuario ya es miembro del equipo.",
+      };
+      setApiError(ERROR_MAP[msg] ?? (msg || "No se pudo enviar la invitación."));
+    }
   };
 
   return (
@@ -124,6 +139,14 @@ export const InviteMemberModal: FC<InviteMemberModalProps> = ({
         onSubmit={handleSubmit(onSubmit)}
         className="px-6 py-6 space-y-6"
       >
+        {/* API error banner */}
+        {apiError && (
+          <div className="flex items-start gap-2.5 rounded-[12px] bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 px-4 py-3">
+            <AlertCircle className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
+            <p className="text-[13px] text-red-700 dark:text-red-400 leading-relaxed">{apiError}</p>
+          </div>
+        )}
+
         {/* Email */}
         <div className="space-y-1.5">
           <label className="text-[11px] font-bold uppercase  text-gray-400">

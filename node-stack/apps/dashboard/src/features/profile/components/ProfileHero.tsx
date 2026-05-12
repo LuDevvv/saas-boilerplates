@@ -1,12 +1,16 @@
 import { appToast } from "@components/alerts/Toasts";
 import { Button, Badge, HeroHeader, ProfileAvatar } from "@node-stack/ui";
 import { formatDateShort } from "@node-stack/utils";
+import { useQueryClient } from "@tanstack/react-query";
 import { Calendar, Edit3 } from "lucide-react";
-import { FC } from "react";
+import { FC, useState } from "react";
+
 
 import { useUpdateProfile } from "@/features/auth/hooks/useUpdateProfile";
 import { useUploadFile } from "@/features/storage/hooks/useStorage";
 import { useAuth } from "@/hooks/stores/useAuth";
+import { api } from "@/lib/api";
+import { queryKeys } from "@/lib/react-query/queryKeys";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
 
 interface ProfileHeroProps {
@@ -19,22 +23,65 @@ export const ProfileHero: FC<ProfileHeroProps> = ({ isEditing, onToggleEdit }) =
   const { activeWorkspaceId } = useWorkspaceStore();
   const { upload, isUploading } = useUploadFile(activeWorkspaceId, "avatar", { silent: true });
   const { mutateAsync: updateProfile } = useUpdateProfile();
+  const queryClient = useQueryClient();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleImageChange = async (file: File | null) => {
-    if (!file) return;
+    if (!file) {
+      setIsDeleting(true);
+      try {
+        // Best-effort: also delete the physical file from storage so the bucket
+        // doesn't accumulate orphaned avatars.
+        // Presigned URLs have different query params on each generation, so we
+        // match by stripping query params and comparing base paths.
+        const currentUrl = user?.avatarUrl;
+        if (currentUrl && activeWorkspaceId) {
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const files = await api.storage.listFiles(activeWorkspaceId) as any;
+            const list = Array.isArray(files) ? files : (files?.data ?? []);
+            const basePath = (u: string) => u.split("?")[0];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const match = list.find((f: any) => basePath(f.url) === basePath(currentUrl));
+            if (match) {
+              await api.storage.deleteFile(match.id);
+              queryClient.invalidateQueries({ queryKey: ["storage", "files", activeWorkspaceId] });
+            }
+          } catch {
+            // Non-fatal — the profile reference is cleared regardless
+          }
+        }
+
+        await updateProfile({ avatarUrl: null });
+        await queryClient.invalidateQueries({ queryKey: queryKeys.user.profile() });
+        appToast.success({
+          title: "Avatar eliminado",
+          description: "Tu foto de perfil ha sido eliminada.",
+        });
+      } catch {
+        appToast.error({
+          title: "Error al eliminar",
+          description: "No se pudo eliminar el avatar. Inténtalo de nuevo.",
+        });
+      } finally {
+        setIsDeleting(false);
+      }
+      return;
+    }
 
     try {
       const result = await upload(file);
       if (!result?.fileUrl) return;
-      await updateProfile({
-        avatarUrl: result.fileUrl,
-      });
+      await updateProfile({ avatarUrl: result.fileUrl });
+      // Refresh user profile so the new avatar URL propagates immediately
+      await queryClient.invalidateQueries({ queryKey: queryKeys.user.profile() });
       appToast.success({
         title: "Avatar actualizado",
-        description: "Tu foto de perfil se ha guardado correctamente."
+        description: "Tu foto de perfil se ha guardado correctamente.",
       });
     } catch {
-      // Handled by hook
+      // Toast shown by hook; invalidate to clear stale preview
+      await queryClient.invalidateQueries({ queryKey: queryKeys.user.profile() });
     }
   };
 
@@ -49,11 +96,12 @@ export const ProfileHero: FC<ProfileHeroProps> = ({ isEditing, onToggleEdit }) =
         </div>
       }
       avatar={
-        <ProfileAvatar 
-          src={user?.avatarUrl} 
+        <ProfileAvatar
+          src={user?.avatarUrl}
           fallback={user?.firstName || "U"}
           size="lg"
           isUploading={isUploading}
+          isDeleting={isDeleting}
           onImageChange={handleImageChange}
           onError={(err) => appToast.error(err)}
         />

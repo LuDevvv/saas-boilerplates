@@ -67,6 +67,9 @@ const OnboardingPricingPage = lazy(() => import("@pages/onboarding/OnboardingPri
 // Payment success (standalone — bypasses onboarding gate)
 const PaymentSuccessPage = lazy(() => import("@pages/payments/PaymentSuccess"));
 
+// Invitation acceptance (public — handles auth state internally)
+const AcceptInvitationPage = lazy(() => import("@pages/invitations/AcceptInvitation"));
+
 // Legal & error
 const TermsPage = lazy(() => import("@pages/legal/Terms"));
 const PrivacyPage = lazy(() => import("@pages/legal/Privacy"));
@@ -101,6 +104,9 @@ export const AppRoutes = (): React.ReactElement => {
       {/* Legal pages (public) */}
       <Route path="/legal/terms" element={<Suspense fallback={<LoadingFallback />} children={<TermsPage />} />} />
       <Route path="/legal/privacy" element={<Suspense fallback={<LoadingFallback />} children={<PrivacyPage />} />} />
+
+      {/* Invitation acceptance (public — page handles auth state itself) */}
+      <Route path="/invitations/:token" element={<Suspense fallback={<Loading />} children={<AcceptInvitationPage />} />} />
 
       {/* Protected routes with MainLayout */}
       <Route

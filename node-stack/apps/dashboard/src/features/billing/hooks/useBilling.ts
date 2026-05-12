@@ -84,6 +84,16 @@ export const useRefreshSubscription = () => {
   });
 };
 
+export const useUsage = () => {
+  const workspaceId = useWorkspaceStore((state) => state.activeWorkspaceId);
+  return useQuery({
+    queryKey: queryKeys.billing.usage(),
+    queryFn: () => api.billing.getUsage(),
+    enabled: !!workspaceId,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
 export const useChangePlan = () => {
   const queryClient = useQueryClient();
   return useMutation<BillingSubscription, Error, ChangePlanDto>({

@@ -9,7 +9,7 @@ import { PaymentHistory, type PaymentRecord } from "./PaymentHistory";
 import { PlanCard } from "./PlanCard";
 import { SupportCard } from "./SupportCard";
 import { UsageWidget } from "./UsageWidget";
-import { useSubscription, useInvoices, useCancelSubscription, useCustomerPortal, useRefreshSubscription, useUncancelSubscription } from "../hooks/useBilling";
+import { useSubscription, useInvoices, useCancelSubscription, useCustomerPortal, useRefreshSubscription, useUncancelSubscription, useUsage } from "../hooks/useBilling";
 
 import { appToast } from "@/components/alerts/Toasts";
 
@@ -18,6 +18,7 @@ export const BillingContent: FC = () => {
 
   const { data: subscription, isLoading: isLoadingSub } = useSubscription();
   const { data: invoices, isLoading: isLoadingInvoices } = useInvoices();
+  const { data: usageData, isLoading: isLoadingUsage } = useUsage();
   const cancelMutation = useCancelSubscription();
   const uncancelMutation = useUncancelSubscription();
   const portalMutation = useCustomerPortal();
@@ -192,6 +193,14 @@ export const BillingContent: FC = () => {
         </div>
       </div>
 
+      {/* ── Usage widget — shown when active subscription exists ── */}
+      {planInfo.isPremium && (
+        <UsageWidget
+          metrics={usageData?.metrics}
+          isLoading={isLoadingSub || isLoadingUsage}
+        />
+      )}
+
       {/* ── Invoice history ── */}
       {isLoadingInvoices ? (
         <Skeleton className="h-48 rounded-[20px]" />
@@ -212,11 +221,6 @@ export const BillingContent: FC = () => {
             {pendingSection === "orders" ? "Abriendo..." : "Ver historial en Polar"}
           </button>
         </div>
-      )}
-
-      {/* ── Usage widget — shown when active subscription exists ── */}
-      {planInfo.isPremium && (
-        <UsageWidget planName={planInfo.planId} isLoading={isLoadingSub} />
       )}
 
       {/* ── Support CTA ── */}

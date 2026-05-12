@@ -1,3 +1,4 @@
+import type { FileInfo as StorageFile } from "@node-stack/types";
 import {
   CalloutCard,
   EmptyState,
@@ -20,14 +21,15 @@ import { FC, useState, useCallback, useMemo, useRef } from "react";
 
 import { FileGrid } from "../components/FileGrid";
 import { FileUploadButton } from "../components/FileUploadButton";
+import { FileViewer } from "../components/FileViewer";
 import { StorageStats } from "../components/StorageStats";
 import {
   useStorageFiles,
-  useStorageStats,
-  useUploadFile,
   useDeleteFile,
+  useUploadFile,
 } from "../hooks/useStorage";
 
+import { useUsage } from "@/features/billing/hooks/useBilling";
 import { api } from "@/lib/api";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { cn } from "@/utils/classNames";
@@ -67,7 +69,11 @@ const StoragePage: FC = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     : (filesResponse as any)?.data || [];
 
-  const { data: stats, isLoading: isLoadingStats } = useStorageStats(activeWorkspaceId);
+  // Stats are derived from loaded files (real-time) + plan limits from billing
+  const { data: usageData } = useUsage();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const storageMeta = usageData?.metrics?.find((m: any) => m.key === "storage");
+  const _isLoadingStats = false; // stats computed locally, no separate loading
   const { upload, isUploading } = useUploadFile(activeWorkspaceId);
   const deleteMutation = useDeleteFile(activeWorkspaceId);
 
@@ -75,6 +81,7 @@ const StoragePage: FC = () => {
   const [filter, setFilter] = useState<FileFilter>("all");
   const [search, setSearch] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const [previewFile, setPreviewFile] = useState<StorageFile | null>(null);
 
   // Dedicated input for the dropzone (avoids racing with the FileUploadButton)
   const dropzoneInputRef = useRef<HTMLInputElement>(null);
@@ -144,13 +151,12 @@ const StoragePage: FC = () => {
       <PageHeader
         eyebrow="WORKSPACE"
         title="Almacenamiento"
-        description="Sube, organiza y comparte archivos del workspace. El progreso aparece en la bandeja inferior."
+        description="Sube, organiza y comparte archivos del workspace."
         action={
-          <FileUploadButton
-            onUpload={upload}
-            isUploading={isUploading}
-            multiple
-          />
+          /* Desktop only — on mobile the button appears below the dropzone */
+          <div className="hidden sm:block">
+            <FileUploadButton onUpload={upload} isUploading={isUploading} multiple />
+          </div>
         }
         className="mb-6"
       />
@@ -209,15 +215,21 @@ const StoragePage: FC = () => {
         </div>
       </div>
 
+      {/* Mobile-only upload button — full width, below dropzone */}
+      <div className="sm:hidden mb-5">
+        <FileUploadButton onUpload={upload} isUploading={isUploading} multiple className="w-full" />
+      </div>
+
       {/* Two-column layout: file grid + sidebar */}
       <TwoColumnLayout>
         <TwoColumnLayout.Main className="flex flex-col gap-5">
           {/* Toolbar: filters + search */}
-          <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <FilterTabs
               value={filter}
               onChange={(v) => setFilter(v as FileFilter)}
               ariaLabel="Filtrar archivos por tipo"
+              className="w-full sm:w-auto"
               options={FILTERS.map(({ value, label, icon: Icon }) => ({
                 value,
                 label,
@@ -280,16 +292,25 @@ const StoragePage: FC = () => {
               isLoading={isLoadingFiles}
               onDelete={(id) => deleteMutation.mutate(id)}
               onDownload={handleDownload}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onPreview={(f) => setPreviewFile(f as any)}
             />
           )}
         </TwoColumnLayout.Main>
 
         <TwoColumnLayout.Aside className="flex flex-col gap-5">
           <StorageStats
-            usedBytes={stats?.usedBytes ?? 0}
-            totalBytes={stats?.totalBytes ?? 5 * 1024 * 1024 * 1024}
+            usedBytes={
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              allFiles.reduce((sum: number, f: any) => sum + (f.size ?? 0), 0)
+            }
+            totalBytes={
+              storageMeta?.limit != null
+                ? storageMeta.limit * 1024 * 1024   // plan limit in MB → bytes
+                : 10 * 1024 * 1024 * 1024           // 10 GB fallback
+            }
             fileCount={allFiles.length}
-            isLoading={isLoadingStats && isLoadingFiles}
+            isLoading={isLoadingFiles}
           />
 
           <CalloutCard
@@ -311,6 +332,14 @@ const StoragePage: FC = () => {
         </TwoColumnLayout.Aside>
       </TwoColumnLayout>
 
+      {/* FileViewer renders as a portal — always present, returns null when no file */}
+      <FileViewer
+        file={previewFile}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        files={visibleFiles as any}
+        onClose={() => setPreviewFile(null)}
+        onDownload={handleDownload}
+      />
     </div>
   );
 };

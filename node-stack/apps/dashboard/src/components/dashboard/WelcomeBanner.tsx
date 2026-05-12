@@ -51,7 +51,7 @@ const LiveClock: FC = () => {
 
   return (
     <div className="hidden sm:flex flex-col items-end gap-0.5 shrink-0 select-none">
-      <p className="text-[26px] sm:text-[30px] font-heading font-bold text-fg tabular-nums leading-none">
+      <p className="text-[26px] sm:text-[30px] font-heading text-fg tabular-nums leading-none">
         {hh}
         <span className="text-gray-200 dark:text-white/15 mx-0.5">:</span>
         {mm}
@@ -118,7 +118,7 @@ export const WelcomeBanner: FC<WelcomeBannerProps> = ({
         <p className="text-[10px] sm:text-[11px] font-semibold text-fg-muted uppercase  leading-none">
           {getGreeting()}
         </p>
-        <h2 className="text-[20px] sm:text-[24px] font-heading font-bold text-fg leading-tight mt-1">
+        <h2 className="text-[20px] sm:text-[24px] font-heading text-fg leading-tight mt-1">
           {firstName}
         </h2>
         <p className="hidden sm:block text-[12px] text-fg-muted italic mt-1.5 leading-relaxed line-clamp-1">

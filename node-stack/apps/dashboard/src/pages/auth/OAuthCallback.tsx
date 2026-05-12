@@ -1,12 +1,12 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useShallow } from "zustand/react/shallow";
-import { useQueryClient } from "@tanstack/react-query";
 
+import Loading from "@/components/ui/Loading";
 import { cookieTokenStorage, api } from "@/lib/api";
 import { queryKeys } from "@/lib/react-query/queryKeys";
 import { useAuthStore } from "@/stores/authStore";
-import Loading from "@/components/ui/Loading";
 
 export default function OAuthCallback() {
   const [searchParams] = useSearchParams();

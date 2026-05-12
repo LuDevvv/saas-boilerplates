@@ -1,6 +1,14 @@
 import type { GetPresignedUrlDto } from "@node-stack/types";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
+
+/** Strip characters the backend filename validator rejects */
+const sanitizeFileName = (name: string): string => {
+  const ext = name.lastIndexOf(".") >= 0 ? name.substring(name.lastIndexOf(".")) : "";
+  const base = name.substring(0, name.length - ext.length);
+  const safe = base.replace(/[^a-zA-Z0-9._\- ]/g, "_").replace(/_{2,}/g, "_").trim().substring(0, 90);
+  return (safe || "file") + ext;
+};
 
 import { useUploadStore } from "../stores/uploadStore";
 
@@ -80,8 +88,12 @@ export const useUploadFile = (
 
   const items = useUploadStore((s) => s.items);
   const inFlight = items.filter((it) => it.status === "uploading" || it.status === "queued");
-  const isUploading = inFlight.length > 0;
+  const storeIsUploading = inFlight.length > 0;
   const progress = inFlight.length > 0 ? Math.round(inFlight.reduce((a, b) => a + b.progress, 0) / inFlight.length) : 0;
+
+  // Silent mode bypasses the store so we track uploading state locally
+  const [silentCount, setSilentCount] = useState(0);
+  const isUploading = silent ? silentCount > 0 : storeIsUploading;
 
   const upload = useCallback(
     async (file: File): Promise<UploadResult | undefined> => {
@@ -95,9 +107,10 @@ export const useUploadFile = (
 
       // Silent mode: skip the global tray; use a plain XHR with no store interaction
       if (silent) {
+        setSilentCount((n) => n + 1);
         try {
           const { uploadUrl, fileUrl } = await api.storage.getUploadUrl({
-            fileName: file.name,
+            fileName: sanitizeFileName(file.name),
             mimeType: file.type,
             fileSize: file.size,
             context,
@@ -124,6 +137,8 @@ export const useUploadFile = (
           const message = (error as any)?.message || "No se pudo subir el archivo";
           appToast.error({ title: "Error de carga", description: message });
           throw error;
+        } finally {
+          setSilentCount((n) => Math.max(0, n - 1));
         }
       }
 
@@ -135,7 +150,7 @@ export const useUploadFile = (
         setProgress(itemId, 5);
 
         const { uploadUrl, fileUrl } = await api.storage.getUploadUrl({
-          fileName: file.name,
+          fileName: sanitizeFileName(file.name),
           mimeType: file.type,
           fileSize: file.size,
           context,

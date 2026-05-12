@@ -10,8 +10,8 @@ import { ThemeToggle } from "../ui/ThemeToggle";
 
 import { Logo } from "@/assets/logo/logo";
 import { accountDropdownItems } from "@/config/navigation";
-import { useAuth } from "@/hooks/stores/useAuth";
 import { useSubscription } from "@/features/billing/hooks/useBilling";
+import { useAuth } from "@/hooks/stores/useAuth";
 
 interface NavbarProps {
   onMenuClick?: () => void;

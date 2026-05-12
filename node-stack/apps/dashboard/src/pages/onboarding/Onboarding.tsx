@@ -1,4 +1,5 @@
 import { Button, Input, Select, PhoneInput } from "@node-stack/ui";
+import { AuthSidebar } from "@pages/auth/components/AuthSidebar";
 import { ArrowRight, ChevronLeft, User, Briefcase } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
@@ -8,7 +9,6 @@ import { useUpdateProfile } from "@/features/auth/hooks/useUpdateProfile";
 import { useCreateWorkspace, useWorkspaces } from "@/features/workspaces/hooks/useWorkspaces";
 import { useAuth } from "@/hooks/stores/useAuth";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
-import { AuthSidebar } from "@pages/auth/components/AuthSidebar";
 
 const Onboarding: React.FC = () => {
   const navigate = useNavigate();
