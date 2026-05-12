@@ -2,7 +2,7 @@
   "name": "node-stack",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@9.0.0",
+  "packageManager": "pnpm@9.7.0",
   "scripts": {
     "build": "turbo run build",
     "clean": "turbo run clean && find packages/ apps/ -name '*.tsbuildinfo' -delete 2>/dev/null; find packages/ apps/ -path '*/src/*' \\( -name '*.js' -o -name '*.js.map' -o -name '*.d.ts' -o -name '*.d.ts.map' \\) -delete 2>/dev/null; echo 'Clean complete'",

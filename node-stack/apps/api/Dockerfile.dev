@@ -1,49 +1,55 @@
 FROM node:20-alpine
 
-# Install pnpm and nest cli globally
-RUN npm install -g pnpm@9.0.0 @nestjs/cli
+# dumb-init: ensures PID 1 forwards signals correctly so `pnpm dev` can be
+# gracefully terminated with SIGTERM (avoids zombie processes on Ctrl-C / deploy)
+RUN apk add --no-cache dumb-init
+
+RUN npm install -g pnpm@9.7.0 @nestjs/cli
 
 WORKDIR /app
 
-# Copy root manifest, workspace config, and pnpm settings
+# ── Manifest layer (only re-runs when a package.json / lockfile changes) ───────
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY apps/api/package.json            ./apps/api/
+COPY apps/worker/package.json         ./apps/worker/
+COPY packages/cache/package.json      ./packages/cache/
+COPY packages/db/package.json         ./packages/db/
+COPY packages/billing-adapter/package.json  ./packages/billing-adapter/
+COPY packages/ai-adapter/package.json       ./packages/ai-adapter/
+COPY packages/api-client/package.json       ./packages/api-client/
+COPY packages/config/package.json           ./packages/config/
+COPY packages/emails/package.json           ./packages/emails/
+COPY packages/notifications/package.json    ./packages/notifications/
+COPY packages/outbox-queue/package.json     ./packages/outbox-queue/
+COPY packages/queue/package.json            ./packages/queue/
+COPY packages/services/package.json         ./packages/services/
+COPY packages/storage/package.json          ./packages/storage/
+COPY packages/types/package.json            ./packages/types/
+COPY packages/ui/package.json               ./packages/ui/
+COPY packages/utils/package.json            ./packages/utils/
+COPY packages/validators/package.json       ./packages/validators/
+COPY packages/webhooks-utils/package.json   ./packages/webhooks-utils/
 
-# Copy ALL package manifests for better Docker layer caching
-COPY apps/api/package.json ./apps/api/
-COPY apps/worker/package.json ./apps/worker/
-COPY packages/cache/package.json ./packages/cache/
-COPY packages/db/package.json ./packages/db/
-COPY packages/billing-adapter/package.json ./packages/billing-adapter/
-COPY packages/ai-adapter/package.json ./packages/ai-adapter/
-COPY packages/api-client/package.json ./packages/api-client/
-COPY packages/config/package.json ./packages/config/
-COPY packages/emails/package.json ./packages/emails/
-COPY packages/notifications/package.json ./packages/notifications/
-COPY packages/outbox-queue/package.json ./packages/outbox-queue/
-COPY packages/queue/package.json ./packages/queue/
-COPY packages/services/package.json ./packages/services/
-COPY packages/storage/package.json ./packages/storage/
-COPY packages/types/package.json ./packages/types/
-COPY packages/ui/package.json ./packages/ui/
-COPY packages/utils/package.json ./packages/utils/
-COPY packages/validators/package.json ./packages/validators/
-COPY packages/webhooks-utils/package.json ./packages/webhooks-utils/
-
-# Install dependencies (only manifest changes will trigger this layer)
 RUN pnpm install
 
-# Copy the rest of the application source code
+# Install sharp for server-side image thumbnail generation.
+# Installed via npm directly to avoid lockfile churn — sharp uses native binaries
+# that must be compiled for the target architecture (linux/amd64 in Docker).
+RUN npm install --prefix /usr/local sharp
+
+# Symlink sharp into pnpm's virtual store so NestJS can resolve it via ESM
+RUN ln -sf /usr/local/node_modules/sharp /app/node_modules/sharp 2>/dev/null || true
+
+# ── Source layer (re-runs when any source file changes) ────────────────────────
 COPY . .
 
 # Build all packages so apps can import from dist/
-# This is critical: apps import @node-stack/* from packages/*/dist/
 RUN pnpm --filter './packages/**' -r build || echo "Package build warnings (non-fatal in dev)"
 
-# Make bootstrap script executable
 RUN chmod +x ./apps/api/scripts/bootstrap.sh
 
 EXPOSE 4000
 
-# Use the bootstrap script as entrypoint to handle pre-start logic
-ENTRYPOINT ["./apps/api/scripts/bootstrap.sh"]
+# dumb-init wraps the bootstrap script so signals propagate to NestJS
+ENTRYPOINT ["dumb-init", "--", "./apps/api/scripts/bootstrap.sh"]
 CMD ["pnpm", "run", "dev"]

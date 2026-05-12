@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   postgres:
     image: postgres:15-alpine
@@ -21,6 +19,12 @@ services:
     restart: unless-stopped
     networks:
       - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 128M
 
   redis:
     image: redis:7-alpine
@@ -39,6 +43,12 @@ services:
     restart: unless-stopped
     networks:
       - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 64M
 
   api:
     build:
@@ -66,6 +76,12 @@ services:
       - WATCHPACK_POLLING=true
       - FORCE_COLOR=1
       # Storage credentials come from apps/api/.env (STORAGE_S3_* or STORAGE_PROVIDER=local)
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     depends_on:
       postgres:
         condition: service_healthy
@@ -73,6 +89,12 @@ services:
         condition: service_healthy
     networks:
       - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+        reservations:
+          memory: 256M
 
   worker:
     build:
@@ -103,6 +125,12 @@ services:
         condition: service_healthy
     networks:
       - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+        reservations:
+          memory: 128M
 
 volumes:
   postgres_data:
