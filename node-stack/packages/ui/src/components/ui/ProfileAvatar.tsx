@@ -15,29 +15,34 @@ interface ProfileAvatarProps {
   onError?: (error: { title: string; description: string }) => void;
   maxSizeMB?: number;
   className?: string;
+  /** Shows a spinner overlay while uploading a new image */
   isUploading?: boolean;
+  /** Shows a red spinner overlay while deleting the current image */
+  isDeleting?: boolean;
 }
 
 const sizeClasses = {
   sm: "h-12 w-12",
   md: "h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24",
-  lg: "h-24 w-24 sm:h-28 sm:w-28 lg:h-36 lg:w-36", // Smoother progression for tablet/desktop
+  lg: "h-24 w-24 sm:h-28 sm:w-28 lg:h-36 lg:w-36",
   xl: "h-32 w-32 sm:h-40 sm:w-40 lg:h-48 lg:w-48",
 };
 
-export const ProfileAvatar: FC<ProfileAvatarProps> = ({ 
-  src, 
-  fallback, 
-  size = "lg", 
-  isEditable = true, 
-  onImageChange, 
+export const ProfileAvatar: FC<ProfileAvatarProps> = ({
+  src,
+  fallback,
+  size = "lg",
+  isEditable = true,
+  onImageChange,
   onError,
   maxSizeMB = 5,
   className,
   isUploading = false,
+  isDeleting = false,
 }) => {
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isBusy = isUploading || isDeleting;
 
   useEffect(() => {
     setPreview(null);
@@ -45,13 +50,13 @@ export const ProfileAvatar: FC<ProfileAvatarProps> = ({
 
   const handleEditClick = (e: React.MouseEvent): void => {
     e.stopPropagation();
-    if (isUploading) return;
+    if (isBusy) return;
     fileInputRef.current?.click();
   };
 
   const handleRemoveClick = (e: React.MouseEvent): void => {
     e.stopPropagation();
-    if (isUploading) return;
+    if (isBusy) return;
     setPreview(null);
     onImageChange?.(null);
   };
@@ -63,7 +68,7 @@ export const ProfileAvatar: FC<ProfileAvatarProps> = ({
     if (file.size > maxSizeMB * 1024 * 1024) {
       onError?.({
         title: "Archivo demasiado grande",
-        description: `El tamaño máximo permitido es de ${maxSizeMB}MB.`
+        description: `El tamaño máximo permitido es de ${maxSizeMB}MB.`,
       });
       return;
     }
@@ -71,7 +76,7 @@ export const ProfileAvatar: FC<ProfileAvatarProps> = ({
     if (!file.type.startsWith("image/")) {
       onError?.({
         title: "Tipo de archivo no válido",
-        description: "Por favor, selecciona una imagen."
+        description: "Por favor, selecciona una imagen.",
       });
       return;
     }
@@ -83,39 +88,49 @@ export const ProfileAvatar: FC<ProfileAvatarProps> = ({
 
   return (
     <div className={cn("relative group/avatar shrink-0 select-none", className)}>
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        className="hidden" 
-        accept="image/*" 
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept="image/*"
         onChange={handleFileChange}
       />
-      
-      {/* 
-          Main Avatar Container 
-          - Overflow hidden is only here, NOT on the parent wrapper 
-      */}
-      <div className={cn(
-        "rounded-full border-2 border-border bg-surface-muted overflow-hidden relative flex items-center justify-center transition-all duration-300",
-        sizeClasses[size],
-        (isEditable && !isUploading) && "cursor-pointer"
-      )}>
+
+      {/* Main avatar container */}
+      <div
+        className={cn(
+          "rounded-full border-2 border-border bg-surface-muted overflow-hidden relative flex items-center justify-center transition-all duration-300",
+          sizeClasses[size],
+          isEditable && !isBusy && "cursor-pointer",
+        )}
+      >
         <Avatar className="h-full w-full rounded-full border-none">
-          <AvatarImage src={preview || src || ""} className="object-cover rounded-full h-full w-full" />
+          <AvatarImage
+            src={preview || src || ""}
+            className="object-cover rounded-full h-full w-full"
+          />
           <AvatarFallback className="text-3xl sm:text-4xl md:text-5xl bg-primary/10 font-black text-primary uppercase rounded-full">
             {fallback?.[0] || "?"}
           </AvatarFallback>
         </Avatar>
 
-        {/* Loading Overlay */}
-        {isUploading && (
+        {/* Upload loading overlay */}
+        {isUploading && !isDeleting && (
           <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] flex items-center justify-center z-30">
             <Loader2 className="h-8 w-8 text-white animate-spin" />
           </div>
         )}
 
-        {/* Desktop Hover Overlay */}
-        {isEditable && !isUploading && (
+        {/* Delete loading overlay — red tint to signal destructive action */}
+        {isDeleting && (
+          <div className="absolute inset-0 bg-red-600/60 backdrop-blur-[2px] flex flex-col items-center justify-center gap-1.5 z-30">
+            <Loader2 className="h-7 w-7 text-white animate-spin" />
+            <span className="text-white text-[10px] font-medium">Eliminando</span>
+          </div>
+        )}
+
+        {/* Desktop hover overlay (camera icon) */}
+        {isEditable && !isBusy && (
           <div
             onClick={handleEditClick}
             className="hidden md:flex absolute inset-0 bg-black/20 opacity-0 group-hover/avatar:opacity-100 transition-all duration-300 items-center justify-center backdrop-blur-[1px] z-10 rounded-full"
@@ -127,11 +142,8 @@ export const ProfileAvatar: FC<ProfileAvatarProps> = ({
         )}
       </div>
 
-      {/* 
-          Floating Controls (Mobile & Tablet) 
-          - Now living outside the overflow-hidden container to prevent clipping 
-      */}
-      {isEditable && (
+      {/* Mobile & tablet floating controls */}
+      {isEditable && !isBusy && (
         <div className="absolute bottom-0 right-0 flex flex-col gap-2 md:hidden z-20">
           <button
             onClick={handleEditClick}
@@ -153,8 +165,8 @@ export const ProfileAvatar: FC<ProfileAvatarProps> = ({
         </div>
       )}
 
-      {/* Desktop Quick Delete */}
-      {isEditable && (preview || src) && (
+      {/* Desktop quick-delete button (hover-revealed) */}
+      {isEditable && !isBusy && (preview || src) && (
         <button
           onClick={handleRemoveClick}
           className="hidden md:flex absolute top-1 right-1 h-8 w-8 rounded-full bg-red-500 text-white border-2 border-surface shadow-lg items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-all duration-300 hover:scale-110 active:scale-90 z-20"
