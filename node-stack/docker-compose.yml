@@ -40,41 +40,6 @@ services:
     networks:
       - app-network
 
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: ${PROJECT_NAME:-node-stack}-pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "5050:80"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    depends_on:
-      postgres:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-    restart: unless-stopped
-    networks:
-      - app-network
-
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    container_name: ${PROJECT_NAME:-node-stack}-jaeger
-    ports:
-      - "16686:16686" # UI
-      - "4318:4318" # OTLP HTTP
-    environment:
-      COLLECTOR_OTLP_ENABLED: "true"
-    restart: unless-stopped
-    networks:
-      - app-network
-
   api:
     build:
       context: .
@@ -97,7 +62,6 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - NODE_ENV=development
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
       - FORCE_COLOR=1
@@ -123,7 +87,6 @@ services:
       - REDIS_URL=redis://redis:6379
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
@@ -145,8 +108,6 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
-    driver: local
-  pgadmin_data:
     driver: local
   # Named volumes for node_modules — prevents host Windows symlinks from contaminating containers
   # IMPORTANT: Run `docker compose down -v` when you change dependencies to recreate these
