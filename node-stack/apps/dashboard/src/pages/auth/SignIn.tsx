@@ -66,7 +66,13 @@ const SignInPage = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/");
+      // If there's a pending invitation token, return to that page first
+      const pendingInvitation = sessionStorage.getItem("pending_invitation");
+      if (pendingInvitation) {
+        navigate(`/invitations/${pendingInvitation}`, { replace: true });
+      } else {
+        navigate("/");
+      }
     }
   }, [isAuthenticated, navigate]);
 

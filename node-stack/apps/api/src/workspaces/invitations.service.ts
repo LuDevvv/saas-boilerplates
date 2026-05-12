@@ -23,6 +23,7 @@ import type { Database } from "@node-stack/db";
 import type { InviteMemberDto } from "@node-stack/validators";
 import { NodePgDatabase } from "drizzle-orm/node-postgres";
 
+import { PlanLimitsService } from "@/billing/plan-limits.service.js";
 import { OutboxService } from "@/common/services/outbox.service.js";
 
 @Injectable()
@@ -33,6 +34,7 @@ export class InvitationsService {
     private readonly userRepo: UserRepository,
     private readonly auditLog: AuditLogRepository,
     private readonly outbox: OutboxService,
+    private readonly planLimits: PlanLimitsService,
     @Inject(DB_TOKEN) private readonly db: Database,
   ) {}
 
@@ -41,6 +43,9 @@ export class InvitationsService {
     dto: InviteMemberDto,
     invitedById: string,
   ): Promise<unknown> {
+    // Enforce member limit before opening the transaction
+    await this.planLimits.assertMemberLimit(workspaceId);
+
     return withTenantTx(workspaceId, async (tx: NodePgDatabase<typeof schema>) => {
       const workspace = await this.workspaceRepo.findById(workspaceId, tx);
       if (!workspace) throw new NotFoundException("Workspace not found");
@@ -90,7 +95,7 @@ export class InvitationsService {
         tx,
       );
 
-      const link = `${process.env.APP_URL || "http://localhost:4000"}/workspace-invitations/${token}/accept`;
+      const link = `${process.env.FRONTEND_URL || "http://localhost:5173"}/invitations/${token}`;
 
       return {
         invitationId: newInvitation.id,
@@ -142,6 +147,17 @@ export class InvitationsService {
   }
 
   async acceptInvitation(token: string, currentUserId: string): Promise<unknown> {
+    // Pre-flight: resolve workspace from token (workspaceInvitations is not RLS-protected)
+    // and enforce the member limit BEFORE opening the system transaction.
+    // We can't nest withTenantTx inside withSystemTx, so this check happens here.
+    const pendingInvite = await this.db.query.workspaceInvitations.findFirst({
+      where: (inv, { eq: eqOp }) => eqOp(inv.token, token),
+      columns: { workspaceId: true, status: true },
+    });
+    if (pendingInvite?.status === "pending" && pendingInvite.workspaceId) {
+      await this.planLimits.assertMemberLimit(pendingInvite.workspaceId);
+    }
+
     // Cross-tenant: the token resolves to a workspace we don't know yet.
     // withSystemTx for the lookup + atomic membership creation. The email
     // match against currentUser is the security boundary inside.
@@ -178,6 +194,16 @@ export class InvitationsService {
       }, tx);
 
       await this.invitationRepo.update(lockedInvitation.id, { status: "accepted" }, tx);
+
+      // Invited users join an existing workspace — they skip workspace creation
+      // and pricing onboarding. Mark their onboarding as completed so the
+      // ProtectedRoute guard doesn't bounce them to /onboarding.
+      if (currentUser.onboardingStatus !== "completed") {
+        await tx
+          .update(schema.users)
+          .set({ onboardingStatus: "completed" })
+          .where(eq(schema.users.id, currentUserId));
+      }
 
       await this.outbox.createEvent("invitation.accepted", {
         invitationId: lockedInvitation.id,

@@ -75,7 +75,14 @@ export const useVerifyEmail = () => {
       cookieTokenStorage.setToken(accessToken);
       if (refreshToken) cookieTokenStorage.setRefreshToken(refreshToken);
       queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
-      navigate("/onboarding");
+      // If the user registered via an invitation link, return to that page
+      // so they can accept the invitation instead of going through onboarding.
+      const pendingInvitation = sessionStorage.getItem("pending_invitation");
+      if (pendingInvitation) {
+        navigate(`/invitations/${pendingInvitation}`, { replace: true });
+      } else {
+        navigate("/onboarding");
+      }
     },
   });
 };
