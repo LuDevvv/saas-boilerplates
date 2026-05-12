@@ -23,6 +23,11 @@ export class S3StorageProvider implements IStorageProvider {
         secretAccessKey: config.secretAccessKey,
       },
       forcePathStyle: !!config.endpoint,
+      // Disable automatic CRC32 checksums injected by AWS SDK v3 into presigned
+      // URLs. R2 (and many S3-compatible providers) reject PUTs when the signed
+      // checksum header is missing from the actual browser request.
+      requestChecksumCalculation: "WHEN_REQUIRED",
+      responseChecksumValidation: "WHEN_REQUIRED",
     });
   }
 
