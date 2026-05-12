@@ -176,7 +176,7 @@ export const UpdateProfileSchema = z.object({
   firstName: z.string().min(2).max(100).optional().describe("User's first name"),
   lastName: z.string().max(100).optional().describe("User's last name"),
   phone: z.string().min(5).max(20).optional().describe("User's phone number"),
-  avatarUrl: z.string().url().optional().describe("User's avatar URL"),
+  avatarUrl: z.string().url().nullable().optional().describe("User's avatar URL. Pass null to remove."),
   jobTitle: z.string().max(100).optional().describe("User's job title within their company"),
 });
 export class UpdateProfileDto extends createZodDto(UpdateProfileSchema) {
@@ -190,7 +190,7 @@ export class UpdateProfileDto extends createZodDto(UpdateProfileSchema) {
   declare phone?: string;
 
   @ApiProperty({ example: "https://example.com/avatar.png", required: false })
-  declare avatarUrl?: string;
+  declare avatarUrl?: string | null;
 
   @ApiProperty({ example: "Founder", required: false })
   declare jobTitle?: string;

@@ -38,6 +38,8 @@ export const files = pgTable(
     size: integer("size").notNull(),
     provider: fileProviderEnum("provider").notNull(),
     status: fileStatusEnum("status").notNull().default("pending"),
+    /** CDN/public URL of the server-generated WebP thumbnail (max 400 px wide). Null for non-image files. */
+    thumbnailUrl: text("thumbnail_url"),
     metadata: jsonb("metadata"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")

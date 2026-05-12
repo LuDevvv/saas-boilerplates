@@ -1,7 +1,7 @@
 "use client";
 
 import { Trash2, Camera, Loader2 } from "lucide-react";
-import { FC, useRef, useState, useEffect } from "react";
+import { FC, useRef } from "react";
 
 import { Avatar, AvatarImage, AvatarFallback } from "./Avatar.js";
 import { cn } from "../../utils.js";
@@ -40,13 +40,8 @@ export const ProfileAvatar: FC<ProfileAvatarProps> = ({
   isUploading = false,
   isDeleting = false,
 }) => {
-  const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isBusy = isUploading || isDeleting;
-
-  useEffect(() => {
-    setPreview(null);
-  }, [src]);
 
   const handleEditClick = (e: React.MouseEvent): void => {
     e.stopPropagation();
@@ -57,13 +52,14 @@ export const ProfileAvatar: FC<ProfileAvatarProps> = ({
   const handleRemoveClick = (e: React.MouseEvent): void => {
     e.stopPropagation();
     if (isBusy) return;
-    setPreview(null);
     onImageChange?.(null);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Reset input so the same file can be re-selected after an error
+    e.target.value = "";
 
     if (file.size > maxSizeMB * 1024 * 1024) {
       onError?.({
@@ -81,8 +77,9 @@ export const ProfileAvatar: FC<ProfileAvatarProps> = ({
       return;
     }
 
-    const objectUrl = URL.createObjectURL(file);
-    setPreview(objectUrl);
+    // Pass the file to the parent — the parent controls the displayed image
+    // via the `src` prop. We don't create an optimistic preview to avoid
+    // showing a stale blob URL if the upload fails.
     onImageChange?.(file);
   };
 
@@ -106,7 +103,9 @@ export const ProfileAvatar: FC<ProfileAvatarProps> = ({
       >
         <Avatar className="h-full w-full rounded-full border-none">
           <AvatarImage
-            src={preview || src || ""}
+            src={src || ""}
+            loading="lazy"
+            decoding="async"
             className="object-cover rounded-full h-full w-full"
           />
           <AvatarFallback className="text-3xl sm:text-4xl md:text-5xl bg-primary/10 font-black text-primary uppercase rounded-full">
@@ -153,7 +152,7 @@ export const ProfileAvatar: FC<ProfileAvatarProps> = ({
             <Camera className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>
 
-          {(preview || src) && (
+          {!!src && (
             <button
               onClick={handleRemoveClick}
               type="button"
@@ -166,7 +165,7 @@ export const ProfileAvatar: FC<ProfileAvatarProps> = ({
       )}
 
       {/* Desktop quick-delete button (hover-revealed) */}
-      {isEditable && !isBusy && (preview || src) && (
+      {isEditable && !isBusy && !!src && (
         <button
           onClick={handleRemoveClick}
           className="hidden md:flex absolute top-1 right-1 h-8 w-8 rounded-full bg-red-500 text-white border-2 border-surface shadow-lg items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-all duration-300 hover:scale-110 active:scale-90 z-20"

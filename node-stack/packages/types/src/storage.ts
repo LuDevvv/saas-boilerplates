@@ -20,6 +20,8 @@ export interface FileInfo {
   id: string;
   name: string;
   url: string;
+  /** WebP thumbnail URL (≤400 px wide). Present for image files only. */
+  thumbnailUrl?: string | null;
   size: number;
   type: string;
   status: string;

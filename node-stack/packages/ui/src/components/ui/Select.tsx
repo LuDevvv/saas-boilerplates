@@ -106,12 +106,24 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
         ref={containerRef}
       >
         {label && (
-          <label className="flex items-center justify-between px-1">
-            <span className="text-[11px] font-label uppercase  text-[#64748B] transition-colors group-focus-within:text-[#004080] dark:text-[#94A3B8] dark:group-focus-within:text-[#00E6E6]">
+          <label className="flex items-baseline justify-between px-1 mb-1.5">
+            <span className="text-[13px] font-medium text-fg-secondary transition-colors group-focus-within:text-primary">
               {label}
-              {required && <span className="text-[#EF4F5F] ml-1">*</span>}
+              {required && <span className="text-danger ml-1">*</span>}
             </span>
           </label>
+        )}
+
+        {/* Hidden input for native HTML5 form validation */}
+        {required && (
+          <input
+            type="text"
+            required={required}
+            value={value}
+            onChange={() => {}}
+            className="absolute opacity-0 w-full h-full -z-10 pointer-events-none"
+            tabIndex={-1}
+          />
         )}
 
         <div className="relative">
@@ -119,36 +131,38 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
           <button
             type="button"
             onClick={() => !disabled && setIsOpen(!isOpen)}
-            style={{ backgroundColor: "var(--canvas)", color: "inherit" }}
             className={cn(
-              "w-full h-12 flex items-center gap-3 text-[14px] font-label border rounded-2xl transition-all",
-              icon ? "pl-11" : "pl-6",
+              "flex h-12 w-full py-2 text-sm font-medium text-fg outline-none transition-all duration-300 relative items-center text-left",
               "pr-12",
-              disabled && "opacity-50 cursor-not-allowed grayscale-[0.5]",
+              icon ? "pl-11" : "pl-4",
+              "bg-surface",
+              "border border-border rounded-xl",
+              "focus:outline-none focus:border-primary",
+              "disabled:opacity-50 disabled:cursor-not-allowed",
               error
-                ? "border-[#EF4F5F] focus:border-[#EF4F5F]"
-                : "border-border hover:border-gray-300 dark:hover:border-white/20 focus:border-blue-600 dark:focus:border-blue-400",
-              isOpen && "border-blue-600 dark:border-blue-400",
+                ? "border-danger focus:border-danger"
+                : "",
+              isOpen && "border-primary",
               className
             )}
           >
             {icon && (
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-fg-muted group-focus-within:text-blue-600 dark:group-focus-within:text-blue-400">
+              <div className="absolute left-4 top-1/2 z-10 -translate-y-1/2 pointer-events-none text-fg-muted group-focus-within:text-primary transition-colors duration-300 flex items-center justify-center">
                 {renderIcon(icon)}
               </div>
             )}
             <span
               className={cn(
-                "flex-1 text-left truncate text-fg",
-                !selectedOption && "text-[#64748B]/50"
+                "flex-1 truncate",
+                !selectedOption ? "text-fg-muted font-normal" : "text-fg font-medium"
               )}
             >
               {selectedOption ? selectedOption.label : placeholder}
             </span>
             <ChevronDown
               className={cn(
-                "w-4 h-4 text-[#64748B] dark:text-[#94A3B8] transition-transform duration-300 absolute right-4 top-1/2 -translate-y-1/2",
-                isOpen && "rotate-180 text-[#004080] dark:text-[#00E6E6]"
+                "w-4 h-4 text-fg-muted transition-transform duration-300 absolute right-4 top-1/2 -translate-y-1/2",
+                isOpen && "rotate-180 text-primary"
               )}
             />
           </button>
@@ -156,17 +170,17 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
           {/* Dropdown Menu */}
           {isOpen && (
             <div
-              className="absolute top-full left-0 right-0 mt-2 bg-surface-elevated border border-border rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] z-[999] animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
+              className="absolute top-full left-0 right-0 mt-2 bg-surface-elevated border border-border rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] z-[999] animate-in fade-in zoom-in-95 duration-200 overflow-hidden"
             >
               {searchable && (
-                <div className="p-3.5 bg-slate-50/50 dark:bg-white/[0.02] border-b border-border-subtle">
+                <div className="p-3.5 bg-surface-muted/50 border-b border-border-subtle">
                   <div className="relative">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-fg-muted" />
                     <input
                       ref={searchInputRef}
                       type="text"
-                      className="w-full bg-white dark:bg-slate-900 border border-border rounded-xl py-2.5 pl-10 pr-4 text-[13px] font-medium focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 dark:focus:border-blue-400 text-fg placeholder:text-gray-400 transition-all"
-                      placeholder="Buscar sector..."
+                      className="w-full bg-surface border border-border rounded-xl py-2.5 pl-10 pr-4 text-[13px] font-medium focus:outline-none focus:border-primary text-fg placeholder:text-fg-muted transition-all"
+                      placeholder="Buscar..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -184,8 +198,8 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
                       className={cn(
                         "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-all duration-200",
                         value === option.value
-                          ? "bg-[#004080]/5 dark:bg-[#00E6E6]/5 text-[#004080] dark:text-[#00E6E6] font-heading"
-                          : "text-[#64748B] dark:text-[#94A3B8] hover:bg-[#F8FAFC] dark:hover:bg-[#FFFFFF]/5"
+                          ? "bg-primary/5 text-primary font-heading"
+                          : "text-fg-secondary hover:bg-surface-muted"
                       )}
                     >
                       <div className="flex items-center gap-3">
@@ -208,8 +222,8 @@ export const Select = React.forwardRef<HTMLDivElement, SelectProps>(
         {(error || helperText) && (
           <p
             className={cn(
-              "px-1 text-[11px] font-label uppercase  animate-in fade-in slide-in-from-top-1",
-              error ? "text-[#EF4F5F]" : "text-[#64748B] dark:text-[#94A3B8]"
+              "px-1 text-[12px] font-medium animate-in fade-in slide-in-from-top-1 duration-300",
+              error ? "text-danger" : "text-fg-muted"
             )}
           >
             {error || helperText}

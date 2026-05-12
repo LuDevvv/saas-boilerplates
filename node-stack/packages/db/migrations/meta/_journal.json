@@ -169,6 +169,13 @@
       "when": 1747008000000,
       "tag": "0023_onboarding_marketing_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1747526400000,
+      "tag": "0024_storage_thumbnail_url",
+      "breakpoints": true
     }
   ]
 }

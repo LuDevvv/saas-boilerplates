@@ -122,7 +122,7 @@ export const PhoneInput = ({
       <div
         className={cn(
           "relative flex items-stretch h-12 transition-all duration-300",
-          "bg-surface-muted border border-border rounded-xl",
+          "bg-surface border border-border rounded-xl",
           "focus-within:outline-none focus-within:border-primary",
           disabled && "opacity-50 cursor-not-allowed",
           error ? "border-danger focus-within:border-danger" : "",
@@ -148,6 +148,7 @@ export const PhoneInput = ({
           ref={phoneInputRef}
           type="tel"
           disabled={disabled}
+          required={required}
           value={phoneNumber}
           onChange={handlePhoneChange}
           placeholder="(555) 123-4567"
@@ -159,7 +160,7 @@ export const PhoneInput = ({
         <p
           className={cn(
             "px-1 text-[12px] font-medium animate-in fade-in slide-in-from-top-1 duration-300",
-            error ? "text-danger" : "text-fg-secondary"
+            error ? "text-danger" : "text-fg-muted"
           )}
         >
           {error || helperText}

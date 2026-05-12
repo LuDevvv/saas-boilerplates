@@ -49,6 +49,18 @@ export class FileRepository {
     return result;
   }
 
+  async updateThumbnailUrl(
+    id: string,
+    thumbnailUrl: string,
+    tx?: Database,
+  ): Promise<void> {
+    const database = tx ?? this.db;
+    await database
+      .update(files)
+      .set({ thumbnailUrl, updatedAt: new Date() })
+      .where(eq(files.id, id));
+  }
+
   async listByWorkspace(workspaceId: string, tx?: Database): Promise<File[]> {
     const database = tx ?? this.db;
     return await database
