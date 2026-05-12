@@ -1,63 +1,77 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Preview,
-  Section,
-  Text,
-  Link,
-  Tailwind,
-  Hr,
-} from "@react-email/components";
+import { Button, Heading, Section, Text } from "@react-email/components";
 import * as React from "react";
+
+import { BaseLayout, IconCircle } from "./BaseLayout.js";
 
 interface WelcomeEmailProps {
   name: string;
-  loginUrl: string;
+  dashboardUrl?: string;
+  loginUrl?: string;
 }
 
-export const WelcomeEmail = ({ name, loginUrl }: WelcomeEmailProps): React.ReactElement => {
+const FEATURES = [
+  { icon: "📊", text: "Gestiona tu empresa y equipo desde un solo lugar" },
+  { icon: "🔑", text: "Administra accesos y permisos de tu equipo" },
+  { icon: "💳", text: "Elige el plan que mejor se adapte a tu negocio" },
+];
+
+export const WelcomeEmail = ({
+  name,
+  dashboardUrl,
+  loginUrl,
+}: WelcomeEmailProps): React.ReactElement => {
+  const ctaUrl = dashboardUrl ?? loginUrl ?? "https://app.nodestack.dev";
+
   return (
-    <Html>
-      <Head />
-      <Preview>Welcome to NodeStack, {name}!</Preview>
-      <Tailwind>
-        <Body className="bg-slate-50 font-sans">
-          <Container className="mx-auto my-10 max-w-[580px] rounded-xl border border-solid border-slate-200 bg-white p-10 shadow-sm">
-            <Heading className="mb-6 text-2xl font-heading text-slate-900">
-              Welcome to NodeStack
-            </Heading>
-            <Section className="mb-6">
-              <Text className="text-base leading-relaxed text-slate-700">
-                Hi {name},
-              </Text>
-              <Text className="text-base leading-relaxed text-slate-700">
-                We're thrilled to have you here! Your journey with NodeStack starts now.
-                We've built a powerful toolkit to help you ship products faster, and we can't wait to see what you create.
-              </Text>
-            </Section>
-            <Section className="mb-8">
-              <Link
-                href={loginUrl}
-                className="rounded-lg bg-indigo-600 px-6 py-3 text-center text-sm font-label text-white no-underline shadow-md transition-all hover:bg-indigo-700"              >
-                Go to Dashboard
-              </Link>
-            </Section>
-            <Hr className="mb-6 border-slate-200" />
-            <Section>
-              <Text className="text-xs text-slate-500">
-                © 2024 NodeStack Inc. All rights reserved.
-              </Text>
-              <Text className="text-xs text-slate-500">
-                You're receiving this because you signed up for NodeStack.
-              </Text>
-            </Section>
-          </Container>
-        </Body>
-      </Tailwind>
-    </Html>
+    <BaseLayout
+      preview={`¡Bienvenido a NodeStack, ${name}! Tu cuenta está lista.`}
+      securityNote="Si no creaste esta cuenta, puedes ignorar este correo de forma segura."
+    >
+      <IconCircle emoji="✅" bg="#F0FDF4" />
+
+      <Heading style={{ fontSize: "28px", fontWeight: 700, color: "#0F172A", textAlign: "center", margin: "0 0 8px 0", lineHeight: "1.3" }}>
+        ¡Bienvenido, {name}!
+      </Heading>
+      <Text style={{ fontSize: "16px", color: "#64748B", textAlign: "center", margin: "0 0 32px 0", lineHeight: "1.6" }}>
+        Tu correo fue verificado. Ya puedes acceder a tu cuenta<br />y comenzar a configurar tu empresa.
+      </Text>
+
+      {/* CTA */}
+      <Section style={{ textAlign: "center", marginBottom: "32px" }}>
+        <Button
+          href={ctaUrl}
+          style={{
+            backgroundColor: "#4F46E5",
+            borderRadius: "10px",
+            color: "#ffffff",
+            display: "inline-block",
+            fontSize: "15px",
+            fontWeight: 600,
+            padding: "14px 48px",
+            textDecoration: "none",
+          }}
+        >
+          Ir al panel →
+        </Button>
+      </Section>
+
+      {/* Features */}
+      <Section style={{
+        backgroundColor: "#F8FAFC",
+        borderRadius: "12px",
+        border: "1px solid #E2E8F0",
+        padding: "20px 24px",
+      }}>
+        <Text style={{ fontSize: "12px", fontWeight: 700, color: "#94A3B8", letterSpacing: "0.08em", textTransform: "uppercase", margin: "0 0 14px 0" }}>
+          Qué puedes hacer ahora
+        </Text>
+        {FEATURES.map((f, i) => (
+          <Text key={i} style={{ fontSize: "14px", color: "#475569", margin: "0 0 8px 0", lineHeight: "1.5" }}>
+            {f.icon}&nbsp; {f.text}
+          </Text>
+        ))}
+      </Section>
+    </BaseLayout>
   );
 };
 
