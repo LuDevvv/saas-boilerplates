@@ -162,7 +162,7 @@ export class PolarProvider implements PaymentProvider {
   async upgradeSubscription(subscriptionId: string, productId: string): Promise<void> {
     await this.client.subscriptions.update({
       id: subscriptionId,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
       subscriptionUpdate: { productId } as any,
     });
   }
@@ -237,6 +237,24 @@ export class PolarProvider implements PaymentProvider {
     return this.mapSubscription(sub as unknown as PolarSubscriptionLike);
   }
 
+  async findCustomersByEmail(email: string): Promise<Customer[]> {
+    const result = await this.client.customers.list({ email, limit: 5 });
+    const items = (result.result?.items ?? []) as PolarCustomerLike[];
+    return items.map((c) => ({
+      id: c.id,
+      email: c.email ?? email,
+      name: c.name ?? undefined,
+      createdAt: new Date(c.createdAt),
+      metadata: c.metadata as Record<string, string> | undefined,
+    }));
+  }
+
+  async listSubscriptionsByCustomer(customerId: string): Promise<Subscription[]> {
+    const result = await this.client.subscriptions.list({ customerId, limit: 20 });
+    const items = (result.result?.items ?? []) as PolarSubscriptionLike[];
+    return items.map((s) => this.mapSubscription(s));
+  }
+
   // ─── Checkout ─────────────────────────────────────────────────────────
 
   async createCheckoutSession(data: CheckoutData): Promise<CheckoutUrl> {
@@ -253,17 +271,17 @@ export class PolarProvider implements PaymentProvider {
       ...(data.email && { customerEmail: data.email }),
       ...(data.name && { customerName: data.name }),
       ...(data.billingCountry && {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
         customerBillingAddress: { country: data.billingCountry as any },
       }),
       // Required for embedded checkout iframe ↔ parent page messaging
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
       ...(data.embedOrigin && { embedOrigin: data.embedOrigin as any }),
       // Checkout localization (Polar beta feature — no-op if not enabled for the org)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
       ...(data.locale && { locale: data.locale as any }),
       // Show discount code input in the checkout form
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
       allowDiscountCodes: (data.allowDiscountCodes ?? true) as any,
       metadata: data.metadata ?? {},
     });
@@ -367,12 +385,15 @@ export class PolarProvider implements PaymentProvider {
       past_due: "past_due",
       canceled: "canceled",
       cancelled: "canceled",
+      revoked: "canceled",
       unpaid: "unpaid",
       paused: "paused",
       incomplete: "unpaid",
       incomplete_expired: "canceled",
     };
-    return statusMap[status] ?? "active";
+    // Default to "canceled" for any unknown terminal state — never "active".
+    // This prevents revoked/unknown subscriptions from appearing as active.
+    return statusMap[status] ?? "canceled";
   }
 
   private mapEventType(type?: string): WebhookEventType {
@@ -385,6 +406,7 @@ export class PolarProvider implements PaymentProvider {
       "subscription.revoked": "subscription.canceled",
       "order.created": "payment.succeeded",
       "checkout.created": "payment.succeeded",
+      "checkout.updated": "payment.succeeded",
     };
     return typeMap[type ?? ""] ?? ("subscription.updated" as WebhookEventType);
   }

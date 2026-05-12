@@ -18,7 +18,7 @@ const ROLE_LABELS: Record<string, string> = {
   guest: "Invitado",
 };
 
-const roleLabel = (role: string) =>
+const roleLabel = (role: string): string =>
   ROLE_LABELS[role.toLowerCase()] ?? role;
 
 export const InvitationEmail = ({

@@ -3,6 +3,11 @@ export * from "./providers/ses.provider.js";
 export * from "./providers/resend.provider.js";
 export * from "./providers/console.provider.js";
 export * from "./render.js";
+export { WelcomeEmail } from "./templates/WelcomeEmail.js";
+export { InvitationEmail } from "./templates/InvitationEmail.js";
+export { OtpVerificationEmail } from "./templates/OtpVerificationEmail.js";
+export { PasswordResetEmail } from "./templates/PasswordResetEmail.js";
+export { PasswordChangedEmail } from "./templates/PasswordChangedEmail.js";
 
 import { ConsoleProvider } from "./providers/console.provider.js";
 import { ResendProvider } from "./providers/resend.provider.js";
@@ -47,39 +52,67 @@ export class EmailSender {
   }
 
   /**
-   * @deprecated Use the new provider pattern or NotificationService
+   * Send a typed email using a React Email template.
+   * In non-production environments, emails are redirected to TEST_EMAIL_ADDRESS
+   * (or delivered@resend.dev) and the subject is prefixed with [DEV].
+   */
+  async sendTyped(
+    to: string,
+    subject: string,
+    template: EmailTemplate,
+    from?: string,
+  ): Promise<void> {
+    const actualFrom = from ?? process.env.EMAIL_FROM ?? "noreply@nodestack.local";
+
+    let actualTo = to;
+    let actualSubject = subject;
+    if (process.env.NODE_ENV !== "production") {
+      // Use || not ?? — TEST_EMAIL_ADDRESS="" (empty string) should fall through to the default
+      actualTo = process.env.TEST_EMAIL_ADDRESS || "delivered@resend.dev";
+      actualSubject = `[DEV] ${actualSubject}`;
+    }
+
+    const { html, text } = await renderEmail(template);
+    await this.provider.sendEmail({
+      to: actualTo,
+      from: actualFrom,
+      subject: actualSubject,
+      html,
+      text,
+    });
+  }
+
+  /**
+   * @deprecated Use sendTyped() instead.
    */
   public async sendEmail(options: LegacyEmailOptions): Promise<void> {
     const defaultFromField = process.env.EMAIL_FROM || "noreply@nodestack.local";
     let { to, subject, templateName, templateData, from = defaultFromField } = options;
 
-    // En desarrollo, desviar correos a un correo de prueba seguro si está configurado, o al de resend
     if (process.env.NODE_ENV !== "production") {
       to = process.env.TEST_EMAIL_ADDRESS || "delivered@resend.dev";
       subject = `[DEV] ${subject}`;
     }
 
-    // Map old names to new types for compatibility during migration
     let mappedTemplate: EmailTemplate | null = null;
     if (templateName === "welcome") {
-      mappedTemplate = { name: "WELCOME", data: { name: String(templateData.name ?? ""), loginUrl: String(templateData.loginUrl ?? "#") } };
+      mappedTemplate = {
+        name: "WELCOME",
+        data: {
+          name: String(templateData.name ?? ""),
+          dashboardUrl: String(templateData.loginUrl ?? "#"),
+        },
+      };
     }
 
     if (mappedTemplate) {
       const { html, text } = await renderEmail(mappedTemplate);
-      await this.provider.sendEmail({
-        to,
-        subject,
-        html,
-        text,
-        from,
-      });
+      await this.provider.sendEmail({ to, subject, html, text, from });
     } else {
-      // Fallback for non-migrated templates
       await this.provider.sendEmail({
         to,
         subject,
-        html: `Fallback template for ${templateName}`,
+        html: `<p>Fallback template for ${templateName}</p>`,
         from,
       });
     }

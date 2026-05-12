@@ -77,6 +77,14 @@ export class MockProvider implements PaymentProvider {
     ];
   }
 
+  async findCustomersByEmail(_email: string): Promise<Customer[]> {
+    return [];
+  }
+
+  async listSubscriptionsByCustomer(_customerId: string): Promise<Subscription[]> {
+    return [];
+  }
+
   async getSubscription(subscriptionId: string): Promise<Subscription> {
     return {
       id: subscriptionId,

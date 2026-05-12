@@ -98,6 +98,10 @@ export interface PaymentProvider {
   upgradeSubscription(subscriptionId: string, productId: string): Promise<void>;
   uncancelSubscription(subscriptionId: string): Promise<void>;
   getSubscription(subscriptionId: string): Promise<Subscription>;
+  /** Find provider customers by email address. Used to bootstrap DB records when webhooks failed. */
+  findCustomersByEmail(email: string): Promise<Customer[]>;
+  /** List all subscriptions for a given provider customer ID. */
+  listSubscriptionsByCustomer(customerId: string): Promise<Subscription[]>;
   createCheckoutSession(data: CheckoutData): Promise<CheckoutUrl>;
   createCustomerSession(customerId: string): Promise<{ token: string; customerPortalUrl?: string }>;
   listOrders(customerSessionToken: string, limit?: number): Promise<BillingOrder[]>;

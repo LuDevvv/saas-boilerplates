@@ -51,6 +51,19 @@ export const billing = (client: AxiosInstance) => ({
     return r as unknown as BillingSubscription;
   },
 
+  getUsage: async (): Promise<{
+    planId: string | null;
+    features: Record<string, boolean>;
+    metrics: Array<{ key: string; label: string; used: number; limit: number | null; unit: string }>;
+  }> => {
+    const r = await client.get("/billing/usage");
+    return r as unknown as {
+      planId: string | null;
+      features: Record<string, boolean>;
+      metrics: Array<{ key: string; label: string; used: number; limit: number | null; unit: string }>;
+    };
+  },
+
   getPlans: async (): Promise<BillingPlan[]> => {
     const r = await client.get("/billing/plans");
     return r as unknown as BillingPlan[];
