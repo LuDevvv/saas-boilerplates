@@ -50,7 +50,7 @@
                          "@node-stack/utils": "workspace:*",
                          "@nestjs/common":  "latest",
                          "@nestjs/config":  "latest",
-                         "@nestjs/core":  "^11.1.17",
+                         "@nestjs/core":  "^11.1.21",
                          "@types/pg":  "^8.20.0",
                          "bcrypt":  "^6.0.0",
                          "drizzle-orm":  "^0.45.2",
